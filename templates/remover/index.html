@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is the background remover really free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is 100% free with no sign-up, no watermarks, and no limits. The AI runs in your browser, so there are no per-image API costs." }
+    },
+    {
+      "@type": "Question",
+      "name": "Are my images uploaded to a server?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. All processing happens locally in your browser. Your images never leave your device, which makes it completely private." }
+    },
+    {
+      "@type": "Question",
+      "name": "What image formats are supported?",
+      "acceptedAnswer": { "@type": "Answer", "text": "You can upload JPG, PNG, and WEBP images and export the result as a transparent PNG, or as JPG/WEBP with a custom background color." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it reduce image quality?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. The output keeps the original resolution with no downscaling and no watermark." }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-16">
+
+    <!-- ============================ LANDING ============================ -->
+    <div id="landing" class="space-y-16">
+
+        <!-- Hero + dropzone -->
+        <section class="space-y-8">
+            <div class="max-w-3xl mx-auto text-center space-y-5 animate-fade-in-up">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Private &amp; free — runs in your browser
+                </span>
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">
+                    Remove Image Backgrounds
+                    <span class="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-500">Automatically &amp; Free</span>
+                </h1>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    Drop an image and get a clean, transparent PNG in seconds. No sign-up, no watermarks, no quality loss — the AI runs entirely on your device.
+                </p>
+            </div>
+
+            <div class="max-w-3xl mx-auto">
+                <div id="dropzone"
+                     role="button" tabindex="0" aria-label="Upload images. Drag and drop, click to browse, or paste from clipboard."
+                     class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+
+                    <input type="file" id="file-input" class="sr-only" accept="image/png,image/jpeg,image/webp" multiple>
+
+                    <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                        <div id="upload-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                        </div>
+                        <h2 class="text-2xl font-semibold">Drag &amp; drop your images</h2>
+                        <p class="text-gray-500 dark:text-gray-400">or click to browse — you can select multiple files</p>
+                        <button id="browse-btn" type="button" class="mt-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                            <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select images
+                        </button>
+                        <div class="pt-4 text-sm text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
+                            <p>Supports JPG, PNG &amp; WEBP · Full resolution preserved</p>
+                            <p class="flex items-center gap-2">
+                                <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
+                                Press <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">Ctrl</kbd> + <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">V</kbd> to paste
+                            </p>
+                            <span id="model-status" class="hidden items-center gap-2 mt-1 px-3 py-1 rounded-full text-xs font-medium"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trust badges -->
+                <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No watermark</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No sign-up</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> 100% private</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> Unlimited use</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section aria-labelledby="how-title" class="max-w-5xl mx-auto space-y-8">
+            <div class="text-center space-y-2">
+                <h2 id="how-title" class="text-3xl font-bold">How it works</h2>
+                <p class="text-gray-600 dark:text-gray-300">Three steps. No account, no waiting in a queue.</p>
+            </div>
+            <ol class="grid gap-6 sm:grid-cols-3">
+                <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
+                    <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-upload" aria-hidden="true"></i></div>
+                    <h3 class="font-semibold">1. Add an image</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Drag &amp; drop, browse, or paste. Batch upload works too.</p>
+                </li>
+                <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
+                    <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></div>
+                    <h3 class="font-semibold">2. AI removes the background</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Runs on your device in seconds — nothing is uploaded.</p>
+                </li>
+                <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
+                    <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-download" aria-hidden="true"></i></div>
+                    <h3 class="font-semibold">3. Download</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Transparent PNG, or pick a background color. Full quality.</p>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Features -->
+        <section aria-labelledby="features-title" class="max-w-5xl mx-auto space-y-8">
+            <div class="text-center space-y-2">
+                <h2 id="features-title" class="text-3xl font-bold">Everything you need</h2>
+                <p class="text-gray-600 dark:text-gray-300">A premium background remover, completely free.</p>
+            </div>
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {% for f in features %}
+                <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2">
+                    <div class="w-11 h-11 grid place-items-center rounded-xl bg-primary/10 text-primary text-lg"><i class="fa-solid {{ f.icon }}" aria-hidden="true"></i></div>
+                    <h3 class="font-semibold">{{ f.title }}</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ f.text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section aria-labelledby="faq-title" class="max-w-3xl mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h2 id="faq-title" class="text-3xl font-bold">Frequently asked questions</h2>
+            </div>
+            <div class="space-y-3">
+                {% for q in faqs %}
+                <details class="group glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 overflow-hidden">
+                    <summary class="flex items-center justify-between gap-4 p-5 cursor-pointer font-medium list-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
+                        <span>{{ q.q }}</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                    </summary>
+                    <p class="px-5 pb-5 text-gray-600 dark:text-gray-300 text-sm">{{ q.a }}</p>
+                </details>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <!-- ========================= WORKSPACE ========================= -->
+    <section id="workspace" class="hidden space-y-6" aria-label="Your results">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div id="stats-bar" class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-300">
+                <span><i class="fa-solid fa-images text-primary mr-1.5" aria-hidden="true"></i><b id="stat-count">0</b> processed</span>
+                <span><i class="fa-solid fa-clock text-primary mr-1.5" aria-hidden="true"></i>avg <b id="stat-avg">0.0</b>s</span>
+                <span><i class="fa-solid fa-database text-primary mr-1.5" aria-hidden="true"></i>saved <b id="stat-saved">0</b> images total</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="download-all-btn" type="button" class="hidden px-4 py-2.5 bg-primary hover:bg-primaryHover text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>Download all (ZIP)
+                </button>
+                <button id="add-more-btn" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>Add more
+                </button>
+                <button id="clear-all-btn" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>Clear
+                </button>
+            </div>
+        </div>
+        <div id="results-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+    </section>
+
+    <!-- ========================== HISTORY ========================== -->
+    <section id="history-section" class="hidden max-w-5xl mx-auto space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-primary" aria-hidden="true"></i>Recent this session
+            </h2>
+            <button id="clear-history-btn" type="button" class="text-sm text-gray-500 hover:text-red-500 transition-colors">Clear history</button>
+        </div>
+        <div id="history-strip" class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin"></div>
+    </section>
+</div>
+
+<!-- ====================== CARD TEMPLATE ====================== -->
+<template id="card-template">
+    <article class="card glass rounded-2xl shadow-lg border border-gray-200/70 dark:border-gray-800/70 overflow-hidden animate-fade-in-up" data-state="processing">
+        <div class="preview relative aspect-video select-none checkerboard">
+            <!-- Compare view -->
+            <div class="view-compare absolute inset-0">
+                <img class="processed-img absolute inset-0 w-full h-full object-contain zoomable" alt="Image with background removed" draggable="false">
+                <img class="original-img absolute inset-0 w-full h-full object-contain" alt="Original image" draggable="false" style="clip-path: inset(0 50% 0 0);">
+                <input type="range" min="0" max="100" value="50" class="compare-range absolute inset-0 w-full h-full opacity-0 z-20 cursor-ew-resize" aria-label="Compare original and result">
+                <div class="slider-line absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_6px_rgba(0,0,0,0.5)] z-10 -translate-x-1/2 pointer-events-none" style="left: 50%;">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-lg text-primary">
+                        <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <span class="absolute top-2 left-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">Before</span>
+                <span class="absolute top-2 right-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">After</span>
+            </div>
+            <!-- Side-by-side view -->
+            <div class="view-split hidden absolute inset-0 grid grid-cols-2">
+                <div class="relative border-r border-white/40">
+                    <img class="original-img-split w-full h-full object-contain" alt="Original image" draggable="false">
+                    <span class="absolute top-2 left-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 text-white">Original</span>
+                </div>
+                <div class="split-bg relative checkerboard">
+                    <img class="processed-img-split w-full h-full object-contain zoomable" alt="Result" draggable="false">
+                    <span class="absolute top-2 right-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/90 text-white">Result</span>
+                </div>
+            </div>
+
+            <!-- Processing overlay -->
+            <div class="processing-overlay absolute inset-0 glass backdrop-blur-md flex flex-col items-center justify-center gap-3 text-center px-6">
+                <div class="relative w-16 h-16">
+                    <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <p class="progress-label text-sm font-medium">Removing background…</p>
+                <div class="w-40 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div class="progress-bar h-full bg-primary transition-all duration-200" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Error overlay -->
+            <div class="error-overlay hidden absolute inset-0 glass backdrop-blur-md flex flex-col items-center justify-center gap-2 text-center px-6">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500" aria-hidden="true"></i>
+                <p class="error-msg text-sm font-medium text-red-600 dark:text-red-400">Something went wrong.</p>
+                <button type="button" class="retry-btn mt-1 text-sm text-primary hover:underline">Try again</button>
+            </div>
+        </div>
+
+        <!-- Options panel (background + format) -->
+        <div class="options-panel hidden px-4 pt-4 space-y-3 border-t border-gray-200/70 dark:border-gray-800/70">
+            <div class="flex items-center gap-3 flex-wrap">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20">Background</span>
+                <div class="bg-swatches flex items-center gap-2">
+                    <button type="button" data-bg="transparent" class="swatch w-7 h-7 rounded-full checkerboard ring-2 ring-primary" aria-label="Transparent background" title="Transparent"></button>
+                    <button type="button" data-bg="#ffffff" class="swatch w-7 h-7 rounded-full bg-white border border-gray-300" aria-label="White background" title="White"></button>
+                    <button type="button" data-bg="#000000" class="swatch w-7 h-7 rounded-full bg-black" aria-label="Black background" title="Black"></button>
+                    <button type="button" data-bg="#4F46E5" class="swatch w-7 h-7 rounded-full" style="background:#4F46E5" aria-label="Indigo background" title="Indigo"></button>
+                    <button type="button" data-bg="#22c55e" class="swatch w-7 h-7 rounded-full" style="background:#22c55e" aria-label="Green background" title="Green"></button>
+                    <label class="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-300 dark:ring-gray-700 grid place-items-center cursor-pointer" title="Custom color">
+                        <i class="fa-solid fa-eye-dropper text-[10px] text-gray-500 pointer-events-none absolute z-10"></i>
+                        <input type="color" class="custom-color swatch-input w-9 h-9" value="#ff6b6b" aria-label="Custom background color">
+                    </label>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap pb-1">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20">Format</span>
+                <div class="format-group inline-flex rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden text-xs font-medium">
+                    <button type="button" data-format="image/png" class="format-btn px-3 py-1.5 bg-primary text-white">PNG</button>
+                    <button type="button" data-format="image/jpeg" class="format-btn px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800">JPG</button>
+                    <button type="button" data-format="image/webp" class="format-btn px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800">WEBP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card footer -->
+        <div class="p-4 space-y-3">
+            <div class="min-w-0">
+                <p class="filename text-sm font-medium truncate" title="">image.png</p>
+                <p class="meta text-xs text-gray-500 dark:text-gray-400"></p>
+            </div>
+            <div class="actions flex flex-wrap items-center gap-2">
+                <button type="button" class="edit-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Refine edges — erase or restore">
+                    <i class="fa-solid fa-brush" aria-hidden="true"></i> Refine
+                </button>
+                <button type="button" class="options-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Background and format options">
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> Background
+                </button>
+                <button type="button" class="toggle-view-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Switch between slider and side-by-side view">
+                    <i class="fa-solid fa-table-columns" aria-hidden="true"></i> <span class="view-label">Side-by-side</span>
+                </button>
+                <button type="button" class="copy-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Copy result to clipboard">
+                    <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy
+                </button>
+                <button type="button" class="remove-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove this image">
+                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
+                </button>
+                <button type="button" class="download-btn inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary hover:bg-primaryHover text-white shadow ml-auto transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Download result">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i> Download <span class="download-label">PNG</span>
+                </button>
+            </div>
+        </div>
+    </article>
+</template>
+
+<!-- ========================= REFINE EDITOR ========================= -->
+<div id="editor-modal" class="hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Refine edges">
+    <!-- Header -->
+    <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/10 text-white shrink-0">
+        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-brush text-primary" aria-hidden="true"></i> Refine edges</div>
+        <div class="flex items-center gap-2">
+            <button id="editor-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>
+            <button id="editor-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-primary hover:bg-primaryHover text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>Apply
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col lg:flex-row min-h-0">
+        <!-- Toolbar -->
+        <div class="order-2 lg:order-1 flex lg:flex-col flex-wrap items-center lg:items-stretch gap-5 p-4 bg-gray-900/70 text-white lg:w-64 shrink-0 overflow-auto">
+            <div class="space-y-2">
+                <span class="text-xs uppercase tracking-wide text-gray-400">Tool</span>
+                <div class="editor-tools grid grid-cols-3 rounded-lg overflow-hidden border border-white/20 text-sm">
+                    <button data-tool="restore" type="button" class="tool-btn px-2 py-2 bg-primary text-white"><i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>Restore</button>
+                    <button data-tool="erase" type="button" class="tool-btn px-2 py-2 hover:bg-white/10 border-x border-white/20"><i class="fa-solid fa-eraser mr-1" aria-hidden="true"></i>Erase</button>
+                    <button data-tool="move" type="button" class="tool-btn px-2 py-2 hover:bg-white/10"><i class="fa-solid fa-up-down-left-right mr-1" aria-hidden="true"></i>Move</button>
+                </div>
+            </div>
+            <div class="space-y-2 grow lg:grow-0">
+                <label for="brush-size" class="text-xs uppercase tracking-wide text-gray-400">Brush size</label>
+                <input id="brush-size" type="range" min="10" max="200" value="45" class="w-full accent-primary">
+            </div>
+            <div class="space-y-2">
+                <span class="text-xs uppercase tracking-wide text-gray-400">Zoom</span>
+                <div class="flex items-center gap-1">
+                    <button id="editor-zoom-out" type="button" class="tip w-9 h-9 grid place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors" data-tooltip="Zoom out" aria-label="Zoom out"><i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i></button>
+                    <span id="editor-zoom-level" class="text-sm tabular-nums w-14 text-center">100%</span>
+                    <button id="editor-zoom-in" type="button" class="tip w-9 h-9 grid place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors" data-tooltip="Zoom in" aria-label="Zoom in"><i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i></button>
+                    <button id="editor-zoom-fit" type="button" class="tip w-9 h-9 grid place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors" data-tooltip="Fit to screen" aria-label="Fit to screen"><i class="fa-solid fa-expand" aria-hidden="true"></i></button>
+                </div>
+            </div>
+            <div class="flex lg:flex-col gap-2 w-full">
+                <button id="editor-undo" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-rotate-left mr-1.5" aria-hidden="true"></i>Undo</button>
+                <button id="editor-reset" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrows-rotate mr-1.5" aria-hidden="true"></i>Reset</button>
+            </div>
+            <p class="hidden lg:block text-xs text-gray-400 leading-relaxed">
+                <b class="text-gray-200">Restore</b> paints back the original; <b class="text-gray-200">Erase</b> wipes leftover background.
+                Scroll to zoom, or use the <b class="text-gray-200">Move</b> tool / hold <kbd class="px-1 rounded bg-white/10">Space</kbd> to pan.
+                Shortcuts: <kbd class="px-1 rounded bg-white/10">R</kbd>/<kbd class="px-1 rounded bg-white/10">E</kbd>/<kbd class="px-1 rounded bg-white/10">M</kbd>, <kbd class="px-1 rounded bg-white/10">[</kbd> <kbd class="px-1 rounded bg-white/10">]</kbd> size.
+            </p>
+        </div>
+
+        <!-- Canvas stage (zoom/pan happens via a transform on the viewport) -->
+        <div id="editor-stage" class="order-1 lg:order-2 flex-1 min-h-0 relative overflow-hidden p-4">
+            <div id="editor-viewport" class="checkerboard rounded-lg shadow-2xl absolute top-1/2 left-1/2 will-change-transform" style="transform: translate(-50%, -50%);">
+                <canvas id="editor-canvas" class="block w-full h-full touch-none"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="brush-cursor" class="hidden pointer-events-none fixed z-[61] rounded-full border-2 border-white mix-blend-difference -translate-x-1/2 -translate-y-1/2"></div>
+</div>
+
+<!-- ========================= ZOOM LIGHTBOX ========================= -->
+<div id="zoom-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Zoomed image preview">
+    <button id="zoom-close" type="button" class="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Close preview">
+        <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+    </button>
+    <div class="checkerboard max-w-full max-h-full rounded-xl overflow-auto shadow-2xl">
+        <img id="zoom-img" src="" alt="Zoomed result" class="block max-w-none">
+    </div>
+    <div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 glass rounded-full px-3 py-2 shadow-lg">
+        <button id="zoom-out" type="button" class="w-9 h-9 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors" aria-label="Zoom out"><i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i></button>
+        <span id="zoom-level" class="text-sm font-medium w-14 text-center tabular-nums">100%</span>
+        <button id="zoom-in" type="button" class="w-9 h-9 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors" aria-label="Zoom in"><i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i></button>
+    </div>
+</div>
+
+<!-- ======================= SHORTCUTS MODAL ======================= -->
+<div id="shortcuts-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+    <div class="glass w-full max-w-md rounded-2xl shadow-2xl border border-gray-200/70 dark:border-gray-800/70 p-6 space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 id="shortcuts-title" class="text-lg font-semibold">Keyboard shortcuts</h2>
+            <button id="shortcuts-close" type="button" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+        <ul class="space-y-2 text-sm">
+            <li class="flex justify-between"><span>Paste image from clipboard</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Ctrl+V</kbd></li>
+            <li class="flex justify-between"><span>Open file picker</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">O</kbd></li>
+            <li class="flex justify-between"><span>Download all as ZIP</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Ctrl+S</kbd></li>
+            <li class="flex justify-between"><span>Toggle dark mode</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">D</kbd></li>
+            <li class="flex justify-between"><span>Close dialogs</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Esc</kbd></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/app.js' %}"></script>
+{% endblock %}

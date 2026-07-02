@@ -1,0 +1,294 @@
+# BG Remover — Free AI Background Remover
+
+A production-ready, privacy-first web app that removes image backgrounds **entirely in the browser**. No API keys, no watermarks, no uploads — images never leave the user's device. Django serves a fast, SEO-optimized single-page app; the AI runs client-side via [`@imgly/background-removal`](https://github.com/imgly/background-removal-js) (ISNet / U²-Net).
+
+> **Why client-side?** It makes the app truly free (no per-image API cost), private by design, and deployable to serverless hosts like **Vercel** — a Python background-removal model would be far too large for serverless functions.
+
+---
+
+## ✨ Features
+
+**Core**
+- Upload via drag & drop, file picker, or clipboard paste (`Ctrl+V`)
+- JPG / PNG / WEBP support, full resolution preserved
+- Before/after comparison slider + side-by-side view + zoom lightbox
+- Choose a background: transparent, presets, or any custom color
+- **Refine brush editor** — erase leftover background or restore over-trimmed areas by hand, with **zoom/pan** (wheel, Move tool, hold-Space), soft brushes, undo & keyboard shortcuts
+- Export as PNG (transparent), JPG, or WEBP — no watermark, no resizing
+
+**Image converter** (`/convert`)
+- Convert any image to PNG / JPG / WEBP — input format is **auto-detected**
+- Quality control for lossy formats, batch conversion + ZIP download
+- Also runs 100% in the browser
+- Model warm-up preload so the first result is fast
+- Transparent checkerboard preview
+
+**Batch & extras**
+- Batch processing (select multiple images)
+- Download all as a ZIP
+- Copy result to clipboard
+- Recent history (session only) & processing statistics
+- Optional per-card retry, keyboard shortcuts (`O`, `Ctrl+S`, `D`, `Esc`, `?`)
+
+**UX / UI**
+- Fully responsive, glassmorphism, smooth animations
+- Light/dark mode remembered in `localStorage`
+- Accessible: keyboard nav, ARIA labels, focus states, reduced-motion support
+- Toast notifications, attractive empty states, helpful errors
+
+**SEO**
+- Meta / Open Graph / Twitter cards, JSON-LD structured data, canonical URLs
+- `robots.txt` + `sitemap.xml`, semantic HTML
+
+---
+
+## 🧱 Tech stack
+
+| Layer      | Choice                                             |
+|------------|----------------------------------------------------|
+| Backend    | Python + Django 5 (stateless, no DB)               |
+| Frontend   | HTML, compiled Tailwind CSS, Font Awesome, vanilla JS (ESM) |
+| AI model   | `@imgly/background-removal` (WASM/WebGPU, ISNet)   |
+| Static     | WhiteNoise (compressed + hashed manifest)          |
+| Security   | CSP + Permissions-Policy, HSTS, secure cookies     |
+| Serving    | Gunicorn + Nginx / Docker / Vercel                 |
+
+> **Tailwind is compiled, not CDN.** `static/css/tailwind.css` is a minified build
+> committed to the repo — no runtime CDN, no `eval`, no flash of unstyled content.
+> Rebuild it with `npm run build:css` after editing templates or `static/js`.
+
+---
+
+## 📁 Project structure
+
+```
+bgremover/
+├── config/
+│   ├── settings/
+│   │   ├── base.py            # shared settings
+│   │   ├── development.py     # DEBUG, local hosts
+│   │   └── production.py      # HTTPS + security hardening
+│   ├── middleware.py         # CSP + Permissions-Policy headers
+│   ├── urls.py
+│   ├── wsgi.py               # exposes `app` for Vercel
+│   └── asgi.py
+├── remover/
+│   ├── views.py              # index + convert + healthz + robots + sitemap
+│   ├── urls.py
+│   ├── models.py             # intentionally empty (no DB)
+│   └── tests.py
+├── templates/
+│   ├── base.html             # layout, SEO, theme, floating nav + tool switcher
+│   ├── remover/index.html    # background remover + refine editor
+│   ├── remover/convert.html  # image format converter
+│   ├── seo/{robots.txt,sitemap.xml}
+│   └── {404.html,500.html}
+├── static/
+│   ├── src/input.css                 # Tailwind source
+│   ├── css/tailwind.css              # compiled + minified (committed)
+│   ├── js/app.js                     # background remover + editor
+│   ├── js/converter.js               # image converter
+│   ├── js/theme.js                   # pre-paint theme + toggle (all pages)
+│   └── img/{favicon.svg,og-image.svg}
+├── deploy/nginx.conf
+├── Dockerfile / docker-compose.yml / .dockerignore
+├── vercel.json / build_files.sh
+├── package.json / tailwind.config.js   # CSS build tooling
+├── requirements.txt
+├── .env.example
+└── manage.py
+```
+
+There is **no database** — history, stats, and theme live in the browser. `models.py` is empty on purpose.
+
+---
+
+## 🚀 Local development
+
+```bash
+# 1. Clone and enter the project
+cd bgremover
+
+# 2. Create a virtualenv and install deps
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Configure environment
+cp .env.example .env
+# then set a SECRET_KEY (see below); DEBUG=True is fine for dev
+
+# 4. Build the CSS (needs Node 18+). The committed build already works,
+#    so this is only required if you change templates or JS classes.
+npm install
+npm run build:css        # or: npm run watch:css  (rebuild on change)
+
+# 5. Run the dev server
+python manage.py runserver
+# open http://127.0.0.1:8000
+```
+
+> **Editing styles:** Tailwind scans `templates/**/*.html` and `static/js/**/*.js`.
+> After adding/removing classes, run `npm run build:css` (or keep `watch:css`
+> running) to regenerate `static/css/tailwind.css`.
+
+Generate a secret key:
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(50))"
+```
+
+> **First use** downloads the ~40 MB AI model from a CDN; the browser caches it afterward, so subsequent runs are instant. An internet connection is required the first time.
+
+---
+
+## 🔑 Environment variables
+
+| Variable                | Required     | Description                                        |
+|-------------------------|--------------|----------------------------------------------------|
+| `SECRET_KEY`            | ✅ (prod)     | Long random string.                                |
+| `DEBUG`                 | –            | `True` dev / `False` prod (default `False`).       |
+| `ALLOWED_HOSTS`         | ✅ (prod)     | Comma-separated hostnames.                         |
+| `CSRF_TRUSTED_ORIGINS`  | recommended  | Comma-separated `https://…` origins.               |
+| `SITE_URL`              | recommended  | Absolute URL for canonical tags & sitemap.         |
+| `LOG_LEVEL`             | –            | `DEBUG`/`INFO`/`WARNING`/`ERROR`.                  |
+| `SECURE_SSL_REDIRECT`   | –            | `False` if TLS is terminated upstream.             |
+
+Settings are selected via `DJANGO_SETTINGS_MODULE`:
+`config.settings.development` (default in `manage.py`) or `config.settings.production` (default in `wsgi.py`/Docker/Vercel).
+
+---
+
+## 🧪 Testing
+
+```bash
+python manage.py test          # runs the view + SEO endpoint tests
+python manage.py check --deploy # production security audit (use prod settings)
+```
+
+Run the deploy check against production settings:
+```bash
+DJANGO_SETTINGS_MODULE=config.settings.production \
+  SECRET_KEY=$(python -c "import secrets;print(secrets.token_urlsafe(50))") \
+  ALLOWED_HOSTS=example.com python manage.py check --deploy
+```
+
+---
+
+## ▲ Deploy to Vercel
+
+The app is stateless, so it fits Vercel's serverless Python runtime.
+
+1. Push the repo to GitHub and **Import** it in Vercel.
+2. Set environment variables in the Vercel dashboard:
+   - `SECRET_KEY`, `DEBUG=False`, `ALLOWED_HOSTS=your-app.vercel.app`,
+     `CSRF_TRUSTED_ORIGINS=https://your-app.vercel.app`, `SITE_URL=https://your-app.vercel.app`
+   - `SECURE_SSL_REDIRECT=False` (Vercel handles TLS; avoids redirect loops)
+3. Deploy. `vercel.json` runs `build_files.sh` (installs deps + `collectstatic`) and routes:
+   - `/static/*` → collected static files
+   - everything else → `config/wsgi.py` (which exposes `app`)
+
+No database or persistent storage is needed.
+
+> Other hosts (Netlify, Render static, GitHub Pages behind a proxy) work too, since the heavy lifting is client-side.
+
+---
+
+## 🐳 Docker
+
+```bash
+cp .env.example .env   # set SECRET_KEY, ALLOWED_HOSTS, DEBUG=False
+docker compose up --build
+# open http://localhost
+```
+
+- `Dockerfile` builds the app, runs `collectstatic`, and serves via Gunicorn as a non-root user.
+- `docker-compose.yml` adds an Nginx reverse proxy (`deploy/nginx.conf`); WhiteNoise serves static assets from inside the app.
+
+Run the image standalone:
+```bash
+docker build -t bgremover .
+docker run -p 8000:8000 --env-file .env bgremover
+```
+
+---
+
+## 🖥️ Production: Nginx + Gunicorn (VPS)
+
+```bash
+# On the server
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+export DJANGO_SETTINGS_MODULE=config.settings.production
+python manage.py collectstatic --noinput
+
+# Run Gunicorn (behind Nginx / a systemd service)
+gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 3 --timeout 60
+```
+
+Point Nginx at `127.0.0.1:8000` using `deploy/nginx.conf` (change the `upstream` to `127.0.0.1:8000`), then add TLS with Certbot:
+
+```bash
+sudo certbot --nginx -d your-domain.com
+```
+
+A minimal `systemd` unit:
+
+```ini
+# /etc/systemd/system/bgremover.service
+[Unit]
+Description=BG Remover (Gunicorn)
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/srv/bgremover
+EnvironmentFile=/srv/bgremover/.env
+Environment=DJANGO_SETTINGS_MODULE=config.settings.production
+ExecStart=/srv/bgremover/venv/bin/gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 3
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+## 🔄 Swapping the background-removal model
+
+All AI logic is isolated in `static/js/app.js`:
+
+```js
+import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
+// ...
+const blob = await removeBackground(this.originalUrl, { ...CONFIG.removalOptions, progress });
+```
+
+To use a different in-browser model (e.g. Transformers.js + RMBG-1.4), replace the import and the call inside `Card.process()`; the rest of the UI is model-agnostic. For faster/lower-quality output, set `model: 'isnet_quint8'` in `CONFIG.removalOptions`.
+
+---
+
+## 📈 Operations
+
+- **Health check:** `GET /healthz` returns `200 ok` — point your load balancer or
+  uptime monitor here.
+- **Scaling:** the server only serves static HTML/CSS/JS, so it scales trivially.
+  The compute-heavy AI work runs on each visitor's device, not your servers.
+- **Caching:** WhiteNoise serves hashed, compressed static assets with far-future
+  cache headers; `robots.txt`/`sitemap.xml` are cached for 24h.
+
+## 🔐 Security & privacy notes
+
+- Images are **never** transmitted to the server — processing is 100% client-side.
+- A **Content-Security-Policy** and **Permissions-Policy** are set on HTML responses
+  (`config/middleware.py`). The CSP allows `wasm-unsafe-eval` (the model is WASM),
+  the jsdelivr CDN (library + model), and inline styles (Tailwind dynamic values).
+- Production enables HSTS, secure cookies, `nosniff`, `X-Frame-Options: DENY`,
+  referrer policy, and (optionally) SSL redirect.
+- CSRF middleware is enabled as defense-in-depth even though there are no server-side forms.
+- No user data is stored server-side; history/stats are per-browser (`sessionStorage` / `localStorage`).
+
+---
+
+## 📄 License
+
+Free and open source — use it however you like. The `@imgly/background-removal` model is distributed under its own license; review it before commercial use.

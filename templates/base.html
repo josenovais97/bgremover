@@ -1,0 +1,129 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="antialiased scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="color-scheme" content="light dark">
+
+    {% block seo %}
+    <title>{% block title %}Free AI Background Remover — High Quality, No Watermark{% endblock %}</title>
+    <meta name="description" content="{% block description %}Remove image backgrounds instantly and 100% free. AI runs in your browser — no uploads, no watermarks, no quality loss. Export transparent PNGs in full resolution.{% endblock %}">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    <meta name="robots" content="index, follow">
+    <meta name="keywords" content="background remover, remove background, transparent png, free background removal, ai background remover, remove bg">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="BG Remover">
+    <meta property="og:title" content="{% block og_title %}Free AI Background Remover — No Watermark{% endblock %}">
+    <meta property="og:description" content="Remove image backgrounds instantly and 100% free. Everything runs privately in your browser.">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% static 'img/og-image.svg' %}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Free AI Background Remover — No Watermark">
+    <meta name="twitter:description" content="Remove backgrounds instantly, privately, and for free. AI runs in your browser.">
+    <meta name="twitter:image" content="{% static 'img/og-image.svg' %}">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "BG Remover",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Any (web browser)",
+      "description": "Free AI background remover that runs entirely in your browser. No uploads, no watermarks, full-resolution transparent PNG export.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": [
+        "Remove image backgrounds automatically",
+        "Runs privately in the browser",
+        "Batch processing",
+        "Custom background colors",
+        "Transparent PNG export",
+        "No watermark"
+      ]
+    }
+    </script>
+    {% block extra_seo %}{% endblock %}
+    {% endblock %}
+
+    <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+
+    <!-- Set theme before paint (external so no inline script is needed). -->
+    <script src="{% static 'js/theme.js' %}"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col font-sans">
+
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white">Skip to content</a>
+
+    <!-- Decorative background glow -->
+    <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div class="absolute -top-32 left-1/2 -translate-x-1/2 h-80 w-[42rem] rounded-full bg-primary/20 blur-3xl dark:bg-primary/10"></div>
+        <div class="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-fuchsia-400/10 blur-3xl"></div>
+    </div>
+
+    <!-- Minimal floating header -->
+    <header class="w-full z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center gap-3 sm:gap-5">
+                    <a href="{% url 'remover:index' %}" class="group flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl" aria-label="BG Remover home">
+                        <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-fuchsia-500 text-white shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                        </span>
+                        <span class="font-bold text-lg tracking-tight hidden sm:inline">BG Remover</span>
+                    </a>
+
+                    {% with active=request.resolver_match.url_name %}
+                    <nav class="flex items-center gap-1 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium" aria-label="Tools">
+                        <a href="{% url 'remover:index' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'index' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1" aria-hidden="true"></i>Remove BG
+                        </a>
+                        <a href="{% url 'remover:convert' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'convert' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <i class="fa-solid fa-arrow-right-arrow-left mr-1" aria-hidden="true"></i>Convert
+                        </a>
+                    </nav>
+                    {% endwith %}
+                </div>
+
+                <nav class="flex items-center gap-1 glass rounded-full p-1.5 shadow-sm border border-gray-200/70 dark:border-gray-800/70" aria-label="Utilities">
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="tip hidden sm:grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Source on GitHub" data-tooltip="Source on GitHub">
+                        <i class="fa-brands fa-github text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
+                    </a>
+                    <button id="shortcuts-btn" type="button" class="tip hidden sm:grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Keyboard shortcuts" data-tooltip="Shortcuts">
+                        <i class="fa-regular fa-keyboard text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
+                    </button>
+                    <button id="theme-toggle" type="button" class="tip grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Toggle dark mode" data-tooltip="Theme">
+                        <i class="fa-solid fa-moon dark:hidden text-gray-600" aria-hidden="true"></i>
+                        <i class="fa-solid fa-sun hidden dark:block text-yellow-300" aria-hidden="true"></i>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="mt-auto border-t border-gray-200/60 dark:border-gray-800/60 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500 dark:text-gray-400 space-y-2">
+            <p class="flex items-center justify-center gap-2">
+                <i class="fa-solid fa-shield-halved text-green-500" aria-hidden="true"></i>
+                Your images never leave your device — processing happens 100% in your browser.
+            </p>
+            <p>&copy; {% now "Y" %} BG Remover. Free &amp; open source. Built with Django &amp; Tailwind CSS.</p>
+        </div>
+    </footer>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none" role="status" aria-live="polite"></div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
