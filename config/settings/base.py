@@ -89,8 +89,15 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Let WhiteNoise serve static files straight from the source dirs via Django's
+# finders — no collectstatic needed at runtime. This makes static serving work
+# reliably on serverless hosts (Vercel), where the app can't rely on a
+# collectstatic step running inside the function.
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
+
 # Plain static storage in dev/tests. Production overrides this with WhiteNoise's
-# compressed + hashed manifest storage (see settings/production.py).
+# compressed storage (see settings/production.py).
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
