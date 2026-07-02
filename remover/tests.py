@@ -56,6 +56,26 @@ class ConvertPageTests(SimpleTestCase):
         self.assertContains(response, "Remove BG")
 
 
+class PWATests(SimpleTestCase):
+    def test_service_worker(self):
+        response = self.client.get(reverse("remover:sw"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("javascript", response["Content-Type"])
+        self.assertEqual(response["Service-Worker-Allowed"], "/")
+        self.assertContains(response, "caches.open")
+
+    def test_manifest(self):
+        response = self.client.get(reverse("remover:manifest"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/manifest+json")
+        self.assertContains(response, '"display": "standalone"')
+
+    def test_index_links_manifest_and_icons(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, 'rel="manifest"')
+        self.assertContains(response, "apple-touch-icon")
+
+
 class HealthCheckTests(SimpleTestCase):
     def test_healthz(self):
         response = self.client.get(reverse("remover:healthz"))

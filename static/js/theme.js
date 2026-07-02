@@ -31,3 +31,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var btn = document.getElementById('theme-toggle');
   if (btn) btn.addEventListener('click', toggleTheme);
 });
+
+// Register the PWA service worker (installable + offline app shell).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  });
+}

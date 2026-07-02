@@ -207,12 +207,15 @@ const Zoom = {
 const Editor = {
   tool: 'restore',
   brush: 45, // brush diameter in on-screen pixels
+  feather: 0, // edge-smoothing blur radius (native px)
   painting: false,
   panning: false,
+  pinching: false,
   spaceHeld: false,
   zoom: 1,
   panX: 0,
   panY: 0,
+  pointers: new Map(),
   undoStack: [],
 
   init() {
@@ -234,12 +237,14 @@ const Editor = {
     $('#editor-zoom-out').addEventListener('click', () => this.zoomButton(1 / 1.25));
     $('#editor-zoom-fit').addEventListener('click', () => this.fit());
     $('#brush-size').addEventListener('input', (e) => this.setBrush(+e.target.value));
+    $('#editor-smooth').addEventListener('input', (e) => { this.feather = +e.target.value; this.render(); });
     $$('.tool-btn', this.modal).forEach((b) => b.addEventListener('click', () => this.setTool(b.dataset.tool)));
 
-    this.canvas.addEventListener('pointerdown', (e) => this.start(e));
-    this.canvas.addEventListener('pointermove', (e) => this.move(e));
-    window.addEventListener('pointerup', () => { this.painting = false; this.panning = false; this.updateCursor(); });
-    this.canvas.addEventListener('pointerleave', () => this.cursor.classList.add('hidden'));
+    this.canvas.addEventListener('pointerdown', (e) => this.onDown(e));
+    this.canvas.addEventListener('pointermove', (e) => this.onMove(e));
+    this.canvas.addEventListener('pointerup', (e) => this.onUp(e));
+    this.canvas.addEventListener('pointercancel', (e) => this.onUp(e));
+    this.canvas.addEventListener('pointerleave', () => { if (!this.painting) this.cursor.classList.add('hidden'); });
 
     // Wheel to zoom toward the cursor.
     this.stage.addEventListener('wheel', (e) => {
@@ -281,6 +286,10 @@ const Editor = {
     this.initial.getContext('2d').drawImage(proc, 0, 0);
     this.undoStack = [];
     this.spaceHeld = false;
+    this.pinching = false;
+    this.pointers.clear();
+    this.feather = 0;
+    $('#editor-smooth').value = 0;
     this.setTool('restore');
     this.render();
 
@@ -369,6 +378,20 @@ const Editor = {
     this.updateCursor();
   },
 
+  /** The mask with optional edge smoothing (blur) applied to its alpha. */
+  featheredMask() {
+    if (!this.feather) return this.mask;
+    const c = this._feather || (this._feather = document.createElement('canvas'));
+    c.width = this.mask.width;
+    c.height = this.mask.height;
+    const fx = c.getContext('2d');
+    fx.clearRect(0, 0, c.width, c.height);
+    fx.filter = `blur(${this.feather}px)`;
+    fx.drawImage(this.mask, 0, 0);
+    fx.filter = 'none';
+    return c;
+  },
+
   /** Composite original × mask onto the visible canvas. */
   render() {
     const { ctx, canvas } = this;
@@ -376,7 +399,7 @@ const Editor = {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(this.orig, 0, 0);
     ctx.globalCompositeOperation = 'destination-in';
-    ctx.drawImage(this.mask, 0, 0);
+    ctx.drawImage(this.featheredMask(), 0, 0);
     ctx.globalCompositeOperation = 'source-over';
   },
 
@@ -418,16 +441,59 @@ const Editor = {
     this.restoreSnap(this.initial);
   },
 
+  /* ---- pointer routing (supports two-finger pinch zoom/pan) ---- */
+  onDown(e) {
+    this.canvas.setPointerCapture(e.pointerId);
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (this.pointers.size === 2) { this.startPinch(); return; }
+    if (this.pointers.size > 2) return;
+    this.start(e);
+  },
+
+  onMove(e) {
+    if (this.pointers.has(e.pointerId)) this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (this.pinching) { if (this.pointers.size >= 2) this.doPinch(); return; }
+    this.move(e);
+  },
+
+  onUp(e) {
+    this.pointers.delete(e.pointerId);
+    if (this.pointers.size < 2) this.pinching = false;
+    if (this.pointers.size === 0) { this.painting = false; this.panning = false; this.updateCursor(); }
+  },
+
+  pinchGeometry() {
+    const [a, b] = [...this.pointers.values()];
+    return { dist: Math.hypot(a.x - b.x, a.y - b.y), midX: (a.x + b.x) / 2, midY: (a.y + b.y) / 2 };
+  },
+
+  startPinch() {
+    this.pinching = true;
+    this.painting = false;
+    this.panning = false;
+    this.cursor.classList.add('hidden');
+    this.pinchPrev = this.pinchGeometry();
+  },
+
+  doPinch() {
+    const cur = this.pinchGeometry();
+    if (this.pinchPrev.dist > 0) {
+      this.zoomAt(cur.midX, cur.midY, cur.dist / this.pinchPrev.dist);
+      this.panX += cur.midX - this.pinchPrev.midX;
+      this.panY += cur.midY - this.pinchPrev.midY;
+      this.applyTransform();
+    }
+    this.pinchPrev = cur;
+  },
+
   start(e) {
     if (this.isPanMode(e)) {
       this.panning = true;
       this.panLast = { x: e.clientX, y: e.clientY };
-      this.canvas.setPointerCapture(e.pointerId);
       this.updateCursor();
       return;
     }
     this.painting = true;
-    this.canvas.setPointerCapture(e.pointerId);
     this.pushUndo();
     this.last = this.locate(e);
     this.stamp(this.last.x, this.last.y, this.last.r);
@@ -498,7 +564,7 @@ const Editor = {
     const o = out.getContext('2d');
     o.drawImage(this.orig, 0, 0);
     o.globalCompositeOperation = 'destination-in';
-    o.drawImage(this.mask, 0, 0);
+    o.drawImage(this.featheredMask(), 0, 0);
     out.toBlob((blob) => {
       if (blob) this.card.applyEdited(blob);
       this.close();
