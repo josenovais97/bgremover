@@ -63,6 +63,22 @@ def healthz(request):
 
 
 @require_GET
+def service_worker(request):
+    """Serve the PWA service worker from the site root so its scope is '/'."""
+    response = render(request, "sw.js", content_type="application/javascript")
+    response["Service-Worker-Allowed"] = "/"
+    response["Cache-Control"] = "no-cache"
+    return response
+
+
+@require_GET
+@cache_control(max_age=86400)
+def manifest(request):
+    """Serve the web app manifest with the correct content type."""
+    return render(request, "manifest.webmanifest", content_type="application/manifest+json")
+
+
+@require_GET
 @cache_control(max_age=86400)
 def robots_txt(request):
     """Serve robots.txt, pointing crawlers at the sitemap."""
