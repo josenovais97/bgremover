@@ -8,5 +8,8 @@ export DJANGO_SETTINGS_MODULE="config.settings.production"
 # The build image may expose Python as python3.12 / python3 / python.
 PY="$(command -v python3.12 || command -v python3 || command -v python)"
 
-"$PY" -m pip install -r requirements.txt
+# Vercel's build image Python is managed by uv (PEP 668), so pip refuses to
+# install into it without this override. We only need Django available here so
+# `collectstatic` can run; the runtime function installs deps separately.
+"$PY" -m pip install --break-system-packages -r requirements.txt
 "$PY" manage.py collectstatic --noinput --clear
