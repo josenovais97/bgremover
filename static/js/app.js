@@ -1,0 +1,940 @@
+/**
+ * BG Remover — client-side application.
+ *
+ * All background removal runs in the browser via @imgly/background-removal
+ * (ISNet / U²-Net). Nothing is uploaded to the server. The library and the
+ * model assets are loaded from a CDN and cached by the browser after first use.
+ *
+ * To swap the model later, replace the `removeBackground` import and the call
+ * inside `Card.process()` — the rest of the UI is model-agnostic.
+ */
+import { removeBackground, preload } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
+import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
+
+/* ------------------------------------------------------------------ config */
+const CONFIG = {
+  maxFileSize: 25 * 1024 * 1024, // 25 MB
+  acceptedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+  maxHistory: 12,
+  encodeQuality: 0.92, // for JPG/WEBP output
+  removalOptions: {
+    output: { format: 'image/png', quality: 1 }, // lossless cut-out, full resolution
+    // `model` defaults to 'isnet' (best quality). Use 'isnet_quint8' for speed.
+  },
+};
+
+const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
+const LABEL = { 'image/png': 'PNG', 'image/jpeg': 'JPG', 'image/webp': 'WEBP' };
+
+/* --------------------------------------------------------------- utilities */
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+const humanSize = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+};
+
+const sanitizeName = (name) =>
+  name.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_').slice(0, 60) || 'image';
+
+const loadImage = (src) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+/* -------------------------------------------------------------- toast queue */
+const Toast = {
+  show(message, type = 'success') {
+    const container = $('#toast-container');
+    const styles = {
+      success: ['bg-green-50 dark:bg-green-900/40', 'text-green-800 dark:text-green-200', 'border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
+      error: ['bg-red-50 dark:bg-red-900/40', 'text-red-800 dark:text-red-200', 'border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
+      info: ['bg-blue-50 dark:bg-blue-900/40', 'text-blue-800 dark:text-blue-200', 'border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
+    }[type] || [];
+    const [bg, text, border, icon] = styles;
+
+    const el = document.createElement('div');
+    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${bg} ${text} ${border}`;
+    el.setAttribute('role', 'alert');
+    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
+    container.appendChild(el);
+
+    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
+    setTimeout(() => {
+      el.classList.add('opacity-0', 'translate-y-4');
+      setTimeout(() => el.remove(), 300);
+    }, 3800);
+  },
+};
+
+/* --------------------------------------------------------- model warm-up */
+const ModelStatus = {
+  started: false,
+  init() {
+    this.el = $('#model-status');
+  },
+  render(html, cls) {
+    this.el.className = `inline-flex items-center gap-2 mt-1 px-3 py-1 rounded-full text-xs font-medium ${cls}`;
+    this.el.innerHTML = html;
+    this.el.classList.remove('hidden');
+  },
+  async warm() {
+    if (this.started) return;
+    this.started = true;
+    this.render('<i class="fa-solid fa-circle-notch fa-spin"></i> Preparing AI model…', 'bg-primary/10 text-primary');
+    try {
+      if (typeof preload === 'function') await preload(CONFIG.removalOptions);
+      this.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI model ready', 'bg-green-500/10 text-green-600 dark:text-green-400');
+    } catch {
+      // Warm-up is best-effort; real processing will still download on demand.
+      this.started = false;
+      this.el.classList.add('hidden');
+    }
+  },
+};
+
+/* --------------------------------------------------------------- statistics */
+const Stats = {
+  sessionCount: 0,
+  sessionTotalMs: 0,
+  record(durationMs) {
+    this.sessionCount += 1;
+    this.sessionTotalMs += durationMs;
+    const total = Number(localStorage.getItem('bgr_total') || 0) + 1;
+    localStorage.setItem('bgr_total', String(total));
+    this.render();
+  },
+  render() {
+    $('#stat-count').textContent = this.sessionCount;
+    $('#stat-avg').textContent = this.sessionCount
+      ? (this.sessionTotalMs / this.sessionCount / 1000).toFixed(1)
+      : '0.0';
+    $('#stat-saved').textContent = localStorage.getItem('bgr_total') || '0';
+  },
+};
+
+/* ------------------------------------------------------------------ history */
+const History = {
+  key: 'bgr_history',
+  load() {
+    try {
+      return JSON.parse(sessionStorage.getItem(this.key) || '[]');
+    } catch {
+      return [];
+    }
+  },
+  add(thumbDataUrl, name) {
+    const items = this.load();
+    items.unshift({ thumb: thumbDataUrl, name, at: Date.now() });
+    sessionStorage.setItem(this.key, JSON.stringify(items.slice(0, CONFIG.maxHistory)));
+    this.render();
+  },
+  clear() {
+    sessionStorage.removeItem(this.key);
+    this.render();
+  },
+  render() {
+    const items = this.load();
+    const section = $('#history-section');
+    const strip = $('#history-strip');
+    strip.innerHTML = '';
+    if (!items.length) {
+      section.classList.add('hidden');
+      return;
+    }
+    section.classList.remove('hidden');
+    for (const item of items) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'shrink-0 w-24 h-24 rounded-xl overflow-hidden checkerboard border border-gray-200 dark:border-gray-800 hover:ring-2 hover:ring-primary transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+      btn.title = item.name;
+      btn.innerHTML = `<img src="${item.thumb}" alt="${item.name}" class="w-full h-full object-contain">`;
+      btn.addEventListener('click', () => Zoom.open(item.thumb));
+      strip.appendChild(btn);
+    }
+  },
+};
+
+/* --------------------------------------------------------------------- zoom */
+const Zoom = {
+  scale: 1,
+  init() {
+    this.modal = $('#zoom-modal');
+    this.img = $('#zoom-img');
+    $('#zoom-close').addEventListener('click', () => this.close());
+    this.modal.addEventListener('click', (e) => { if (e.target === this.modal) this.close(); });
+    $('#zoom-in').addEventListener('click', () => this.zoom(0.25));
+    $('#zoom-out').addEventListener('click', () => this.zoom(-0.25));
+  },
+  open(src) {
+    this.scale = 1;
+    this.img.src = src;
+    this.apply();
+    this.modal.classList.remove('hidden');
+    this.modal.classList.add('flex');
+  },
+  close() {
+    this.modal.classList.add('hidden');
+    this.modal.classList.remove('flex');
+    this.img.src = '';
+  },
+  zoom(delta) {
+    this.scale = Math.min(4, Math.max(0.25, this.scale + delta));
+    this.apply();
+  },
+  apply() {
+    this.img.style.width = `${this.scale * 100}%`;
+    $('#zoom-level').textContent = `${Math.round(this.scale * 100)}%`;
+  },
+  get isOpen() {
+    return !this.modal.classList.contains('hidden');
+  },
+};
+
+/* ---------------------------------------------------- refine brush editor */
+/**
+ * Lets the user fix the AI's mistakes with two soft brushes:
+ *   - "restore" paints the original image back (adds alpha)
+ *   - "erase"   wipes leftover background away (removes alpha)
+ * Everything runs on an off-screen alpha mask at the image's native
+ * resolution, so applying the edit keeps full quality.
+ */
+const Editor = {
+  tool: 'restore',
+  brush: 45, // brush diameter in on-screen pixels
+  painting: false,
+  panning: false,
+  spaceHeld: false,
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  undoStack: [],
+
+  init() {
+    this.modal = $('#editor-modal');
+    this.stage = $('#editor-stage');
+    this.viewport = $('#editor-viewport');
+    this.canvas = $('#editor-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.cursor = $('#brush-cursor');
+    this.orig = document.createElement('canvas'); // original image
+    this.mask = document.createElement('canvas'); // working alpha mask
+    this.initial = document.createElement('canvas'); // AI result (for reset)
+
+    $('#editor-cancel').addEventListener('click', () => this.close());
+    $('#editor-apply').addEventListener('click', () => this.apply());
+    $('#editor-undo').addEventListener('click', () => this.undo());
+    $('#editor-reset').addEventListener('click', () => this.reset());
+    $('#editor-zoom-in').addEventListener('click', () => this.zoomButton(1.25));
+    $('#editor-zoom-out').addEventListener('click', () => this.zoomButton(1 / 1.25));
+    $('#editor-zoom-fit').addEventListener('click', () => this.fit());
+    $('#brush-size').addEventListener('input', (e) => this.setBrush(+e.target.value));
+    $$('.tool-btn', this.modal).forEach((b) => b.addEventListener('click', () => this.setTool(b.dataset.tool)));
+
+    this.canvas.addEventListener('pointerdown', (e) => this.start(e));
+    this.canvas.addEventListener('pointermove', (e) => this.move(e));
+    window.addEventListener('pointerup', () => { this.painting = false; this.panning = false; this.updateCursor(); });
+    this.canvas.addEventListener('pointerleave', () => this.cursor.classList.add('hidden'));
+
+    // Wheel to zoom toward the cursor.
+    this.stage.addEventListener('wheel', (e) => {
+      if (!this.isOpen) return;
+      e.preventDefault();
+      this.zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.15 : 1 / 1.15);
+    }, { passive: false });
+
+    // Hold Space to pan; single-key tool + brush shortcuts.
+    document.addEventListener('keydown', (e) => {
+      if (!this.isOpen) return;
+      if (e.code === 'Space') { e.preventDefault(); if (!this.spaceHeld) { this.spaceHeld = true; this.updateCursor(); } return; }
+      if (e.target.tagName === 'INPUT') return;
+      const k = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); this.undo(); }
+      else if (k === 'r') this.setTool('restore');
+      else if (k === 'e') this.setTool('erase');
+      else if (k === 'm' || k === 'h') this.setTool('move');
+      else if (k === ']' || k === '+' || k === '=') this.setBrush(this.brush + 6);
+      else if (k === '[' || k === '-' || k === '_') this.setBrush(this.brush - 6);
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') { this.spaceHeld = false; this.updateCursor(); }
+    });
+  },
+
+  async open(card) {
+    if (!card.done || !card.processedUrl) return;
+    this.card = card;
+    const [orig, proc] = await Promise.all([loadImage(card.originalUrl), loadImage(card.processedUrl)]);
+    const w = proc.naturalWidth;
+    const h = proc.naturalHeight;
+    for (const c of [this.orig, this.mask, this.initial, this.canvas]) {
+      c.width = w;
+      c.height = h;
+    }
+    this.orig.getContext('2d').drawImage(orig, 0, 0, w, h);
+    this.mask.getContext('2d').drawImage(proc, 0, 0); // proc's alpha is the subject mask
+    this.initial.getContext('2d').drawImage(proc, 0, 0);
+    this.undoStack = [];
+    this.spaceHeld = false;
+    this.setTool('restore');
+    this.render();
+
+    this.modal.classList.remove('hidden');
+    this.modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+
+    // Size the viewport to fit the stage, then reset zoom/pan (needs layout).
+    requestAnimationFrame(() => {
+      this.fitToStage();
+      this.fit();
+      this.updateCursor();
+    });
+  },
+
+  /** Scale the viewport so the whole image fits the stage. */
+  fitToStage() {
+    const rect = this.stage.getBoundingClientRect();
+    const pad = 32;
+    const s = Math.min((rect.width - pad) / this.canvas.width, (rect.height - pad) / this.canvas.height);
+    this.viewport.style.width = `${this.canvas.width * s}px`;
+    this.viewport.style.height = `${this.canvas.height * s}px`;
+  },
+
+  applyTransform() {
+    this.viewport.style.transform =
+      `translate(-50%, -50%) translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
+    $('#editor-zoom-level').textContent = `${Math.round(this.zoom * 100)}%`;
+  },
+
+  /** Zoom keeping the point under (sx, sy) fixed on screen. */
+  zoomAt(sx, sy, factor) {
+    const r0 = this.viewport.getBoundingClientRect();
+    const fx = (sx - r0.left) / r0.width;
+    const fy = (sy - r0.top) / r0.height;
+    this.zoom = Math.min(8, Math.max(1, this.zoom * factor));
+    this.applyTransform();
+    const r1 = this.viewport.getBoundingClientRect();
+    this.panX += sx - (r1.left + fx * r1.width);
+    this.panY += sy - (r1.top + fy * r1.height);
+    this.applyTransform();
+  },
+
+  zoomButton(factor) {
+    const r = this.stage.getBoundingClientRect();
+    this.zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor);
+  },
+
+  fit() {
+    this.zoom = 1;
+    this.panX = 0;
+    this.panY = 0;
+    this.applyTransform();
+  },
+
+  setBrush(v) {
+    this.brush = Math.min(200, Math.max(10, v));
+    $('#brush-size').value = this.brush;
+    this.sizeCursor();
+  },
+
+  isPanMode(e) {
+    return this.tool === 'move' || this.spaceHeld || (e && e.button === 1);
+  },
+
+  updateCursor() {
+    const pan = this.isPanMode();
+    this.canvas.style.cursor = pan ? (this.panning ? 'grabbing' : 'grab') : 'none';
+    if (pan) this.cursor.classList.add('hidden');
+  },
+
+  close() {
+    this.modal.classList.add('hidden');
+    this.modal.classList.remove('flex');
+    this.cursor.classList.add('hidden');
+    document.body.style.overflow = '';
+  },
+
+  setTool(tool) {
+    this.tool = tool;
+    $$('.tool-btn', this.modal).forEach((b) => {
+      const active = b.dataset.tool === tool;
+      b.classList.toggle('bg-primary', active);
+      b.classList.toggle('text-white', active);
+    });
+    this.updateCursor();
+  },
+
+  /** Composite original × mask onto the visible canvas. */
+  render() {
+    const { ctx, canvas } = this;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(this.orig, 0, 0);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(this.mask, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+  },
+
+  /** Map a pointer event to canvas-space coords + brush radius. */
+  locate(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scale = this.canvas.width / rect.width;
+    return {
+      x: (e.clientX - rect.left) * scale,
+      y: (e.clientY - rect.top) * scale,
+      r: (this.brush / 2) * scale,
+    };
+  },
+
+  pushUndo() {
+    const snap = document.createElement('canvas');
+    snap.width = this.mask.width;
+    snap.height = this.mask.height;
+    snap.getContext('2d').drawImage(this.mask, 0, 0);
+    this.undoStack.push(snap);
+    if (this.undoStack.length > 12) this.undoStack.shift();
+  },
+
+  restoreSnap(snap) {
+    const m = this.mask.getContext('2d');
+    m.globalCompositeOperation = 'source-over';
+    m.clearRect(0, 0, this.mask.width, this.mask.height);
+    m.drawImage(snap, 0, 0);
+    this.render();
+  },
+
+  undo() {
+    const snap = this.undoStack.pop();
+    if (snap) this.restoreSnap(snap);
+  },
+
+  reset() {
+    this.pushUndo();
+    this.restoreSnap(this.initial);
+  },
+
+  start(e) {
+    if (this.isPanMode(e)) {
+      this.panning = true;
+      this.panLast = { x: e.clientX, y: e.clientY };
+      this.canvas.setPointerCapture(e.pointerId);
+      this.updateCursor();
+      return;
+    }
+    this.painting = true;
+    this.canvas.setPointerCapture(e.pointerId);
+    this.pushUndo();
+    this.last = this.locate(e);
+    this.stamp(this.last.x, this.last.y, this.last.r);
+    this.render();
+    this.moveCursor(e);
+  },
+
+  move(e) {
+    if (this.panning) {
+      this.panX += e.clientX - this.panLast.x;
+      this.panY += e.clientY - this.panLast.y;
+      this.panLast = { x: e.clientX, y: e.clientY };
+      this.applyTransform();
+      return;
+    }
+    this.moveCursor(e);
+    if (!this.painting) return;
+    const p = this.locate(e);
+    const dx = p.x - this.last.x;
+    const dy = p.y - this.last.y;
+    const dist = Math.hypot(dx, dy);
+    const steps = Math.max(1, Math.ceil(dist / Math.max(1, p.r / 4)));
+    for (let i = 1; i <= steps; i++) {
+      this.stamp(this.last.x + (dx * i) / steps, this.last.y + (dy * i) / steps, p.r);
+    }
+    this.last = p;
+    this.render();
+  },
+
+  /** Paint one soft, feathered dab onto the mask. */
+  stamp(x, y, r) {
+    const m = this.mask.getContext('2d');
+    const grad = m.createRadialGradient(x, y, 0, x, y, r);
+    if (this.tool === 'erase') {
+      m.globalCompositeOperation = 'destination-out';
+      grad.addColorStop(0, 'rgba(0,0,0,1)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+    } else {
+      m.globalCompositeOperation = 'source-over';
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+    }
+    m.fillStyle = grad;
+    m.beginPath();
+    m.arc(x, y, r, 0, Math.PI * 2);
+    m.fill();
+    m.globalCompositeOperation = 'source-over';
+  },
+
+  moveCursor(e) {
+    if (this.isPanMode()) { this.cursor.classList.add('hidden'); return; }
+    this.cursor.classList.remove('hidden');
+    this.cursor.style.left = `${e.clientX}px`;
+    this.cursor.style.top = `${e.clientY}px`;
+    this.sizeCursor();
+  },
+
+  sizeCursor() {
+    // `brush` is an on-screen diameter, so the ring maps 1:1 to screen pixels.
+    this.cursor.style.width = `${this.brush}px`;
+    this.cursor.style.height = `${this.brush}px`;
+  },
+
+  apply() {
+    const out = document.createElement('canvas');
+    out.width = this.mask.width;
+    out.height = this.mask.height;
+    const o = out.getContext('2d');
+    o.drawImage(this.orig, 0, 0);
+    o.globalCompositeOperation = 'destination-in';
+    o.drawImage(this.mask, 0, 0);
+    out.toBlob((blob) => {
+      if (blob) this.card.applyEdited(blob);
+      this.close();
+    }, 'image/png');
+  },
+
+  get isOpen() {
+    return !this.modal.classList.contains('hidden');
+  },
+};
+
+/* ---------------------------------------------------------------- card view */
+let cardSeq = 0;
+
+class Card {
+  constructor(file) {
+    this.file = file;
+    this.id = `card-${++cardSeq}`;
+    this.originalUrl = URL.createObjectURL(file);
+    this.processedUrl = null;
+    this.processedBlob = null; // transparent PNG cut-out (source of truth)
+    this.done = false;
+    this.bg = null; // null = transparent
+    this.format = 'image/png';
+    this.build();
+  }
+
+  build() {
+    const tpl = $('#card-template').content.cloneNode(true);
+    this.el = tpl.querySelector('.card');
+    this.el.id = this.id;
+
+    this.el.querySelector('.original-img').src = this.originalUrl;
+    this.el.querySelector('.original-img-split').src = this.originalUrl;
+    const nameEl = this.el.querySelector('.filename');
+    nameEl.textContent = this.file.name;
+    nameEl.title = this.file.name;
+
+    // Compare slider
+    const range = this.el.querySelector('.compare-range');
+    const line = this.el.querySelector('.slider-line');
+    const orig = this.el.querySelector('.original-img');
+    range.addEventListener('input', () => {
+      orig.style.clipPath = `inset(0 ${100 - range.value}% 0 0)`;
+      line.style.left = `${range.value}%`;
+    });
+
+    // Actions
+    this.el.querySelector('.download-btn').addEventListener('click', () => this.download());
+    this.el.querySelector('.copy-btn').addEventListener('click', () => this.copy());
+    this.el.querySelector('.remove-btn').addEventListener('click', () => this.destroy());
+    this.el.querySelector('.retry-btn').addEventListener('click', () => this.process());
+    this.el.querySelector('.toggle-view-btn').addEventListener('click', () => this.toggleView());
+    this.el.querySelector('.edit-btn').addEventListener('click', () => Editor.open(this));
+    this.el.querySelector('.options-btn').addEventListener('click', () =>
+      this.el.querySelector('.options-panel').classList.toggle('hidden'),
+    );
+    $$('.zoomable', this.el).forEach((img) =>
+      img.addEventListener('click', () => this.done && Zoom.open(this.processedUrl)),
+    );
+
+    // Background swatches
+    $$('.swatch', this.el).forEach((sw) =>
+      sw.addEventListener('click', () => this.setBackground(sw.dataset.bg, sw)),
+    );
+    const custom = this.el.querySelector('.custom-color');
+    custom.addEventListener('input', () => this.setBackground(custom.value, custom.parentElement));
+
+    // Output format
+    $$('.format-btn', this.el).forEach((btn) =>
+      btn.addEventListener('click', () => this.setFormat(btn.dataset.format)),
+    );
+
+    $('#results-grid').appendChild(this.el);
+  }
+
+  async process() {
+    this.setState('processing');
+    const bar = this.el.querySelector('.progress-bar');
+    const label = this.el.querySelector('.progress-label');
+    const started = performance.now();
+
+    try {
+      // Pass the File/Blob directly (more robust than a blob: URL fetch).
+      const blob = await removeBackground(this.file, {
+        ...CONFIG.removalOptions,
+        progress: (key, current, total) => {
+          const pct = total ? Math.round((current / total) * 100) : 0;
+          bar.style.width = `${pct}%`;
+          label.textContent = key.startsWith('fetch')
+            ? `Downloading AI model… ${pct}%`
+            : 'Removing background…';
+        },
+      });
+
+      this.processedBlob = blob;
+      this.processedUrl = URL.createObjectURL(blob);
+      this.el.querySelector('.processed-img').src = this.processedUrl;
+      this.el.querySelector('.processed-img-split').src = this.processedUrl;
+      this.el.querySelector('.meta').textContent = `${humanSize(this.file.size)} → ${humanSize(blob.size)}`;
+
+      this.done = true;
+      this.setState('done');
+      Stats.record(performance.now() - started);
+      ModelStatus.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI model ready', 'bg-green-500/10 text-green-600 dark:text-green-400');
+      this.saveToHistory();
+      App.refreshToolbar();
+    } catch (err) {
+      console.error('[bg-remover] processing failed:', err);
+      const detail = (err && (err.message || err.name)) || 'Unknown error';
+      this.el.querySelector('.error-msg').textContent = detail.slice(0, 180);
+      this.setState('error');
+      Toast.show(`Failed: ${detail}`.slice(0, 140), 'error');
+    }
+  }
+
+  setState(state) {
+    this.el.dataset.state = state;
+    this.el.querySelector('.processing-overlay').classList.toggle('hidden', state !== 'processing');
+    this.el.querySelector('.error-overlay').classList.toggle('hidden', state !== 'error');
+  }
+
+  toggleView() {
+    const compare = this.el.querySelector('.view-compare');
+    const split = this.el.querySelector('.view-split');
+    const showSplit = compare.classList.toggle('hidden');
+    split.classList.toggle('hidden', !showSplit);
+    this.el.querySelector('.toggle-view-btn i').className = showSplit ? 'fa-solid fa-sliders' : 'fa-solid fa-table-columns';
+    this.el.querySelector('.view-label').textContent = showSplit ? 'Slider' : 'Side-by-side';
+  }
+
+  setBackground(value, swatchEl) {
+    this.bg = value === 'transparent' ? null : value;
+
+    // Update preview surfaces.
+    for (const surface of [this.el.querySelector('.preview'), this.el.querySelector('.split-bg')]) {
+      if (this.bg) {
+        surface.classList.remove('checkerboard');
+        surface.style.backgroundColor = this.bg;
+      } else {
+        surface.classList.add('checkerboard');
+        surface.style.backgroundColor = '';
+      }
+    }
+
+    // Highlight the active swatch.
+    $$('.swatch', this.el).forEach((s) => s.classList.remove('ring-2', 'ring-primary', 'ring-offset-1'));
+    this.el.querySelector('.custom-color').parentElement.classList.remove('ring-2', 'ring-primary');
+    if (swatchEl) swatchEl.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+  }
+
+  setFormat(format) {
+    this.format = format;
+    $$('.format-btn', this.el).forEach((b) => {
+      const active = b.dataset.format === format;
+      b.classList.toggle('bg-primary', active);
+      b.classList.toggle('text-white', active);
+    });
+    this.el.querySelector('.download-label').textContent = LABEL[format];
+  }
+
+  /** Composite the transparent cut-out onto the chosen background + format. */
+  async compose(format = this.format, bg = this.bg) {
+    // Fast path: unmodified transparent PNG keeps the exact original bytes.
+    if (!bg && format === 'image/png') return this.processedBlob;
+
+    const img = await loadImage(this.processedUrl);
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+
+    // JPG has no alpha channel — fall back to white when transparent.
+    const fill = bg || (format === 'image/jpeg' ? '#ffffff' : null);
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.drawImage(img, 0, 0);
+
+    const quality = format === 'image/png' ? undefined : CONFIG.encodeQuality;
+    return new Promise((resolve) => canvas.toBlob(resolve, format, quality));
+  }
+
+  async download() {
+    if (!this.processedBlob) return;
+    const blob = await this.compose();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${sanitizeName(this.file.name)}-no-bg.${EXT[this.format]}`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+  }
+
+  async copy() {
+    if (!this.processedBlob) return;
+    try {
+      const blob = await this.compose('image/png', this.bg);
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      Toast.show('Copied to clipboard', 'success');
+    } catch {
+      Toast.show('Clipboard not supported in this browser', 'error');
+    }
+  }
+
+  /** Replace the cut-out with a hand-refined version from the editor. */
+  applyEdited(blob) {
+    if (this.processedUrl) URL.revokeObjectURL(this.processedUrl);
+    this.processedBlob = blob;
+    this.processedUrl = URL.createObjectURL(blob);
+    this.el.querySelector('.processed-img').src = this.processedUrl;
+    this.el.querySelector('.processed-img-split').src = this.processedUrl;
+    this.el.querySelector('.meta').textContent = `${humanSize(this.file.size)} → ${humanSize(blob.size)} · edited`;
+    this.saveToHistory();
+    Toast.show('Edits applied', 'success');
+  }
+
+  async saveToHistory() {
+    try {
+      History.add(await makeThumbnail(this.processedUrl), this.file.name);
+    } catch {
+      /* thumbnails are best-effort */
+    }
+  }
+
+  destroy() {
+    URL.revokeObjectURL(this.originalUrl);
+    if (this.processedUrl) URL.revokeObjectURL(this.processedUrl);
+    this.el.remove();
+    App.cards = App.cards.filter((c) => c !== this);
+    App.refreshToolbar();
+    if (!App.cards.length) App.showLanding();
+  }
+}
+
+/* -------------------------------------------------------------- thumbnails */
+function makeThumbnail(url, size = 160) {
+  return loadImage(url).then((img) => {
+    const scale = Math.min(size / img.width, size / img.height, 1);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/png');
+  });
+}
+
+/* --------------------------------------------------------------------- app */
+const App = {
+  cards: [],
+
+  init() {
+    this.dropzone = $('#dropzone');
+    this.fileInput = $('#file-input');
+    this.workspace = $('#workspace');
+    this.landing = $('#landing');
+
+    // Surface uncaught errors so failures are never silent.
+    window.addEventListener('error', (e) => {
+      console.error('[bg-remover] error:', e.error || e.message);
+      Toast.show(`Error: ${e.message}`.slice(0, 140), 'error');
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      const reason = e.reason?.message || e.reason || 'Unknown error';
+      console.error('[bg-remover] unhandled rejection:', e.reason);
+      Toast.show(`Error: ${reason}`.slice(0, 140), 'error');
+    });
+
+    ModelStatus.init();
+    this.bindUpload();
+    this.bindToolbar();
+    this.bindShortcuts();
+    Zoom.init();
+    Editor.init();
+    Stats.render();
+    History.render();
+  },
+
+  bindUpload() {
+    const open = () => this.fileInput.click();
+    $('#browse-btn').addEventListener('click', (e) => { e.stopPropagation(); open(); });
+    this.dropzone.addEventListener('click', open);
+    this.dropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+    this.fileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
+
+    // Warm up the model as soon as the user shows intent (once).
+    ['pointerenter', 'focusin', 'touchstart'].forEach((evt) =>
+      this.dropzone.addEventListener(evt, () => ModelStatus.warm(), { once: true, passive: true }),
+    );
+
+    const icon = $('#upload-icon');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((evt) =>
+      this.dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }),
+    );
+    ['dragenter', 'dragover'].forEach((evt) =>
+      this.dropzone.addEventListener(evt, () => {
+        this.dropzone.classList.add('border-primary', 'bg-primary/5');
+        icon.classList.add('scale-110');
+      }),
+    );
+    ['dragleave', 'drop'].forEach((evt) =>
+      this.dropzone.addEventListener(evt, () => {
+        this.dropzone.classList.remove('border-primary', 'bg-primary/5');
+        icon.classList.remove('scale-110');
+      }),
+    );
+    this.dropzone.addEventListener('drop', (e) => this.handleFiles(e.dataTransfer.files));
+
+    document.addEventListener('paste', (e) => {
+      const files = [...(e.clipboardData?.items || [])]
+        .filter((i) => i.kind === 'file')
+        .map((i) => i.getAsFile())
+        .filter(Boolean);
+      if (files.length) this.handleFiles(files);
+    });
+  },
+
+  handleFiles(fileList) {
+    const files = [...fileList];
+    this.fileInput.value = '';
+    if (!files.length) return;
+
+    const valid = [];
+    for (const file of files) {
+      if (!CONFIG.acceptedTypes.includes(file.type)) {
+        Toast.show(`${file.name}: unsupported format (use JPG, PNG or WEBP)`, 'error');
+        continue;
+      }
+      if (file.size > CONFIG.maxFileSize) {
+        Toast.show(`${file.name}: too large (max ${humanSize(CONFIG.maxFileSize)})`, 'error');
+        continue;
+      }
+      valid.push(file);
+    }
+    if (!valid.length) return;
+
+    this.showWorkspace();
+    for (const file of valid) {
+      const card = new Card(file);
+      this.cards.push(card);
+      card.process();
+    }
+    this.refreshToolbar();
+  },
+
+  bindToolbar() {
+    $('#add-more-btn').addEventListener('click', () => this.fileInput.click());
+    $('#clear-all-btn').addEventListener('click', () => this.clearAll());
+    $('#download-all-btn').addEventListener('click', () => this.downloadAll());
+    $('#clear-history-btn').addEventListener('click', () => {
+      History.clear();
+      Toast.show('History cleared', 'info');
+    });
+  },
+
+  showWorkspace() {
+    this.landing.classList.add('hidden');
+    this.workspace.classList.remove('hidden');
+  },
+
+  showLanding() {
+    this.workspace.classList.add('hidden');
+    this.landing.classList.remove('hidden');
+  },
+
+  clearAll() {
+    [...this.cards].forEach((c) => c.destroy());
+    this.showLanding();
+    Toast.show('Cleared all images', 'info');
+  },
+
+  refreshToolbar() {
+    const doneCount = this.cards.filter((c) => c.done).length;
+    $('#download-all-btn').classList.toggle('hidden', doneCount < 2);
+  },
+
+  async downloadAll() {
+    const ready = this.cards.filter((c) => c.done && c.processedBlob);
+    if (!ready.length) return;
+    Toast.show('Building ZIP…', 'info');
+    const zip = new JSZip();
+    const used = {};
+    for (const card of ready) {
+      const base = sanitizeName(card.file.name);
+      let name = `${base}-no-bg.${EXT[card.format]}`;
+      if (used[name]) name = `${base}-${used[name]++}-no-bg.${EXT[card.format]}`;
+      else used[name] = 1;
+      zip.file(name, await card.compose());
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bg-remover-results.zip';
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+  },
+
+  bindShortcuts() {
+    const modal = $('#shortcuts-modal');
+    const openModal = () => { modal.classList.remove('hidden'); modal.classList.add('flex'); };
+    const closeModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+    $('#shortcuts-btn').addEventListener('click', openModal);
+    $('#shortcuts-close').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    document.addEventListener('keydown', (e) => {
+      // The editor is a focused mode: only Escape (to close) is handled there.
+      if (Editor.isOpen) {
+        if (e.key === 'Escape') Editor.close();
+        return;
+      }
+      if (e.key === 'Escape') {
+        closeModal();
+        if (Zoom.isOpen) Zoom.close();
+        return;
+      }
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return; // don't hijack typing
+
+      if (e.ctrlKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        this.downloadAll();
+      } else if (!e.ctrlKey && !e.metaKey) {
+        if (e.key.toLowerCase() === 'o') { e.preventDefault(); this.fileInput.click(); }
+        if (e.key.toLowerCase() === 'd') window.toggleTheme();
+        if (e.key === '?') openModal();
+      }
+    });
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());

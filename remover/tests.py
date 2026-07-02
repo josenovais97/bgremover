@@ -1,0 +1,85 @@
+"""Tests for the remover views and SEO endpoints."""
+from django.test import SimpleTestCase
+from django.urls import reverse
+
+
+class PageTests(SimpleTestCase):
+    """The app is stateless, so SimpleTestCase (no DB) is sufficient."""
+
+    def test_index_renders(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "remover/index.html")
+        self.assertContains(response, "Remove Image Backgrounds")
+
+    def test_index_has_seo_tags(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, 'property="og:title"')
+        self.assertContains(response, 'name="twitter:card"')
+        self.assertContains(response, "application/ld+json")
+        self.assertContains(response, 'rel="canonical"')
+
+    def test_index_rejects_post(self):
+        response = self.client.post(reverse("remover:index"))
+        self.assertEqual(response.status_code, 405)
+
+    def test_index_has_landing_content(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, "How it works")
+        self.assertContains(response, "Frequently asked questions")
+        self.assertContains(response, "Batch processing")
+        self.assertContains(response, '"@type": "FAQPage"')
+
+    def test_index_sets_security_headers(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertIn("Content-Security-Policy", response)
+        self.assertIn("Permissions-Policy", response)
+        self.assertIn("wasm-unsafe-eval", response["Content-Security-Policy"])
+
+
+class ConvertPageTests(SimpleTestCase):
+    def test_convert_renders(self):
+        response = self.client.get(reverse("remover:convert"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "remover/convert.html")
+        self.assertContains(response, "Convert Images")
+        self.assertContains(response, "convert-dropzone")
+
+    def test_convert_has_format_options(self):
+        response = self.client.get(reverse("remover:convert"))
+        self.assertContains(response, 'data-format="image/webp"')
+        self.assertContains(response, "convert-card-template")
+
+    def test_tool_nav_links_present(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, reverse("remover:convert"))
+        self.assertContains(response, "Remove BG")
+
+
+class HealthCheckTests(SimpleTestCase):
+    def test_healthz(self):
+        response = self.client.get(reverse("remover:healthz"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
+
+
+class SitemapContentTests(SimpleTestCase):
+    def test_sitemap_lists_convert(self):
+        response = self.client.get(reverse("remover:sitemap"))
+        self.assertContains(response, "/convert/")
+
+
+class SeoEndpointTests(SimpleTestCase):
+    def test_robots_txt(self):
+        response = self.client.get(reverse("remover:robots"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/plain")
+        self.assertContains(response, "Sitemap:")
+        self.assertContains(response, "Allow: /")
+
+    def test_sitemap_xml(self):
+        response = self.client.get(reverse("remover:sitemap"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("application/xml", response["Content-Type"])
+        self.assertContains(response, "<urlset")
+        self.assertContains(response, "<loc>")
