@@ -264,6 +264,9 @@ FAQPage structured data is generated from the same FAQS the page renders
                 <button type="button" class="edit-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Refine edges — erase or restore">
                     <i class="fa-solid fa-brush" aria-hidden="true"></i> Refine
                 </button>
+                <button type="button" class="crop-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Crop to a shape — circle, square and more">
+                    <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Crop
+                </button>
                 <button type="button" class="options-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Background and format options">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i> Background
                 </button>
@@ -345,6 +348,51 @@ FAQPage structured data is generated from the same FAQS the page renders
     </div>
 
     <div id="brush-cursor" class="hidden pointer-events-none fixed z-[61] rounded-full border-2 border-white mix-blend-difference -translate-x-1/2 -translate-y-1/2"></div>
+</div>
+
+<!-- ============================ CROP DIALOG ============================ -->
+<div id="crop-modal" class="hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Crop image">
+    <!-- Header -->
+    <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/10 text-white shrink-0">
+        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-crop-simple text-primary" aria-hidden="true"></i> Crop</div>
+        <div class="flex items-center gap-2">
+            <button id="crop-remove" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Remove crop</button>
+            <button id="crop-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>
+            <button id="crop-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-primary hover:bg-primaryHover text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>Apply
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col lg:flex-row min-h-0">
+        <!-- Toolbar -->
+        <div class="order-2 lg:order-1 flex lg:flex-col flex-wrap items-center lg:items-stretch gap-5 p-4 bg-gray-900/70 text-white lg:w-64 shrink-0 overflow-auto">
+            <div class="space-y-2 w-full">
+                <span class="text-xs uppercase tracking-wide text-gray-400">Shape</span>
+                <div class="grid grid-cols-3 gap-2 text-sm">
+                    <button data-crop="circle" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-circle mr-1" aria-hidden="true"></i>Circle</button>
+                    <button data-crop="square" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-square mr-1" aria-hidden="true"></i>Square</button>
+                    <button data-crop="rounded" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-regular fa-square mr-1" aria-hidden="true"></i>Round</button>
+                    <button data-crop="4:5" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10">4 : 5</button>
+                    <button data-crop="16:9" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10">16 : 9</button>
+                    <button data-crop="9:16" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10">9 : 16</button>
+                </div>
+            </div>
+            <div class="space-y-2 w-full">
+                <label for="crop-zoom" class="text-xs uppercase tracking-wide text-gray-400">Zoom</label>
+                <input id="crop-zoom" type="range" min="1" max="5" step="0.01" value="1" class="w-full accent-primary">
+            </div>
+            <p class="hidden lg:block text-xs text-gray-400 leading-relaxed">
+                Pick a shape, then <b class="text-gray-200">drag</b> the image to reposition and
+                <b class="text-gray-200">scroll</b> (or use the slider) to zoom. The crop starts centered.
+            </p>
+        </div>
+
+        <!-- Canvas stage -->
+        <div class="order-1 lg:order-2 flex-1 min-h-0 grid place-items-center p-4">
+            <canvas id="crop-canvas" class="max-w-full max-h-full rounded-lg shadow-2xl touch-none cursor-grab" aria-label="Crop preview"></canvas>
+        </div>
+    </div>
 </div>
 
 <!-- ========================= ZOOM LIGHTBOX ========================= -->
