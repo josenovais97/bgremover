@@ -131,7 +131,14 @@
     </main>
 
     <footer class="mt-auto border-t border-gray-200/60 dark:border-gray-800/60 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500 dark:text-gray-400 space-y-2">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500 dark:text-gray-400 space-y-4">
+            <nav class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2" aria-label="Tools and use cases">
+                <a href="{% url 'remover:index' %}" class="hover:text-primary transition-colors">Background Remover</a>
+                <a href="{% url 'remover:convert' %}" class="hover:text-primary transition-colors">Image Converter</a>
+                {% for c in use_cases %}
+                <a href="{% url 'remover:use_case' c.slug %}" class="hover:text-primary transition-colors">{{ c.nav }}</a>
+                {% endfor %}
+            </nav>
             <p class="flex items-center justify-center gap-2">
                 <i class="fa-solid fa-shield-halved text-green-500" aria-hidden="true"></i>
                 Your images never leave your device — processing happens 100% in your browser.

@@ -84,6 +84,12 @@ class UseCaseTests(SimpleTestCase):
         for case in USE_CASES:
             self.assertContains(response, f"/remove-background/{case['slug']}/")
 
+    def test_footer_links_site_wide(self):
+        # The context processor should surface use-case links on every page.
+        response = self.client.get(reverse("remover:convert"))
+        for case in USE_CASES:
+            self.assertContains(response, reverse("remover:use_case", args=[case["slug"]]))
+
 
 class ConvertPageTests(SimpleTestCase):
     def test_convert_renders(self):
