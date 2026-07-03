@@ -1,0 +1,57 @@
+# Changelog
+
+All notable changes to this project are documented here. The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
+follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] — 2026-07-03
+
+Search-visibility release: verified the site in Google Search Console and
+expanded the SEO surface, plus a batch-workflow convenience.
+
+### Added
+- **Search-engine ownership verification** via optional `<meta>` tags, driven by
+  the `GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` environment
+  variables.
+- **Keyword-targeted use-case landing pages** at `/remove-background/<slug>/`
+  (product photos, profile pictures, logos, signatures). Pages are generated
+  from a single `USE_CASES` source that also feeds the sitemap, homepage cards,
+  and site-wide footer navigation. Each page carries `BreadcrumbList`
+  structured data.
+- **Session memory for background & output format** — the last-used background
+  color and export format are remembered (via `localStorage`) and pre-applied to
+  each new image, so batch runs no longer need re-selecting per image.
+
+### Changed
+- **FAQ structured data is now generated from a single source** (`FAQS`) instead
+  of being hardcoded in the template, so the `FAQPage` rich-result markup can no
+  longer drift from the visible FAQ.
+- Lowered the `robots.txt` / `sitemap.xml` cache lifetime from 24h to 1h so SEO
+  changes reach crawlers faster.
+
+### Fixed
+- **Scheme-less `SITE_URL`** (e.g. `example.com`) produced invalid sitemap
+  `<loc>` URLs that Google Search Console rejected; a bare domain is now
+  auto-normalized to `https://`.
+
+## [1.0.0]
+
+Initial public release.
+
+- In-browser AI background removal via `@imgly/background-removal` — no uploads,
+  no watermarks, full-resolution output.
+- Drag & drop / file picker / clipboard upload, batch processing, ZIP download,
+  before/after comparison, zoom lightbox.
+- Manual **refine brush editor** with zoom/pan, soft brushes, edge smoothing,
+  undo and keyboard shortcuts.
+- Custom background colors and PNG / JPG / WEBP export.
+- Standalone in-browser **image format converter** (`/convert`).
+- PWA support (installable, service worker), privacy-friendly analytics.
+- SEO foundation: meta / Open Graph / Twitter cards, JSON-LD, `robots.txt`,
+  `sitemap.xml`, canonical URLs.
+- Light/dark theme, responsive glassmorphism UI, accessibility support.
+- Stateless Django backend (no database) deployable to Vercel, Docker, or a
+  classic Nginx + Gunicorn VPS.
+
+[1.1.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.1.0
+[1.0.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.0.0

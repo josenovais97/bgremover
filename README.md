@@ -27,6 +27,7 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - Batch processing (select multiple images)
 - Download all as a ZIP
 - Copy result to clipboard
+- **Remembers your background & format** across the session so batch runs stay fast
 - Recent history (session only) & processing statistics
 - Optional per-card retry, keyboard shortcuts (`O`, `Ctrl+S`, `D`, `Esc`, `?`)
 
@@ -37,8 +38,15 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - Toast notifications, attractive empty states, helpful errors
 
 **SEO**
-- Meta / Open Graph / Twitter cards, JSON-LD structured data, canonical URLs
-- `robots.txt` + `sitemap.xml`, semantic HTML
+- Meta / Open Graph / Twitter cards, canonical URLs, semantic HTML
+- JSON-LD structured data: `WebApplication` + `WebSite`, a `FAQPage` generated
+  from a single source (see `remover.views.faq_jsonld`), and `BreadcrumbList`
+  on landing pages
+- Keyword-targeted **use-case landing pages** (`/remove-background/<slug>/`) for
+  product photos, profile pictures, logos and signatures — generated from a
+  single `USE_CASES` list that also feeds the sitemap and internal links
+- `robots.txt` + `sitemap.xml` (auto-generated from the page list)
+- Search-engine ownership verification via optional meta tags (Google / Bing)
 
 ---
 
@@ -73,7 +81,8 @@ bgremover/
 │   ├── wsgi.py               # exposes `app` for Vercel
 │   └── asgi.py
 ├── remover/
-│   ├── views.py              # index + convert + healthz + robots + sitemap
+│   ├── views.py              # index + convert + use-case pages + healthz + robots + sitemap
+│   ├── context_processors.py # SEO tokens + shared footer nav data
 │   ├── urls.py
 │   ├── models.py             # intentionally empty (no DB)
 │   └── tests.py
@@ -81,6 +90,7 @@ bgremover/
 │   ├── base.html             # layout, SEO, theme, floating nav + tool switcher
 │   ├── remover/index.html    # background remover + refine editor
 │   ├── remover/convert.html  # image format converter
+│   ├── remover/use_case.html # keyword-targeted landing page (data-driven)
 │   ├── seo/{robots.txt,sitemap.xml}
 │   └── {404.html,500.html}
 ├── static/
@@ -152,6 +162,11 @@ python -c "import secrets; print(secrets.token_urlsafe(50))"
 | `SITE_URL`              | recommended  | Absolute URL for canonical tags & sitemap.         |
 | `LOG_LEVEL`             | –            | `DEBUG`/`INFO`/`WARNING`/`ERROR`.                  |
 | `SECURE_SSL_REDIRECT`   | –            | `False` if TLS is terminated upstream.             |
+| `GOOGLE_SITE_VERIFICATION` | –         | Token from Google Search Console (HTML-tag method). |
+| `BING_SITE_VERIFICATION`   | –         | Token from Bing Webmaster Tools.                   |
+
+> `SITE_URL` must include the scheme (`https://…`); a bare domain is auto-corrected
+> to `https://` so the sitemap never emits invalid URLs.
 
 Settings are selected via `DJANGO_SETTINGS_MODULE`:
 `config.settings.development` (default in `manage.py`) or `config.settings.production` (default in `wsgi.py`/Docker/Vercel).
@@ -274,7 +289,10 @@ To use a different in-browser model (e.g. Transformers.js + RMBG-1.4), replace t
 - **Scaling:** the server only serves static HTML/CSS/JS, so it scales trivially.
   The compute-heavy AI work runs on each visitor's device, not your servers.
 - **Caching:** WhiteNoise serves hashed, compressed static assets with far-future
-  cache headers; `robots.txt`/`sitemap.xml` are cached for 24h.
+  cache headers; `robots.txt`/`sitemap.xml` are cached for 1h.
+- **Search Console:** verify ownership by setting `GOOGLE_SITE_VERIFICATION`
+  (and/or `BING_SITE_VERIFICATION`), then submit `/sitemap.xml`. Adding a new
+  `USE_CASES` entry automatically extends the sitemap.
 
 ## 🔐 Security & privacy notes
 
@@ -286,6 +304,12 @@ To use a different in-browser model (e.g. Transformers.js + RMBG-1.4), replace t
   referrer policy, and (optionally) SSL redirect.
 - CSRF middleware is enabled as defense-in-depth even though there are no server-side forms.
 - No user data is stored server-side; history/stats are per-browser (`sessionStorage` / `localStorage`).
+
+---
+
+## 📝 Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md) for the release history.
 
 ---
 
