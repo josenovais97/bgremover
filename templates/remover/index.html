@@ -107,6 +107,22 @@
             </div>
         </section>
 
+        <!-- Popular uses -->
+        <section aria-labelledby="uses-title" class="max-w-5xl mx-auto space-y-8">
+            <div class="text-center space-y-2">
+                <h2 id="uses-title" class="text-3xl font-bold">Popular uses</h2>
+                <p class="text-gray-600 dark:text-gray-300">Whatever you're removing a background from, it's free and private.</p>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {% for c in use_cases %}
+                <a href="{% url 'remover:use_case' c.slug %}" class="glass group rounded-2xl p-5 border border-gray-200/70 dark:border-gray-800/70 flex items-center justify-between gap-3 hover:border-primary dark:hover:border-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="font-medium">{{ c.nav }}</span>
+                    <i class="fa-solid fa-arrow-right text-gray-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" aria-hidden="true"></i>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+
         <!-- FAQ -->
         <section aria-labelledby="faq-title" class="max-w-3xl mx-auto space-y-6">
             <div class="text-center space-y-2">

@@ -4,7 +4,7 @@ import json
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 
-from remover.views import FAQS, faq_jsonld
+from remover.views import FAQS, USE_CASES, faq_jsonld
 
 
 class PageTests(SimpleTestCase):
@@ -58,6 +58,31 @@ class FaqStructuredDataTests(SimpleTestCase):
         response = self.client.get(reverse("remover:index"))
         for faq in FAQS:
             self.assertContains(response, faq["q"])
+
+
+class UseCaseTests(SimpleTestCase):
+    def test_every_use_case_page_renders(self):
+        for case in USE_CASES:
+            url = reverse("remover:use_case", args=[case["slug"]])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, case["h1"])
+            self.assertContains(response, case["description"])
+            self.assertContains(response, "BreadcrumbList")
+
+    def test_unknown_slug_is_404(self):
+        response = self.client.get(reverse("remover:use_case", args=["not-a-real-page"]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_homepage_links_to_use_cases(self):
+        response = self.client.get(reverse("remover:index"))
+        for case in USE_CASES:
+            self.assertContains(response, reverse("remover:use_case", args=[case["slug"]]))
+
+    def test_sitemap_lists_use_cases(self):
+        response = self.client.get(reverse("remover:sitemap"))
+        for case in USE_CASES:
+            self.assertContains(response, f"/remove-background/{case['slug']}/")
 
 
 class ConvertPageTests(SimpleTestCase):
