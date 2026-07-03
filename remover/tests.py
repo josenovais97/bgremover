@@ -1,5 +1,5 @@
 """Tests for the remover views and SEO endpoints."""
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 
 
@@ -87,6 +87,17 @@ class SitemapContentTests(SimpleTestCase):
     def test_sitemap_lists_convert(self):
         response = self.client.get(reverse("remover:sitemap"))
         self.assertContains(response, "/convert/")
+
+
+class SiteVerificationTests(SimpleTestCase):
+    def test_no_meta_when_unset(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertNotContains(response, "google-site-verification")
+
+    @override_settings(GOOGLE_SITE_VERIFICATION="test-token-123")
+    def test_meta_rendered_when_set(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, 'name="google-site-verification" content="test-token-123"')
 
 
 class SeoEndpointTests(SimpleTestCase):
