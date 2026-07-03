@@ -38,6 +38,10 @@ CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 # The canonical site URL is used for absolute URLs in SEO tags / sitemap.
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
 
+# Search-engine ownership verification tokens (rendered as <meta> tags when set).
+GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")
+BING_SITE_VERIFICATION = env("BING_SITE_VERIFICATION", default="")
+
 # --- Applications ------------------------------------------------------------
 # The app is deliberately stateless: no models, no auth, no admin, no DB.
 # This keeps it fast, secure by minimal surface area, and serverless-friendly.
@@ -68,6 +72,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "remover.context_processors.seo",
             ],
         },
     },
