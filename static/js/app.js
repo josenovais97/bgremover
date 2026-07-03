@@ -47,6 +47,27 @@ const loadImage = (src) =>
     img.src = src;
   });
 
+/* ------------------------------------------------------------- preferences */
+// Remembers the last-used background/format so batch users don't re-pick them
+// for every image. Wrapped in try/catch because localStorage can be disabled
+// (private mode, blocked cookies) — in that case it silently no-ops.
+const Prefs = {
+  get(key) {
+    try {
+      return localStorage.getItem(`bgr:${key}`);
+    } catch {
+      return null;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(`bgr:${key}`, value);
+    } catch {
+      /* storage unavailable — preference just isn't remembered */
+    }
+  },
+};
+
 /* -------------------------------------------------------------- toast queue */
 const Toast = {
   show(message, type = 'success') {
@@ -626,19 +647,40 @@ class Card {
       img.addEventListener('click', () => this.done && Zoom.open(this.processedUrl)),
     );
 
-    // Background swatches
+    // Background swatches — remember the choice across the session.
     $$('.swatch', this.el).forEach((sw) =>
-      sw.addEventListener('click', () => this.setBackground(sw.dataset.bg, sw)),
+      sw.addEventListener('click', () => {
+        this.setBackground(sw.dataset.bg, sw);
+        Prefs.set('bg', sw.dataset.bg);
+      }),
     );
     const custom = this.el.querySelector('.custom-color');
     custom.addEventListener('input', () => this.setBackground(custom.value, custom.parentElement));
 
-    // Output format
+    // Output format — likewise remembered.
     $$('.format-btn', this.el).forEach((btn) =>
-      btn.addEventListener('click', () => this.setFormat(btn.dataset.format)),
+      btn.addEventListener('click', () => {
+        this.setFormat(btn.dataset.format);
+        Prefs.set('format', btn.dataset.format);
+      }),
     );
 
+    this.applyRememberedOptions();
     $('#results-grid').appendChild(this.el);
+  }
+
+  /** Pre-select the background/format the user last chose this session. */
+  applyRememberedOptions() {
+    const bg = Prefs.get('bg');
+    if (bg) {
+      const swatch = this.el.querySelector(`.swatch[data-bg="${bg}"]`);
+      if (swatch) this.setBackground(bg, swatch);
+    }
+    const format = Prefs.get('format');
+    if (format && EXT[format]) {
+      const btn = this.el.querySelector(`.format-btn[data-format="${format}"]`);
+      if (btn) this.setFormat(format);
+    }
   }
 
   async process() {
