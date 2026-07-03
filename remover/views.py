@@ -4,6 +4,7 @@ Views for the background remover.
 The heavy lifting (AI background removal) runs client-side, so these views only
 render the single-page app and the SEO helper endpoints (robots.txt, sitemap).
 """
+import json
 import logging
 
 from django.conf import settings
@@ -13,6 +14,28 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
 
 logger = logging.getLogger(__name__)
+
+
+def faq_jsonld(faqs):
+    """Build schema.org FAQPage JSON-LD from the FAQ list.
+
+    Generating this from the same source that renders the visible FAQ keeps the
+    structured data and the on-page content from drifting apart. The ``<`` is
+    escaped so the payload can never break out of the surrounding <script> tag.
+    """
+    data = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": faq["q"],
+                "acceptedAnswer": {"@type": "Answer", "text": faq["a"]},
+            }
+            for faq in faqs
+        ],
+    }
+    return json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
 
 # Static routes exposed in the sitemap. Extend as pages are added.
 SITEMAP_PATHS = ["/", "/convert/"]
@@ -47,7 +70,11 @@ FAQS = [
 @require_GET
 def index(request):
     """Render the main single-page application."""
-    return render(request, "remover/index.html", {"features": FEATURES, "faqs": FAQS})
+    return render(
+        request,
+        "remover/index.html",
+        {"features": FEATURES, "faqs": FAQS, "faq_jsonld": faq_jsonld(FAQS)},
+    )
 
 
 @require_GET
