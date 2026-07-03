@@ -6,10 +6,11 @@
     </linearGradient>
   </defs>
   <rect width="64" height="64" rx="15" fill="url(#g)"/>
-  <g fill="#fff">
-    <!-- Main AI sparkle, centered and bold so it reads at 16px. -->
-    <path d="M32 14 C 33.7 27.5, 36.5 30.3, 50 32 C 36.5 33.7, 33.7 36.5, 32 50 C 30.3 36.5, 27.5 33.7, 14 32 C 27.5 30.3, 30.3 27.5, 32 14 Z"/>
-    <!-- Small accent sparkle, top-right corner. -->
-    <path d="M50 11 C 50.4 15.1, 51.9 16.6, 56 17 C 51.9 17.4, 50.4 18.9, 50 23 C 49.6 18.9, 48.1 17.4, 44 17 C 48.1 16.6, 49.6 15.1, 50 11 Z" opacity="0.95"/>
+  <!-- Scissors: instantly reads as "cut out the background". -->
+  <g fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="21" cy="46" r="5.5"/>
+    <circle cx="43" cy="46" r="5.5"/>
+    <path d="M24.7 42 L 47 14"/>
+    <path d="M39.3 42 L 17 14"/>
   </g>
 </svg>
