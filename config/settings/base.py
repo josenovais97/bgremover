@@ -36,7 +36,12 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 
 # The canonical site URL is used for absolute URLs in SEO tags / sitemap.
+# Guard against a scheme-less value (e.g. "example.com") slipping in from the
+# environment: without "https://" the sitemap emits invalid <loc> URLs that
+# search engines reject. Trailing slashes are stripped by the SEO views.
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
+if SITE_URL and "://" not in SITE_URL:
+    SITE_URL = f"https://{SITE_URL}"
 
 # Search-engine ownership verification tokens (rendered as <meta> tags when set).
 GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")
