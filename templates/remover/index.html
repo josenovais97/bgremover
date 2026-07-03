@@ -2,8 +2,10 @@
 {% load static %}
 
 {% block extra_seo %}
-{# FAQPage structured data is generated from the same FAQS the page renders
-   (see remover.views.faq_jsonld) so the two can never drift apart. #}
+{% comment %}
+FAQPage structured data is generated from the same FAQS the page renders
+(see remover.views.faq_jsonld) so the two can never drift apart.
+{% endcomment %}
 <script type="application/ld+json">{{ faq_jsonld|safe }}</script>
 {% endblock %}
 
