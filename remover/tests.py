@@ -1,6 +1,10 @@
 """Tests for the remover views and SEO endpoints."""
+import json
+
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
+
+from remover.views import FAQS, faq_jsonld
 
 
 class PageTests(SimpleTestCase):
@@ -35,6 +39,25 @@ class PageTests(SimpleTestCase):
         self.assertIn("Content-Security-Policy", response)
         self.assertIn("Permissions-Policy", response)
         self.assertIn("wasm-unsafe-eval", response["Content-Security-Policy"])
+
+
+class FaqStructuredDataTests(SimpleTestCase):
+    """The FAQ rich-result markup must stay in sync with the visible FAQ."""
+
+    def test_jsonld_covers_every_faq(self):
+        data = json.loads(faq_jsonld(FAQS))
+        self.assertEqual(data["@type"], "FAQPage")
+        names = {q["name"] for q in data["mainEntity"]}
+        self.assertEqual(names, {f["q"] for f in FAQS})
+
+    def test_jsonld_escapes_angle_brackets(self):
+        # The payload sits inside a <script> tag, so a raw "<" would be unsafe.
+        self.assertNotIn("<", faq_jsonld([{"q": "a <b>", "a": "c"}]))
+
+    def test_page_renders_every_faq_question_in_markup(self):
+        response = self.client.get(reverse("remover:index"))
+        for faq in FAQS:
+            self.assertContains(response, faq["q"])
 
 
 class ConvertPageTests(SimpleTestCase):

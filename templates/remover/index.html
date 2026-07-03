@@ -2,34 +2,9 @@
 {% load static %}
 
 {% block extra_seo %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Is the background remover really free?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is 100% free with no sign-up, no watermarks, and no limits. The AI runs in your browser, so there are no per-image API costs." }
-    },
-    {
-      "@type": "Question",
-      "name": "Are my images uploaded to a server?",
-      "acceptedAnswer": { "@type": "Answer", "text": "No. All processing happens locally in your browser. Your images never leave your device, which makes it completely private." }
-    },
-    {
-      "@type": "Question",
-      "name": "What image formats are supported?",
-      "acceptedAnswer": { "@type": "Answer", "text": "You can upload JPG, PNG, and WEBP images and export the result as a transparent PNG, or as JPG/WEBP with a custom background color." }
-    },
-    {
-      "@type": "Question",
-      "name": "Does it reduce image quality?",
-      "acceptedAnswer": { "@type": "Answer", "text": "No. The output keeps the original resolution with no downscaling and no watermark." }
-    }
-  ]
-}
-</script>
+{# FAQPage structured data is generated from the same FAQS the page renders
+   (see remover.views.faq_jsonld) so the two can never drift apart. #}
+<script type="application/ld+json">{{ faq_jsonld|safe }}</script>
 {% endblock %}
 
 {% block content %}
