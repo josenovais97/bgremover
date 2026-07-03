@@ -26,9 +26,54 @@ const CONFIG = {
 const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 const LABEL = { 'image/png': 'PNG', 'image/jpeg': 'JPG', 'image/webp': 'WEBP' };
 
+// Crop presets. `aspect` is width/height; `shape` controls the mask applied to
+// the output ('rect' = plain crop, 'circle'/'rounded' = masked with transparency).
+const CROPS = {
+  circle:  { label: 'Circle',  aspect: 1,      shape: 'circle' },
+  square:  { label: 'Square',  aspect: 1,      shape: 'rect' },
+  rounded: { label: 'Rounded', aspect: 1,      shape: 'rounded' },
+  '4:5':   { label: '4:5',     aspect: 4 / 5,  shape: 'rect' },
+  '16:9':  { label: '16:9',    aspect: 16 / 9, shape: 'rect' },
+  '9:16':  { label: '9:16',    aspect: 9 / 16, shape: 'rect' },
+};
+
 /* --------------------------------------------------------------- utilities */
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+/** Trace a rounded-rectangle path (radius clamped to half the shorter side). */
+function roundRectPath(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/**
+ * Given a source image and a crop preset + zoom/center, compute the source
+ * sampling rectangle and the output canvas dimensions. Shared by the live
+ * cropper preview and the final compose() so the two always match exactly.
+ */
+function cropGeometry(iw, ih, crop) {
+  const baseW = Math.min(iw, ih * crop.aspect);
+  const baseH = baseW / crop.aspect;
+  const z = Math.max(1, crop.z || 1);
+  const sw = baseW / z;
+  const sh = baseH / z;
+  const halfU = sw / 2 / iw;
+  const halfV = sh / 2 / ih;
+  const u = clamp(crop.u ?? 0.5, halfU, 1 - halfU);
+  const v = clamp(crop.v ?? 0.5, halfV, 1 - halfV);
+  const sx = clamp(u * iw - sw / 2, 0, iw - sw);
+  const sy = clamp(v * ih - sh / 2, 0, ih - sh);
+  return { sx, sy, sw, sh, outW: Math.round(baseW), outH: Math.round(baseH) };
+}
 
 const humanSize = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -597,6 +642,185 @@ const Editor = {
   },
 };
 
+/* -------------------------------------------------------------------- cropper */
+// Interactive crop dialog: pick a shape/aspect, then zoom and drag the image to
+// position it inside the frame. The preview canvas is redrawn with the exact
+// same geometry helper compose() uses, so what you see is what you export.
+const Cropper = {
+  card: null,
+  img: null,
+  key: 'square',
+  z: 1,
+  u: 0.5,
+  v: 0.5,
+  dragging: false,
+  last: null,
+
+  init() {
+    this.modal = $('#crop-modal');
+    if (!this.modal) return;
+    this.canvas = $('#crop-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.slider = $('#crop-zoom');
+
+    $('#crop-cancel').addEventListener('click', () => this.close());
+    $('#crop-apply').addEventListener('click', () => this.apply());
+    $('#crop-remove').addEventListener('click', () => {
+      if (this.card) this.card.setCropState(null);
+      this.close();
+    });
+    $$('.crop-shape', this.modal).forEach((btn) =>
+      btn.addEventListener('click', () => this.setShape(btn.dataset.crop)),
+    );
+
+    this.slider.addEventListener('input', () => this.setZoom(parseFloat(this.slider.value)));
+    this.canvas.addEventListener('pointerdown', (e) => this.onDown(e));
+    this.canvas.addEventListener('pointermove', (e) => this.onMove(e));
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) =>
+      this.canvas.addEventListener(ev, () => this.onUp()),
+    );
+    this.canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      this.setZoom(this.z * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
+    }, { passive: false });
+
+    document.addEventListener('keydown', (e) => {
+      if (this.isOpen && e.key === 'Escape') this.close();
+    });
+  },
+
+  async open(card) {
+    if (!card.done) return;
+    this.card = card;
+    this.img = await loadImage(card.processedUrl);
+
+    const s = card.cropState;
+    this.key = (s && s.key) || 'square';
+    this.z = (s && s.z) || 1;
+    this.u = s ? s.u : 0.5;
+    this.v = s ? s.v : 0.5;
+
+    this.highlightShape();
+    this.sizeCanvas();
+    this.slider.value = this.z;
+    this.redraw();
+
+    this.modal.classList.remove('hidden');
+    this.modal.classList.add('flex');
+  },
+
+  close() {
+    this.modal.classList.add('hidden');
+    this.modal.classList.remove('flex');
+    this.dragging = false;
+  },
+
+  get isOpen() {
+    return this.modal && !this.modal.classList.contains('hidden');
+  },
+
+  /** Size the preview canvas to the chosen aspect within a fixed box. */
+  sizeCanvas() {
+    const aspect = CROPS[this.key].aspect;
+    const box = 360;
+    const w = aspect >= 1 ? box : Math.round(box * aspect);
+    const h = aspect >= 1 ? Math.round(box / aspect) : box;
+    this.canvas.width = w;
+    this.canvas.height = h;
+  },
+
+  setShape(key) {
+    this.key = key;
+    this.highlightShape();
+    this.sizeCanvas();
+    this.redraw();
+  },
+
+  highlightShape() {
+    $$('.crop-shape', this.modal).forEach((b) => {
+      const active = b.dataset.crop === this.key;
+      b.classList.toggle('bg-primary', active);
+      b.classList.toggle('text-white', active);
+    });
+  },
+
+  setZoom(z) {
+    this.z = clamp(z, 1, 5);
+    this.slider.value = this.z;
+    this.redraw();
+  },
+
+  onDown(e) {
+    this.dragging = true;
+    this.last = { x: e.clientX, y: e.clientY };
+    this.canvas.setPointerCapture?.(e.pointerId);
+  },
+
+  onMove(e) {
+    if (!this.dragging) return;
+    const iw = this.img.naturalWidth;
+    const ih = this.img.naturalHeight;
+    const geo = cropGeometry(iw, ih, { aspect: CROPS[this.key].aspect, z: this.z, u: this.u, v: this.v });
+    // Convert on-screen drag into a shift of the sampled region (drag the image,
+    // so the view moves the opposite way).
+    const rect = this.canvas.getBoundingClientRect();
+    const dx = (e.clientX - this.last.x) * (this.canvas.width / rect.width);
+    const dy = (e.clientY - this.last.y) * (this.canvas.height / rect.height);
+    this.u -= (dx * geo.sw / this.canvas.width) / iw;
+    this.v -= (dy * geo.sh / this.canvas.height) / ih;
+    this.last = { x: e.clientX, y: e.clientY };
+    this.redraw();
+  },
+
+  onUp() {
+    this.dragging = false;
+  },
+
+  redraw() {
+    const def = CROPS[this.key];
+    const iw = this.img.naturalWidth;
+    const ih = this.img.naturalHeight;
+    const geo = cropGeometry(iw, ih, { aspect: def.aspect, z: this.z, u: this.u, v: this.v });
+    // Keep normalized centre in sync with the clamped geometry so dragging stops
+    // cleanly at the edges instead of drifting.
+    this.u = (geo.sx + geo.sw / 2) / iw;
+    this.v = (geo.sy + geo.sh / 2) / ih;
+
+    const c = this.canvas;
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.save();
+    if (def.shape === 'circle') {
+      ctx.beginPath();
+      ctx.ellipse(c.width / 2, c.height / 2, c.width / 2, c.height / 2, 0, 0, Math.PI * 2);
+      ctx.clip();
+    } else if (def.shape === 'rounded') {
+      roundRectPath(ctx, 0, 0, c.width, c.height, Math.min(c.width, c.height) * 0.18);
+      ctx.clip();
+    }
+    this.drawCheckerboard(ctx, c.width, c.height);
+    ctx.drawImage(this.img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, c.width, c.height);
+    ctx.restore();
+  },
+
+  drawCheckerboard(ctx, w, h) {
+    const s = 12;
+    for (let y = 0; y < h; y += s) {
+      for (let x = 0; x < w; x += s) {
+        ctx.fillStyle = ((x / s + y / s) & 1) ? '#e5e7eb' : '#ffffff';
+        ctx.fillRect(x, y, s, s);
+      }
+    }
+  },
+
+  apply() {
+    const def = CROPS[this.key];
+    this.card.setCropState({ key: this.key, aspect: def.aspect, shape: def.shape, z: this.z, u: this.u, v: this.v });
+    this.close();
+    Toast.show('Crop applied', 'success');
+  },
+};
+
 /* ---------------------------------------------------------------- card view */
 let cardSeq = 0;
 
@@ -610,6 +834,8 @@ class Card {
     this.done = false;
     this.bg = null; // null = transparent
     this.format = 'image/png';
+    this.cropState = null; // null = no crop; else { key, aspect, shape, z, u, v }
+    this.previewUrl = null; // object URL for the composed (cropped) preview, if any
     this.build();
   }
 
@@ -640,6 +866,7 @@ class Card {
     this.el.querySelector('.retry-btn').addEventListener('click', () => this.process());
     this.el.querySelector('.toggle-view-btn').addEventListener('click', () => this.toggleView());
     this.el.querySelector('.edit-btn').addEventListener('click', () => Editor.open(this));
+    this.el.querySelector('.crop-btn').addEventListener('click', () => Cropper.open(this));
     this.el.querySelector('.options-btn').addEventListener('click', () =>
       this.el.querySelector('.options-panel').classList.toggle('hidden'),
     );
@@ -741,21 +968,61 @@ class Card {
   setBackground(value, swatchEl) {
     this.bg = value === 'transparent' ? null : value;
 
-    // Update preview surfaces.
-    for (const surface of [this.el.querySelector('.preview'), this.el.querySelector('.split-bg')]) {
-      if (this.bg) {
-        surface.classList.remove('checkerboard');
-        surface.style.backgroundColor = this.bg;
-      } else {
-        surface.classList.add('checkerboard');
-        surface.style.backgroundColor = '';
-      }
-    }
-
     // Highlight the active swatch.
     $$('.swatch', this.el).forEach((s) => s.classList.remove('ring-2', 'ring-primary', 'ring-offset-1'));
     this.el.querySelector('.custom-color').parentElement.classList.remove('ring-2', 'ring-primary');
     if (swatchEl) swatchEl.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
+
+    this.refreshPreview();
+  }
+
+  /** Apply (or clear) a crop and refresh the on-card preview. */
+  setCropState(state) {
+    this.cropState = state;
+    this.refreshPreview();
+    const meta = this.el.querySelector('.meta');
+    if (state) meta.textContent = `${humanSize(this.file.size)} · cropped (${CROPS[state.key].label})`;
+  }
+
+  /**
+   * Update the card's preview surfaces to reflect the current background/crop.
+   * Without a crop, the transparent cut-out is shown with the background painted
+   * on the surface behind it. With a crop, the exact composed PNG is shown on a
+   * checkerboard so masked (transparent) corners read correctly.
+   */
+  async refreshPreview() {
+    const surfaces = [this.el.querySelector('.preview'), this.el.querySelector('.split-bg')];
+    const processed = this.el.querySelector('.processed-img');
+    const processedSplit = this.el.querySelector('.processed-img-split');
+
+    if (this.previewUrl) {
+      URL.revokeObjectURL(this.previewUrl);
+      this.previewUrl = null;
+    }
+
+    if (!this.cropState) {
+      processed.src = this.processedUrl;
+      processedSplit.src = this.processedUrl;
+      for (const surface of surfaces) {
+        if (this.bg) {
+          surface.classList.remove('checkerboard');
+          surface.style.backgroundColor = this.bg;
+        } else {
+          surface.classList.add('checkerboard');
+          surface.style.backgroundColor = '';
+        }
+      }
+      return;
+    }
+
+    const blob = await this.compose('image/png', this.bg, this.cropState);
+    this.previewUrl = URL.createObjectURL(blob);
+    processed.src = this.previewUrl;
+    processedSplit.src = this.previewUrl;
+    for (const surface of surfaces) {
+      surface.classList.add('checkerboard');
+      surface.style.backgroundColor = '';
+    }
   }
 
   setFormat(format) {
@@ -768,24 +1035,51 @@ class Card {
     this.el.querySelector('.download-label').textContent = LABEL[format];
   }
 
-  /** Composite the transparent cut-out onto the chosen background + format. */
-  async compose(format = this.format, bg = this.bg) {
-    // Fast path: unmodified transparent PNG keeps the exact original bytes.
-    if (!bg && format === 'image/png') return this.processedBlob;
+  /** Composite the transparent cut-out onto the chosen background, crop & format. */
+  async compose(format = this.format, bg = this.bg, crop = this.cropState) {
+    // Fast path: unmodified, uncropped transparent PNG keeps the original bytes.
+    if (!bg && format === 'image/png' && !crop) return this.processedBlob;
 
     const img = await loadImage(this.processedUrl);
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+
+    // Source sampling rect + output size — full image unless a crop is set.
+    const geo = crop
+      ? cropGeometry(iw, ih, crop)
+      : { sx: 0, sy: 0, sw: iw, sh: ih, outW: iw, outH: ih };
+    const shape = crop ? crop.shape : 'rect';
+
     const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+    canvas.width = geo.outW;
+    canvas.height = geo.outH;
     const ctx = canvas.getContext('2d');
 
-    // JPG has no alpha channel — fall back to white when transparent.
+    // JPG has no alpha; fall back to white so transparency doesn't become black.
     const fill = bg || (format === 'image/jpeg' ? '#ffffff' : null);
+
+    // Paint the whole canvas first for opaque output so any area outside a
+    // shape mask is the fallback colour rather than transparent-turned-black.
+    if (format === 'image/jpeg') {
+      ctx.fillStyle = fill;
+      ctx.fillRect(0, 0, geo.outW, geo.outH);
+    }
+
+    ctx.save();
+    if (shape === 'circle') {
+      ctx.beginPath();
+      ctx.ellipse(geo.outW / 2, geo.outH / 2, geo.outW / 2, geo.outH / 2, 0, 0, Math.PI * 2);
+      ctx.clip();
+    } else if (shape === 'rounded') {
+      roundRectPath(ctx, 0, 0, geo.outW, geo.outH, Math.min(geo.outW, geo.outH) * 0.18);
+      ctx.clip();
+    }
     if (fill) {
       ctx.fillStyle = fill;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, geo.outW, geo.outH);
     }
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, geo.outW, geo.outH);
+    ctx.restore();
 
     const quality = format === 'image/png' ? undefined : CONFIG.encodeQuality;
     return new Promise((resolve) => canvas.toBlob(resolve, format, quality));
@@ -820,9 +1114,8 @@ class Card {
     if (this.processedUrl) URL.revokeObjectURL(this.processedUrl);
     this.processedBlob = blob;
     this.processedUrl = URL.createObjectURL(blob);
-    this.el.querySelector('.processed-img').src = this.processedUrl;
-    this.el.querySelector('.processed-img-split').src = this.processedUrl;
     this.el.querySelector('.meta').textContent = `${humanSize(this.file.size)} → ${humanSize(blob.size)} · edited`;
+    this.refreshPreview(); // re-applies any active crop over the new cut-out
     this.saveToHistory();
     Toast.show('Edits applied', 'success');
   }
@@ -838,6 +1131,7 @@ class Card {
   destroy() {
     URL.revokeObjectURL(this.originalUrl);
     if (this.processedUrl) URL.revokeObjectURL(this.processedUrl);
+    if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
     this.el.remove();
     App.cards = App.cards.filter((c) => c !== this);
     App.refreshToolbar();
@@ -884,6 +1178,7 @@ const App = {
     this.bindShortcuts();
     Zoom.init();
     Editor.init();
+    Cropper.init();
     Stats.render();
     History.render();
   },
