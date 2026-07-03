@@ -152,12 +152,7 @@ def index(request):
     return render(
         request,
         "remover/index.html",
-        {
-            "features": FEATURES,
-            "faqs": FAQS,
-            "faq_jsonld": faq_jsonld(FAQS),
-            "use_cases": USE_CASES,
-        },
+        {"features": FEATURES, "faqs": FAQS, "faq_jsonld": faq_jsonld(FAQS)},
     )
 
 
@@ -199,7 +194,7 @@ def manifest(request):
 
 
 @require_GET
-@cache_control(max_age=86400)
+@cache_control(max_age=3600)
 def robots_txt(request):
     """Serve robots.txt, pointing crawlers at the sitemap."""
     return render(
@@ -211,7 +206,7 @@ def robots_txt(request):
 
 
 @require_GET
-@cache_control(max_age=86400)
+@cache_control(max_age=3600)
 def sitemap_xml(request):
     """Serve a minimal XML sitemap for the static routes."""
     site_url = settings.SITE_URL.rstrip("/")
