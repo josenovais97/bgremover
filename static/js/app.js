@@ -937,6 +937,7 @@ class Card {
 
       this.done = true;
       this.setState('done');
+      this.refreshPreview(); // apply any remembered background now the image exists
       Stats.record(performance.now() - started);
       ModelStatus.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI model ready', 'bg-green-500/10 text-green-600 dark:text-green-400');
       this.saveToHistory();
@@ -994,6 +995,21 @@ class Card {
     const surfaces = [this.el.querySelector('.preview'), this.el.querySelector('.split-bg')];
     const processed = this.el.querySelector('.processed-img');
     const processedSplit = this.el.querySelector('.processed-img-split');
+
+    // Called during build (for remembered options) before the image exists —
+    // set the background surface but leave the image alone until it's ready.
+    if (!this.processedUrl) {
+      for (const surface of surfaces) {
+        if (this.bg) {
+          surface.classList.remove('checkerboard');
+          surface.style.backgroundColor = this.bg;
+        } else {
+          surface.classList.add('checkerboard');
+          surface.style.backgroundColor = '';
+        }
+      }
+      return;
+    }
 
     if (this.previewUrl) {
       URL.revokeObjectURL(this.previewUrl);
