@@ -55,6 +55,38 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+
+/**
+ * Trap keyboard focus inside a modal element and restore it to the opener when
+ * closed. Returns a release() function to call on close. Keeps Tab cycling
+ * within the dialog so keyboard/screen-reader users can't drift behind it.
+ */
+function trapFocus(modal) {
+  const opener = document.activeElement;
+  const onKey = (e) => {
+    if (e.key !== 'Tab') return;
+    const items = $$(FOCUSABLE, modal).filter((el) => el.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+  modal.addEventListener('keydown', onKey);
+  // Move focus into the dialog.
+  ($(FOCUSABLE, modal) || modal).focus?.();
+  return () => {
+    modal.removeEventListener('keydown', onKey);
+    opener && opener.focus?.();
+  };
+}
+
 /**
  * Given a source image and a crop preset + zoom/center, compute the source
  * sampling rectangle and the output canvas dimensions. Shared by the live
@@ -362,6 +394,7 @@ const Editor = {
     this.modal.classList.remove('hidden');
     this.modal.classList.add('flex');
     document.body.style.overflow = 'hidden';
+    this.release = trapFocus(this.modal);
 
     // Size the viewport to fit the stage, then reset zoom/pan (needs layout).
     requestAnimationFrame(() => {
@@ -432,6 +465,7 @@ const Editor = {
     this.modal.classList.remove('flex');
     this.cursor.classList.add('hidden');
     document.body.style.overflow = '';
+    if (this.release) { this.release(); this.release = null; }
   },
 
   setTool(tool) {
@@ -701,7 +735,12 @@ const Cropper = {
     // image — so Crop is usable immediately, before (or without) bg removal.
     this.source = s ? s.source : card.done ? 'cutout' : 'original';
     if (this.source === 'cutout' && !card.done) this.source = 'original';
-    await this.loadSourceImage();
+    try {
+      await this.loadSourceImage();
+    } catch {
+      Toast.show('Could not open the image to crop', 'error');
+      return;
+    }
 
     this.key = (s && s.key) || 'square';
     this.z = (s && s.z) || 1;
@@ -716,6 +755,8 @@ const Cropper = {
 
     this.modal.classList.remove('hidden');
     this.modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    this.release = trapFocus(this.modal);
   },
 
   /** Load the image for the active source into this.img. */
@@ -728,10 +769,12 @@ const Cropper = {
     if (src === this.source) return;
     if (src === 'cutout' && !this.card.done) return; // cut-out not ready yet
     this.source = src;
-    this.loadSourceImage().then(() => {
-      this.updateSourceButtons();
-      this.redraw();
-    });
+    this.loadSourceImage()
+      .then(() => {
+        this.updateSourceButtons();
+        this.redraw();
+      })
+      .catch(() => Toast.show('Could not load that image', 'error'));
   },
 
   /** Highlight the active source and disable Cut-out until bg removal is done. */
@@ -740,6 +783,7 @@ const Cropper = {
       const active = b.dataset.source === this.source;
       b.classList.toggle('bg-primary', active);
       b.classList.toggle('text-white', active);
+      b.setAttribute('aria-pressed', String(active));
       const disabled = b.dataset.source === 'cutout' && !this.card.done;
       b.disabled = disabled;
       b.classList.toggle('opacity-40', disabled);
@@ -752,6 +796,8 @@ const Cropper = {
     this.modal.classList.add('hidden');
     this.modal.classList.remove('flex');
     this.dragging = false;
+    document.body.style.overflow = '';
+    if (this.release) { this.release(); this.release = null; }
   },
 
   get isOpen() {
@@ -780,6 +826,7 @@ const Cropper = {
       const active = b.dataset.crop === this.key;
       b.classList.toggle('bg-primary', active);
       b.classList.toggle('text-white', active);
+      b.setAttribute('aria-pressed', String(active));
     });
   },
 
@@ -1074,7 +1121,13 @@ class Card {
       return;
     }
 
-    const blob = await this.compose('image/png', this.bg, this.cropState);
+    let blob;
+    try {
+      blob = await this.compose('image/png', this.bg, this.cropState);
+    } catch {
+      Toast.show('Could not render the crop preview', 'error');
+      return;
+    }
     this.previewUrl = URL.createObjectURL(blob);
     processed.src = this.previewUrl;
     processedSplit.src = this.previewUrl;
@@ -1149,7 +1202,13 @@ class Card {
   async download() {
     // Allow download once there's a cut-out, or a crop of the original.
     if (!this.processedBlob && !this.cropState) return;
-    const blob = await this.compose();
+    let blob;
+    try {
+      blob = await this.compose();
+    } catch {
+      Toast.show('Could not prepare the download', 'error');
+      return;
+    }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -1162,7 +1221,7 @@ class Card {
   }
 
   async copy() {
-    if (!this.processedBlob) return;
+    if (!this.processedBlob && !this.cropState) return;
     try {
       const blob = await this.compose('image/png', this.bg);
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
