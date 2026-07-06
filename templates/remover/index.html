@@ -230,6 +230,21 @@ FAQPage structured data is generated from the same FAQS the page renders
 
         <!-- Options panel (background + format) -->
         <div class="options-panel hidden px-4 pt-4 space-y-3 border-t border-gray-200/70 dark:border-gray-800/70">
+            <!-- Instagram one-click formats -->
+            <div class="rounded-xl p-3 bg-gradient-to-r from-[#feda75]/15 via-[#d62976]/15 to-[#4f5bd5]/15 border border-[#d62976]/20">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fa-brands fa-instagram text-[#d62976]" aria-hidden="true"></i>
+                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-200">Instagram formats</span>
+                    <span class="text-[11px] text-gray-500 dark:text-gray-400">— crops &amp; sizes it, ready to post</span>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs font-medium">
+                    <button type="button" data-ig="ig-post" class="ig-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-800">Post 1:1</button>
+                    <button type="button" data-ig="ig-portrait" class="ig-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-800">Portrait 4:5</button>
+                    <button type="button" data-ig="ig-story" class="ig-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-800">Story/Reel 9:16</button>
+                    <button type="button" data-ig="ig-landscape" class="ig-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-800">Landscape</button>
+                    <button type="button" data-ig="ig-profile" class="ig-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white/60 dark:hover:bg-gray-800">Profile ○</button>
+                </div>
+            </div>
             <div class="flex items-center gap-3 flex-wrap">
                 <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20">Background</span>
                 <div class="bg-swatches flex items-center gap-2">
@@ -318,8 +333,8 @@ FAQPage structured data is generated from the same FAQS the page renders
                 <button type="button" class="crop-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Crop to a shape — circle, square and more">
                     <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Crop
                 </button>
-                <button type="button" class="options-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Background and format options">
-                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> Background
+                <button type="button" class="options-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Instagram formats, background, effects and export options">
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> Style &amp; export
                 </button>
                 <button type="button" class="toggle-view-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Switch between slider and side-by-side view">
                     <i class="fa-solid fa-table-columns" aria-hidden="true"></i> <span class="view-label">Side-by-side</span>
