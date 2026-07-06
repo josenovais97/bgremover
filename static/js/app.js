@@ -1673,6 +1673,7 @@ const App = {
     Cropper.init();
     Stats.render();
     History.render();
+    initDemoCompare();
   },
 
   bindUpload() {
@@ -1831,5 +1832,24 @@ const App = {
     });
   },
 };
+
+/**
+ * Landing-page before/after demo slider. Pure illustration (no upload): dragging
+ * the handle clips a colourful "original" background over a transparent cut-out,
+ * so visitors see what background removal does before touching a file. No-ops on
+ * pages without the demo markup.
+ */
+function initDemoCompare() {
+  const range = document.getElementById('demo-range');
+  const before = document.getElementById('demo-before');
+  const line = document.getElementById('demo-line');
+  if (!range || !before || !line) return;
+  const set = (v) => {
+    before.style.clipPath = `inset(0 ${100 - v}% 0 0)`;
+    line.style.left = `${v}%`;
+  };
+  range.addEventListener('input', () => set(+range.value));
+  set(+range.value);
+}
 
 document.addEventListener('DOMContentLoaded', () => App.init());
