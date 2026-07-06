@@ -1,13 +1,15 @@
 {% load static %}/* BG Remover service worker — app-shell offline cache. */
-const CACHE = 'bgr-v2';
+const CACHE = 'bgr-v3';
 const SHELL = [
   '/',
   '/convert/',
   '/instagram/',
+  '/crop/',
   '{% static "css/tailwind.css" %}',
   '{% static "js/app.js" %}',
   '{% static "js/converter.js" %}',
   '{% static "js/instagram.js" %}',
+  '{% static "js/crop.js" %}',
   '{% static "js/theme.js" %}',
   '/manifest.webmanifest',
   '{% static "img/favicon.svg" %}',

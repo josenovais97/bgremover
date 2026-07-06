@@ -22,10 +22,16 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 **Instagram photo editor** (`/instagram`) — a separate tool, no background removal required
 - Upload a photo and edit it immediately: pick a **format** (Post, Portrait, Story/Reel, Landscape, Profile) that crops to the right aspect and exports at Instagram's **exact pixel sizes**
 - **Fill or Fit** — crop to the frame, or post the whole photo with **no crop**, filling the gaps with a blurred copy or a solid colour; add a coloured **border**
-- **One-tap filters** (Vivid, Warm, Cool, Mono, Fade, Punch, Vintage) and **adjustments** — brightness, contrast, saturation, warmth, **sharpen**, vignette
+- **12 on-trend one-tap looks** (Vivid, Punch, Clean, Golden, Moody, Film, Noir, Warm, Cool, Fade, Vintage) with a **strength** slider, plus **adjustments** — brightness, contrast, saturation, warmth, **sharpen**, **film grain**, vignette
+- **Press-and-hold compare** against the original, and **Story/Reel safe-zone guides** so captions/UI don't cover faces
 - **Carousel splitter** — slice a wide photo into a seamless **swipeable carousel** (2–3 tiles), exported as a ZIP
 - **Crop & reposition** with drag + zoom; **optionally remove the background** and drop in a solid colour
 - 100% in the browser — nothing is uploaded
+
+**Crop tool** (`/crop`) — a separate tool, no background removal required
+- Crop to a **rectangle, rounded square or circle** at **1:1 / 4:5 / 3:4 / 16:9 / 9:16**, a **custom W:H**, or the photo's original ratio
+- **Rotate** (90°) and **flip** H/V, with zoom and drag to frame
+- Export a full-resolution transparent **PNG** (rounded/circle keep transparent corners) or a **JPG** — nothing is uploaded
 
 **Image converter** (`/convert`)
 - Convert any image to PNG / JPG / WEBP — input format is **auto-detected**
@@ -102,6 +108,7 @@ bgremover/
 │   ├── remover/index.html    # background remover + refine editor
 │   ├── remover/convert.html  # image format converter
 │   ├── remover/instagram.html # Instagram photo editor
+│   ├── remover/crop.html     # standalone crop tool
 │   ├── remover/use_case.html # keyword-targeted landing page (data-driven)
 │   ├── seo/{robots.txt,sitemap.xml}
 │   └── {404.html,500.html}

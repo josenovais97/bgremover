@@ -153,7 +153,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-SITEMAP_PATHS = ["/", "/convert/", "/instagram/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+SITEMAP_PATHS = ["/", "/convert/", "/instagram/", "/crop/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
 
 
 @require_GET
@@ -185,6 +185,12 @@ def convert(request):
 def instagram(request):
     """Render the client-side Instagram photo editor."""
     return render(request, "remover/instagram.html", {"formats": IG_FORMATS})
+
+
+@require_GET
+def crop(request):
+    """Render the standalone client-side crop tool (no background removal)."""
+    return render(request, "remover/crop.html")
 
 
 @require_GET

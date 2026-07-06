@@ -6,13 +6,6 @@
 {% block og_title %}Instagram Photo Editor — Filters, Sizes, Borders &amp; Carousel, Free{% endblock %}
 
 {% block content %}
-<!-- Offscreen SVG sharpen kernel referenced by canvas ctx.filter (updated live in JS). -->
-<svg width="0" height="0" class="absolute" aria-hidden="true" focusable="false">
-    <filter id="ig-sharpen" color-interpolation-filters="sRGB">
-        <feConvolveMatrix order="3" preserveAlpha="true" edgeMode="duplicate" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
-    </filter>
-</svg>
-
 <div class="space-y-12">
 
     <!-- Hero + dropzone -->
@@ -59,6 +52,14 @@
                 <input id="ig-zoom" type="range" min="1" max="4" step="0.01" value="1" class="w-full accent-[#d62976]" aria-label="Zoom">
                 <i class="fa-solid fa-magnifying-glass-plus text-gray-400" aria-hidden="true"></i>
             </div>
+            <div class="flex items-center gap-2 text-xs">
+                <button id="ig-compare" type="button" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 select-none touch-none" title="Hold to see the original">
+                    <i class="fa-solid fa-eye mr-1" aria-hidden="true"></i>Hold to compare
+                </button>
+                <button id="ig-safezones" type="button" aria-pressed="false" class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Show where Instagram's Story/Reel UI covers the frame">
+                    <i class="fa-solid fa-table-cells-large mr-1" aria-hidden="true"></i>Safe zones
+                </button>
+            </div>
             <p id="ig-hint" class="text-xs text-gray-400">Drag the photo to reposition · scroll or use the slider to zoom</p>
         </div>
 
@@ -102,19 +103,27 @@
                 </label>
             </div>
 
-            <!-- Filters -->
+            <!-- Looks -->
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Filters</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Looks</span>
                 <div id="ig-filters" class="flex flex-wrap gap-2 text-xs font-medium">
                     <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-filter="original">Original</button>
                     <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="vivid">Vivid</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="punch">Punch</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="clean">Clean</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="golden">Golden</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="moody">Moody</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="film">Film</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="noir">Noir</button>
                     <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="warm">Warm</button>
                     <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="cool">Cool</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="mono">Mono</button>
                     <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="fade">Fade</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="punch">Punch</button>
                     <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="vintage">Vintage</button>
                 </div>
+                <label class="flex items-center gap-2 text-xs pt-1">
+                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Strength</span>
+                    <input id="ig-strength" type="range" min="0" max="100" value="100" class="w-full accent-[#d62976]" aria-label="Filter strength">
+                </label>
             </div>
 
             <!-- Adjustments -->
@@ -129,6 +138,7 @@
                     <label class="flex items-center gap-2"><span class="w-20 shrink-0">Saturation</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="saturate" min="0" max="200" value="100"></label>
                     <label class="flex items-center gap-2"><span class="w-20 shrink-0">Warmth</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="warmth" min="-100" max="100" value="0"></label>
                     <label class="flex items-center gap-2"><span class="w-20 shrink-0">Sharpen</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="sharpen" min="0" max="100" value="0"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Grain</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="grain" min="0" max="100" value="0"></label>
                     <label class="flex items-center gap-2"><span class="w-20 shrink-0">Vignette</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="vignette" min="0" max="100" value="0"></label>
                 </div>
             </div>

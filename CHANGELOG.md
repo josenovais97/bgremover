@@ -39,11 +39,19 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
   Landscape, Profile) that crops to the right aspect and exports at Instagram's
   exact pixels; choose **Fill** (crop) or **Fit** (post the whole photo with no
   crop, filling the gaps with a blurred copy or a solid colour); add a coloured
-  **border**; apply one-tap filters (Vivid, Warm, Cool, Mono, Fade, Punch,
-  Vintage); fine-tune brightness / contrast / saturation / warmth / **sharpen** /
-  vignette; split a wide photo into a seamless **swipeable carousel** (2–3 tiles,
-  exported as a ZIP); crop and reposition with drag + zoom; and optionally remove
-  the background and drop in a solid colour. Everything runs in the browser.
+  **border**; apply **12 on-trend one-tap looks** (Vivid, Punch, Clean, Golden,
+  Moody, Film, Noir, Warm, Cool, Fade, Vintage) and dial their **strength** up or
+  down; fine-tune brightness / contrast / saturation / warmth / **sharpen** /
+  **film grain** / vignette; **press-and-hold to compare** against the original;
+  toggle **Story/Reel safe-zone guides** so captions and UI don't cover faces;
+  split a wide photo into a seamless **swipeable carousel** (2–3 tiles, exported
+  as a ZIP); crop and reposition with drag + zoom; and optionally remove the
+  background and drop in a solid colour. Everything runs in the browser.
+- **Crop tool page** (`/crop`) — a standalone crop tool (no background removal):
+  crop to a **rectangle, rounded square or circle** at a **1:1 / 4:5 / 3:4 /
+  16:9 / 9:16** or **custom W:H** ratio (or the photo's original ratio), with
+  **rotate** (90°) and **flip**, zoom and drag. Exports a full-resolution
+  transparent **PNG** (rounded/circle keep transparent corners) or a **JPG**.
 - **Support link** — an optional "Buy me a coffee" button in the footer.
 
 ### Changed
@@ -51,6 +59,10 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
   the background remover's options, keeping each tool focused.
 
 ### Fixed
+- Instagram looks that included sharpening (Vivid, Warm, Cool, Punch and others)
+  silently lost their colour grading: combining an SVG `url()` sharpen filter with
+  filter functions in one canvas `ctx.filter` voids the whole filter in Chromium
+  and Safari. Sharpen is now a separate convolution pass, so every look applies.
 - Crop dialog silently did nothing when opened before background removal
   finished; it now opens immediately on the original image.
 - Overlapping preview renders (e.g. dragging the padding slider) could commit an
