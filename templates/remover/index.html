@@ -30,35 +30,99 @@ FAQPage structured data is generated from the same FAQS the page renders
                 </p>
             </div>
 
-            <div class="max-w-3xl mx-auto">
-                <div id="dropzone"
-                     role="button" tabindex="0" aria-label="Upload images. Drag and drop, click to browse, or paste from clipboard."
-                     class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <div class="max-w-5xl mx-auto space-y-6">
+                <div class="grid lg:grid-cols-2 gap-6 items-stretch">
+                    <div id="dropzone"
+                         role="button" tabindex="0" aria-label="Upload images. Drag and drop, click to browse, or paste from clipboard."
+                         class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
 
-                    <input type="file" id="file-input" class="sr-only" accept="image/png,image/jpeg,image/webp" multiple>
+                        <input type="file" id="file-input" class="sr-only" accept="image/png,image/jpeg,image/webp" multiple>
 
-                    <div class="flex flex-col items-center justify-center space-y-4 text-center">
-                        <div id="upload-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
-                            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
-                        </div>
-                        <h2 class="text-2xl font-semibold">Drag &amp; drop your images</h2>
-                        <p class="text-gray-500 dark:text-gray-400">or click to browse — you can select multiple files</p>
-                        <button id="browse-btn" type="button" class="mt-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-                            <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select images
-                        </button>
-                        <div class="pt-4 text-sm text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
-                            <p>Supports JPG, PNG &amp; WEBP · Full resolution preserved</p>
-                            <p class="flex items-center gap-2">
-                                <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
-                                Press <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">Ctrl</kbd> + <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">V</kbd> to paste
-                            </p>
-                            <span id="model-status" class="hidden items-center gap-2 mt-1 px-3 py-1 rounded-full text-xs font-medium"></span>
+                        <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                            <div id="upload-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                                <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                            </div>
+                            <h2 class="text-2xl font-semibold">Drag &amp; drop your images</h2>
+                            <p class="text-gray-500 dark:text-gray-400">or click to browse — you can select multiple files</p>
+                            <button id="browse-btn" type="button" class="mt-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                                <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select images
+                            </button>
+                            <div class="pt-4 text-sm text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
+                                <p>Supports JPG, PNG &amp; WEBP · Full resolution preserved</p>
+                                <p class="flex items-center gap-2">
+                                    <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
+                                    Press <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">Ctrl</kbd> + <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">V</kbd> to paste
+                                </p>
+                                <span id="model-status" class="hidden items-center gap-2 mt-1 px-3 py-1 rounded-full text-xs font-medium"></span>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Interactive before/after demo (pure illustration — no upload) -->
+                    <figure class="flex flex-col gap-3">
+                        <div id="demo" class="demo relative w-full flex-1 min-h-[16rem] aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none checkerboard">
+                            <!-- Original studio background (revealed on the left of the handle) -->
+                            <div id="demo-before" class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
+                                <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="demo-bg" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0" stop-color="#FDCB6E"/><stop offset="1" stop-color="#FF6B9D"/>
+                                        </linearGradient>
+                                        <radialGradient id="demo-glow" cx="0.32" cy="0.24" r="0.65">
+                                            <stop offset="0" stop-color="#ffffff" stop-opacity="0.5"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+                                        </radialGradient>
+                                    </defs>
+                                    <rect width="800" height="600" fill="url(#demo-bg)"/>
+                                    <circle cx="230" cy="150" r="120" fill="#ffffff" opacity="0.12"/>
+                                    <circle cx="650" cy="470" r="175" fill="#ffffff" opacity="0.10"/>
+                                    <rect width="800" height="600" fill="url(#demo-glow)"/>
+                                </svg>
+                            </div>
+                            <!-- Subject (drawn once, always on top; transparent behind it) -->
+                            <div class="absolute inset-0 pointer-events-none">
+                                <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of a portrait with the background removed">
+                                    <defs>
+                                        <linearGradient id="demo-shirt" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#4F46E5"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M175 600 C175 480 280 432 400 432 C520 432 625 480 625 600 Z" fill="url(#demo-shirt)"/>
+                                    <path d="M360 440 Q400 482 440 440 L440 432 L360 432 Z" fill="#4338CA" opacity="0.55"/>
+                                    <path d="M366 388 h68 v46 c0 26 -68 26 -68 0 Z" fill="#E6B08C"/>
+                                    <ellipse cx="400" cy="272" rx="140" ry="156" fill="#33303E"/>
+                                    <path d="M292 250 C286 300 292 340 300 366 C280 330 274 288 282 250 Z" fill="#33303E"/>
+                                    <path d="M508 250 C514 300 508 340 500 366 C520 330 526 288 518 250 Z" fill="#33303E"/>
+                                    <ellipse cx="291" cy="292" rx="17" ry="27" fill="#F4C7A3"/>
+                                    <ellipse cx="509" cy="292" rx="17" ry="27" fill="#F4C7A3"/>
+                                    <ellipse cx="400" cy="286" rx="108" ry="122" fill="#F4C7A3"/>
+                                    <ellipse cx="344" cy="318" rx="17" ry="11" fill="#F49AA5" opacity="0.55"/>
+                                    <ellipse cx="456" cy="318" rx="17" ry="11" fill="#F49AA5" opacity="0.55"/>
+                                    <ellipse cx="362" cy="284" rx="8.5" ry="11.5" fill="#33303E"/>
+                                    <ellipse cx="438" cy="284" rx="8.5" ry="11.5" fill="#33303E"/>
+                                    <path d="M346 262 Q362 254 378 262" stroke="#33303E" stroke-width="5" fill="none" stroke-linecap="round"/>
+                                    <path d="M422 262 Q438 254 454 262" stroke="#33303E" stroke-width="5" fill="none" stroke-linecap="round"/>
+                                    <path d="M372 330 Q400 356 428 330" stroke="#C77B59" stroke-width="6" fill="none" stroke-linecap="round"/>
+                                    <path d="M300 250 C300 170 350 120 400 120 C450 120 500 170 500 250 C470 205 458 200 430 210 C415 175 385 175 370 210 C342 200 330 205 300 250 Z" fill="#33303E"/>
+                                </svg>
+                            </div>
+                            <!-- Divider + handle -->
+                            <div id="demo-line" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
+                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg grid place-items-center text-primary">
+                                    <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                            <input id="demo-range" type="range" min="0" max="100" value="50" class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20" aria-label="Drag to compare the original and the background-removed result">
+                            <span class="absolute top-3 left-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">Original</span>
+                            <span class="absolute top-3 right-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">Background removed</span>
+                        </div>
+                        <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+                            <i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Drag the handle — live demo, nothing uploaded
+                        </figcaption>
+                    </figure>
                 </div>
 
                 <!-- Trust badges -->
-                <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
                     <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No watermark</span>
                     <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No sign-up</span>
                     <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> 100% private</span>
@@ -67,54 +131,44 @@ FAQPage structured data is generated from the same FAQS the page renders
             </div>
         </section>
 
-        <!-- How it works -->
-        <section aria-labelledby="how-title" class="max-w-5xl mx-auto space-y-8">
-            <div class="text-center space-y-2">
-                <h2 id="how-title" class="text-3xl font-bold">How it works</h2>
-                <p class="text-gray-600 dark:text-gray-300">Three steps. No account, no waiting in a queue.</p>
-            </div>
-            <ol class="grid gap-6 sm:grid-cols-3">
-                <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
-                    <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-upload" aria-hidden="true"></i></div>
-                    <h3 class="font-semibold">1. Add an image</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Drag &amp; drop, browse, or paste. Batch upload works too.</p>
+        <!-- How it works (compact) -->
+        <section aria-labelledby="how-title" class="max-w-4xl mx-auto">
+            <h2 id="how-title" class="sr-only">How it works</h2>
+            <ol class="grid gap-3 sm:grid-cols-3 text-sm">
+                <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
+                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="fa-solid fa-upload" aria-hidden="true"></i></span>
+                    <span><b class="font-semibold">Add</b> an image — drag, browse or paste</span>
                 </li>
-                <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
-                    <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></div>
-                    <h3 class="font-semibold">2. AI removes the background</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Runs on your device in seconds — nothing is uploaded.</p>
+                <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
+                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></span>
+                    <span><b class="font-semibold">AI removes</b> the background on your device</span>
                 </li>
-                <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
-                    <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-download" aria-hidden="true"></i></div>
-                    <h3 class="font-semibold">3. Download</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Transparent PNG, or pick a background color. Full quality.</p>
+                <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
+                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="fa-solid fa-download" aria-hidden="true"></i></span>
+                    <span><b class="font-semibold">Download</b> a transparent PNG, full quality</span>
                 </li>
             </ol>
         </section>
 
         <!-- Features -->
-        <section aria-labelledby="features-title" class="max-w-5xl mx-auto space-y-8">
-            <div class="text-center space-y-2">
-                <h2 id="features-title" class="text-3xl font-bold">Everything you need</h2>
-                <p class="text-gray-600 dark:text-gray-300">A premium background remover, completely free.</p>
-            </div>
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <section aria-labelledby="features-title" class="max-w-5xl mx-auto space-y-6">
+            <h2 id="features-title" class="text-2xl font-bold text-center">Everything you need — free</h2>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {% for f in features %}
-                <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2">
-                    <div class="w-11 h-11 grid place-items-center rounded-xl bg-primary/10 text-primary text-lg"><i class="fa-solid {{ f.icon }}" aria-hidden="true"></i></div>
-                    <h3 class="font-semibold">{{ f.title }}</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ f.text }}</p>
+                <div class="flex items-start gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
+                    <div class="shrink-0 w-9 h-9 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="fa-solid {{ f.icon }}" aria-hidden="true"></i></div>
+                    <div class="space-y-0.5">
+                        <h3 class="font-semibold text-sm">{{ f.title }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{{ f.text }}</p>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
         </section>
 
         <!-- Popular uses -->
-        <section aria-labelledby="uses-title" class="max-w-5xl mx-auto space-y-8">
-            <div class="text-center space-y-2">
-                <h2 id="uses-title" class="text-3xl font-bold">Popular uses</h2>
-                <p class="text-gray-600 dark:text-gray-300">Whatever you're removing a background from, it's free and private.</p>
-            </div>
+        <section aria-labelledby="uses-title" class="max-w-5xl mx-auto space-y-6">
+            <h2 id="uses-title" class="text-2xl font-bold text-center">Popular uses</h2>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {% for c in use_cases %}
                 <a href="{% url 'remover:use_case' c.slug %}" class="glass group rounded-2xl p-5 border border-gray-200/70 dark:border-gray-800/70 flex items-center justify-between gap-3 hover:border-primary dark:hover:border-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -127,9 +181,7 @@ FAQPage structured data is generated from the same FAQS the page renders
 
         <!-- FAQ -->
         <section aria-labelledby="faq-title" class="max-w-3xl mx-auto space-y-6">
-            <div class="text-center space-y-2">
-                <h2 id="faq-title" class="text-3xl font-bold">Frequently asked questions</h2>
-            </div>
+            <h2 id="faq-title" class="text-2xl font-bold text-center">Frequently asked questions</h2>
             <div class="space-y-3">
                 {% for q in faqs %}
                 <details class="group glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 overflow-hidden">
