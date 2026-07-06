@@ -137,15 +137,6 @@ def main():
         di.value.save_as(out)
         check("profile export is 512x512", png_size(out) == (512, 512))
 
-        # Instagram one-click preset crops + sizes in a single click.
-        pg.click(".ig-btn[data-ig='ig-story']")
-        time.sleep(0.4)
-        with pg.expect_download(timeout=8000) as di_ig:
-            pg.click(".download-btn")
-        ig_out = os.path.join(tempfile.gettempdir(), "smoke_ig_story.png")
-        di_ig.value.save_as(ig_out)
-        check("Instagram Story preset exports 1080x1920", png_size(ig_out) == (1080, 1920))
-
         check("no uncaught page errors", not errors)
         if errors:
             print("  page errors:", errors)

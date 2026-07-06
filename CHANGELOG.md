@@ -33,11 +33,22 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
 - **Export sizes** — scale the exported result to a **profile picture (512×512)**,
   a **story (1080×1920)**, or a **custom width × height**, preserving aspect
   without distortion.
-- **Instagram formats** — one-click presets that centre-crop to the right aspect
-  *and* set Instagram's exact export resolution in a single tap: Post (1:1,
-  1080²), Portrait (4:5, 1080×1350), Story/Reel (9:16, 1080×1920), Landscape
-  (1.91:1), and Profile (circle, 320²).
+- **Instagram photo editor** (`/instagram`) — a standalone tool (like the
+  converter) for editing photos for Instagram **without needing to remove the
+  background**. Upload a photo and: pick a format (Post, Portrait, Story/Reel,
+  Landscape, Profile) that crops to the right aspect and exports at Instagram's
+  exact pixels; choose **Fill** (crop) or **Fit** (post the whole photo with no
+  crop, filling the gaps with a blurred copy or a solid colour); add a coloured
+  **border**; apply one-tap filters (Vivid, Warm, Cool, Mono, Fade, Punch,
+  Vintage); fine-tune brightness / contrast / saturation / warmth / **sharpen** /
+  vignette; split a wide photo into a seamless **swipeable carousel** (2–3 tiles,
+  exported as a ZIP); crop and reposition with drag + zoom; and optionally remove
+  the background and drop in a solid colour. Everything runs in the browser.
 - **Support link** — an optional "Buy me a coffee" button in the footer.
+
+### Changed
+- Instagram sizing now lives in the dedicated `/instagram` editor rather than in
+  the background remover's options, keeping each tool focused.
 
 ### Fixed
 - Crop dialog silently did nothing when opened before background removal

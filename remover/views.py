@@ -45,6 +45,16 @@ CONVERT_FORMATS = [
     {"mime": "image/webp", "label": "WEBP", "ext": "webp", "lossy": True, "desc": "Modern, small, supports transparency"},
 ]
 
+# Instagram output formats: each sets a crop aspect and the exact pixel size
+# Instagram recommends, so exports fill the frame and upload without recompression.
+IG_FORMATS = [
+    {"key": "post", "label": "Post", "sub": "1:1", "aspect": "1", "w": 1080, "h": 1080},
+    {"key": "portrait", "label": "Portrait", "sub": "4:5", "aspect": "0.8", "w": 1080, "h": 1350},
+    {"key": "story", "label": "Story / Reel", "sub": "9:16", "aspect": "0.5625", "w": 1080, "h": 1920},
+    {"key": "landscape", "label": "Landscape", "sub": "1.91:1", "aspect": "1.91", "w": 1080, "h": 566},
+    {"key": "profile", "label": "Profile", "sub": "1:1", "aspect": "1", "w": 320, "h": 320},
+]
+
 # Landing-page content kept here so copy lives in one maintainable place.
 FEATURES = [
     {"icon": "fa-bolt", "title": "Instant results", "text": "The AI runs locally and returns a clean cut-out in seconds — no queue, no wait."},
@@ -143,7 +153,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-SITEMAP_PATHS = ["/", "/convert/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+SITEMAP_PATHS = ["/", "/convert/", "/instagram/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
 
 
 @require_GET
@@ -169,6 +179,12 @@ def use_case(request, slug):
 def convert(request):
     """Render the client-side image format converter."""
     return render(request, "remover/convert.html", {"formats": CONVERT_FORMATS})
+
+
+@require_GET
+def instagram(request):
+    """Render the client-side Instagram photo editor."""
+    return render(request, "remover/instagram.html", {"formats": IG_FORMATS})
 
 
 @require_GET
