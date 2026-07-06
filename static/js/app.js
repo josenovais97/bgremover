@@ -67,6 +67,28 @@ function applyShapeClip(ctx, shape, w, h) {
   }
 }
 
+/**
+ * Rotate (0/90/180/270°) and/or flip an image into a fresh canvas, so the rest
+ * of the crop pipeline can treat the result as a plain oriented source. Returns
+ * the source unchanged when there's nothing to do.
+ */
+function orientSource(img, rot = 0, flipH = false, flipV = false) {
+  rot = ((rot % 360) + 360) % 360;
+  if (!rot && !flipH && !flipV) return img;
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const swap = rot === 90 || rot === 270;
+  const c = document.createElement('canvas');
+  c.width = swap ? ih : iw;
+  c.height = swap ? iw : ih;
+  const ctx = c.getContext('2d');
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate((rot * Math.PI) / 180);
+  ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+  ctx.drawImage(img, -iw / 2, -ih / 2);
+  return c;
+}
+
 /** Return a copy of a canvas recoloured to a solid tint, keeping its alpha. */
 function tintCanvas(src, color) {
   const c = document.createElement('canvas');
@@ -707,9 +729,15 @@ const Editor = {
 // same geometry helper compose() uses, so what you see is what you export.
 const Cropper = {
   card: null,
-  img: null,
+  img: null, // oriented source (canvas or image) after rotate/flip
   source: 'cutout', // 'cutout' = transparent bg-removed result, 'original' = uploaded image
   key: 'square',
+  aspect: 1, // current output aspect (from a preset or a custom W:H)
+  shape: 'rect',
+  customAspect: 1,
+  rot: 0, // 0/90/180/270
+  flipH: false,
+  flipV: false,
   z: 1,
   u: 0.5,
   v: 0.5,
@@ -735,6 +763,14 @@ const Cropper = {
     $$('.crop-source', this.modal).forEach((btn) =>
       btn.addEventListener('click', () => this.setSource(btn.dataset.source)),
     );
+
+    // Custom aspect ratio.
+    $('#crop-custom-w').addEventListener('input', () => this.setCustomAspect());
+    $('#crop-custom-h').addEventListener('input', () => this.setCustomAspect());
+    // Orientation.
+    $('#crop-rotate').addEventListener('click', () => this.rotate());
+    $('#crop-flip-h').addEventListener('click', () => this.flip('h'));
+    $('#crop-flip-v').addEventListener('click', () => this.flip('v'));
 
     this.slider.addEventListener('input', () => this.setZoom(parseFloat(this.slider.value)));
     this.canvas.addEventListener('pointerdown', (e) => this.onDown(e));
@@ -771,8 +807,19 @@ const Cropper = {
     this.z = (s && s.z) || 1;
     this.u = s ? s.u : 0.5;
     this.v = s ? s.v : 0.5;
+    this.rot = (s && s.rot) || 0;
+    this.flipH = !!(s && s.flipH);
+    this.flipV = !!(s && s.flipV);
+    this.customAspect = s && s.key === 'custom' ? s.aspect : this.customAspect;
+    this.applyKey(this.key);
+    this.reorient();
+    if (this.key === 'custom') {
+      $('#crop-custom-w').value = Math.round(this.customAspect * 100);
+      $('#crop-custom-h').value = 100;
+    }
 
     this.updateSourceButtons();
+    this.updateOrientButtons();
     this.highlightShape();
     this.sizeCanvas();
     this.slider.value = this.z;
@@ -784,10 +831,31 @@ const Cropper = {
     this.release = trapFocus(this.modal);
   },
 
-  /** Load the image for the active source into this.img. */
+  /** Load the raw source image for the active source, then orient it. */
   loadSourceImage() {
     const url = this.source === 'original' ? this.card.originalUrl : this.card.processedUrl;
-    return loadImage(url).then((img) => { this.img = img; });
+    return loadImage(url).then((img) => {
+      this.raw = img;
+      this.reorient();
+    });
+  },
+
+  /** Rebuild the oriented source (this.img) from the raw image + rotate/flip. */
+  reorient() {
+    if (this.raw) this.img = orientSource(this.raw, this.rot, this.flipH, this.flipV);
+  },
+
+  /** Resolve aspect + shape for a preset key (or the custom ratio). */
+  applyKey(key) {
+    this.key = key;
+    if (key === 'custom') {
+      this.aspect = this.customAspect;
+      this.shape = 'rect';
+    } else {
+      const def = CROPS[key] || CROPS.square;
+      this.aspect = def.aspect;
+      this.shape = def.shape;
+    }
   },
 
   setSource(src) {
@@ -829,9 +897,14 @@ const Cropper = {
     return this.modal && !this.modal.classList.contains('hidden');
   },
 
+  /** Dimensions of the oriented source (works for both <img> and <canvas>). */
+  srcDims() {
+    return { iw: this.img.naturalWidth || this.img.width, ih: this.img.naturalHeight || this.img.height };
+  },
+
   /** Size the preview canvas to the chosen aspect within a fixed box. */
   sizeCanvas() {
-    const aspect = CROPS[this.key].aspect;
+    const aspect = this.aspect;
     const box = 360;
     const w = aspect >= 1 ? box : Math.round(box * aspect);
     const h = aspect >= 1 ? Math.round(box / aspect) : box;
@@ -840,10 +913,47 @@ const Cropper = {
   },
 
   setShape(key) {
-    this.key = key;
+    this.applyKey(key);
     this.highlightShape();
     this.sizeCanvas();
     this.redraw();
+  },
+
+  /** Read the custom W:H inputs, switch to the custom ratio and redraw. */
+  setCustomAspect() {
+    const w = parseFloat($('#crop-custom-w').value);
+    const h = parseFloat($('#crop-custom-h').value);
+    if (w > 0 && h > 0) this.customAspect = w / h;
+    this.applyKey('custom');
+    this.highlightShape();
+    this.sizeCanvas();
+    this.redraw();
+  },
+
+  rotate() {
+    this.rot = (this.rot + 90) % 360;
+    this.reorient();
+    this.redraw();
+    this.updateOrientButtons();
+  },
+
+  flip(axis) {
+    if (axis === 'h') this.flipH = !this.flipH;
+    else this.flipV = !this.flipV;
+    this.reorient();
+    this.redraw();
+    this.updateOrientButtons();
+  },
+
+  updateOrientButtons() {
+    const fh = $('#crop-flip-h');
+    const fv = $('#crop-flip-v');
+    fh.classList.toggle('bg-primary', this.flipH);
+    fh.classList.toggle('text-white', this.flipH);
+    fh.setAttribute('aria-pressed', String(this.flipH));
+    fv.classList.toggle('bg-primary', this.flipV);
+    fv.classList.toggle('text-white', this.flipV);
+    fv.setAttribute('aria-pressed', String(this.flipV));
   },
 
   highlightShape() {
@@ -869,9 +979,8 @@ const Cropper = {
 
   onMove(e) {
     if (!this.dragging) return;
-    const iw = this.img.naturalWidth;
-    const ih = this.img.naturalHeight;
-    const geo = cropGeometry(iw, ih, { aspect: CROPS[this.key].aspect, z: this.z, u: this.u, v: this.v });
+    const { iw, ih } = this.srcDims();
+    const geo = cropGeometry(iw, ih, { aspect: this.aspect, z: this.z, u: this.u, v: this.v });
     // Convert on-screen drag into a shift of the sampled region (drag the image,
     // so the view moves the opposite way).
     const rect = this.canvas.getBoundingClientRect();
@@ -888,10 +997,8 @@ const Cropper = {
   },
 
   redraw() {
-    const def = CROPS[this.key];
-    const iw = this.img.naturalWidth;
-    const ih = this.img.naturalHeight;
-    const geo = cropGeometry(iw, ih, { aspect: def.aspect, z: this.z, u: this.u, v: this.v });
+    const { iw, ih } = this.srcDims();
+    const geo = cropGeometry(iw, ih, { aspect: this.aspect, z: this.z, u: this.u, v: this.v });
     // Keep normalized centre in sync with the clamped geometry so dragging stops
     // cleanly at the edges instead of drifting.
     this.u = (geo.sx + geo.sw / 2) / iw;
@@ -901,11 +1008,11 @@ const Cropper = {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.save();
-    if (def.shape === 'circle') {
+    if (this.shape === 'circle') {
       ctx.beginPath();
       ctx.ellipse(c.width / 2, c.height / 2, c.width / 2, c.height / 2, 0, 0, Math.PI * 2);
       ctx.clip();
-    } else if (def.shape === 'rounded') {
+    } else if (this.shape === 'rounded') {
       roundRectPath(ctx, 0, 0, c.width, c.height, Math.min(c.width, c.height) * 0.18);
       ctx.clip();
     }
@@ -925,8 +1032,18 @@ const Cropper = {
   },
 
   apply() {
-    const def = CROPS[this.key];
-    this.card.setCropState({ key: this.key, aspect: def.aspect, shape: def.shape, z: this.z, u: this.u, v: this.v, source: this.source });
+    this.card.setCropState({
+      key: this.key,
+      aspect: this.aspect,
+      shape: this.shape,
+      z: this.z,
+      u: this.u,
+      v: this.v,
+      source: this.source,
+      rot: this.rot,
+      flipH: this.flipH,
+      flipV: this.flipV,
+    });
     this.close();
     Toast.show('Crop applied', 'success');
   },
@@ -1102,7 +1219,10 @@ class Card {
     this.cropState = state;
     this.refreshPreview();
     const meta = this.el.querySelector('.meta');
-    if (state) meta.textContent = `${humanSize(this.file.size)} · cropped (${CROPS[state.key].label})`;
+    if (state) {
+      const label = CROPS[state.key] ? CROPS[state.key].label : 'custom';
+      meta.textContent = `${humanSize(this.file.size)} · cropped (${label})`;
+    }
   }
 
   /** Read the sticker-effect controls into a state object (or null if all off). */
@@ -1214,9 +1334,11 @@ class Card {
 
     // A crop can target the original image (background intact) or the cut-out.
     const srcUrl = crop && crop.source === 'original' ? this.originalUrl : this.processedUrl;
-    const img = await loadImage(srcUrl);
-    const iw = img.naturalWidth;
-    const ih = img.naturalHeight;
+    const loaded = await loadImage(srcUrl);
+    // Rotate/flip first so the rest of the pipeline sees a plainly oriented source.
+    const img = crop ? orientSource(loaded, crop.rot, crop.flipH, crop.flipV) : loaded;
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
 
     // Source sampling rect + output size — full image unless a crop is set.
     const geo = crop

@@ -24,6 +24,9 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
 - **Sticker effects** — a coloured **outline/stroke**, **drop shadow**, and
   **padding** around the cut-out, composited resolution-independently into the
   exported PNG.
+- **Custom crop ratio and orientation** — enter any **W:H** ratio in the crop
+  dialog, and **rotate 90°** / **flip** horizontally or vertically. Combined with
+  zoom and drag, this frames an arbitrary region without preset shapes.
 
 ### Fixed
 - Crop dialog silently did nothing when opened before background removal
