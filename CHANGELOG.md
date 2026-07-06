@@ -27,6 +27,12 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
 - **Custom crop ratio and orientation** — enter any **W:H** ratio in the crop
   dialog, and **rotate 90°** / **flip** horizontally or vertically. Combined with
   zoom and drag, this frames an arbitrary region without preset shapes.
+- **Rich backgrounds** — beyond solid colours, place the cut-out on a **two-colour
+  gradient** (with adjustable angle), a **blurred version of the original photo**,
+  or an **uploaded image**.
+- **Export sizes** — scale the exported result to a **profile picture (512×512)**,
+  a **story (1080×1920)**, or a **custom width × height**, preserving aspect
+  without distortion.
 
 ### Fixed
 - Crop dialog silently did nothing when opened before background removal

@@ -89,6 +89,70 @@ function orientSource(img, rot = 0, flipH = false, flipV = false) {
   return c;
 }
 
+/** Draw an image to cover a w×h box (like CSS background-size: cover), centered. */
+function drawCover(ctx, img, w, h, scale = 1) {
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const s = Math.max(w / iw, h / ih) * scale;
+  const dw = iw * s;
+  const dh = ih * s;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+}
+
+/**
+ * Paint a background into the region [0,0,w,h]. `spec` is a solid colour string
+ * or an object: {type:'gradient',from,to,angle} | {type:'blur',amount} |
+ * {type:'image',url}. Blur uses the card's original photo as its source.
+ */
+async function paintBackground(ctx, w, h, spec, originalUrl) {
+  if (typeof spec === 'string') {
+    ctx.fillStyle = spec;
+    ctx.fillRect(0, 0, w, h);
+    return;
+  }
+  if (spec.type === 'gradient') {
+    const a = ((spec.angle || 0) * Math.PI) / 180;
+    const dx = Math.cos(a);
+    const dy = Math.sin(a);
+    const half = (Math.abs(dx) * w + Math.abs(dy) * h) / 2;
+    const g = ctx.createLinearGradient(w / 2 - dx * half, h / 2 - dy * half, w / 2 + dx * half, h / 2 + dy * half);
+    g.addColorStop(0, spec.from);
+    g.addColorStop(1, spec.to);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    return;
+  }
+  if (spec.type === 'blur') {
+    const img = await loadImage(originalUrl);
+    ctx.save();
+    ctx.filter = `blur(${Math.max(1, Math.round((spec.amount ?? 0.04) * Math.min(w, h)))}px)`;
+    drawCover(ctx, img, w, h, 1.15); // overscan so the blur doesn't reveal edges
+    ctx.restore();
+    return;
+  }
+  if (spec.type === 'image') {
+    const img = await loadImage(spec.url);
+    drawCover(ctx, img, w, h);
+  }
+}
+
+/** Scale a source canvas to fit inside tw×th (contain), centered. */
+function containInto(src, tw, th, format) {
+  const t = document.createElement('canvas');
+  t.width = tw;
+  t.height = th;
+  const x = t.getContext('2d');
+  if (format === 'image/jpeg') {
+    x.fillStyle = '#ffffff';
+    x.fillRect(0, 0, tw, th);
+  }
+  const s = Math.min(tw / src.width, th / src.height);
+  const dw = src.width * s;
+  const dh = src.height * s;
+  x.drawImage(src, (tw - dw) / 2, (th - dh) / 2, dw, dh);
+  return t;
+}
+
 /** Return a copy of a canvas recoloured to a solid tint, keeping its alpha. */
 function tintCanvas(src, color) {
   const c = document.createElement('canvas');
@@ -1064,6 +1128,7 @@ class Card {
     this.format = 'image/png';
     this.cropState = null; // null = no crop; else { key, aspect, shape, z, u, v, source }
     this.sticker = null; // null = no effects; else { pad, outline, outlineW, outlineColor, shadow }
+    this.exportSize = null; // null = keep composed size; else { w, h, label }
     this.previewUrl = null; // object URL for the composed (cropped) preview, if any
     this.build();
   }
@@ -1106,18 +1171,43 @@ class Card {
     // Background swatches — remember the choice across the session.
     $$('.swatch', this.el).forEach((sw) =>
       sw.addEventListener('click', () => {
-        this.setBackground(sw.dataset.bg, sw);
+        this.setBackground(sw.dataset.bg);
         Prefs.set('bg', sw.dataset.bg);
       }),
     );
     const custom = this.el.querySelector('.custom-color');
-    custom.addEventListener('input', () => this.setBackground(custom.value, custom.parentElement));
+    custom.addEventListener('input', () => this.setBackground(custom.value));
+
+    // Rich backgrounds: gradient, blurred original, uploaded image.
+    this.el.querySelector('.bg-grad-btn').addEventListener('click', () => this.applyGradient());
+    $$('.bg-grad-a, .bg-grad-b', this.el).forEach((c) =>
+      c.addEventListener('input', () => this.applyGradient()),
+    );
+    this.el.querySelector('.bg-grad-angle').addEventListener('input', () => this.applyGradient());
+    this.el.querySelector('.bg-blur-btn').addEventListener('click', () => this.applyBlur());
+    this.el.querySelector('.bg-blur-amt').addEventListener('input', () => this.applyBlur());
+    this.el.querySelector('.bg-image-input').addEventListener('change', (e) => this.applyImageBg(e.target.files[0]));
 
     // Output format — likewise remembered.
     $$('.format-btn', this.el).forEach((btn) =>
       btn.addEventListener('click', () => {
         this.setFormat(btn.dataset.format);
         Prefs.set('format', btn.dataset.format);
+      }),
+    );
+
+    // Export size presets + custom dimensions.
+    $$('.size-btn', this.el).forEach((btn) =>
+      btn.addEventListener('click', () => {
+        const d = btn.dataset;
+        this.setExportSize(d.size === 'original' ? null : { w: +d.w, h: +d.h, label: d.size });
+      }),
+    );
+    $$('.size-custom-w, .size-custom-h', this.el).forEach((c) =>
+      c.addEventListener('input', () => {
+        const w = parseInt(this.el.querySelector('.size-custom-w').value, 10);
+        const h = parseInt(this.el.querySelector('.size-custom-h').value, 10);
+        if (w > 0 && h > 0) this.setExportSize({ w, h, label: 'custom' });
       }),
     );
 
@@ -1138,7 +1228,7 @@ class Card {
     const bg = Prefs.get('bg');
     if (bg) {
       const swatch = this.el.querySelector(`.swatch[data-bg="${bg}"]`);
-      if (swatch) this.setBackground(bg, swatch);
+      if (swatch) this.setBackground(bg);
     }
     const format = Prefs.get('format');
     if (format && EXT[format]) {
@@ -1203,15 +1293,71 @@ class Card {
     this.el.querySelector('.view-label').textContent = showSplit ? 'Slider' : 'Side-by-side';
   }
 
-  setBackground(value, swatchEl) {
+  /** Set a solid/transparent background (from a swatch or the colour picker). */
+  setBackground(value) {
     this.bg = value === 'transparent' ? null : value;
-
-    // Highlight the active swatch.
-    $$('.swatch', this.el).forEach((s) => s.classList.remove('ring-2', 'ring-primary', 'ring-offset-1'));
-    this.el.querySelector('.custom-color').parentElement.classList.remove('ring-2', 'ring-primary');
-    if (swatchEl) swatchEl.classList.add('ring-2', 'ring-primary', 'ring-offset-1');
-
+    this.refreshBgActive();
     this.refreshPreview();
+  }
+
+  /** Set a rich background: a gradient, blurred original, or uploaded image. */
+  setBackgroundSpec(spec) {
+    this.bg = spec;
+    this.refreshBgActive();
+    this.refreshPreview();
+  }
+
+  applyGradient() {
+    this.setBackgroundSpec({
+      type: 'gradient',
+      from: this.el.querySelector('.bg-grad-a').value,
+      to: this.el.querySelector('.bg-grad-b').value,
+      angle: parseFloat(this.el.querySelector('.bg-grad-angle').value) || 0,
+    });
+  }
+
+  applyBlur() {
+    this.setBackgroundSpec({ type: 'blur', amount: parseFloat(this.el.querySelector('.bg-blur-amt').value) });
+  }
+
+  applyImageBg(file) {
+    if (!file) return;
+    if (this._bgImageUrl) URL.revokeObjectURL(this._bgImageUrl);
+    this._bgImageUrl = URL.createObjectURL(file);
+    this.setBackgroundSpec({ type: 'image', url: this._bgImageUrl });
+  }
+
+  /** Reflect the active background in the swatch / style-button highlighting. */
+  refreshBgActive() {
+    const bg = this.bg;
+    const isStr = typeof bg === 'string';
+    const presets = ['transparent', '#ffffff', '#000000', '#4F46E5', '#22c55e'];
+    $$('.swatch', this.el).forEach((s) => {
+      const active = bg === null ? s.dataset.bg === 'transparent' : isStr && s.dataset.bg === bg;
+      s.classList.toggle('ring-2', active);
+      s.classList.toggle('ring-primary', active);
+      s.classList.toggle('ring-offset-1', active);
+    });
+    // Custom colour picker is active for any solid colour that isn't a preset.
+    const customActive = isStr && !presets.includes(bg);
+    this.el.querySelector('.custom-color').parentElement.classList.toggle('ring-2', customActive);
+    this.el.querySelector('.custom-color').parentElement.classList.toggle('ring-primary', customActive);
+    // Rich-background style buttons.
+    $$('.bg-style', this.el).forEach((b) => {
+      const active = bg && typeof bg === 'object' && b.dataset.style === bg.type;
+      b.classList.toggle('bg-primary', active);
+      b.classList.toggle('text-white', active);
+    });
+  }
+
+  /** Choose an export size ({w,h,label}) or null to keep the composed size. */
+  setExportSize(spec) {
+    this.exportSize = spec;
+    $$('.size-btn', this.el).forEach((b) => {
+      const active = spec ? b.dataset.size === spec.label : b.dataset.size === 'original';
+      b.classList.toggle('bg-primary', active);
+      b.classList.toggle('text-white', active);
+    });
   }
 
   /** Apply (or clear) a crop and refresh the on-card preview. */
@@ -1246,6 +1392,17 @@ class Card {
     this.refreshPreview();
   }
 
+  /** Paint a preview surface: a solid colour behind the cut-out, else checkerboard. */
+  paintSurface(surface, simpleBg) {
+    if (simpleBg && typeof this.bg === 'string') {
+      surface.classList.remove('checkerboard');
+      surface.style.backgroundColor = this.bg;
+    } else {
+      surface.classList.add('checkerboard');
+      surface.style.backgroundColor = '';
+    }
+  }
+
   /**
    * Update the card's preview surfaces to reflect the current background/crop.
    * Without a crop, the transparent cut-out is shown with the background painted
@@ -1263,19 +1420,14 @@ class Card {
     // A crop of the original image can be previewed even before bg removal
     // finishes, since it doesn't depend on the cut-out existing.
     const cropOnOriginal = this.cropState && this.cropState.source === 'original';
+    // A solid-colour background can be shown cheaply by painting the surface
+    // behind the transparent cut-out; richer backgrounds must be composited.
+    const simpleBg = !this.bg || typeof this.bg === 'string';
 
     // Called during build (for remembered options) before any image exists —
     // set the background surface but leave the image alone until it's ready.
     if (!this.processedUrl && !cropOnOriginal) {
-      for (const surface of surfaces) {
-        if (this.bg) {
-          surface.classList.remove('checkerboard');
-          surface.style.backgroundColor = this.bg;
-        } else {
-          surface.classList.add('checkerboard');
-          surface.style.backgroundColor = '';
-        }
-      }
+      for (const surface of surfaces) this.paintSurface(surface, simpleBg);
       return;
     }
 
@@ -1284,24 +1436,16 @@ class Card {
       this.previewUrl = null;
     }
 
-    if (!this.cropState && !this.sticker) {
+    if (!this.cropState && !this.sticker && simpleBg) {
       processed.src = this.processedUrl;
       processedSplit.src = this.processedUrl;
-      for (const surface of surfaces) {
-        if (this.bg) {
-          surface.classList.remove('checkerboard');
-          surface.style.backgroundColor = this.bg;
-        } else {
-          surface.classList.add('checkerboard');
-          surface.style.backgroundColor = '';
-        }
-      }
+      for (const surface of surfaces) this.paintSurface(surface, true);
       return;
     }
 
     let blob;
     try {
-      blob = await this.compose('image/png', this.bg, this.cropState, this.sticker);
+      blob = await this.compose('image/png', this.bg, this.cropState, this.sticker, null);
     } catch {
       if (seq === this._previewSeq) Toast.show('Could not render the crop preview', 'error');
       return;
@@ -1327,10 +1471,10 @@ class Card {
     this.el.querySelector('.download-label').textContent = LABEL[format];
   }
 
-  /** Composite the cut-out onto the chosen background, crop, sticker effects & format. */
-  async compose(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker) {
+  /** Composite the cut-out onto the chosen background, crop, sticker & size. */
+  async compose(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker, resize = this.exportSize) {
     // Fast path: unmodified, uncropped, un-styled transparent PNG keeps the bytes.
-    if (!bg && format === 'image/png' && !crop && !sticker) return this.processedBlob;
+    if (!bg && format === 'image/png' && !crop && !sticker && !resize) return this.processedBlob;
 
     // A crop can target the original image (background intact) or the cut-out.
     const srcUrl = crop && crop.source === 'original' ? this.originalUrl : this.processedUrl;
@@ -1348,8 +1492,7 @@ class Card {
     const CW = geo.outW;
     const CH = geo.outH;
 
-    // 1. Build the content sprite: the cropped, shape-masked subject. Its alpha
-    //    is the silhouette that sticker outline/shadow trace.
+    // 1. Content sprite: the cropped, shape-masked subject.
     const content = document.createElement('canvas');
     content.width = CW;
     content.height = CH;
@@ -1359,8 +1502,23 @@ class Card {
     cc.drawImage(img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, CW, CH);
     cc.restore();
 
-    // 2. Sticker metrics (all sizes are fractions of the shorter side, so the
-    //    look is resolution-independent). M is the margin the effects need.
+    // 2. Sprite = the subject, or the subject over its background (painted within
+    //    the shape). Sticker outline/shadow trace the sprite's alpha, so a filled
+    //    background makes them hug the shape; a transparent one hugs the subject.
+    let sprite = content;
+    if (bg) {
+      sprite = document.createElement('canvas');
+      sprite.width = CW;
+      sprite.height = CH;
+      const sc = sprite.getContext('2d');
+      sc.save();
+      applyShapeClip(sc, shape, CW, CH);
+      await paintBackground(sc, CW, CH, bg, this.originalUrl);
+      sc.drawImage(content, 0, 0);
+      sc.restore();
+    }
+
+    // 3. Sticker metrics (fractions of the shorter side ⇒ resolution-independent).
     const base = Math.min(CW, CH);
     const pad = sticker ? Math.round((sticker.pad || 0) * base) : 0;
     const ow = sticker && sticker.outline ? Math.max(1, Math.round((sticker.outlineW || 0.05) * base)) : 0;
@@ -1371,53 +1529,39 @@ class Card {
 
     const W = CW + 2 * M;
     const H = CH + 2 * M;
-    const canvas = document.createElement('canvas');
+    let canvas = document.createElement('canvas');
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    // JPG has no alpha; fall back to white so transparency doesn't become black.
-    const fill = bg || (format === 'image/jpeg' ? '#ffffff' : null);
+    // JPG has no alpha; paint white behind everything so it isn't black.
+    if (format === 'image/jpeg') {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+    }
+    // Drop shadow cast by the sprite silhouette.
+    if (shadowOn) {
+      ctx.save();
+      ctx.shadowColor = sticker.shadowColor || 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur = sb;
+      ctx.shadowOffsetY = soff;
+      ctx.drawImage(sprite, M, M);
+      ctx.restore();
+    }
+    // Outline: stamp the recoloured silhouette around a ring of radius `ow`.
+    if (ow > 0) {
+      const sil = tintCanvas(sprite, sticker.outlineColor || '#ffffff');
+      const steps = 32;
+      for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * Math.PI * 2;
+        ctx.drawImage(sil, M + Math.cos(a) * ow, M + Math.sin(a) * ow);
+      }
+    }
+    ctx.drawImage(sprite, M, M);
 
-    if (M === 0) {
-      // No sticker effects — fill honours the shape (opaque output paints the
-      // whole canvas first so corners outside a shape aren't black on JPG).
-      if (format === 'image/jpeg') {
-        ctx.fillStyle = fill;
-        ctx.fillRect(0, 0, W, H);
-      }
-      if (fill) {
-        ctx.save();
-        applyShapeClip(ctx, shape, CW, CH);
-        ctx.fillStyle = fill;
-        ctx.fillRect(0, 0, CW, CH);
-        ctx.restore();
-      }
-      ctx.drawImage(content, 0, 0);
-    } else {
-      if (fill) {
-        ctx.fillStyle = fill;
-        ctx.fillRect(0, 0, W, H);
-      }
-      // Drop shadow cast by the silhouette.
-      if (shadowOn) {
-        ctx.save();
-        ctx.shadowColor = sticker.shadowColor || 'rgba(0,0,0,0.45)';
-        ctx.shadowBlur = sb;
-        ctx.shadowOffsetY = soff;
-        ctx.drawImage(content, M, M);
-        ctx.restore();
-      }
-      // Outline: stamp the recoloured silhouette around a ring of radius `ow`.
-      if (ow > 0) {
-        const sil = tintCanvas(content, sticker.outlineColor || '#ffffff');
-        const steps = 32;
-        for (let i = 0; i < steps; i++) {
-          const a = (i / steps) * Math.PI * 2;
-          ctx.drawImage(sil, M + Math.cos(a) * ow, M + Math.sin(a) * ow);
-        }
-      }
-      ctx.drawImage(content, M, M);
+    // 4. Optional export resize (contain into the target box, no distortion).
+    if (resize && (canvas.width !== resize.w || canvas.height !== resize.h)) {
+      canvas = containInto(canvas, resize.w, resize.h, format);
     }
 
     const quality = format === 'image/png' ? undefined : CONFIG.encodeQuality;
@@ -1479,6 +1623,7 @@ class Card {
     URL.revokeObjectURL(this.originalUrl);
     if (this.processedUrl) URL.revokeObjectURL(this.processedUrl);
     if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
+    if (this._bgImageUrl) URL.revokeObjectURL(this._bgImageUrl);
     this.el.remove();
     App.cards = App.cards.filter((c) => c !== this);
     App.refreshToolbar();

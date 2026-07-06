@@ -12,11 +12,12 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - Upload via drag & drop, file picker, or clipboard paste (`Ctrl+V`)
 - JPG / PNG / WEBP support, full resolution preserved
 - Before/after comparison slider + side-by-side view + zoom lightbox
-- Choose a background: transparent, presets, or any custom color
+- Choose a background: transparent, colour presets or any custom colour, a **two-colour gradient**, a **blurred version of the original photo**, or your **own uploaded image**
 - **Refine brush editor** — erase leftover background or restore over-trimmed areas by hand, with **zoom/pan** (wheel, Move tool, hold-Space), soft brushes, undo & keyboard shortcuts
 - **Crop tool** — crop to a **circle, square, rounded square**, preset **4:5 / 16:9 / 9:16**, or any **custom W:H ratio**, with zoom, drag-to-reposition, and **rotate / flip**; circle/rounded masks keep transparent corners in the PNG. Choose the **source**: the transparent cut-out, or the **original image with its background kept** — so you can crop without removing the background at all. Works right away (even before removal finishes) and is non-destructive — re-open or remove the crop any time
 - **Sticker effects** — add a coloured **outline/stroke**, a **drop shadow**, and **padding** around the cut-out, composited live into the exported PNG
-- Export as PNG (transparent), JPG, or WEBP — no watermark, no resizing
+- **Export sizes** — keep the original size, or scale to a **profile picture (512×512)**, a **story (1080×1920)**, or any **custom width × height** (aspect preserved, no distortion)
+- Export as PNG (transparent), JPG, or WEBP — no watermark
 
 **Image converter** (`/convert`)
 - Convert any image to PNG / JPG / WEBP — input format is **auto-detected**
