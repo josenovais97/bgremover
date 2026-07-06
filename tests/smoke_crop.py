@@ -18,11 +18,20 @@ Env:
 Run:  python tests/smoke_crop.py     (exit code 0 = pass)
 """
 import os
+import struct
 import sys
+import tempfile
 import time
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
+
+
+def png_size(path):
+    """Read (width, height) from a PNG's IHDR chunk — no image library needed."""
+    with open(path, "rb") as f:
+        head = f.read(24)
+    return struct.unpack(">II", head[16:24])
 
 BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:8877")
 FIXTURE = str(Path(__file__).parent / "fixtures" / "sample.png")
@@ -111,6 +120,22 @@ def main():
         size_off = pg.evaluate("()=>{const i=document.querySelector('.processed-img');"
                                "return [i.naturalWidth,i.naturalHeight];}")
         check("turning outline off restores the original size", size_off == size_before)
+
+        # Rich background (gradient) composites into the preview.
+        pg.click(".bg-grad-btn")
+        time.sleep(0.6)
+        check("gradient background composites into the preview",
+              pg.evaluate("()=>document.querySelector('.processed-img').src.startsWith('blob:')")
+              and pg.evaluate("()=>document.querySelector('.bg-grad-btn').classList.contains('bg-primary')"))
+
+        # Export size preset produces an exact-size download (read the PNG IHDR).
+        pg.click(".size-btn[data-size='512x512']")
+        time.sleep(0.2)
+        with pg.expect_download(timeout=8000) as di:
+            pg.click(".download-btn")
+        out = os.path.join(tempfile.gettempdir(), "smoke_profile.png")
+        di.value.save_as(out)
+        check("profile export is 512x512", png_size(out) == (512, 512))
 
         check("no uncaught page errors", not errors)
         if errors:
