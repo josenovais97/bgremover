@@ -93,6 +93,25 @@ def main():
         except Exception as e:  # noqa: BLE001
             check(f"cropped cut-out downloads ({e})", False)
 
+        # Sticker effects grow the composed output and clear cleanly.
+        pg.click("#crop-cancel") if pg.evaluate(
+            "()=>!document.querySelector('#crop-modal').classList.contains('hidden')") else None
+        pg.click(".options-btn")
+        time.sleep(0.2)
+        size_before = pg.evaluate("()=>{const i=document.querySelector('.processed-img');"
+                                  "return [i.naturalWidth,i.naturalHeight];}")
+        pg.check(".fx-outline")
+        time.sleep(0.6)
+        size_outline = pg.evaluate("()=>{const i=document.querySelector('.processed-img');"
+                                   "return [i.naturalWidth,i.naturalHeight];}")
+        check("outline enlarges the composed output",
+              size_outline[0] > size_before[0] and size_outline[1] > size_before[1])
+        pg.uncheck(".fx-outline")
+        time.sleep(0.6)
+        size_off = pg.evaluate("()=>{const i=document.querySelector('.processed-img');"
+                               "return [i.naturalWidth,i.naturalHeight];}")
+        check("turning outline off restores the original size", size_off == size_before)
+
         check("no uncaught page errors", not errors)
         if errors:
             print("  page errors:", errors)
