@@ -252,6 +252,24 @@ FAQPage structured data is generated from the same FAQS the page renders
                     <button type="button" data-format="image/webp" class="format-btn px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800">WEBP</button>
                 </div>
             </div>
+            <!-- Sticker effects -->
+            <div class="flex items-start gap-3 flex-wrap pb-1 border-t border-gray-200/70 dark:border-gray-800/70 pt-3">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20 shrink-0 pt-1">Sticker</span>
+                <div class="flex flex-col gap-2 text-xs">
+                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="fx-outline accent-primary w-4 h-4"> Outline
+                        <input type="color" value="#ffffff" class="fx-outline-c w-6 h-6 rounded cursor-pointer bg-transparent" aria-label="Outline color">
+                        <input type="range" class="fx-outline-w w-20 accent-primary" min="0.02" max="0.14" step="0.01" value="0.05" aria-label="Outline width">
+                    </label>
+                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="fx-shadow accent-primary w-4 h-4"> Drop shadow
+                    </label>
+                    <label class="inline-flex items-center gap-2">
+                        <span class="w-14">Padding</span>
+                        <input type="range" class="fx-pad w-24 accent-primary" min="0" max="0.25" step="0.01" value="0" aria-label="Padding">
+                    </label>
+                </div>
+            </div>
         </div>
 
         <!-- Card footer -->

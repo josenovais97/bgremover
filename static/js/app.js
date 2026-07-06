@@ -55,6 +55,31 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+/** Clip the context to the given crop shape (no-op for 'rect'). */
+function applyShapeClip(ctx, shape, w, h) {
+  if (shape === 'circle') {
+    ctx.beginPath();
+    ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+    ctx.clip();
+  } else if (shape === 'rounded') {
+    roundRectPath(ctx, 0, 0, w, h, Math.min(w, h) * 0.18);
+    ctx.clip();
+  }
+}
+
+/** Return a copy of a canvas recoloured to a solid tint, keeping its alpha. */
+function tintCanvas(src, color) {
+  const c = document.createElement('canvas');
+  c.width = src.width;
+  c.height = src.height;
+  const x = c.getContext('2d');
+  x.drawImage(src, 0, 0);
+  x.globalCompositeOperation = 'source-in';
+  x.fillStyle = color;
+  x.fillRect(0, 0, c.width, c.height);
+  return c;
+}
+
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
 
 /**
@@ -920,7 +945,8 @@ class Card {
     this.done = false;
     this.bg = null; // null = transparent
     this.format = 'image/png';
-    this.cropState = null; // null = no crop; else { key, aspect, shape, z, u, v }
+    this.cropState = null; // null = no crop; else { key, aspect, shape, z, u, v, source }
+    this.sticker = null; // null = no effects; else { pad, outline, outlineW, outlineColor, shadow }
     this.previewUrl = null; // object URL for the composed (cropped) preview, if any
     this.build();
   }
@@ -976,6 +1002,14 @@ class Card {
         this.setFormat(btn.dataset.format);
         Prefs.set('format', btn.dataset.format);
       }),
+    );
+
+    // Sticker effects (outline / shadow / padding) — recompute on any change.
+    $$('.fx-outline, .fx-shadow, .fx-outline-c', this.el).forEach((c) =>
+      c.addEventListener('change', () => this.setSticker()),
+    );
+    $$('.fx-pad, .fx-outline-w', this.el).forEach((c) =>
+      c.addEventListener('input', () => this.setSticker()),
     );
 
     this.applyRememberedOptions();
@@ -1071,6 +1105,27 @@ class Card {
     if (state) meta.textContent = `${humanSize(this.file.size)} · cropped (${CROPS[state.key].label})`;
   }
 
+  /** Read the sticker-effect controls into a state object (or null if all off). */
+  readSticker() {
+    const on = this.el.querySelector('.fx-outline').checked;
+    const shadow = this.el.querySelector('.fx-shadow').checked;
+    const pad = parseFloat(this.el.querySelector('.fx-pad').value) || 0;
+    if (!on && !shadow && !pad) return null;
+    return {
+      pad,
+      outline: on,
+      outlineW: parseFloat(this.el.querySelector('.fx-outline-w').value),
+      outlineColor: this.el.querySelector('.fx-outline-c').value,
+      shadow,
+    };
+  }
+
+  /** Apply the current sticker-effect controls and refresh the preview. */
+  setSticker() {
+    this.sticker = this.readSticker();
+    this.refreshPreview();
+  }
+
   /**
    * Update the card's preview surfaces to reflect the current background/crop.
    * Without a crop, the transparent cut-out is shown with the background painted
@@ -1078,6 +1133,9 @@ class Card {
    * checkerboard so masked (transparent) corners read correctly.
    */
   async refreshPreview() {
+    // Guard against overlapping async composes (e.g. dragging a slider fires
+    // many): only the latest call may commit its result to the preview.
+    const seq = (this._previewSeq = (this._previewSeq || 0) + 1);
     const surfaces = [this.el.querySelector('.preview'), this.el.querySelector('.split-bg')];
     const processed = this.el.querySelector('.processed-img');
     const processedSplit = this.el.querySelector('.processed-img-split');
@@ -1106,7 +1164,7 @@ class Card {
       this.previewUrl = null;
     }
 
-    if (!this.cropState) {
+    if (!this.cropState && !this.sticker) {
       processed.src = this.processedUrl;
       processedSplit.src = this.processedUrl;
       for (const surface of surfaces) {
@@ -1123,11 +1181,13 @@ class Card {
 
     let blob;
     try {
-      blob = await this.compose('image/png', this.bg, this.cropState);
+      blob = await this.compose('image/png', this.bg, this.cropState, this.sticker);
     } catch {
-      Toast.show('Could not render the crop preview', 'error');
+      if (seq === this._previewSeq) Toast.show('Could not render the crop preview', 'error');
       return;
     }
+    // A newer refresh started while we were composing — discard this stale result.
+    if (seq !== this._previewSeq) return;
     this.previewUrl = URL.createObjectURL(blob);
     processed.src = this.previewUrl;
     processedSplit.src = this.previewUrl;
@@ -1147,10 +1207,10 @@ class Card {
     this.el.querySelector('.download-label').textContent = LABEL[format];
   }
 
-  /** Composite the transparent cut-out onto the chosen background, crop & format. */
-  async compose(format = this.format, bg = this.bg, crop = this.cropState) {
-    // Fast path: unmodified, uncropped transparent PNG keeps the original bytes.
-    if (!bg && format === 'image/png' && !crop) return this.processedBlob;
+  /** Composite the cut-out onto the chosen background, crop, sticker effects & format. */
+  async compose(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker) {
+    // Fast path: unmodified, uncropped, un-styled transparent PNG keeps the bytes.
+    if (!bg && format === 'image/png' && !crop && !sticker) return this.processedBlob;
 
     // A crop can target the original image (background intact) or the cut-out.
     const srcUrl = crop && crop.source === 'original' ? this.originalUrl : this.processedUrl;
@@ -1163,37 +1223,80 @@ class Card {
       ? cropGeometry(iw, ih, crop)
       : { sx: 0, sy: 0, sw: iw, sh: ih, outW: iw, outH: ih };
     const shape = crop ? crop.shape : 'rect';
+    const CW = geo.outW;
+    const CH = geo.outH;
 
+    // 1. Build the content sprite: the cropped, shape-masked subject. Its alpha
+    //    is the silhouette that sticker outline/shadow trace.
+    const content = document.createElement('canvas');
+    content.width = CW;
+    content.height = CH;
+    const cc = content.getContext('2d');
+    cc.save();
+    applyShapeClip(cc, shape, CW, CH);
+    cc.drawImage(img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, CW, CH);
+    cc.restore();
+
+    // 2. Sticker metrics (all sizes are fractions of the shorter side, so the
+    //    look is resolution-independent). M is the margin the effects need.
+    const base = Math.min(CW, CH);
+    const pad = sticker ? Math.round((sticker.pad || 0) * base) : 0;
+    const ow = sticker && sticker.outline ? Math.max(1, Math.round((sticker.outlineW || 0.05) * base)) : 0;
+    const shadowOn = !!(sticker && sticker.shadow);
+    const sb = shadowOn ? Math.round((sticker.shadowBlur ?? 0.06) * base) : 0;
+    const soff = shadowOn ? Math.round((sticker.shadowOff ?? 0.04) * base) : 0;
+    const M = pad + ow + (shadowOn ? sb + soff : 0);
+
+    const W = CW + 2 * M;
+    const H = CH + 2 * M;
     const canvas = document.createElement('canvas');
-    canvas.width = geo.outW;
-    canvas.height = geo.outH;
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext('2d');
 
     // JPG has no alpha; fall back to white so transparency doesn't become black.
     const fill = bg || (format === 'image/jpeg' ? '#ffffff' : null);
 
-    // Paint the whole canvas first for opaque output so any area outside a
-    // shape mask is the fallback colour rather than transparent-turned-black.
-    if (format === 'image/jpeg') {
-      ctx.fillStyle = fill;
-      ctx.fillRect(0, 0, geo.outW, geo.outH);
+    if (M === 0) {
+      // No sticker effects — fill honours the shape (opaque output paints the
+      // whole canvas first so corners outside a shape aren't black on JPG).
+      if (format === 'image/jpeg') {
+        ctx.fillStyle = fill;
+        ctx.fillRect(0, 0, W, H);
+      }
+      if (fill) {
+        ctx.save();
+        applyShapeClip(ctx, shape, CW, CH);
+        ctx.fillStyle = fill;
+        ctx.fillRect(0, 0, CW, CH);
+        ctx.restore();
+      }
+      ctx.drawImage(content, 0, 0);
+    } else {
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fillRect(0, 0, W, H);
+      }
+      // Drop shadow cast by the silhouette.
+      if (shadowOn) {
+        ctx.save();
+        ctx.shadowColor = sticker.shadowColor || 'rgba(0,0,0,0.45)';
+        ctx.shadowBlur = sb;
+        ctx.shadowOffsetY = soff;
+        ctx.drawImage(content, M, M);
+        ctx.restore();
+      }
+      // Outline: stamp the recoloured silhouette around a ring of radius `ow`.
+      if (ow > 0) {
+        const sil = tintCanvas(content, sticker.outlineColor || '#ffffff');
+        const steps = 32;
+        for (let i = 0; i < steps; i++) {
+          const a = (i / steps) * Math.PI * 2;
+          ctx.drawImage(sil, M + Math.cos(a) * ow, M + Math.sin(a) * ow);
+        }
+      }
+      ctx.drawImage(content, M, M);
     }
-
-    ctx.save();
-    if (shape === 'circle') {
-      ctx.beginPath();
-      ctx.ellipse(geo.outW / 2, geo.outH / 2, geo.outW / 2, geo.outH / 2, 0, 0, Math.PI * 2);
-      ctx.clip();
-    } else if (shape === 'rounded') {
-      roundRectPath(ctx, 0, 0, geo.outW, geo.outH, Math.min(geo.outW, geo.outH) * 0.18);
-      ctx.clip();
-    }
-    if (fill) {
-      ctx.fillStyle = fill;
-      ctx.fillRect(0, 0, geo.outW, geo.outH);
-    }
-    ctx.drawImage(img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, geo.outW, geo.outH);
-    ctx.restore();
 
     const quality = format === 'image/png' ? undefined : CONFIG.encodeQuality;
     return new Promise((resolve) => canvas.toBlob(resolve, format, quality));

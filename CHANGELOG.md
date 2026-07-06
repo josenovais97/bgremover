@@ -21,6 +21,20 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
   removing the background. The crop dialog opens immediately on the original,
   even before (or without) background removal finishing; the cut-out option
   unlocks once removal completes.
+- **Sticker effects** — a coloured **outline/stroke**, **drop shadow**, and
+  **padding** around the cut-out, composited resolution-independently into the
+  exported PNG.
+
+### Fixed
+- Crop dialog silently did nothing when opened before background removal
+  finished; it now opens immediately on the original image.
+- Overlapping preview renders (e.g. dragging the padding slider) could commit an
+  out-of-order result; the latest render now always wins.
+
+### Changed
+- Hardened the editor and crop dialogs: keyboard focus is trapped while open and
+  returned to the trigger on close, shape/source toggles expose `aria-pressed`,
+  and failed image composites surface a toast instead of failing silently.
 
 ## [1.1.0] — 2026-07-03
 

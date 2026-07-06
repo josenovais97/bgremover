@@ -15,6 +15,7 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - Choose a background: transparent, presets, or any custom color
 - **Refine brush editor** — erase leftover background or restore over-trimmed areas by hand, with **zoom/pan** (wheel, Move tool, hold-Space), soft brushes, undo & keyboard shortcuts
 - **Crop tool** — crop to a **circle, square, rounded square**, or **4:5 / 16:9 / 9:16** aspect, with zoom and drag-to-reposition; circle/rounded masks keep transparent corners in the PNG. Choose the **source**: the transparent cut-out, or the **original image with its background kept** — so you can crop without removing the background at all. Works right away (even before removal finishes) and is non-destructive — re-open or remove the crop any time
+- **Sticker effects** — add a coloured **outline/stroke**, a **drop shadow**, and **padding** around the cut-out, composited live into the exported PNG
 - Export as PNG (transparent), JPG, or WEBP — no watermark, no resizing
 
 **Image converter** (`/convert`)
