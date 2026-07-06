@@ -9,14 +9,18 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Editing release: an interactive crop tool for shaping the finished cut-out.
 
 ### Added
-- **Crop tool** — crop the transparent cut-out to a **circle**, **square**,
-  **rounded square**, or a **4:5 / 16:9 / 9:16** aspect ratio. Zoom (slider or
-  scroll) and drag to reposition inside the frame; the live preview uses the
-  same geometry as the export, so what you see is what you get. Circle and
-  rounded shapes are masked with real transparency in the PNG, and fall back to
-  a white fill for JPG. The crop is non-destructive — re-open to adjust or
-  **Remove crop** to revert — and is applied to single downloads, the copy
-  action, and the batch ZIP.
+- **Crop tool** — crop to a **circle**, **square**, **rounded square**, or a
+  **4:5 / 16:9 / 9:16** aspect ratio. Zoom (slider or scroll) and drag to
+  reposition inside the frame; the live preview uses the same geometry as the
+  export, so what you see is what you get. Circle and rounded shapes are masked
+  with real transparency in the PNG, and fall back to a white fill for JPG. The
+  crop is non-destructive — re-open to adjust or **Remove crop** to revert — and
+  is applied to single downloads, the copy action, and the batch ZIP.
+- **Crop source toggle** — crop either the transparent **cut-out** or the
+  **original image with its background intact**, so you can crop without
+  removing the background. The crop dialog opens immediately on the original,
+  even before (or without) background removal finishing; the cut-out option
+  unlocks once removal completes.
 
 ## [1.1.0] — 2026-07-03
 

@@ -649,6 +649,7 @@ const Editor = {
 const Cropper = {
   card: null,
   img: null,
+  source: 'cutout', // 'cutout' = transparent bg-removed result, 'original' = uploaded image
   key: 'square',
   z: 1,
   u: 0.5,
@@ -672,6 +673,9 @@ const Cropper = {
     $$('.crop-shape', this.modal).forEach((btn) =>
       btn.addEventListener('click', () => this.setShape(btn.dataset.crop)),
     );
+    $$('.crop-source', this.modal).forEach((btn) =>
+      btn.addEventListener('click', () => this.setSource(btn.dataset.source)),
+    );
 
     this.slider.addEventListener('input', () => this.setZoom(parseFloat(this.slider.value)));
     this.canvas.addEventListener('pointerdown', (e) => this.onDown(e));
@@ -690,16 +694,21 @@ const Cropper = {
   },
 
   async open(card) {
-    if (!card.done) return;
     this.card = card;
-    this.img = await loadImage(card.processedUrl);
 
     const s = card.cropState;
+    // Default to the transparent cut-out once it exists, otherwise the original
+    // image — so Crop is usable immediately, before (or without) bg removal.
+    this.source = s ? s.source : card.done ? 'cutout' : 'original';
+    if (this.source === 'cutout' && !card.done) this.source = 'original';
+    await this.loadSourceImage();
+
     this.key = (s && s.key) || 'square';
     this.z = (s && s.z) || 1;
     this.u = s ? s.u : 0.5;
     this.v = s ? s.v : 0.5;
 
+    this.updateSourceButtons();
     this.highlightShape();
     this.sizeCanvas();
     this.slider.value = this.z;
@@ -707,6 +716,36 @@ const Cropper = {
 
     this.modal.classList.remove('hidden');
     this.modal.classList.add('flex');
+  },
+
+  /** Load the image for the active source into this.img. */
+  loadSourceImage() {
+    const url = this.source === 'original' ? this.card.originalUrl : this.card.processedUrl;
+    return loadImage(url).then((img) => { this.img = img; });
+  },
+
+  setSource(src) {
+    if (src === this.source) return;
+    if (src === 'cutout' && !this.card.done) return; // cut-out not ready yet
+    this.source = src;
+    this.loadSourceImage().then(() => {
+      this.updateSourceButtons();
+      this.redraw();
+    });
+  },
+
+  /** Highlight the active source and disable Cut-out until bg removal is done. */
+  updateSourceButtons() {
+    $$('.crop-source', this.modal).forEach((b) => {
+      const active = b.dataset.source === this.source;
+      b.classList.toggle('bg-primary', active);
+      b.classList.toggle('text-white', active);
+      const disabled = b.dataset.source === 'cutout' && !this.card.done;
+      b.disabled = disabled;
+      b.classList.toggle('opacity-40', disabled);
+      b.classList.toggle('cursor-not-allowed', disabled);
+      b.title = disabled ? 'Available once background removal finishes' : '';
+    });
   },
 
   close() {
@@ -815,7 +854,7 @@ const Cropper = {
 
   apply() {
     const def = CROPS[this.key];
-    this.card.setCropState({ key: this.key, aspect: def.aspect, shape: def.shape, z: this.z, u: this.u, v: this.v });
+    this.card.setCropState({ key: this.key, aspect: def.aspect, shape: def.shape, z: this.z, u: this.u, v: this.v, source: this.source });
     this.close();
     Toast.show('Crop applied', 'success');
   },
@@ -996,9 +1035,13 @@ class Card {
     const processed = this.el.querySelector('.processed-img');
     const processedSplit = this.el.querySelector('.processed-img-split');
 
-    // Called during build (for remembered options) before the image exists —
+    // A crop of the original image can be previewed even before bg removal
+    // finishes, since it doesn't depend on the cut-out existing.
+    const cropOnOriginal = this.cropState && this.cropState.source === 'original';
+
+    // Called during build (for remembered options) before any image exists —
     // set the background surface but leave the image alone until it's ready.
-    if (!this.processedUrl) {
+    if (!this.processedUrl && !cropOnOriginal) {
       for (const surface of surfaces) {
         if (this.bg) {
           surface.classList.remove('checkerboard');
@@ -1056,7 +1099,9 @@ class Card {
     // Fast path: unmodified, uncropped transparent PNG keeps the original bytes.
     if (!bg && format === 'image/png' && !crop) return this.processedBlob;
 
-    const img = await loadImage(this.processedUrl);
+    // A crop can target the original image (background intact) or the cut-out.
+    const srcUrl = crop && crop.source === 'original' ? this.originalUrl : this.processedUrl;
+    const img = await loadImage(srcUrl);
     const iw = img.naturalWidth;
     const ih = img.naturalHeight;
 
@@ -1102,12 +1147,14 @@ class Card {
   }
 
   async download() {
-    if (!this.processedBlob) return;
+    // Allow download once there's a cut-out, or a crop of the original.
+    if (!this.processedBlob && !this.cropState) return;
     const blob = await this.compose();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${sanitizeName(this.file.name)}-no-bg.${EXT[this.format]}`;
+    const suffix = this.cropState && this.cropState.source === 'original' ? 'crop' : 'no-bg';
+    a.download = `${sanitizeName(this.file.name)}-${suffix}.${EXT[this.format]}`;
     document.body.appendChild(a);
     a.click();
     URL.revokeObjectURL(url);
