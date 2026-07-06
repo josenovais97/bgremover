@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free Instagram Photo Editor — Resize, Crop &amp; Filter for IG{% endblock %}
+{% block description %}Edit photos for Instagram free, right in your browser. One-tap filters, brightness/contrast/warmth/sharpen adjustments, exact Post, Story, Reel and Portrait sizes, fit-without-cropping, borders, a carousel splitter and optional background removal. Nothing is uploaded.{% endblock %}
+{% block og_title %}Instagram Photo Editor — Filters, Sizes, Borders &amp; Carousel, Free{% endblock %}
+
+{% block content %}
+<!-- Offscreen SVG sharpen kernel referenced by canvas ctx.filter (updated live in JS). -->
+<svg width="0" height="0" class="absolute" aria-hidden="true" focusable="false">
+    <filter id="ig-sharpen" color-interpolation-filters="sRGB">
+        <feConvolveMatrix order="3" preserveAlpha="true" edgeMode="duplicate" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
+    </filter>
+</svg>
+
+<div class="space-y-12">
+
+    <!-- Hero + dropzone -->
+    <section class="max-w-3xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-[#d62976]/10 text-[#d62976]">
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i> Edit locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Instagram Photo
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#feda75] via-[#d62976] to-[#4f5bd5]">Editor</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Filters, adjustments, exact Post, Story, Reel &amp; Portrait sizes, fit-without-cropping,
+                borders and a carousel splitter — ready to upload. No background removal needed. 100% private.
+            </p>
+        </div>
+
+        <div id="ig-dropzone" role="button" tabindex="0" aria-label="Upload a photo to edit. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-[#d62976] transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976]">
+            <input type="file" id="ig-input" class="sr-only" accept="image/*">
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="ig-icon" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl text-white bg-gradient-to-br from-[#feda75] via-[#d62976] to-[#4f5bd5] group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drop a photo to edit</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                <button id="ig-browse" type="button" class="mt-2 px-8 py-3 text-white font-medium rounded-xl shadow-lg transition-transform hover:scale-105 bg-gradient-to-r from-[#d62976] to-[#4f5bd5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="ig-editor" class="hidden max-w-6xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6">
+        <!-- Canvas stage -->
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-4 min-h-0">
+            <div class="flex-1 w-full grid place-items-center min-h-[20rem]">
+                <canvas id="ig-canvas" class="max-w-full max-h-[70vh] rounded-lg shadow-lg touch-none cursor-grab checkerboard" aria-label="Photo preview"></canvas>
+            </div>
+            <div id="ig-zoom-row" class="w-full max-w-sm flex items-center gap-3">
+                <i class="fa-solid fa-magnifying-glass-minus text-gray-400" aria-hidden="true"></i>
+                <input id="ig-zoom" type="range" min="1" max="4" step="0.01" value="1" class="w-full accent-[#d62976]" aria-label="Zoom">
+                <i class="fa-solid fa-magnifying-glass-plus text-gray-400" aria-hidden="true"></i>
+            </div>
+            <p id="ig-hint" class="text-xs text-gray-400">Drag the photo to reposition · scroll or use the slider to zoom</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="space-y-5">
+            <!-- Format -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Format</span>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    {% for f in formats %}
+                    <button type="button" class="ig-format px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-left {% if forloop.first %}ring-2 ring-[#d62976]{% endif %}"
+                            data-key="{{ f.key }}" data-aspect="{{ f.aspect }}" data-w="{{ f.w }}" data-h="{{ f.h }}">
+                        <span class="font-medium">{{ f.label }}</span>
+                        <span class="block text-[11px] text-gray-500 dark:text-gray-400">{{ f.sub }} · {{ f.w }}×{{ f.h }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Frame: fit vs fill + border -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Frame</span>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <button type="button" class="ig-fit px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-left ring-2 ring-[#d62976]" data-fit="fill">
+                        <span class="font-medium">Fill</span><span class="block text-[11px] text-gray-500 dark:text-gray-400">Crop to fit frame</span>
+                    </button>
+                    <button type="button" class="ig-fit px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-left" data-fit="fit">
+                        <span class="font-medium">Fit</span><span class="block text-[11px] text-gray-500 dark:text-gray-400">Whole photo, no crop</span>
+                    </button>
+                </div>
+                <div id="ig-fitbg-row" class="hidden flex flex-wrap items-center gap-2 text-xs">
+                    <span class="text-gray-500 dark:text-gray-400">Fill space with</span>
+                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-bg="blur">Blur</button>
+                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-bg="#ffffff">White</button>
+                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-bg="#000000">Black</button>
+                </div>
+                <label class="flex items-center gap-2 text-xs">
+                    <span class="w-16 shrink-0">Border</span>
+                    <input id="ig-border" type="range" min="0" max="12" value="0" class="w-full accent-[#d62976]" aria-label="Border thickness">
+                    <input id="ig-border-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Border colour">
+                </label>
+            </div>
+
+            <!-- Filters -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Filters</span>
+                <div id="ig-filters" class="flex flex-wrap gap-2 text-xs font-medium">
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-filter="original">Original</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="vivid">Vivid</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="warm">Warm</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="cool">Cool</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="mono">Mono</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="fade">Fade</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="punch">Punch</button>
+                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="vintage">Vintage</button>
+                </div>
+            </div>
+
+            <!-- Adjustments -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Adjust</span>
+                    <button id="ig-reset" type="button" class="text-xs text-[#d62976] hover:underline">Reset</button>
+                </div>
+                <div class="space-y-2.5 text-xs">
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Brightness</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="brightness" min="50" max="150" value="100"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Contrast</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="contrast" min="50" max="150" value="100"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Saturation</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="saturate" min="0" max="200" value="100"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Warmth</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="warmth" min="-100" max="100" value="0"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Sharpen</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="sharpen" min="0" max="100" value="0"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Vignette</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="vignette" min="0" max="100" value="0"></label>
+                </div>
+            </div>
+
+            <!-- Carousel splitter -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Carousel</span>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">Split a wide photo into seamless swipeable tiles.</p>
+                <div class="flex gap-2 text-xs font-medium">
+                    <button type="button" class="ig-carousel px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-n="1">Off</button>
+                    <button type="button" class="ig-carousel px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-n="2">2 tiles</button>
+                    <button type="button" class="ig-carousel px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-n="3">3 tiles</button>
+                </div>
+            </div>
+
+            <!-- Optional background removal -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Background <span class="normal-case text-gray-400">(optional)</span></span>
+                <div class="flex items-center gap-2 flex-wrap text-xs">
+                    <button id="ig-remove-bg" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-1" aria-hidden="true"></i>Remove background</button>
+                    <label class="flex items-center gap-1.5" title="Background colour when removed"><span>Colour</span><input id="ig-bg-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent"></label>
+                    <button id="ig-restore-bg" type="button" class="hidden px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Undo</button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col gap-2">
+                <button id="ig-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow bg-gradient-to-r from-[#d62976] to-[#4f5bd5] hover:opacity-95 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976]">
+                    <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i><span id="ig-download-label">Download for Instagram</span>
+                </button>
+                <button id="ig-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEO / help content -->
+    <section aria-labelledby="ig-sizes" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="ig-sizes" class="text-2xl font-bold text-center">Instagram photo sizes (2026)</h2>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {% for f in formats %}
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-1 text-center">
+                <div class="font-semibold">{{ f.label }}</div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ f.sub }} — {{ f.w }} × {{ f.h }} px</p>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Upload once, then pick a format to crop and size it exactly, or switch to <strong>Fit</strong> to post the
+            whole photo without cropping. Apply a one-tap filter, fine-tune brightness, contrast, warmth and sharpness,
+            add a clean border, or split a panorama into a swipeable carousel. Everything runs in your browser — your
+            photo never leaves your device.
+        </p>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/instagram.js' %}"></script>
+{% endblock %}
