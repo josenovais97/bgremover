@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("convert/", views.convert, name="convert"),
     path("instagram/", views.instagram, name="instagram"),
+    path("crop/", views.crop, name="crop"),
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
     path("sw.js", views.service_worker, name="sw"),
     path("manifest.webmanifest", views.manifest, name="manifest"),

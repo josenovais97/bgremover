@@ -77,6 +77,27 @@ def main():
         time.sleep(0.3)
         check("filter preset repaints the canvas", snap(pg) != base)
 
+        # Regression: a preset with sharpen>0 must STILL grade colour. Noir sets
+        # saturate:0 — the whole canvas should go greyscale. If sharpen were mixed
+        # into ctx.filter as a url(), the grade would silently void and colour stay.
+        pg.click(".ig-filter[data-filter='noir']")
+        time.sleep(0.3)
+        max_chroma = pg.evaluate(
+            "()=>{const c=document.querySelector('#ig-canvas');"
+            "const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let m=0;"
+            "for(let i=0;i<d.length;i+=400){m=Math.max(m,Math.abs(d[i]-d[i+1]),Math.abs(d[i+1]-d[i+2]));}return m;}"
+        )
+        check("sharpen-bearing preset still grades colour (Noir desaturates)", max_chroma < 12)
+
+        # Filter strength dials a look back toward the original.
+        pg.click(".ig-filter[data-filter='vivid']")
+        time.sleep(0.2)
+        full = snap(pg)
+        pg.eval_on_selector("#ig-strength",
+                            "el=>{el.value=0;el.dispatchEvent(new Event('input',{bubbles:true}));}")
+        time.sleep(0.3)
+        check("filter strength repaints the canvas", snap(pg) != full)
+
         # Reset first: vivid clamps this flat-block fixture to 0/255, where a
         # brightness *increase* is a no-op. Darkening from a clean state always moves pixels.
         pg.click(".ig-filter[data-filter='original']")
@@ -129,9 +150,40 @@ def main():
         time.sleep(0.3)
         check("Sharpen repaints the canvas", snap(pg) != pre_sharpen)
 
-        # Carousel: 2 tiles at Post format previews a 2:1 panorama and exports a ZIP.
-        pg.click(".ig-carousel[data-n='2']")
+        # Grain repaints the canvas.
+        pg.click(".ig-filter[data-filter='original']")
+        time.sleep(0.2)
+        pre_grain = snap(pg)
+        pg.eval_on_selector(".ig-adj[data-adj='grain']",
+                            "el=>{el.value=80;el.dispatchEvent(new Event('input',{bubbles:true}));}")
         time.sleep(0.3)
+        check("Grain repaints the canvas", snap(pg) != pre_grain)
+
+        # Press-and-hold compare shows the (unedited) original, then restores.
+        pg.click(".ig-filter[data-filter='vintage']")
+        time.sleep(0.2)
+        edited = snap(pg)
+        pg.dispatch_event("#ig-compare", "pointerdown")
+        time.sleep(0.25)
+        original_view = snap(pg)
+        pg.dispatch_event("#ig-compare", "pointerup")
+        time.sleep(0.25)
+        check("compare shows the original then restores",
+              original_view != edited and snap(pg) == edited)
+
+        # Safe-zone guides overlay the frame (Story format).
+        pg.click(".ig-format[data-key='story']")
+        pg.click(".ig-filter[data-filter='original']")
+        time.sleep(0.3)
+        pre_safe = snap(pg)
+        pg.click("#ig-safezones")
+        time.sleep(0.3)
+        check("safe-zone guides repaint the canvas", snap(pg) != pre_safe)
+        pg.click("#ig-safezones")  # toggle back off
+        time.sleep(0.2)
+
+        # Carousel: 2 tiles at Post format previews a 2:1 panorama and exports a ZIP.
+        pg.click(".ig-format[data-key='post']")
         pg.click(".ig-carousel[data-n='2']")
         time.sleep(0.3)
         ar2 = pg.evaluate("()=>{const c=document.querySelector('#ig-canvas');return c.width/c.height;}")

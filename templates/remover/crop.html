@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free Image Crop Tool — Circle, Square &amp; Custom Ratio, Private{% endblock %}
+{% block description %}Crop images free in your browser — square, circle, rounded, 4:5, 16:9, 9:16 or any custom ratio, with rotate, flip, zoom and drag. Export a transparent PNG or a JPG. No background removal, no upload — nothing leaves your device.{% endblock %}
+{% block og_title %}Free Image Crop Tool — Circle, Square, Custom Ratio &amp; Rotate{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero + dropzone -->
+    <section class="max-w-3xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i> Crops locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Crop an <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-500">Image</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Square, circle, rounded or any custom ratio — with rotate, flip, zoom and drag.
+                No background removal needed. Export a transparent PNG or a JPG, 100% in your browser.
+            </p>
+        </div>
+
+        <div id="cr-dropzone" role="button" tabindex="0" aria-label="Upload a photo to crop. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <input type="file" id="cr-input" class="sr-only" accept="image/*">
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="cr-icon" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl text-white bg-gradient-to-br from-primary to-fuchsia-500 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-crop-simple" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drop a photo to crop</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                <button id="cr-browse" type="button" class="mt-2 px-8 py-3 text-white font-medium rounded-xl shadow-lg transition-transform hover:scale-105 bg-gradient-to-r from-primary to-fuchsia-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="cr-editor" class="hidden max-w-6xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6">
+        <!-- Canvas stage -->
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-4 min-h-0">
+            <div class="flex-1 w-full grid place-items-center min-h-[20rem]">
+                <canvas id="cr-canvas" class="max-w-full max-h-[70vh] rounded-lg shadow-lg touch-none cursor-grab checkerboard" aria-label="Crop preview"></canvas>
+            </div>
+            <div id="cr-zoom-row" class="w-full max-w-sm flex items-center gap-3">
+                <i class="fa-solid fa-magnifying-glass-minus text-gray-400" aria-hidden="true"></i>
+                <input id="cr-zoom" type="range" min="1" max="4" step="0.01" value="1" class="w-full accent-primary" aria-label="Zoom">
+                <i class="fa-solid fa-magnifying-glass-plus text-gray-400" aria-hidden="true"></i>
+            </div>
+            <p class="text-xs text-gray-400">Drag the photo to reposition · scroll or use the slider to zoom</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="space-y-5">
+            <!-- Shape -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Shape</span>
+                <div class="grid grid-cols-3 gap-2 text-xs font-medium">
+                    <button type="button" class="cr-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-primary" data-shape="rect"><i class="fa-solid fa-square-full mr-1" aria-hidden="true"></i>Rectangle</button>
+                    <button type="button" class="cr-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="rounded"><i class="fa-regular fa-square mr-1" aria-hidden="true"></i>Rounded</button>
+                    <button type="button" class="cr-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="circle"><i class="fa-regular fa-circle mr-1" aria-hidden="true"></i>Circle</button>
+                </div>
+            </div>
+
+            <!-- Aspect ratio -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ratio</span>
+                <div id="cr-ratios" class="flex flex-wrap gap-2 text-xs font-medium">
+                    <button type="button" class="cr-ratio px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-primary" data-ratio="free">Original</button>
+                    <button type="button" class="cr-ratio px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ratio="1">1:1</button>
+                    <button type="button" class="cr-ratio px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ratio="0.8">4:5</button>
+                    <button type="button" class="cr-ratio px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ratio="0.75">3:4</button>
+                    <button type="button" class="cr-ratio px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ratio="1.7778">16:9</button>
+                    <button type="button" class="cr-ratio px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ratio="0.5625">9:16</button>
+                    <button type="button" class="cr-ratio px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ratio="custom">Custom</button>
+                </div>
+                <div id="cr-custom" class="hidden items-center gap-2 text-xs">
+                    <input id="cr-custom-w" type="number" min="1" max="10000" value="4" class="w-16 px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent" aria-label="Custom ratio width">
+                    <span class="text-gray-400">:</span>
+                    <input id="cr-custom-h" type="number" min="1" max="10000" value="3" class="w-16 px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent" aria-label="Custom ratio height">
+                    <span class="text-gray-400">ratio</span>
+                </div>
+            </div>
+
+            <!-- Rotate / flip -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Rotate &amp; flip</span>
+                <div class="flex flex-wrap gap-2 text-xs font-medium">
+                    <button id="cr-rotate-l" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-rotate-left mr-1" aria-hidden="true"></i>Left</button>
+                    <button id="cr-rotate-r" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-rotate-right mr-1" aria-hidden="true"></i>Right</button>
+                    <button id="cr-flip-h" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-arrows-left-right mr-1" aria-hidden="true"></i>Flip H</button>
+                    <button id="cr-flip-v" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-arrows-up-down mr-1" aria-hidden="true"></i>Flip V</button>
+                </div>
+            </div>
+
+            <!-- Export format -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Export as</span>
+                <div class="flex gap-2 text-xs font-medium">
+                    <button type="button" class="cr-format px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-primary" data-format="png">PNG</button>
+                    <button type="button" class="cr-format px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-format="jpg">JPG</button>
+                </div>
+                <p id="cr-format-note" class="text-[11px] text-gray-500 dark:text-gray-400">PNG keeps transparent corners on rounded/circle crops.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col gap-2">
+                <button id="cr-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow bg-gradient-to-r from-primary to-fuchsia-500 hover:opacity-95 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download crop
+                </button>
+                <button id="cr-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEO / help content -->
+    <section aria-labelledby="cr-help" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="cr-help" class="text-2xl font-bold text-center">Crop any image, right in your browser</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-1 text-center">
+                <div class="font-semibold"><i class="fa-regular fa-circle mr-1" aria-hidden="true"></i>Circle &amp; rounded</div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Perfect avatars with transparent corners, saved as PNG.</p>
+            </div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-1 text-center">
+                <div class="font-semibold"><i class="fa-solid fa-ratio mr-1" aria-hidden="true"></i>Any ratio</div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">1:1, 4:5, 16:9, 9:16 or your own custom width : height.</p>
+            </div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-1 text-center">
+                <div class="font-semibold"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Private</div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">No upload and no background removal — the crop runs on your device.</p>
+            </div>
+        </div>
+        <p class="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Upload a photo, pick a shape and ratio, rotate or flip, then drag and zoom to frame it. Download a
+            full-resolution crop as a transparent PNG or a JPG — nothing ever leaves your browser.
+        </p>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/crop.js' %}"></script>
+{% endblock %}

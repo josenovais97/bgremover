@@ -7,8 +7,11 @@
  *  - Fill (cover-crop) or Fit (whole photo, filling the gaps with a blurred
  *    copy or a solid colour so nothing is cropped),
  *  - add a coloured border,
- *  - apply one-tap filters and fine-tune brightness / contrast / saturation /
- *    warmth / sharpen / vignette,
+ *  - apply on-trend one-tap looks and dial their strength up or down,
+ *  - fine-tune brightness / contrast / saturation / warmth / sharpen / grain /
+ *    vignette,
+ *  - press-and-hold to compare against the original,
+ *  - toggle Story/Reel safe-zone guides so captions and UI don't cover faces,
  *  - split a wide photo into a seamless swipeable carousel (ZIP export),
  *  - reposition with drag + zoom.
  * Background removal is an optional extra, lazy-loaded only if used.
@@ -16,6 +19,11 @@
  * Self-contained (own helpers/toast) because Django's hashed-manifest static
  * storage doesn't rewrite ES-module import paths — cross-file local imports
  * would break in production, but CDN (absolute-URL) imports are fine.
+ *
+ * Note: sharpen is a manual convolution pass, NOT a canvas `url(#…)` filter.
+ * Combining an SVG `url()` reference with filter functions in `ctx.filter`
+ * silently voids the whole filter in Chromium and Safari, which would drop the
+ * colour grading — so the two are kept strictly separate.
  */
 
 /* --------------------------------------------------------------- helpers */
@@ -51,16 +59,23 @@ const Toast = {
   },
 };
 
-// One-tap looks. Each is a full set of adjustment values.
+// The adjustment keys that make up a "look". Everything blends linearly on these.
+const ADJ_KEYS = ['brightness', 'contrast', 'saturate', 'warmth', 'sharpen', 'grain', 'vignette'];
+
+// On-trend one-tap looks influencers reach for. Each is a full set of values.
 const FILTERS = {
-  original: { brightness: 100, contrast: 100, saturate: 100, warmth: 0, sharpen: 0, vignette: 0 },
-  vivid: { brightness: 103, contrast: 115, saturate: 140, warmth: 5, sharpen: 20, vignette: 10 },
-  warm: { brightness: 103, contrast: 105, saturate: 115, warmth: 45, sharpen: 10, vignette: 10 },
-  cool: { brightness: 102, contrast: 105, saturate: 110, warmth: -40, sharpen: 10, vignette: 5 },
-  mono: { brightness: 105, contrast: 112, saturate: 0, warmth: 0, sharpen: 15, vignette: 15 },
-  fade: { brightness: 110, contrast: 88, saturate: 82, warmth: 12, sharpen: 0, vignette: 0 },
-  punch: { brightness: 100, contrast: 130, saturate: 150, warmth: 0, sharpen: 35, vignette: 12 },
-  vintage: { brightness: 105, contrast: 110, saturate: 75, warmth: 35, sharpen: 0, vignette: 40 },
+  original: { brightness: 100, contrast: 100, saturate: 100, warmth: 0, sharpen: 0, grain: 0, vignette: 0 },
+  vivid: { brightness: 103, contrast: 116, saturate: 142, warmth: 6, sharpen: 22, grain: 0, vignette: 8 },
+  punch: { brightness: 101, contrast: 132, saturate: 152, warmth: 0, sharpen: 34, grain: 0, vignette: 10 },
+  clean: { brightness: 108, contrast: 96, saturate: 96, warmth: -6, sharpen: 12, grain: 0, vignette: 0 },
+  golden: { brightness: 106, contrast: 106, saturate: 118, warmth: 42, sharpen: 14, grain: 6, vignette: 8 },
+  moody: { brightness: 92, contrast: 124, saturate: 88, warmth: -14, sharpen: 18, grain: 10, vignette: 26 },
+  film: { brightness: 104, contrast: 92, saturate: 86, warmth: 18, sharpen: 6, grain: 26, vignette: 8 },
+  noir: { brightness: 106, contrast: 120, saturate: 0, warmth: 0, sharpen: 20, grain: 22, vignette: 24 },
+  warm: { brightness: 103, contrast: 106, saturate: 116, warmth: 44, sharpen: 12, grain: 0, vignette: 8 },
+  cool: { brightness: 102, contrast: 106, saturate: 110, warmth: -40, sharpen: 12, grain: 0, vignette: 6 },
+  fade: { brightness: 111, contrast: 86, saturate: 80, warmth: 12, sharpen: 0, grain: 8, vignette: 0 },
+  vintage: { brightness: 105, contrast: 110, saturate: 74, warmth: 34, sharpen: 6, grain: 16, vignette: 38 },
 };
 
 /* ------------------------------------------------------------ geometry */
@@ -84,7 +99,9 @@ function frameGeometry(iw, ih, aspect, zoom, u, v) {
 /* --------------------------------------------------------------------- app */
 const App = {
   format: { key: 'post', aspect: 1, w: 1080, h: 1080 },
-  adj: { ...FILTERS.original },
+  adj: { ...FILTERS.original }, // effective values used to render
+  baseFilter: { ...FILTERS.original }, // the picked look at full strength
+  strength: 100, // how far the look is applied (blend toward Original)
   zoom: 1,
   u: 0.5,
   v: 0.5,
@@ -93,12 +110,15 @@ const App = {
   border: 0, // percent of the short side
   borderColor: '#ffffff',
   carousel: 1, // 1 = single post, 2/3 = split into tiles
+  safeZones: false, // Story/Reel UI-coverage guides (preview only)
+  showOriginal: false, // press-and-hold compare
   raw: null, // original uploaded image
   cutout: null, // background-removed image, if produced
   bgRemoved: false,
   bgColor: '#ffffff',
   origUrl: null,
   cutoutUrl: null,
+  noise: null, // cached grain tile
 
   init() {
     this.dropzone = $('#ig-dropzone');
@@ -133,16 +153,33 @@ const App = {
     $$('.ig-fitbg').forEach((b) => b.addEventListener('click', () => this.setFitBg(b.dataset.bg, b)));
     $('#ig-border').addEventListener('input', (e) => { this.border = +e.target.value; this.render(); });
     $('#ig-border-color').addEventListener('input', (e) => { this.borderColor = e.target.value; if (this.border > 0) this.render(); });
-    // Filters
+    // Looks + strength
     $$('.ig-filter').forEach((b) => b.addEventListener('click', () => this.applyFilter(b)));
-    // Adjustment sliders
+    $('#ig-strength').addEventListener('input', (e) => this.setStrength(+e.target.value));
+    // Adjustment sliders (manual tweaks become the new base at full strength)
     $$('.ig-adj').forEach((s) => s.addEventListener('input', () => {
       this.adj[s.dataset.adj] = +s.value;
+      this.baseFilter = { ...this.adj };
+      this.strength = 100;
+      $('#ig-strength').value = 100;
+      $$('.ig-filter').forEach((b) => b.classList.remove('ring-2', 'ring-[#d62976]'));
       this.render();
     }));
     $('#ig-reset').addEventListener('click', () => this.resetAdjustments());
     // Carousel splitter
     $$('.ig-carousel').forEach((b) => b.addEventListener('click', () => this.setCarousel(+b.dataset.n, b)));
+    // Compare (press and hold) + safe zones
+    const cmp = $('#ig-compare');
+    const showOrig = (on) => { this.showOriginal = on; this.render(); };
+    cmp.addEventListener('pointerdown', (e) => { e.preventDefault(); showOrig(true); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => cmp.addEventListener(ev, () => showOrig(false)));
+    $('#ig-safezones').addEventListener('click', (e) => {
+      this.safeZones = !this.safeZones;
+      e.currentTarget.setAttribute('aria-pressed', String(this.safeZones));
+      e.currentTarget.classList.toggle('ring-2', this.safeZones);
+      e.currentTarget.classList.toggle('ring-[#d62976]', this.safeZones);
+      this.render();
+    });
 
     // Background removal (optional, lazy)
     $('#ig-remove-bg').addEventListener('click', () => this.removeBackground());
@@ -228,15 +265,35 @@ const App = {
     $('#ig-hint').classList.toggle('hidden', !canReposition);
   },
 
+  /* ---------------------------------------------------------- looks */
+  blend(a, b, t) {
+    const o = {};
+    for (const k of ADJ_KEYS) o[k] = a[k] + (b[k] - a[k]) * t;
+    return o;
+  },
+
   applyFilter(btn) {
-    this.adj = { ...FILTERS[btn.dataset.filter] };
+    this.baseFilter = { ...FILTERS[btn.dataset.filter] };
+    this.strength = 100;
+    $('#ig-strength').value = 100;
+    this.adj = { ...this.baseFilter };
     this.highlight('.ig-filter', btn);
     this.syncSliders();
     this.render();
   },
 
+  setStrength(v) {
+    this.strength = v;
+    this.adj = this.blend(FILTERS.original, this.baseFilter, v / 100);
+    this.syncSliders();
+    this.render();
+  },
+
   resetAdjustments(rerender = true) {
+    this.baseFilter = { ...FILTERS.original };
     this.adj = { ...FILTERS.original };
+    this.strength = 100;
+    $('#ig-strength').value = 100;
     $$('.ig-filter').forEach((b) => { const a = b.dataset.filter === 'original'; b.classList.toggle('ring-2', a); b.classList.toggle('ring-[#d62976]', a); });
     this.syncSliders();
     if (rerender) this.render();
@@ -267,30 +324,65 @@ const App = {
     this.render();
   },
 
-  // The crop aspect currently being sampled from the source: a single post uses
-  // the format aspect; a carousel samples a strip N formats wide.
+  // The crop aspect currently being sampled from the source.
   effectiveAspect() {
     return this.carousel > 1 ? this.format.aspect * this.carousel : this.format.aspect;
   },
 
-  // Keep the SVG sharpen kernel in sync with the slider (a plus-shaped 3x3
-  // sharpen whose strength scales with the amount).
-  updateSharpenKernel() {
-    const el = $('#ig-sharpen feConvolveMatrix');
-    if (!el) return;
-    const a = (this.adj.sharpen || 0) / 100 * 0.8;
-    el.setAttribute('kernelMatrix', `0 ${-a} 0 ${-a} ${1 + 4 * a} ${-a} 0 ${-a} 0`);
-  },
-
-  // Canvas filter string for the foreground draw (sharpen appended only when on).
-  filterString() {
+  /* ------------------------------------------------------- pixel effects */
+  // Colour-grade filter string — pure functions only (never mix in url()).
+  gradeFilter() {
     const a = this.adj;
-    let f = `brightness(${a.brightness}%) contrast(${a.contrast}%) saturate(${a.saturate}%)`;
-    if (a.sharpen > 0) f += ' url(#ig-sharpen)';
-    return f;
+    return `brightness(${a.brightness}%) contrast(${a.contrast}%) saturate(${a.saturate}%)`;
   },
 
-  // Warmth wash + vignette, clipped to a destination rect (so borders stay clean).
+  // A plus-shaped 3x3 sharpen convolution over a destination rect. Manual (not a
+  // canvas url() filter) so it can never void the colour grading.
+  sharpen(ctx, x, y, w, h) {
+    const amt = (this.adj.sharpen || 0) / 100 * 0.8;
+    if (amt <= 0) return;
+    x = clamp(Math.round(x), 0, ctx.canvas.width);
+    y = clamp(Math.round(y), 0, ctx.canvas.height);
+    w = Math.min(ctx.canvas.width - x, Math.round(w));
+    h = Math.min(ctx.canvas.height - y, Math.round(h));
+    if (w <= 2 || h <= 2) return;
+    const src = ctx.getImageData(x, y, w, h);
+    const s = src.data;
+    const out = ctx.createImageData(w, h);
+    const o = out.data;
+    const c = 1 + 4 * amt;
+    for (let yy = 0; yy < h; yy++) {
+      for (let xx = 0; xx < w; xx++) {
+        const i = (yy * w + xx) * 4;
+        const up = yy > 0 ? i - w * 4 : i;
+        const dn = yy < h - 1 ? i + w * 4 : i;
+        const lf = xx > 0 ? i - 4 : i;
+        const rt = xx < w - 1 ? i + 4 : i;
+        for (let ch = 0; ch < 3; ch++) {
+          const v = c * s[i + ch] - amt * (s[up + ch] + s[dn + ch] + s[lf + ch] + s[rt + ch]);
+          o[i + ch] = v < 0 ? 0 : v > 255 ? 255 : v;
+        }
+        o[i + 3] = s[i + 3];
+      }
+    }
+    ctx.putImageData(out, x, y);
+  },
+
+  // A cached monochrome noise tile for film grain.
+  grainTile() {
+    if (this.noise) return this.noise;
+    const n = document.createElement('canvas');
+    n.width = n.height = 160;
+    const nx = n.getContext('2d');
+    const id = nx.createImageData(160, 160);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) { const v = Math.random() * 255; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
+    nx.putImageData(id, 0, 0);
+    this.noise = n;
+    return n;
+  },
+
+  // Warmth wash, grain and vignette, clipped to a destination rect.
   applyEffects(ctx, x, y, w, h) {
     const a = this.adj;
     if (a.warmth) {
@@ -299,6 +391,15 @@ const App = {
       ctx.globalCompositeOperation = 'soft-light';
       const t = Math.abs(a.warmth) / 100 * 0.6;
       ctx.fillStyle = a.warmth > 0 ? `rgba(255,150,40,${t})` : `rgba(40,140,255,${t})`;
+      ctx.fillRect(x, y, w, h);
+      ctx.restore();
+    }
+    if (a.grain) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.globalAlpha = (a.grain / 100) * 0.4;
+      ctx.fillStyle = ctx.createPattern(this.grainTile(), 'repeat');
       ctx.fillRect(x, y, w, h);
       ctx.restore();
     }
@@ -314,6 +415,7 @@ const App = {
     }
   },
 
+  /* ---------------------------------------------------------- painting */
   /** Draw the current single-post photo + edits into a canvas of the given size. */
   paint(canvas, W, H) {
     canvas.width = W;
@@ -351,8 +453,8 @@ const App = {
       }
     }
 
-    // Foreground photo.
-    ctx.filter = this.filterString();
+    // Foreground photo (colour grade via pure-function filter).
+    ctx.filter = this.gradeFilter();
     if (fit) {
       const scale = Math.min(dw / siw, dh / sih);
       const gw = siw * scale;
@@ -366,6 +468,7 @@ const App = {
     }
     ctx.filter = 'none';
 
+    this.sharpen(ctx, dx, dy, dw, dh);
     this.applyEffects(ctx, dx, dy, dw, dh);
     ctx.restore();
   },
@@ -382,17 +485,65 @@ const App = {
 
     ctx.save();
     ctx.beginPath(); ctx.rect(dx, dy, dw, dh); ctx.clip();
-    ctx.filter = this.filterString();
+    ctx.filter = this.gradeFilter();
     ctx.drawImage(img, geo.sx + i * stripW, geo.sy, stripW, geo.sh, dx, dy, dw, dh);
     ctx.filter = 'none';
+    this.sharpen(ctx, dx, dy, dw, dh);
     this.applyEffects(ctx, dx, dy, dw, dh);
+    ctx.restore();
+  },
+
+  // The original (unedited) photo in the current framing, for press-hold compare.
+  paintOriginal(canvas, W, H) {
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    const img = this.raw;
+    const siw = img.naturalWidth || img.width;
+    const sih = img.naturalHeight || img.height;
+    if (this.fitMode === 'fit') {
+      const scale = Math.min(W / siw, H / sih);
+      ctx.drawImage(img, 0, 0, siw, sih, (W - siw * scale) / 2, (H - sih * scale) / 2, siw * scale, sih * scale);
+    } else {
+      const geo = frameGeometry(siw, sih, W / H, this.zoom, this.u, this.v);
+      ctx.drawImage(img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, W, H);
+    }
+  },
+
+  // Preview-only guides showing where Instagram's Story/Reel UI covers the frame.
+  drawSafeZones(ctx, W, H) {
+    const top = H * 0.12;
+    const bottom = H * 0.20;
+    ctx.save();
+    ctx.fillStyle = 'rgba(214,41,118,0.16)';
+    ctx.fillRect(0, 0, W, top);
+    ctx.fillRect(0, H - bottom, W, bottom);
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = Math.max(1, W * 0.003);
+    ctx.setLineDash([W * 0.02, W * 0.015]);
+    ctx.beginPath();
+    ctx.moveTo(0, top); ctx.lineTo(W, top);
+    ctx.moveTo(0, H - bottom); ctx.lineTo(W, H - bottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.font = `600 ${Math.round(H * 0.022)}px system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Keep faces & text out of the shaded areas', W / 2, top + H * 0.035);
     ctx.restore();
   },
 
   render() {
     if (!this.img) return;
-    this.updateSharpenKernel();
     const cap = 900;
+    if (this.showOriginal && this.carousel <= 1) {
+      const aspect = this.format.aspect;
+      const W = aspect >= 1 ? cap : Math.round(cap * aspect);
+      const H = aspect >= 1 ? Math.round(cap / aspect) : cap;
+      this.paintOriginal(this.canvas, W, H);
+      return;
+    }
     if (this.carousel > 1) {
       // Preview the whole panorama with dashed tile dividers.
       const n = this.carousel;
@@ -417,6 +568,7 @@ const App = {
     const W = aspect >= 1 ? cap : Math.round(cap * aspect);
     const H = aspect >= 1 ? Math.round(cap / aspect) : cap;
     this.paint(this.canvas, W, H);
+    if (this.safeZones) this.drawSafeZones(this.canvas.getContext('2d'), W, H);
   },
 
   async removeBackground() {

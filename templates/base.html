@@ -109,6 +109,9 @@
                         <a href="{% url 'remover:instagram' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'instagram' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
                             <i class="fa-brands fa-instagram mr-1" aria-hidden="true"></i>Instagram
                         </a>
+                        <a href="{% url 'remover:crop' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'crop' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <i class="fa-solid fa-crop-simple mr-1" aria-hidden="true"></i>Crop
+                        </a>
                     </nav>
                     {% endwith %}
                 </div>
@@ -139,6 +142,7 @@
                 <a href="{% url 'remover:index' %}" class="hover:text-primary transition-colors">Background Remover</a>
                 <a href="{% url 'remover:convert' %}" class="hover:text-primary transition-colors">Image Converter</a>
                 <a href="{% url 'remover:instagram' %}" class="hover:text-primary transition-colors">Instagram Editor</a>
+                <a href="{% url 'remover:crop' %}" class="hover:text-primary transition-colors">Crop Image</a>
                 {% for c in use_cases %}
                 <a href="{% url 'remover:use_case' c.slug %}" class="hover:text-primary transition-colors">{{ c.nav }}</a>
                 {% endfor %}
