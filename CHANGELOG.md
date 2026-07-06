@@ -33,6 +33,11 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
 - **Export sizes** — scale the exported result to a **profile picture (512×512)**,
   a **story (1080×1920)**, or a **custom width × height**, preserving aspect
   without distortion.
+- **Instagram formats** — one-click presets that centre-crop to the right aspect
+  *and* set Instagram's exact export resolution in a single tap: Post (1:1,
+  1080²), Portrait (4:5, 1080×1350), Story/Reel (9:16, 1080×1920), Landscape
+  (1.91:1), and Profile (circle, 320²).
+- **Support link** — an optional "Buy me a coffee" button in the footer.
 
 ### Fixed
 - Crop dialog silently did nothing when opened before background removal

@@ -16,6 +16,7 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - **Refine brush editor** — erase leftover background or restore over-trimmed areas by hand, with **zoom/pan** (wheel, Move tool, hold-Space), soft brushes, undo & keyboard shortcuts
 - **Crop tool** — crop to a **circle, square, rounded square**, preset **4:5 / 16:9 / 9:16**, or any **custom W:H ratio**, with zoom, drag-to-reposition, and **rotate / flip**; circle/rounded masks keep transparent corners in the PNG. Choose the **source**: the transparent cut-out, or the **original image with its background kept** — so you can crop without removing the background at all. Works right away (even before removal finishes) and is non-destructive — re-open or remove the crop any time
 - **Sticker effects** — add a coloured **outline/stroke**, a **drop shadow**, and **padding** around the cut-out, composited live into the exported PNG
+- **Instagram formats** — one click crops *and* sizes the image for a **Post (1:1)**, **Portrait (4:5)**, **Story/Reel (9:16)**, **Landscape (1.91:1)**, or **Profile** at Instagram's exact recommended resolutions, ready to post
 - **Export sizes** — keep the original size, or scale to a **profile picture (512×512)**, a **story (1080×1920)**, or any **custom width × height** (aspect preserved, no distortion)
 - Export as PNG (transparent), JPG, or WEBP — no watermark
 

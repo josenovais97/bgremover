@@ -37,6 +37,17 @@ const CROPS = {
   '9:16':  { label: '9:16',    aspect: 9 / 16, shape: 'rect' },
 };
 
+// One-click Instagram formats: each sets a centred crop at the right aspect and
+// exports at Instagram's exact recommended pixel size, so the result fills the
+// frame (no letterboxing) and uploads without recompression surprises.
+const IG_PRESETS = {
+  'ig-post':      { label: 'Post',      shape: 'rect',   aspect: 1,        w: 1080, h: 1080 },
+  'ig-portrait':  { label: 'Portrait',  shape: 'rect',   aspect: 4 / 5,    w: 1080, h: 1350 },
+  'ig-story':     { label: 'Story/Reel', shape: 'rect',  aspect: 9 / 16,   w: 1080, h: 1920 },
+  'ig-landscape': { label: 'Landscape', shape: 'rect',   aspect: 1.91,     w: 1080, h: 566 },
+  'ig-profile':   { label: 'Profile',   shape: 'circle', aspect: 1,        w: 320,  h: 320 },
+};
+
 /* --------------------------------------------------------------- utilities */
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -1196,6 +1207,11 @@ class Card {
       }),
     );
 
+    // Instagram one-click formats.
+    $$('.ig-btn', this.el).forEach((btn) =>
+      btn.addEventListener('click', () => this.applyInstagram(btn.dataset.ig)),
+    );
+
     // Export size presets + custom dimensions.
     $$('.size-btn', this.el).forEach((btn) =>
       btn.addEventListener('click', () => {
@@ -1358,6 +1374,32 @@ class Card {
       b.classList.toggle('bg-primary', active);
       b.classList.toggle('text-white', active);
     });
+    // Picking a plain size clears the Instagram-preset highlight.
+    if (!spec || spec.label !== 'ig') {
+      $$('.ig-btn', this.el).forEach((b) => b.classList.remove('bg-primary', 'text-white'));
+    }
+  }
+
+  /**
+   * One-click Instagram format: centre-crop to the format's aspect and set the
+   * export size to Instagram's exact pixels, so the subject fills the frame and
+   * downloads at the right resolution. Re-open Crop afterwards to reposition.
+   */
+  applyInstagram(key) {
+    const p = IG_PRESETS[key];
+    if (!p) return;
+    const source = this.done ? 'cutout' : 'original';
+    this.setCropState({
+      key: 'custom', aspect: p.aspect, shape: p.shape,
+      z: 1, u: 0.5, v: 0.5, source, rot: 0, flipH: false, flipV: false,
+    });
+    this.setExportSize({ w: p.w, h: p.h, label: 'ig' });
+    $$('.ig-btn', this.el).forEach((b) => {
+      const active = b.dataset.ig === key;
+      b.classList.toggle('bg-primary', active);
+      b.classList.toggle('text-white', active);
+    });
+    Toast.show(`Instagram ${p.label} ready (${p.w}×${p.h})`, 'success');
   }
 
   /** Apply (or clear) a crop and refresh the on-card preview. */
