@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-07-06
+
+Editing release: an interactive crop tool for shaping the finished cut-out.
+
+### Added
+- **Crop tool** — crop the transparent cut-out to a **circle**, **square**,
+  **rounded square**, or a **4:5 / 16:9 / 9:16** aspect ratio. Zoom (slider or
+  scroll) and drag to reposition inside the frame; the live preview uses the
+  same geometry as the export, so what you see is what you get. Circle and
+  rounded shapes are masked with real transparency in the PNG, and fall back to
+  a white fill for JPG. The crop is non-destructive — re-open to adjust or
+  **Remove crop** to revert — and is applied to single downloads, the copy
+  action, and the batch ZIP.
+
 ## [1.1.0] — 2026-07-03
 
 Search-visibility release: verified the site in Google Search Console and
@@ -53,5 +67,6 @@ Initial public release.
 - Stateless Django backend (no database) deployable to Vercel, Docker, or a
   classic Nginx + Gunicorn VPS.
 
+[1.2.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.2.0
 [1.1.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.1.0
 [1.0.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.0.0
