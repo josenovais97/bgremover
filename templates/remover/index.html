@@ -368,6 +368,14 @@ FAQPage structured data is generated from the same FAQS the page renders
         <!-- Toolbar -->
         <div class="order-2 lg:order-1 flex lg:flex-col flex-wrap items-center lg:items-stretch gap-5 p-4 bg-gray-900/70 text-white lg:w-64 shrink-0 overflow-auto">
             <div class="space-y-2 w-full">
+                <span class="text-xs uppercase tracking-wide text-gray-400">Source</span>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <button data-source="original" type="button" class="crop-source px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-regular fa-image mr-1" aria-hidden="true"></i>Original</button>
+                    <button data-source="cutout" type="button" class="crop-source px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-scissors mr-1" aria-hidden="true"></i>Cut-out</button>
+                </div>
+                <p class="text-[11px] text-gray-500 leading-snug"><b class="text-gray-300">Original</b> keeps the background. <b class="text-gray-300">Cut-out</b> uses the removed-background result.</p>
+            </div>
+            <div class="space-y-2 w-full">
                 <span class="text-xs uppercase tracking-wide text-gray-400">Shape</span>
                 <div class="grid grid-cols-3 gap-2 text-sm">
                     <button data-crop="circle" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-circle mr-1" aria-hidden="true"></i>Circle</button>
