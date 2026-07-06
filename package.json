@@ -5,7 +5,8 @@
   "description": "Build tooling for the BG Remover Tailwind CSS bundle.",
   "scripts": {
     "build:css": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.css --minify",
-    "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.css --watch"
+    "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.css --watch",
+    "test": "node tests/crop-geometry.test.mjs"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17"
