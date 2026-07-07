@@ -1,15 +1,16 @@
 /**
  * Custom in-page colour picker (classic, dependency-free script).
  *
- * The native `<input type="color">` dialog is unreliable in some browsers/OS
- * combinations (it can hang the whole tab). This replaces it everywhere with a
- * self-contained popover, so there's no native dialog involved.
+ * Replaces `<input type="color">` with a self-contained popover so we never rely
+ * on the native colour dialog. Deliberately has NO eyedropper (screen-sampler):
+ * the `EyeDropper` API — the native dialog's built-in one and any custom one —
+ * hangs the browser on some systems, and that was the actual freeze. The SV
+ * square + hue slider + hex field give full arbitrary-colour selection without it.
  *
- * It's a progressive enhancement: each `<input type="color">` is kept in the DOM
- * (just visually hidden) so all existing code that reads `.value` or listens for
- * `input`/`change` keeps working untouched — we simply set the value and
- * dispatch those events ourselves. New inputs (e.g. cloned result-card
- * templates) are picked up automatically via a MutationObserver.
+ * Progressive enhancement: each input stays in the DOM (hidden) so all existing
+ * code that reads `.value` or listens for `input`/`change` keeps working — we set
+ * the value and dispatch those events. New inputs (e.g. cloned card templates)
+ * are picked up via a MutationObserver.
  */
 (function () {
   'use strict';
@@ -24,21 +25,17 @@
     if (!/^[0-9a-fA-F]{6}$/.test(s)) return null;
     return '#' + s.toLowerCase();
   }
-
   function hexToRgb(hex) {
     var h = normHex(hex) || '#000000';
     return { r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16) };
   }
-
   function rgbToHex(r, g, b) {
     var to = function (n) { return clamp(Math.round(n), 0, 255).toString(16).padStart(2, '0'); };
     return '#' + to(r) + to(g) + to(b);
   }
-
   function rgbToHsv(r, g, b) {
     r /= 255; g /= 255; b /= 255;
-    var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-    var h = 0;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min, h = 0;
     if (d) {
       if (max === r) h = ((g - b) / d) % 6;
       else if (max === g) h = (b - r) / d + 2;
@@ -47,7 +44,6 @@
     }
     return { h: h, s: max ? d / max : 0, v: max };
   }
-
   function hsvToRgb(h, s, v) {
     var c = v * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = v - c, r = 0, g = 0, b = 0;
     if (h < 60) { r = c; g = x; } else if (h < 120) { r = x; g = c; }
@@ -55,14 +51,14 @@
     else if (h < 300) { r = x; b = c; } else { r = c; b = x; }
     return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
   }
+  function rgbToHsv2(hexStr) { var c = hexToRgb(hexStr); return rgbToHsv(c.r, c.g, c.b); }
 
   /* --------------------------------------------------------------- styles */
+  // No backdrop-filter: blurring the re-rendering preview behind the popover
+  // every frame freezes real GPUs. Solid background instead.
   var css = ''
-    // NOTE: deliberately no backdrop-filter — blurring the (re-rendering) preview
-    // behind the popover every frame freezes real GPUs. Solid background instead.
     + '.cp-pop{position:absolute;z-index:80;width:224px;padding:12px;border-radius:16px;'
-    + 'background:#ffffff;border:1px solid rgba(0,0,0,0.10);'
-    + 'box-shadow:0 12px 40px rgba(17,24,39,0.28);'
+    + 'background:#ffffff;border:1px solid rgba(0,0,0,0.10);box-shadow:0 12px 40px rgba(17,24,39,0.28);'
     + 'font-family:Inter,ui-sans-serif,system-ui,sans-serif;-webkit-user-select:none;user-select:none;}'
     + 'html.dark .cp-pop{background:#18181b;border-color:rgba(255,255,255,0.12);box-shadow:0 12px 40px rgba(0,0,0,0.55);}'
     + '.cp-sv{position:relative;width:200px;height:130px;border-radius:10px;cursor:crosshair;'
@@ -80,16 +76,11 @@
     + 'text-transform:uppercase;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.12);color:#111827;outline:none;}'
     + 'html.dark .cp-hex{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.14);color:#f4f4f5;}'
     + '.cp-hex:focus{border-color:#4f46e5;box-shadow:0 0 0 2px rgba(79,70,229,0.3);}'
-    + '.cp-eyedrop{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid rgba(0,0,0,0.12);'
-    + 'background:rgba(0,0,0,0.04);color:#374151;cursor:pointer;display:grid;place-items:center;font-size:13px;}'
-    + 'html.dark .cp-eyedrop{border-color:rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:#d1d5db;}'
-    + '.cp-eyedrop:hover{background:rgba(79,70,229,0.12);color:#4f46e5;}'
     + '.cp-swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:10px;}'
     + '.cp-sw{width:100%;aspect-ratio:1;border-radius:6px;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18);padding:0;border:0;transition:transform .1s ease;}'
     + '.cp-sw:hover{transform:scale(1.12);}'
     + '.cp-sw.cp-active{box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18),0 0 0 2px #4f46e5;}'
-    // A visible border so a white/light swatch isn't invisible on a light panel
-    // (this is why the control seemed to "not show up", especially on mobile).
+    // Visible border so a white/light swatch trigger isn't invisible on a light panel.
     + '.cp-trigger{cursor:pointer;padding:0;box-sizing:border-box;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.25);min-width:24px;min-height:24px;}'
     + 'html.dark .cp-trigger{box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3);}';
 
@@ -124,18 +115,6 @@
     hex.type = 'text'; hex.className = 'cp-hex'; hex.setAttribute('aria-label', 'Hex colour'); hex.maxLength = 7;
     row.appendChild(prev); row.appendChild(hex);
 
-    // Screen eyedropper (Chromium/Edge). Progressive: only shown when supported.
-    if (window.EyeDropper) {
-      var eye = document.createElement('button');
-      eye.type = 'button'; eye.className = 'cp-eyedrop'; eye.title = 'Pick a colour from the screen';
-      eye.setAttribute('aria-label', 'Pick a colour from the screen');
-      eye.innerHTML = '<i class="fa-solid fa-eye-dropper" aria-hidden="true"></i>';
-      eye.addEventListener('click', function () {
-        try { new window.EyeDropper().open().then(function (r) { setFromHex(r.sRGBHex, true); }).catch(function () {}); } catch (e) {}
-      });
-      row.appendChild(eye);
-    }
-
     swatchEls = [];
     var sw = document.createElement('div'); sw.className = 'cp-swatches';
     PRESETS.forEach(function (c) {
@@ -148,7 +127,6 @@
     pop.appendChild(sv); pop.appendChild(hue); pop.appendChild(row); pop.appendChild(sw);
     document.body.appendChild(pop);
 
-    // Saturation / value area.
     var svDrag = false;
     var pickSV = function (e) {
       var r = sv.getBoundingClientRect();
@@ -167,7 +145,6 @@
       if (h) { var hsv = rgbToHsv2(h); cur.h = hsv.h; cur.s = hsv.s; cur.v = hsv.v; commit(true, true); }
     });
 
-    // Dismiss on outside click / Escape.
     document.addEventListener('pointerdown', function (e) {
       if (!active || pop.style.display === 'none') return;
       if (pop.contains(e.target) || e.target === active.trigger) return;
@@ -180,15 +157,11 @@
     window.addEventListener('scroll', function () { if (active) position(); }, true);
   }
 
-  function rgbToHsv2(hexStr) { var c = hexToRgb(hexStr); return rgbToHsv(c.r, c.g, c.b); }
-
   function currentHex() { var c = hsvToRgb(cur.h, cur.s, cur.v); return rgbToHex(c.r, c.g, c.b); }
 
-  // Reflect `cur` into the UI and (throttled) into the underlying input.
   function commit(dispatch, skipHexField) {
     var hexv = currentHex();
-    // The SV gradient only depends on hue — repaint it only when hue changes, so
-    // dragging within the square (constant hue) doesn't re-layer gradients each move.
+    // The SV gradient only depends on hue — repaint it only when hue changes.
     if (cur.h !== lastHueBg) {
       var base = rgbToHex(hsvToRgb(cur.h, 1, 1).r, hsvToRgb(cur.h, 1, 1).g, hsvToRgb(cur.h, 1, 1).b);
       sv.style.background = 'linear-gradient(to top,#000,rgba(0,0,0,0)),linear-gradient(to right,#fff,' + base + ')';
@@ -262,13 +235,10 @@
     input.style.display = 'none';
     input.insertAdjacentElement('afterend', trigger);
 
-    // Critical: many of these inputs live inside a <label>. Clicking anything in
-    // a label forward-activates its control, which would pop the native colour
-    // dialog (the one that freezes). Swallow the native picker at the source so
-    // it can never open, however the input gets clicked.
+    // Many inputs sit inside a <label>; clicking anything in a label would
+    // forward-activate the native dialog (whose built-in eyedropper is the thing
+    // that freezes). Swallow the native picker at the source.
     input.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); });
-
-    // Keep the swatch in sync if code changes the value programmatically.
     input.addEventListener('change', function () { trigger.style.background = normHex(input.value) || trigger.style.background; });
 
     trigger.addEventListener('click', function (e) {
