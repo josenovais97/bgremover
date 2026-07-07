@@ -43,6 +43,20 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
+// Coalesce a burst of calls (e.g. the stream of `input` events a native colour
+// picker emits while open) into at most one run per animation frame, so heavy
+// re-renders can't saturate the main thread and lock up the UI. The wrapped
+// function reads live DOM/state at run time, so skipping the in-between calls is
+// safe — the final state is always applied.
+function rafThrottle(fn) {
+  let scheduled = false;
+  return (...args) => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => { scheduled = false; fn(...args); });
+  };
+}
+
 /** Trace a rounded-rectangle path (radius clamped to half the shorter side). */
 function roundRectPath(ctx, x, y, w, h, r) {
   r = Math.min(r, w / 2, h / 2);
@@ -1176,16 +1190,21 @@ class Card {
       }),
     );
     const custom = this.el.querySelector('.custom-color');
-    custom.addEventListener('input', () => this.setBackground(custom.value));
+    // A native colour picker streams `input` events while it's open; each one
+    // here can trigger a full re-compose. Coalesce them to one run per frame so
+    // the main thread stays responsive (otherwise the picker itself can't be
+    // dismissed on large photos). Handlers read live values, so dropping the
+    // in-between events is safe.
+    const onCustom = rafThrottle(() => this.setBackground(custom.value));
+    custom.addEventListener('input', onCustom);
 
     // Rich backgrounds: gradient, blurred original, uploaded image.
+    const onGradient = rafThrottle(() => this.applyGradient());
     this.el.querySelector('.bg-grad-btn').addEventListener('click', () => this.applyGradient());
-    $$('.bg-grad-a, .bg-grad-b', this.el).forEach((c) =>
-      c.addEventListener('input', () => this.applyGradient()),
-    );
-    this.el.querySelector('.bg-grad-angle').addEventListener('input', () => this.applyGradient());
+    $$('.bg-grad-a, .bg-grad-b', this.el).forEach((c) => c.addEventListener('input', onGradient));
+    this.el.querySelector('.bg-grad-angle').addEventListener('input', onGradient);
     this.el.querySelector('.bg-blur-btn').addEventListener('click', () => this.applyBlur());
-    this.el.querySelector('.bg-blur-amt').addEventListener('input', () => this.applyBlur());
+    this.el.querySelector('.bg-blur-amt').addEventListener('input', rafThrottle(() => this.applyBlur()));
     this.el.querySelector('.bg-image-input').addEventListener('change', (e) => this.applyImageBg(e.target.files[0]));
 
     // Output format — likewise remembered.
@@ -1215,8 +1234,9 @@ class Card {
     $$('.fx-outline, .fx-shadow, .fx-outline-c', this.el).forEach((c) =>
       c.addEventListener('change', () => this.setSticker()),
     );
+    const onSticker = rafThrottle(() => this.setSticker());
     $$('.fx-pad, .fx-outline-w', this.el).forEach((c) =>
-      c.addEventListener('input', () => this.setSticker()),
+      c.addEventListener('input', onSticker),
     );
 
     this.applyRememberedOptions();
