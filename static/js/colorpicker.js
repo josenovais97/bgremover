@@ -58,11 +58,13 @@
 
   /* --------------------------------------------------------------- styles */
   var css = ''
+    // NOTE: deliberately no backdrop-filter — blurring the (re-rendering) preview
+    // behind the popover every frame freezes real GPUs. Solid background instead.
     + '.cp-pop{position:absolute;z-index:80;width:224px;padding:12px;border-radius:16px;'
-    + 'background:rgba(255,255,255,0.98);border:1px solid rgba(0,0,0,0.08);'
-    + 'box-shadow:0 12px 40px rgba(17,24,39,0.28);backdrop-filter:blur(8px);'
+    + 'background:#ffffff;border:1px solid rgba(0,0,0,0.10);'
+    + 'box-shadow:0 12px 40px rgba(17,24,39,0.28);'
     + 'font-family:Inter,ui-sans-serif,system-ui,sans-serif;-webkit-user-select:none;user-select:none;}'
-    + 'html.dark .cp-pop{background:rgba(24,24,27,0.98);border-color:rgba(255,255,255,0.12);box-shadow:0 12px 40px rgba(0,0,0,0.55);}'
+    + 'html.dark .cp-pop{background:#18181b;border-color:rgba(255,255,255,0.12);box-shadow:0 12px 40px rgba(0,0,0,0.55);}'
     + '.cp-sv{position:relative;width:200px;height:130px;border-radius:10px;cursor:crosshair;'
     + 'box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);touch-action:none;}'
     + '.cp-sv-thumb{position:absolute;width:14px;height:14px;border-radius:9999px;border:2px solid #fff;'
@@ -86,7 +88,10 @@
     + '.cp-sw{width:100%;aspect-ratio:1;border-radius:6px;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18);padding:0;border:0;transition:transform .1s ease;}'
     + '.cp-sw:hover{transform:scale(1.12);}'
     + '.cp-sw.cp-active{box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18),0 0 0 2px #4f46e5;}'
-    + '.cp-trigger{cursor:pointer;padding:0;}';
+    // A visible border so a white/light swatch isn't invisible on a light panel
+    // (this is why the control seemed to "not show up", especially on mobile).
+    + '.cp-trigger{cursor:pointer;padding:0;box-sizing:border-box;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.25);min-width:24px;min-height:24px;}'
+    + 'html.dark .cp-trigger{box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3);}';
 
   var style = document.createElement('style');
   style.textContent = css;
@@ -97,7 +102,7 @@
   /* --------------------------------------------------------------- popover */
   var pop, sv, svThumb, hue, hex, prev, swatchEls = [], active = null;
   var cur = { h: 0, s: 0, v: 0 };
-  var rafScheduled = false;
+  var rafScheduled = false, lastHueBg = -1;
 
   function buildPopover() {
     pop = document.createElement('div');
@@ -182,8 +187,13 @@
   // Reflect `cur` into the UI and (throttled) into the underlying input.
   function commit(dispatch, skipHexField) {
     var hexv = currentHex();
-    var base = rgbToHex(hsvToRgb(cur.h, 1, 1).r, hsvToRgb(cur.h, 1, 1).g, hsvToRgb(cur.h, 1, 1).b);
-    sv.style.background = 'linear-gradient(to top,#000,rgba(0,0,0,0)),linear-gradient(to right,#fff,' + base + ')';
+    // The SV gradient only depends on hue — repaint it only when hue changes, so
+    // dragging within the square (constant hue) doesn't re-layer gradients each move.
+    if (cur.h !== lastHueBg) {
+      var base = rgbToHex(hsvToRgb(cur.h, 1, 1).r, hsvToRgb(cur.h, 1, 1).g, hsvToRgb(cur.h, 1, 1).b);
+      sv.style.background = 'linear-gradient(to top,#000,rgba(0,0,0,0)),linear-gradient(to right,#fff,' + base + ')';
+      lastHueBg = cur.h;
+    }
     svThumb.style.left = (cur.s * 100) + '%';
     svThumb.style.top = ((1 - cur.v) * 100) + '%';
     svThumb.style.background = hexv;
