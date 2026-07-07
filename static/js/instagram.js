@@ -111,8 +111,16 @@ const App = {
   borderColor: '#ffffff',
   carousel: 1, // 1 = single post, 2/3 = split into tiles
   safeZones: false, // Story/Reel UI-coverage guides (preview only)
+  grid: false, // rule-of-thirds composition guide (preview only)
   showOriginal: false, // press-and-hold compare
+  orient: { rot: 0, flipH: false, flipV: false }, // 90° rotation steps + mirroring
+  exportFmt: 'image/jpeg', // download encoding
+  quality: 0.92, // JPEG/WEBP quality
+  // Draggable text overlay (rendered onto the canvas, so it exports too).
+  text: { on: false, content: '', font: 'Inter', size: 7, color: '#ffffff', align: 'center', bold: false, shadow: false, highlight: true, x: 0.5, y: 0.82 },
+  _textBox: null, // last-drawn text bounds (canvas px) for hit-testing drags
   raw: null, // original uploaded image
+  rawOriented: null, // `raw` with the current rotate/flip baked in (for compare)
   cutout: null, // background-removed image, if produced
   bgRemoved: false,
   bgColor: '#ffffff',
@@ -180,10 +188,66 @@ const App = {
       e.currentTarget.classList.toggle('ring-[#d62976]', this.safeZones);
       this.render();
     });
+    $('#ig-grid').addEventListener('click', (e) => {
+      this.grid = !this.grid;
+      e.currentTarget.setAttribute('aria-pressed', String(this.grid));
+      e.currentTarget.classList.toggle('ring-2', this.grid);
+      e.currentTarget.classList.toggle('ring-[#d62976]', this.grid);
+      this.render();
+    });
+
+    // Transform: rotate 90° steps + flips (baked into the working image).
+    $('#ig-rot-l').addEventListener('click', () => this.rotate(-90));
+    $('#ig-rot-r').addEventListener('click', () => this.rotate(90));
+    $('#ig-flip-h').addEventListener('click', () => this.flip('flipH'));
+    $('#ig-flip-v').addEventListener('click', () => this.flip('flipV'));
+
+    // Export format + quality.
+    $$('.ig-expfmt').forEach((b) => b.addEventListener('click', () => this.setExportFmt(b.dataset.fmt, b)));
+    $('#ig-quality').addEventListener('input', (e) => {
+      this.quality = +e.target.value / 100;
+      $('#ig-quality-val').textContent = e.target.value;
+    });
+
+    // Text overlay.
+    $('#ig-text-on').addEventListener('change', (e) => {
+      this.text.on = e.target.checked;
+      $('#ig-text-panel').classList.toggle('hidden', !this.text.on);
+      if (this.text.on) { this.ensureFont(); if (!this.text.content) $('#ig-text').focus(); }
+      this.render();
+    });
+    $('#ig-text').addEventListener('input', (e) => { this.text.content = e.target.value; this.render(); });
+    $$('.ig-font').forEach((b) => b.addEventListener('click', () => {
+      this.text.font = b.dataset.font;
+      this.highlight('.ig-font', b);
+      this.ensureFont();
+      this.render();
+    }));
+    $('#ig-text-size').addEventListener('input', (e) => { this.text.size = +e.target.value; this.render(); });
+    $('#ig-text-color').addEventListener('input', (e) => { this.text.color = e.target.value; this.render(); });
+    $$('.ig-text-align').forEach((b) => b.addEventListener('click', () => {
+      this.text.align = b.dataset.align;
+      $$('.ig-text-align').forEach((x) => { const a = x === b; x.classList.toggle('bg-[#d62976]', a); x.classList.toggle('text-white', a); });
+      this.render();
+    }));
+    [['#ig-text-bold', 'bold'], ['#ig-text-shadow', 'shadow'], ['#ig-text-hl', 'highlight']].forEach(([sel, key]) => {
+      $(sel).addEventListener('click', (e) => {
+        this.text[key] = !this.text[key];
+        const on = this.text[key];
+        e.currentTarget.setAttribute('aria-pressed', String(on));
+        e.currentTarget.classList.toggle('bg-[#d62976]', on);
+        e.currentTarget.classList.toggle('text-white', on);
+        e.currentTarget.classList.toggle('border-[#d62976]', on);
+        this.render();
+      });
+    });
+    // Reflect the default-on "Highlight" toggle.
+    $('#ig-text-hl').setAttribute('aria-pressed', 'true');
+    $('#ig-text-hl').classList.add('bg-[#d62976]', 'text-white', 'border-[#d62976]');
 
     // Background removal (optional, lazy)
     $('#ig-remove-bg').addEventListener('click', () => this.removeBackground());
-    $('#ig-restore-bg').addEventListener('click', () => { this.bgRemoved = false; this.img = this.raw; $('#ig-restore-bg').classList.add('hidden'); this.render(); });
+    $('#ig-restore-bg').addEventListener('click', () => { this.bgRemoved = false; this.rebuildSource(); $('#ig-restore-bg').classList.add('hidden'); this.render(); });
     $('#ig-bg-color').addEventListener('input', (e) => { this.bgColor = e.target.value; if (this.bgRemoved) this.render(); });
 
     // Framing
@@ -195,9 +259,13 @@ const App = {
       zoom.value = this.zoom;
       this.render();
     }, { passive: false });
-    this.canvas.addEventListener('pointerdown', (e) => { this.drag = { x: e.clientX, y: e.clientY }; this.canvas.setPointerCapture?.(e.pointerId); });
-    this.canvas.addEventListener('pointermove', (e) => this.onDrag(e));
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => this.canvas.addEventListener(ev, () => { this.drag = null; }));
+    this.canvas.addEventListener('pointerdown', (e) => {
+      this.canvas.setPointerCapture?.(e.pointerId);
+      if (this.hitText(e)) { this.textDrag = { x: e.clientX, y: e.clientY }; } // grab the text
+      else { this.drag = { x: e.clientX, y: e.clientY }; } // otherwise reposition the photo
+    });
+    this.canvas.addEventListener('pointermove', (e) => { if (this.textDrag) this.onTextDrag(e); else this.onDrag(e); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => this.canvas.addEventListener(ev, () => { this.drag = null; this.textDrag = null; }));
 
     $('#ig-download').addEventListener('click', () => (this.carousel > 1 ? this.downloadCarousel() : this.download()));
     $('#ig-new').addEventListener('click', () => this.reset());
@@ -216,12 +284,14 @@ const App = {
       return;
     }
     // Reset state for the new photo.
-    this.img = this.raw;
     this.cutout = null;
     this.bgRemoved = false;
     this.zoom = 1;
     this.u = 0.5;
     this.v = 0.5;
+    this.orient = { rot: 0, flipH: false, flipV: false };
+    this.reflectFlips();
+    this.rebuildSource();
     this.resetAdjustments(false);
     $('#ig-zoom').value = 1;
     $('#ig-restore-bg').classList.add('hidden');
@@ -263,6 +333,153 @@ const App = {
     const canReposition = !(this.fitMode === 'fit' && this.carousel <= 1);
     $('#ig-zoom-row').classList.toggle('hidden', !canReposition);
     $('#ig-hint').classList.toggle('hidden', !canReposition);
+  },
+
+  /* ------------------------------------------------------ transform */
+  // Return `base` with the current rotation/flip baked into a canvas (or the
+  // untouched image when the transform is the identity, to avoid a needless copy).
+  orientedOf(base) {
+    if (!base) return null;
+    const { rot, flipH, flipV } = this.orient;
+    if (!rot && !flipH && !flipV) return base;
+    const bw = base.naturalWidth || base.width;
+    const bh = base.naturalHeight || base.height;
+    const swap = rot === 90 || rot === 270;
+    const c = document.createElement('canvas');
+    c.width = swap ? bh : bw;
+    c.height = swap ? bw : bh;
+    const x = c.getContext('2d');
+    x.translate(c.width / 2, c.height / 2);
+    x.rotate((rot * Math.PI) / 180);
+    x.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    x.drawImage(base, -bw / 2, -bh / 2);
+    return c;
+  },
+
+  // Rebuild the working image (and an oriented copy of the original for compare)
+  // from whichever base is active. Called whenever orientation or bg state changes.
+  rebuildSource() {
+    const base = this.bgRemoved ? this.cutout : this.raw;
+    this.img = this.orientedOf(base);
+    this.rawOriented = this.orientedOf(this.raw);
+  },
+
+  rotate(deg) {
+    if (!this.raw) return;
+    this.orient.rot = (((this.orient.rot + deg) % 360) + 360) % 360;
+    this.u = this.v = 0.5; // axes changed — recentre the crop
+    this.rebuildSource();
+    this.render();
+  },
+
+  flip(axis) {
+    if (!this.raw) return;
+    this.orient[axis] = !this.orient[axis];
+    this.u = this.v = 0.5;
+    this.reflectFlips();
+    this.rebuildSource();
+    this.render();
+  },
+
+  // Reflect flip toggles in the button styling.
+  reflectFlips() {
+    [['#ig-flip-h', 'flipH'], ['#ig-flip-v', 'flipV']].forEach(([sel, key]) => {
+      const b = $(sel);
+      if (!b) return;
+      b.setAttribute('aria-pressed', String(this.orient[key]));
+      b.classList.toggle('ring-2', this.orient[key]);
+      b.classList.toggle('ring-[#d62976]', this.orient[key]);
+    });
+  },
+
+  setExportFmt(fmt, btn) {
+    this.exportFmt = fmt;
+    this.highlight('.ig-expfmt', btn);
+    // Quality only applies to lossy encodings.
+    $('#ig-quality-row').classList.toggle('hidden', fmt === 'image/png');
+  },
+
+  /* ------------------------------------------------------------- text */
+  // Ask the browser to load the chosen web font, then re-render so the canvas
+  // (which can't wait on font loading itself) paints with the real typeface.
+  ensureFont() {
+    if (!document.fonts || !document.fonts.load) return;
+    document.fonts.load(`700 40px ${this.text.font}`).then(() => this.render()).catch(() => {});
+  },
+
+  // Convert a pointer event to canvas-pixel coordinates.
+  pointerPixel(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      px: (e.clientX - rect.left) * (this.canvas.width / rect.width),
+      py: (e.clientY - rect.top) * (this.canvas.height / rect.height),
+    };
+  },
+
+  // True when a pointer press lands on the current text block.
+  hitText(e) {
+    const box = this._textBox;
+    if (!this.text.on || !box) return false;
+    const { px, py } = this.pointerPixel(e);
+    return px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h;
+  },
+
+  onTextDrag(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const dx = (e.clientX - this.textDrag.x) * (this.canvas.width / rect.width);
+    const dy = (e.clientY - this.textDrag.y) * (this.canvas.height / rect.height);
+    this.text.x = clamp(this.text.x + dx / this.canvas.width, 0, 1);
+    this.text.y = clamp(this.text.y + dy / this.canvas.height, 0, 1);
+    this.textDrag = { x: e.clientX, y: e.clientY };
+    this.render();
+  },
+
+  // Paint the text overlay over the whole frame and record its bounds.
+  drawText(ctx, W, H) {
+    const t = this.text;
+    if (!t.on || !t.content.trim()) { this._textBox = null; return; }
+    const lines = t.content.replace(/\r/g, '').split('\n');
+    const size = (t.size / 100) * W;
+    const weight = t.bold ? 900 : 700;
+    const lh = size * 1.2;
+    const pad = size * 0.32;
+    const cx = t.x * W;
+
+    ctx.save();
+    ctx.font = `${weight} ${size}px ${t.font}, sans-serif`;
+    ctx.textBaseline = 'top';
+    ctx.textAlign = t.align;
+
+    // Measure to build the highlight boxes and the draggable hit region.
+    let maxW = 0;
+    const widths = lines.map((l) => { const w = ctx.measureText(l || ' ').width; maxW = Math.max(maxW, w); return w; });
+    const blockH = lh * lines.length;
+    const topY = t.y * H - blockH / 2;
+    const anchorX = (w) => (t.align === 'left' ? cx : t.align === 'right' ? cx - w : cx - w / 2);
+    this._textBox = { x: anchorX(maxW) - pad, y: topY - pad, w: maxW + 2 * pad, h: blockH + 2 * pad };
+
+    const round = (x, y, w, h, r) => {
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+      else { ctx.beginPath(); ctx.rect(x, y, w, h); }
+    };
+
+    if (t.highlight) {
+      ctx.fillStyle = 'rgba(0,0,0,0.42)';
+      lines.forEach((l, i) => {
+        if (!l.trim()) return;
+        const w = widths[i];
+        round(anchorX(w) - pad, topY + i * lh - pad * 0.35, w + 2 * pad, lh + pad * 0.5, size * 0.16);
+        ctx.fill();
+      });
+    } else if (t.shadow) {
+      ctx.shadowColor = 'rgba(0,0,0,0.55)';
+      ctx.shadowBlur = size * 0.16;
+      ctx.shadowOffsetY = size * 0.06;
+    }
+
+    ctx.fillStyle = t.color;
+    lines.forEach((l, i) => ctx.fillText(l, cx, topY + i * lh));
+    ctx.restore();
   },
 
   /* ---------------------------------------------------------- looks */
@@ -425,6 +642,7 @@ const App = {
     const m = Math.round((this.border / 100) * Math.min(W, H));
     if (m > 0) { ctx.fillStyle = this.borderColor; ctx.fillRect(0, 0, W, H); }
     this.paintContent(ctx, m, m, W - 2 * m, H - 2 * m);
+    this.drawText(ctx, W, H);
   },
 
   // Paint the photo (and its background) into the inner destination rect.
@@ -499,7 +717,7 @@ const App = {
     canvas.height = H;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, W, H);
-    const img = this.raw;
+    const img = this.rawOriented || this.raw;
     const siw = img.naturalWidth || img.width;
     const sih = img.naturalHeight || img.height;
     if (this.fitMode === 'fit') {
@@ -534,6 +752,20 @@ const App = {
     ctx.restore();
   },
 
+  // Rule-of-thirds composition guide (preview only) — helps place the subject.
+  drawGrid(ctx, W, H) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth = Math.max(1, W * 0.0022);
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = Math.max(1, W * 0.004);
+    for (let i = 1; i < 3; i++) {
+      ctx.beginPath(); ctx.moveTo((W * i) / 3, 0); ctx.lineTo((W * i) / 3, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, (H * i) / 3); ctx.lineTo(W, (H * i) / 3); ctx.stroke();
+    }
+    ctx.restore();
+  },
+
   render() {
     if (!this.img) return;
     const cap = 900;
@@ -545,6 +777,7 @@ const App = {
       return;
     }
     if (this.carousel > 1) {
+      this._textBox = null; // text isn't drawn on the panorama preview
       // Preview the whole panorama with dashed tile dividers.
       const n = this.carousel;
       const aspect = this.format.aspect * n;
@@ -568,12 +801,13 @@ const App = {
     const W = aspect >= 1 ? cap : Math.round(cap * aspect);
     const H = aspect >= 1 ? Math.round(cap / aspect) : cap;
     this.paint(this.canvas, W, H);
+    if (this.grid) this.drawGrid(this.canvas.getContext('2d'), W, H);
     if (this.safeZones) this.drawSafeZones(this.canvas.getContext('2d'), W, H);
   },
 
   async removeBackground() {
     if (!this.raw) return;
-    if (this.cutout) { this.img = this.cutout; this.bgRemoved = true; $('#ig-restore-bg').classList.remove('hidden'); this.render(); return; }
+    if (this.cutout) { this.bgRemoved = true; this.rebuildSource(); $('#ig-restore-bg').classList.remove('hidden'); this.render(); return; }
     const btn = $('#ig-remove-bg');
     const original = btn.innerHTML;
     btn.disabled = true;
@@ -584,8 +818,8 @@ const App = {
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);
-      this.img = this.cutout;
       this.bgRemoved = true;
+      this.rebuildSource();
       $('#ig-restore-bg').classList.remove('hidden');
       this.render();
       Toast.show('Background removed', 'success');
@@ -613,8 +847,10 @@ const App = {
     if (!this.img) return;
     const out = document.createElement('canvas');
     this.paint(out, this.format.w, this.format.h);
-    const blob = await new Promise((res) => out.toBlob(res, 'image/jpeg', 0.92));
-    this.saveBlob(blob, `instagram-${this.format.key}-${this.format.w}x${this.format.h}.jpg`);
+    const isPng = this.exportFmt === 'image/png';
+    const blob = await new Promise((res) => out.toBlob(res, this.exportFmt, isPng ? undefined : this.quality));
+    const ext = isPng ? 'png' : 'jpg';
+    this.saveBlob(blob, `instagram-${this.format.key}-${this.format.w}x${this.format.h}.${ext}`);
     Toast.show(`Saved ${this.format.w}×${this.format.h} for Instagram`, 'success');
   },
 
@@ -626,13 +862,15 @@ const App = {
     try {
       const JSZip = (await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
       const zip = new JSZip();
+      const isPng = this.exportFmt === 'image/png';
+      const ext = isPng ? 'png' : 'jpg';
       for (let i = 0; i < n; i++) {
         const c = document.createElement('canvas');
         c.width = fmt.w;
         c.height = fmt.h;
         this.drawTile(c.getContext('2d'), i, n, 0, 0, fmt.w, fmt.h);
-        const blob = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
-        zip.file(`carousel-${i + 1}-of-${n}.jpg`, blob);
+        const blob = await new Promise((res) => c.toBlob(res, this.exportFmt, isPng ? undefined : this.quality));
+        zip.file(`carousel-${i + 1}-of-${n}.${ext}`, blob);
       }
       const blob = await zip.generateAsync({ type: 'blob' });
       this.saveBlob(blob, `instagram-carousel-${n}x-${fmt.key}.zip`);
@@ -648,7 +886,7 @@ const App = {
     this.dropzone.parentElement.classList.remove('hidden');
     if (this.origUrl) { URL.revokeObjectURL(this.origUrl); this.origUrl = null; }
     if (this.cutoutUrl) { URL.revokeObjectURL(this.cutoutUrl); this.cutoutUrl = null; }
-    this.raw = this.img = this.cutout = null;
+    this.raw = this.img = this.cutout = this.rawOriented = null;
   },
 };
 
