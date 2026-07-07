@@ -180,7 +180,7 @@
 
 <!-- ====================== CARD TEMPLATE ====================== -->
 <template id="card-template">
-    <article class="card glass rounded-2xl shadow-lg border border-gray-200/70 dark:border-gray-800/70 overflow-hidden animate-fade-in-up" data-state="processing">
+    <article class="card glass rounded-3xl shadow-xl shadow-gray-900/5 dark:shadow-black/30 border border-gray-200/70 dark:border-gray-800/70 overflow-hidden animate-fade-in-up" data-state="processing">
         <div class="preview relative aspect-video select-none checkerboard">
             <!-- Compare view -->
             <div class="view-compare absolute inset-0">
@@ -228,110 +228,115 @@
         </div>
 
         <!-- Options panel (background + format) -->
-        <div class="options-panel hidden px-4 pt-4 space-y-3 border-t border-gray-200/70 dark:border-gray-800/70">
-            <div class="flex items-center gap-3 flex-wrap">
-                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20">Background</span>
-                <div class="bg-swatches flex items-center gap-2">
-                    <button type="button" data-bg="transparent" class="swatch w-7 h-7 rounded-full checkerboard ring-2 ring-primary" aria-label="Transparent background" title="Transparent"></button>
-                    <button type="button" data-bg="#ffffff" class="swatch w-7 h-7 rounded-full bg-white border border-gray-300" aria-label="White background" title="White"></button>
-                    <button type="button" data-bg="#000000" class="swatch w-7 h-7 rounded-full bg-black" aria-label="Black background" title="Black"></button>
-                    <button type="button" data-bg="#4F46E5" class="swatch w-7 h-7 rounded-full" style="background:#4F46E5" aria-label="Indigo background" title="Indigo"></button>
-                    <button type="button" data-bg="#22c55e" class="swatch w-7 h-7 rounded-full" style="background:#22c55e" aria-label="Green background" title="Green"></button>
-                    <label class="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-300 dark:ring-gray-700 grid place-items-center cursor-pointer" title="Custom color">
-                        <i class="fa-solid fa-eye-dropper text-[10px] text-gray-500 pointer-events-none absolute z-10"></i>
+        <div class="options-panel hidden mx-3 sm:mx-4 mb-1 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/70 dark:border-white/10 p-4 sm:p-5 space-y-5">
+            <!-- Background color -->
+            <div class="space-y-2.5">
+                <span class="opt-label">Background</span>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <button type="button" data-bg="transparent" class="swatch w-7 h-7 rounded-full checkerboard shadow-sm ring-offset-white dark:ring-offset-gray-900 ring-2 ring-primary ring-offset-1" aria-label="Transparent background" title="Transparent"></button>
+                    <button type="button" data-bg="#ffffff" class="swatch w-7 h-7 rounded-full bg-white shadow-sm ring-1 ring-gray-300 ring-offset-white dark:ring-offset-gray-900" aria-label="White background" title="White"></button>
+                    <button type="button" data-bg="#000000" class="swatch w-7 h-7 rounded-full bg-black shadow-sm ring-offset-white dark:ring-offset-gray-900" aria-label="Black background" title="Black"></button>
+                    <button type="button" data-bg="#4F46E5" class="swatch w-7 h-7 rounded-full shadow-sm ring-offset-white dark:ring-offset-gray-900" style="background:#4F46E5" aria-label="Indigo background" title="Indigo"></button>
+                    <button type="button" data-bg="#22c55e" class="swatch w-7 h-7 rounded-full shadow-sm ring-offset-white dark:ring-offset-gray-900" style="background:#22c55e" aria-label="Green background" title="Green"></button>
+                    <label class="relative w-7 h-7 rounded-full overflow-hidden shadow-sm ring-1 ring-gray-300 dark:ring-gray-600 ring-offset-white dark:ring-offset-gray-900 grid place-items-center cursor-pointer" title="Custom color">
+                        <i class="fa-solid fa-eye-dropper text-[10px] text-white mix-blend-difference pointer-events-none absolute z-10"></i>
                         <input type="color" class="custom-color swatch-input w-9 h-9" value="#ff6b6b" aria-label="Custom background color">
                     </label>
                 </div>
             </div>
+
             <!-- Rich backgrounds: gradient, blurred original, uploaded image -->
-            <div class="flex items-start gap-3 flex-wrap">
-                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20 shrink-0 pt-1.5">Style</span>
-                <div class="flex flex-col gap-2 text-xs">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <button type="button" class="bg-style bg-grad-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-style="gradient"><i class="fa-solid fa-swatchbook mr-1" aria-hidden="true"></i>Gradient</button>
-                        <input type="color" value="#4F46E5" class="bg-grad-a w-6 h-6 rounded cursor-pointer bg-transparent" aria-label="Gradient color 1">
-                        <input type="color" value="#EC4899" class="bg-grad-b w-6 h-6 rounded cursor-pointer bg-transparent" aria-label="Gradient color 2">
-                        <input type="range" class="bg-grad-angle w-16 accent-primary" min="0" max="360" step="5" value="45" aria-label="Gradient angle" title="Angle">
+            <div class="space-y-2.5">
+                <span class="opt-label">Fill style</span>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <button type="button" class="bg-style chip bg-grad-btn" data-style="gradient"><i class="fa-solid fa-swatchbook" aria-hidden="true"></i>Gradient</button>
+                    <input type="color" value="#4F46E5" class="bg-grad-a color-chip" aria-label="Gradient color 1">
+                    <input type="color" value="#EC4899" class="bg-grad-b color-chip" aria-label="Gradient color 2">
+                    <input type="range" class="bg-grad-angle slider w-16" min="0" max="360" step="5" value="45" aria-label="Gradient angle" title="Angle">
+                    <span class="h-6 w-px bg-gray-200 dark:bg-white/10" aria-hidden="true"></span>
+                    <button type="button" class="bg-style chip bg-blur-btn" data-style="blur"><i class="fa-solid fa-droplet" aria-hidden="true"></i>Blur photo</button>
+                    <input type="range" class="bg-blur-amt slider w-16" min="0.01" max="0.12" step="0.01" value="0.05" aria-label="Blur amount">
+                    <label class="bg-style chip bg-image-btn cursor-pointer" data-style="image"><i class="fa-solid fa-image" aria-hidden="true"></i>Image
+                        <input type="file" accept="image/*" class="bg-image-input hidden" aria-label="Upload background image">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Format + export size -->
+            <div class="grid sm:grid-cols-2 gap-5">
+                <div class="space-y-2.5">
+                    <span class="opt-label">Format</span>
+                    <div class="format-group seg">
+                        <button type="button" data-format="image/png" class="format-btn seg-btn bg-primary text-white">PNG</button>
+                        <button type="button" data-format="image/jpeg" class="format-btn seg-btn">JPG</button>
+                        <button type="button" data-format="image/webp" class="format-btn seg-btn">WEBP</button>
                     </div>
+                </div>
+                <div class="space-y-2.5">
+                    <span class="opt-label">Export size</span>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <button type="button" class="bg-style bg-blur-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-style="blur"><i class="fa-solid fa-droplet mr-1" aria-hidden="true"></i>Blur photo</button>
-                        <input type="range" class="bg-blur-amt w-20 accent-primary" min="0.01" max="0.12" step="0.01" value="0.05" aria-label="Blur amount">
-                        <label class="bg-style bg-image-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer" data-style="image"><i class="fa-solid fa-image mr-1" aria-hidden="true"></i>Image
-                            <input type="file" accept="image/*" class="bg-image-input hidden" aria-label="Upload background image">
-                        </label>
+                        <button type="button" data-size="original" class="size-btn chip bg-primary text-white">Original</button>
+                        <button type="button" data-size="512x512" data-w="512" data-h="512" class="size-btn chip">Profile 512²</button>
+                        <button type="button" data-size="1080x1920" data-w="1080" data-h="1920" class="size-btn chip">Story 1080×1920</button>
+                        <span class="inline-flex items-center gap-1">
+                            <input type="number" min="1" placeholder="W" class="size-custom-w num-input" aria-label="Custom export width">
+                            <span class="text-gray-400 text-xs">×</span>
+                            <input type="number" min="1" placeholder="H" class="size-custom-h num-input" aria-label="Custom export height">
+                        </span>
                     </div>
                 </div>
             </div>
-            <div class="flex items-center gap-3 flex-wrap pb-1">
-                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20">Format</span>
-                <div class="format-group inline-flex rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden text-xs font-medium">
-                    <button type="button" data-format="image/png" class="format-btn px-3 py-1.5 bg-primary text-white">PNG</button>
-                    <button type="button" data-format="image/jpeg" class="format-btn px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800">JPG</button>
-                    <button type="button" data-format="image/webp" class="format-btn px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800">WEBP</button>
-                </div>
-            </div>
-            <!-- Export size -->
-            <div class="flex items-start gap-3 flex-wrap pb-1">
-                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20 shrink-0 pt-1.5">Size</span>
-                <div class="flex items-center gap-2 flex-wrap text-xs font-medium">
-                    <button type="button" data-size="original" class="size-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-primary text-white">Original</button>
-                    <button type="button" data-size="512x512" data-w="512" data-h="512" class="size-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Profile 512²</button>
-                    <button type="button" data-size="1080x1920" data-w="1080" data-h="1920" class="size-btn px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Story 1080×1920</button>
-                    <span class="inline-flex items-center gap-1">
-                        <input type="number" min="1" placeholder="W" class="size-custom-w w-16 px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-center" aria-label="Custom export width">
-                        <span class="text-gray-400">×</span>
-                        <input type="number" min="1" placeholder="H" class="size-custom-h w-16 px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-center" aria-label="Custom export height">
-                    </span>
-                </div>
-            </div>
+
             <!-- Sticker effects -->
-            <div class="flex items-start gap-3 flex-wrap pb-1 border-t border-gray-200/70 dark:border-gray-800/70 pt-3">
-                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 w-20 shrink-0 pt-1">Sticker</span>
-                <div class="flex flex-col gap-2 text-xs">
+            <div class="space-y-2.5 pt-4 border-t border-gray-200/70 dark:border-white/10">
+                <span class="opt-label">Sticker effects</span>
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs font-medium text-gray-600 dark:text-gray-300">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" class="fx-outline accent-primary w-4 h-4"> Outline
-                        <input type="color" value="#ffffff" class="fx-outline-c w-6 h-6 rounded cursor-pointer bg-transparent" aria-label="Outline color">
-                        <input type="range" class="fx-outline-w w-20 accent-primary" min="0.02" max="0.14" step="0.01" value="0.05" aria-label="Outline width">
+                        <input type="checkbox" class="fx-outline accent-primary w-4 h-4 rounded"> Outline
+                        <input type="color" value="#ffffff" class="fx-outline-c color-chip" aria-label="Outline color">
+                        <input type="range" class="fx-outline-w slider w-16" min="0.02" max="0.14" step="0.01" value="0.05" aria-label="Outline width">
                     </label>
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" class="fx-shadow accent-primary w-4 h-4"> Drop shadow
+                        <input type="checkbox" class="fx-shadow accent-primary w-4 h-4 rounded"> Drop shadow
                     </label>
                     <label class="inline-flex items-center gap-2">
-                        <span class="w-14">Padding</span>
-                        <input type="range" class="fx-pad w-24 accent-primary" min="0" max="0.25" step="0.01" value="0" aria-label="Padding">
+                        <span>Padding</span>
+                        <input type="range" class="fx-pad slider w-24" min="0" max="0.25" step="0.01" value="0" aria-label="Padding">
                     </label>
                 </div>
             </div>
         </div>
 
         <!-- Card footer -->
-        <div class="p-4 space-y-3">
+        <div class="p-4 sm:p-5 space-y-4">
             <div class="min-w-0">
-                <p class="filename text-sm font-medium truncate" title="">image.png</p>
-                <p class="meta text-xs text-gray-500 dark:text-gray-400"></p>
+                <p class="filename text-sm font-semibold truncate text-gray-900 dark:text-gray-100" title="">image.png</p>
+                <p class="meta text-xs text-gray-500 dark:text-gray-400 mt-0.5"></p>
             </div>
             <div class="actions flex flex-wrap items-center gap-2">
-                <button type="button" class="edit-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Refine edges — erase or restore">
+                <button type="button" class="edit-btn btn-accent" aria-label="Refine edges — erase or restore">
                     <i class="fa-solid fa-brush" aria-hidden="true"></i> Refine
                 </button>
-                <button type="button" class="crop-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Crop to a shape — circle, square and more">
+                <button type="button" class="crop-btn btn-accent" aria-label="Crop to a shape — circle, square and more">
                     <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Crop
                 </button>
-                <button type="button" class="options-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Instagram formats, background, effects and export options">
+                <button type="button" class="options-btn btn-ghost" aria-label="Instagram formats, background, effects and export options">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i> Style &amp; export
                 </button>
-                <button type="button" class="toggle-view-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Switch between slider and side-by-side view">
+                <button type="button" class="toggle-view-btn btn-ghost" aria-label="Switch between slider and side-by-side view">
                     <i class="fa-solid fa-table-columns" aria-hidden="true"></i> <span class="view-label">Side-by-side</span>
                 </button>
-                <button type="button" class="copy-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Copy result to clipboard">
+                <button type="button" class="copy-btn btn-ghost" aria-label="Copy result to clipboard">
                     <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy
                 </button>
-                <button type="button" class="remove-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove this image">
-                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                </button>
-                <button type="button" class="download-btn inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary hover:bg-primaryHover text-white shadow ml-auto transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Download result">
-                    <i class="fa-solid fa-download" aria-hidden="true"></i> Download <span class="download-label">PNG</span>
-                </button>
+                <div class="flex items-center gap-2 ml-auto">
+                    <button type="button" class="remove-btn btn-danger" aria-label="Remove this image">
+                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
+                    </button>
+                    <button type="button" class="download-btn btn-primary" aria-label="Download result">
+                        <i class="fa-solid fa-download" aria-hidden="true"></i> Download <span class="download-label">PNG</span>
+                    </button>
+                </div>
             </div>
         </div>
     </article>
