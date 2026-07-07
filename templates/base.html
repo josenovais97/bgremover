@@ -165,6 +165,9 @@
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none" role="status" aria-live="polite"></div>
 
+    <!-- Custom colour picker replacing the unreliable native <input type=color> dialog. -->
+    <script src="{% static 'js/colorpicker.js' %}"></script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
