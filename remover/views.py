@@ -4,7 +4,6 @@ Views for the background remover.
 The heavy lifting (AI background removal) runs client-side, so these views only
 render the single-page app and the SEO helper endpoints (robots.txt, sitemap).
 """
-import json
 import logging
 
 from django.conf import settings
@@ -16,27 +15,6 @@ from django.views.decorators.http import require_GET
 
 logger = logging.getLogger(__name__)
 
-
-def faq_jsonld(faqs):
-    """Build schema.org FAQPage JSON-LD from the FAQ list.
-
-    Generating this from the same source that renders the visible FAQ keeps the
-    structured data and the on-page content from drifting apart. The ``<`` is
-    escaped so the payload can never break out of the surrounding <script> tag.
-    """
-    data = {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-            {
-                "@type": "Question",
-                "name": faq["q"],
-                "acceptedAnswer": {"@type": "Answer", "text": faq["a"]},
-            }
-            for faq in faqs
-        ],
-    }
-    return json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
 
 # Output formats offered by the converter (all encodable via <canvas>.toBlob).
 CONVERT_FORMATS = [
@@ -53,25 +31,6 @@ IG_FORMATS = [
     {"key": "story", "label": "Story / Reel", "sub": "9:16", "aspect": "0.5625", "w": 1080, "h": 1920},
     {"key": "landscape", "label": "Landscape", "sub": "1.91:1", "aspect": "1.91", "w": 1080, "h": 566},
     {"key": "profile", "label": "Profile", "sub": "1:1", "aspect": "1", "w": 320, "h": 320},
-]
-
-# Landing-page content kept here so copy lives in one maintainable place.
-FEATURES = [
-    {"icon": "fa-bolt", "title": "Instant results", "text": "The AI runs locally and returns a clean cut-out in seconds — no queue, no wait."},
-    {"icon": "fa-shield-halved", "title": "Totally private", "text": "Images are processed in your browser and never uploaded to any server."},
-    {"icon": "fa-layer-group", "title": "Batch processing", "text": "Drop in many images at once and download them all together as a ZIP."},
-    {"icon": "fa-palette", "title": "Custom backgrounds", "text": "Keep it transparent or drop in any solid color, then export PNG, JPG or WEBP."},
-    {"icon": "fa-brush", "title": "Refine by hand", "text": "Erase leftover background or restore parts the AI trimmed too far with a soft brush."},
-    {"icon": "fa-crop-simple", "title": "Full quality", "text": "Original resolution preserved. No downscaling, no watermark, ever."},
-    {"icon": "fa-gift", "title": "Free forever", "text": "No sign-up, no credits, no limits. Open source and free for everyone."},
-]
-
-FAQS = [
-    {"q": "Is the background remover really free?", "a": "Yes — 100% free with no sign-up, no watermarks, and no limits. Because the AI runs in your browser, there are no per-image costs."},
-    {"q": "Are my images uploaded to a server?", "a": "No. All processing happens locally in your browser, so your images never leave your device."},
-    {"q": "What image formats are supported?", "a": "Upload JPG, PNG or WEBP. Export a transparent PNG, or a JPG/WEBP with a custom background color."},
-    {"q": "Does it reduce image quality?", "a": "No. The result keeps the original resolution with no downscaling and no watermark."},
-    {"q": "Why is the first image a little slower?", "a": "The first run downloads the AI model (~40 MB) once. Your browser caches it, so every image after that is fast."},
 ]
 
 # Keyword-targeted landing pages. Each reuses the same in-browser tool but gives
@@ -159,11 +118,7 @@ SITEMAP_PATHS = ["/", "/convert/", "/instagram/", "/crop/"] + [f"/remove-backgro
 @require_GET
 def index(request):
     """Render the main single-page application."""
-    return render(
-        request,
-        "remover/index.html",
-        {"features": FEATURES, "faqs": FAQS, "faq_jsonld": faq_jsonld(FAQS)},
-    )
+    return render(request, "remover/index.html")
 
 
 @require_GET
