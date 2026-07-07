@@ -252,6 +252,12 @@
     input.style.display = 'none';
     input.insertAdjacentElement('afterend', trigger);
 
+    // Critical: many of these inputs live inside a <label>. Clicking anything in
+    // a label forward-activates its control, which would pop the native colour
+    // dialog (the one that freezes). Swallow the native picker at the source so
+    // it can never open, however the input gets clicked.
+    input.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); });
+
     // Keep the swatch in sync if code changes the value programmatically.
     input.addEventListener('change', function () { trigger.style.background = normHex(input.value) || trigger.style.background; });
 
