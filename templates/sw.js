@@ -2,7 +2,7 @@
 // Bump this whenever shipped JS/CSS changes: static filenames aren't hashed in
 // production, so a new cache name is what forces every client to drop the old
 // cached assets and pull the fresh ones (see the `activate` handler).
-const CACHE = 'bgr-v7';
+const CACHE = 'bgr-v9';
 const SHELL = [
   '/',
   '/convert/',
