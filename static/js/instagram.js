@@ -31,6 +31,18 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
+// Coalesce a burst of calls (e.g. the `input` events a native colour picker
+// streams while open) into one run per animation frame, so a rapid stream of
+// re-renders can't lock up the main thread and leave the picker un-dismissable.
+function rafThrottle(fn) {
+  let scheduled = false;
+  return (...args) => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => { scheduled = false; fn(...args); });
+  };
+}
+
 const loadImage = (src) =>
   new Promise((resolve, reject) => {
     const img = new Image();
@@ -159,8 +171,11 @@ const App = {
     // Frame: fit/fill, fit background, border
     $$('.ig-fit').forEach((b) => b.addEventListener('click', () => this.setFitMode(b.dataset.fit, b)));
     $$('.ig-fitbg').forEach((b) => b.addEventListener('click', () => this.setFitBg(b.dataset.bg, b)));
-    $('#ig-border').addEventListener('input', (e) => { this.border = +e.target.value; this.render(); });
-    $('#ig-border-color').addEventListener('input', (e) => { this.borderColor = e.target.value; if (this.border > 0) this.render(); });
+    // Colour pickers stream `input` events while open; coalesce the re-renders
+    // to one per frame so the picker stays dismissable on large photos.
+    const throttledRender = rafThrottle(() => this.render());
+    $('#ig-border').addEventListener('input', (e) => { this.border = +e.target.value; throttledRender(); });
+    $('#ig-border-color').addEventListener('input', (e) => { this.borderColor = e.target.value; if (this.border > 0) throttledRender(); });
     // Looks + strength
     $$('.ig-filter').forEach((b) => b.addEventListener('click', () => this.applyFilter(b)));
     $('#ig-strength').addEventListener('input', (e) => this.setStrength(+e.target.value));
@@ -224,7 +239,7 @@ const App = {
       this.render();
     }));
     $('#ig-text-size').addEventListener('input', (e) => { this.text.size = +e.target.value; this.render(); });
-    $('#ig-text-color').addEventListener('input', (e) => { this.text.color = e.target.value; this.render(); });
+    $('#ig-text-color').addEventListener('input', (e) => { this.text.color = e.target.value; throttledRender(); });
     $$('.ig-text-align').forEach((b) => b.addEventListener('click', () => {
       this.text.align = b.dataset.align;
       $$('.ig-text-align').forEach((x) => { const a = x === b; x.classList.toggle('bg-[#d62976]', a); x.classList.toggle('text-white', a); });
@@ -248,7 +263,7 @@ const App = {
     // Background removal (optional, lazy)
     $('#ig-remove-bg').addEventListener('click', () => this.removeBackground());
     $('#ig-restore-bg').addEventListener('click', () => { this.bgRemoved = false; this.rebuildSource(); $('#ig-restore-bg').classList.add('hidden'); this.render(); });
-    $('#ig-bg-color').addEventListener('input', (e) => { this.bgColor = e.target.value; if (this.bgRemoved) this.render(); });
+    $('#ig-bg-color').addEventListener('input', (e) => { this.bgColor = e.target.value; if (this.bgRemoved) throttledRender(); });
 
     // Framing
     const zoom = $('#ig-zoom');
