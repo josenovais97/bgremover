@@ -1413,13 +1413,21 @@ class Card {
   }
 
   /** Paint a preview surface: a solid colour behind the cut-out, else checkerboard. */
-  paintSurface(surface, simpleBg) {
-    if (simpleBg && typeof this.bg === 'string') {
+  // Paint a solid colour or gradient straight onto the surface behind the
+  // transparent cut-out — instant, so colour pickers stay live without a compose.
+  paintSurface(surface) {
+    const bg = this.bg;
+    if (typeof bg === 'string') {
       surface.classList.remove('checkerboard');
-      surface.style.backgroundColor = this.bg;
+      surface.style.background = bg;
+    } else if (bg && bg.type === 'gradient') {
+      // Canvas axis (cos θ, sin θ) with y pointing down maps to CSS angle 90+θ,
+      // so the live preview matches the exported gradient exactly.
+      surface.classList.remove('checkerboard');
+      surface.style.background = `linear-gradient(${90 + (bg.angle || 0)}deg, ${bg.from}, ${bg.to})`;
     } else {
       surface.classList.add('checkerboard');
-      surface.style.backgroundColor = '';
+      surface.style.background = '';
     }
   }
 
@@ -1440,14 +1448,15 @@ class Card {
     // A crop of the original image can be previewed even before bg removal
     // finishes, since it doesn't depend on the cut-out existing.
     const cropOnOriginal = this.cropState && this.cropState.source === 'original';
-    // A solid-colour background can be shown cheaply by painting the surface
-    // behind the transparent cut-out; richer backgrounds must be composited.
-    const simpleBg = !this.bg || typeof this.bg === 'string';
+    // A solid colour or gradient can be shown cheaply as a CSS background behind
+    // the transparent cut-out (no per-change compose); blur/image backgrounds and
+    // any crop or sticker still need a real composite.
+    const cssBg = !this.bg || typeof this.bg === 'string' || this.bg.type === 'gradient';
 
     // Called during build (for remembered options) before any image exists —
     // set the background surface but leave the image alone until it's ready.
     if (!this.processedUrl && !cropOnOriginal) {
-      for (const surface of surfaces) this.paintSurface(surface, simpleBg);
+      for (const surface of surfaces) this.paintSurface(surface);
       return;
     }
 
@@ -1456,10 +1465,10 @@ class Card {
       this.previewUrl = null;
     }
 
-    if (!this.cropState && !this.sticker && simpleBg) {
+    if (!this.cropState && !this.sticker && cssBg) {
       processed.src = this.processedUrl;
       processedSplit.src = this.processedUrl;
-      for (const surface of surfaces) this.paintSurface(surface, true);
+      for (const surface of surfaces) this.paintSurface(surface);
       return;
     }
 
@@ -1477,7 +1486,7 @@ class Card {
     processedSplit.src = this.previewUrl;
     for (const surface of surfaces) {
       surface.classList.add('checkerboard');
-      surface.style.backgroundColor = '';
+      surface.style.background = '';
     }
   }
 
@@ -1491,6 +1500,15 @@ class Card {
     this.el.querySelector('.download-label').textContent = LABEL[format];
   }
 
+  /** Decode a source URL once and reuse the bitmap — dragging a slider fires many
+   *  composes, and re-decoding a full-resolution image each time is what freezes
+   *  the tab. Keyed by URL, so a re-process (new URL) naturally refreshes it. */
+  async decodeCached(url) {
+    this._decoded = this._decoded || new Map();
+    if (!this._decoded.has(url)) this._decoded.set(url, await loadImage(url));
+    return this._decoded.get(url);
+  }
+
   /** Composite the cut-out onto the chosen background, crop, sticker & size. */
   async compose(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker, resize = this.exportSize) {
     // Fast path: unmodified, uncropped, un-styled transparent PNG keeps the bytes.
@@ -1498,7 +1516,7 @@ class Card {
 
     // A crop can target the original image (background intact) or the cut-out.
     const srcUrl = crop && crop.source === 'original' ? this.originalUrl : this.processedUrl;
-    const loaded = await loadImage(srcUrl);
+    const loaded = await this.decodeCached(srcUrl);
     // Rotate/flip first so the rest of the pipeline sees a plainly oriented source.
     const img = crop ? orientSource(loaded, crop.rot, crop.flipH, crop.flipV) : loaded;
     const iw = img.naturalWidth || img.width;

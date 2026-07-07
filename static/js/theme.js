@@ -7,9 +7,10 @@
  */
 (function () {
   try {
+    // Light is the default; dark only applies when the user has explicitly
+    // chosen it (system dark-mode preference no longer forces dark).
     var stored = localStorage.getItem('theme');
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (stored === 'dark' || (!stored && prefersDark)) {
+    if (stored === 'dark') {
       document.documentElement.classList.add('dark');
     }
   } catch (e) {
