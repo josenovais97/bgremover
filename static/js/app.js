@@ -1474,7 +1474,9 @@ class Card {
 
     let blob;
     try {
-      blob = await this.compose('image/png', this.bg, this.cropState, this.sticker, null);
+      // Cap the preview resolution: it only displays at a few hundred px, so
+      // there's no need to composite the full-res image on every change.
+      blob = await this.compose('image/png', this.bg, this.cropState, this.sticker, null, 1024);
     } catch {
       if (seq === this._previewSeq) Toast.show('Could not render the crop preview', 'error');
       return;
@@ -1509,8 +1511,11 @@ class Card {
     return this._decoded.get(url);
   }
 
-  /** Composite the cut-out onto the chosen background, crop, sticker & size. */
-  async compose(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker, resize = this.exportSize) {
+  /** Composite the cut-out onto the chosen background, crop, sticker & size.
+   *  `maxDim` caps the working resolution — the live preview passes a small cap
+   *  so full-res decode/convolution/encode (seconds of main-thread work on a big
+   *  photo) never runs on every colour/slider change; downloads omit it. */
+  async compose(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker, resize = this.exportSize, maxDim = 0) {
     // Fast path: unmodified, uncropped, un-styled transparent PNG keeps the bytes.
     if (!bg && format === 'image/png' && !crop && !sticker && !resize) return this.processedBlob;
 
@@ -1527,8 +1532,11 @@ class Card {
       ? cropGeometry(iw, ih, crop)
       : { sx: 0, sy: 0, sw: iw, sh: ih, outW: iw, outH: ih };
     const shape = crop ? crop.shape : 'rect';
-    const CW = geo.outW;
-    const CH = geo.outH;
+    // Downscale the working canvas for previews (sticker metrics are fractions of
+    // the shorter side, so they scale with it automatically and stay accurate).
+    const scale = maxDim ? Math.min(1, maxDim / Math.max(geo.outW, geo.outH)) : 1;
+    const CW = Math.max(1, Math.round(geo.outW * scale));
+    const CH = Math.max(1, Math.round(geo.outH * scale));
 
     // 1. Content sprite: the cropped, shape-masked subject.
     const content = document.createElement('canvas');

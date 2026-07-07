@@ -78,8 +78,14 @@
     + 'text-transform:uppercase;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.12);color:#111827;outline:none;}'
     + 'html.dark .cp-hex{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.14);color:#f4f4f5;}'
     + '.cp-hex:focus{border-color:#4f46e5;box-shadow:0 0 0 2px rgba(79,70,229,0.3);}'
+    + '.cp-eyedrop{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid rgba(0,0,0,0.12);'
+    + 'background:rgba(0,0,0,0.04);color:#374151;cursor:pointer;display:grid;place-items:center;font-size:13px;}'
+    + 'html.dark .cp-eyedrop{border-color:rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:#d1d5db;}'
+    + '.cp-eyedrop:hover{background:rgba(79,70,229,0.12);color:#4f46e5;}'
     + '.cp-swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:10px;}'
-    + '.cp-sw{width:100%;aspect-ratio:1;border-radius:6px;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18);padding:0;border:0;}'
+    + '.cp-sw{width:100%;aspect-ratio:1;border-radius:6px;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18);padding:0;border:0;transition:transform .1s ease;}'
+    + '.cp-sw:hover{transform:scale(1.12);}'
+    + '.cp-sw.cp-active{box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18),0 0 0 2px #4f46e5;}'
     + '.cp-trigger{cursor:pointer;padding:0;}';
 
   var style = document.createElement('style');
@@ -89,7 +95,7 @@
     '#1f2937', '#6b7280', '#8b5cf6', '#14b8a6', '#f43f5e', '#84cc16', '#3b82f6', '#eab308'];
 
   /* --------------------------------------------------------------- popover */
-  var pop, sv, svThumb, hue, hex, prev, active = null;
+  var pop, sv, svThumb, hue, hex, prev, swatchEls = [], active = null;
   var cur = { h: 0, s: 0, v: 0 };
   var rafScheduled = false;
 
@@ -113,12 +119,25 @@
     hex.type = 'text'; hex.className = 'cp-hex'; hex.setAttribute('aria-label', 'Hex colour'); hex.maxLength = 7;
     row.appendChild(prev); row.appendChild(hex);
 
+    // Screen eyedropper (Chromium/Edge). Progressive: only shown when supported.
+    if (window.EyeDropper) {
+      var eye = document.createElement('button');
+      eye.type = 'button'; eye.className = 'cp-eyedrop'; eye.title = 'Pick a colour from the screen';
+      eye.setAttribute('aria-label', 'Pick a colour from the screen');
+      eye.innerHTML = '<i class="fa-solid fa-eye-dropper" aria-hidden="true"></i>';
+      eye.addEventListener('click', function () {
+        try { new window.EyeDropper().open().then(function (r) { setFromHex(r.sRGBHex, true); }).catch(function () {}); } catch (e) {}
+      });
+      row.appendChild(eye);
+    }
+
+    swatchEls = [];
     var sw = document.createElement('div'); sw.className = 'cp-swatches';
     PRESETS.forEach(function (c) {
       var b = document.createElement('button');
-      b.type = 'button'; b.className = 'cp-sw'; b.style.background = c; b.title = c;
+      b.type = 'button'; b.className = 'cp-sw'; b.style.background = c; b.title = c; b.dataset.c = c;
       b.addEventListener('click', function () { setFromHex(c, true); });
-      sw.appendChild(b);
+      sw.appendChild(b); swatchEls.push(b);
     });
 
     pop.appendChild(sv); pop.appendChild(hue); pop.appendChild(row); pop.appendChild(sw);
@@ -171,6 +190,7 @@
     prev.style.background = hexv;
     if (!skipHexField && document.activeElement !== hex) hex.value = hexv.toUpperCase();
     if (active && active.trigger) active.trigger.style.background = hexv;
+    for (var i = 0; i < swatchEls.length; i++) swatchEls[i].classList.toggle('cp-active', swatchEls[i].dataset.c === hexv);
     if (dispatch && active) {
       active.input.value = hexv;
       if (!rafScheduled) {
