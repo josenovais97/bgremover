@@ -1,5 +1,8 @@
 {% load static %}/* BG Remover service worker — app-shell offline cache. */
-const CACHE = 'bgr-v3';
+// Bump this whenever shipped JS/CSS changes: static filenames aren't hashed in
+// production, so a new cache name is what forces every client to drop the old
+// cached assets and pull the fresh ones (see the `activate` handler).
+const CACHE = 'bgr-v4';
 const SHELL = [
   '/',
   '/convert/',
@@ -11,6 +14,7 @@ const SHELL = [
   '{% static "js/instagram.js" %}',
   '{% static "js/crop.js" %}',
   '{% static "js/theme.js" %}',
+  '{% static "js/colorpicker.js" %}',
   '/manifest.webmanifest',
   '{% static "img/favicon.svg" %}',
   '{% static "img/icon-192.png" %}',
@@ -51,10 +55,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Same-origin assets: cache-first, then network (and cache it).
+  // Same-origin assets: stale-while-revalidate. Serve the cached copy instantly
+  // (fast, offline-friendly) but always refetch in the background and update the
+  // cache, so a redeploy is picked up on the next load — no cache-name bump
+  // needed for the change to eventually reach users.
   event.respondWith(
-    caches.match(req).then((cached) =>
-      cached || fetch(req).then((res) => { cachePut(req, res.clone()); return res; }),
-    ),
+    caches.match(req).then((cached) => {
+      const fresh = fetch(req)
+        .then((res) => { cachePut(req, res.clone()); return res; })
+        .catch(() => cached);
+      return cached || fresh;
+    }),
   );
 });
