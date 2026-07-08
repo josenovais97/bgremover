@@ -109,9 +109,15 @@
     pop = document.createElement('div');
     pop.className = 'cp-pop';
     pop.setAttribute('role', 'dialog');
+    pop.setAttribute('aria-label', 'Colour picker');
     pop.style.display = 'none';
 
     sv = document.createElement('div'); sv.className = 'cp-sv';
+    // Keyboard-operable: focusable, arrow keys nudge saturation/brightness so the
+    // square isn't pointer-only (the hue slider + hex field already take keys).
+    sv.tabIndex = 0;
+    sv.setAttribute('role', 'slider');
+    sv.setAttribute('aria-label', 'Saturation and brightness');
     svThumb = document.createElement('div'); svThumb.className = 'cp-sv-thumb';
     sv.appendChild(svThumb);
 
@@ -153,6 +159,15 @@
     sv.addEventListener('pointermove', function (e) { if (svDrag) pickSV(e); });
     sv.addEventListener('pointerup', function () { svDrag = false; });
     sv.addEventListener('pointercancel', function () { svDrag = false; });
+    sv.addEventListener('keydown', function (e) {
+      var step = e.shiftKey ? 0.1 : 0.02, handled = true;
+      if (e.key === 'ArrowRight') cur.s = clamp(cur.s + step, 0, 1);
+      else if (e.key === 'ArrowLeft') cur.s = clamp(cur.s - step, 0, 1);
+      else if (e.key === 'ArrowUp') cur.v = clamp(cur.v + step, 0, 1);
+      else if (e.key === 'ArrowDown') cur.v = clamp(cur.v - step, 0, 1);
+      else handled = false;
+      if (handled) { e.preventDefault(); commit(true); }
+    });
 
     hue.addEventListener('input', function () { cur.h = +hue.value; commit(true); });
     hex.addEventListener('input', function () {
@@ -163,12 +178,12 @@
     document.addEventListener('pointerdown', function (e) {
       if (!active || pop.style.display === 'none') return;
       if (pop.contains(e.target) || e.target === active.trigger) return;
-      close();
+      close(false); // clicked elsewhere — don't yank focus back to the trigger
     }, true);
     document.addEventListener('keydown', function (e) {
-      if (active && pop.style.display !== 'none' && e.key === 'Escape') { e.stopPropagation(); close(); }
+      if (active && pop.style.display !== 'none' && e.key === 'Escape') { e.stopPropagation(); close(true); }
     }, true);
-    window.addEventListener('resize', function () { if (active) close(); });
+    window.addEventListener('resize', function () { if (active) close(false); });
     window.addEventListener('scroll', function () { if (active) position(); }, true);
   }
 
@@ -294,15 +309,20 @@
     hue.value = Math.round((rgbToHsv2(input.value || '#000000')).h);
     setFromHex(input.value || '#000000', false);
     pop.style.display = 'block';
+    trigger.setAttribute('aria-expanded', 'true');
     position();
+    hex.focus(); // move focus into the dialog for keyboard users
   }
 
-  function close() {
+  function close(restoreFocus) {
     if (!active) return;
+    var trigger = active.trigger;
     active.input.dispatchEvent(new Event('input', { bubbles: true }));
     active.input.dispatchEvent(new Event('change', { bubbles: true }));
     pop.style.display = 'none';
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
     active = null;
+    if (restoreFocus && trigger) trigger.focus();
   }
 
   /* --------------------------------------------------------------- enhance */
@@ -317,6 +337,7 @@
     var label = input.getAttribute('aria-label');
     trigger.setAttribute('aria-label', (label || 'Colour') + ' — open colour picker');
     trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-expanded', 'false');
 
     input.style.display = 'none';
     input.insertAdjacentElement('afterend', trigger);
@@ -329,7 +350,7 @@
 
     trigger.addEventListener('click', function (e) {
       e.preventDefault(); e.stopPropagation();
-      if (active && active.input === input && pop.style.display !== 'none') { close(); return; }
+      if (active && active.input === input && pop.style.display !== 'none') { close(true); return; }
       openFor(input, trigger);
     });
   }

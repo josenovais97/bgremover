@@ -35,7 +35,7 @@
                 <button id="convert-browse" type="button" class="mt-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
                     <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select images
                 </button>
-                <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">Detects PNG, JPG, WEBP, GIF, BMP &amp; more · Converts to PNG, JPG or WEBP</p>
+                <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">Detects PNG, JPG, WEBP, GIF, BMP &amp; more · Converts to PNG, JPG, WEBP or AVIF</p>
             </div>
         </div>
     </section>
@@ -60,6 +60,17 @@
                     Quality <span id="quality-value" class="text-primary">90%</span>
                 </label>
                 <input id="convert-quality" type="range" min="10" max="100" value="90" class="w-full accent-primary">
+            </div>
+
+            <div class="space-y-2">
+                <label for="convert-maxdim" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Max dimension
+                </label>
+                <div class="flex items-center gap-2">
+                    <input id="convert-maxdim" type="number" min="16" step="1" placeholder="Original" aria-label="Maximum output dimension in pixels (longest side); leave blank to keep original size"
+                           class="w-28 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="text-xs text-gray-400 whitespace-nowrap">px longest side</span>
+                </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 lg:ml-auto">

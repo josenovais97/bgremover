@@ -128,9 +128,12 @@ const App = {
   orient: { rot: 0, flipH: false, flipV: false }, // 90° rotation steps + mirroring
   exportFmt: 'image/jpeg', // download encoding
   quality: 0.92, // JPEG/WEBP quality
-  // Draggable text overlay (rendered onto the canvas, so it exports too).
-  text: { on: false, content: '', font: 'Inter', size: 7, color: '#ffffff', align: 'center', bold: false, shadow: false, highlight: true, x: 0.5, y: 0.82 },
-  _textBox: null, // last-drawn text bounds (canvas px) for hit-testing drags
+  // Draggable text overlays (each rendered onto the canvas, so they export too).
+  textEnabled: false,
+  texts: [], // array of layers; each { content, font, size, color, align, bold, shadow, highlight, x, y, _box }
+  activeText: -1, // index of the layer the controls edit / that's being dragged
+  // Logo / @handle watermark, drawn into a chosen corner and exported.
+  watermark: { on: false, handle: '', pos: 'br', size: 6, opacity: 90, logoUrl: null, logoImg: null },
   raw: null, // original uploaded image
   rawOriented: null, // `raw` with the current rotate/flip baked in (for compare)
   cutout: null, // background-removed image, if produced
@@ -224,41 +227,60 @@ const App = {
       $('#ig-quality-val').textContent = e.target.value;
     });
 
-    // Text overlay.
+    // Text overlays (multiple layers). The controls always edit the active layer.
     $('#ig-text-on').addEventListener('change', (e) => {
-      this.text.on = e.target.checked;
-      $('#ig-text-panel').classList.toggle('hidden', !this.text.on);
-      if (this.text.on) { this.ensureFont(); if (!this.text.content) $('#ig-text').focus(); }
+      this.textEnabled = e.target.checked;
+      $('#ig-text-panel').classList.toggle('hidden', !this.textEnabled);
+      if (this.textEnabled) {
+        if (!this.texts.length) this.addTextLayer(false);
+        else this.syncTextControls();
+        this.ensureFont();
+        if (this.activeLayer() && !this.activeLayer().content) $('#ig-text').focus();
+      }
       this.render();
     });
-    $('#ig-text').addEventListener('input', (e) => { this.text.content = e.target.value; this.render(); });
-    $$('.ig-font').forEach((b) => b.addEventListener('click', () => {
-      this.text.font = b.dataset.font;
+    $('#ig-text-add').addEventListener('click', () => this.addTextLayer(true));
+    $('#ig-text-delete').addEventListener('click', () => this.deleteTextLayer());
+    const edit = (fn) => { const l = this.activeLayer(); if (l) { fn(l); this.render(); } };
+    $('#ig-text').addEventListener('input', (e) => edit((l) => { l.content = e.target.value; this.renderTextChips(); }));
+    $$('.ig-font').forEach((b) => b.addEventListener('click', () => edit((l) => {
+      l.font = b.dataset.font;
       this.highlight('.ig-font', b);
       this.ensureFont();
-      this.render();
-    }));
-    $('#ig-text-size').addEventListener('input', (e) => { this.text.size = +e.target.value; this.render(); });
-    $('#ig-text-color').addEventListener('input', (e) => { this.text.color = e.target.value; throttledRender(); });
-    $$('.ig-text-align').forEach((b) => b.addEventListener('click', () => {
-      this.text.align = b.dataset.align;
+    })));
+    $('#ig-text-size').addEventListener('input', (e) => edit((l) => { l.size = +e.target.value; }));
+    $('#ig-text-color').addEventListener('input', (e) => { const l = this.activeLayer(); if (l) { l.color = e.target.value; throttledRender(); } });
+    $$('.ig-text-align').forEach((b) => b.addEventListener('click', () => edit((l) => {
+      l.align = b.dataset.align;
       $$('.ig-text-align').forEach((x) => { const a = x === b; x.classList.toggle('bg-[#d62976]', a); x.classList.toggle('text-white', a); });
+    })));
+    [['#ig-text-bold', 'bold'], ['#ig-text-shadow', 'shadow'], ['#ig-text-hl', 'highlight']].forEach(([sel, key]) => {
+      $(sel).addEventListener('click', (e) => edit((l) => {
+        l[key] = !l[key];
+        this.reflectTextToggle(e.currentTarget, l[key]);
+      }));
+    });
+
+    // Watermark (logo + @handle).
+    $('#ig-wm-on').addEventListener('change', (e) => {
+      this.watermark.on = e.target.checked;
+      $('#ig-wm-panel').classList.toggle('hidden', !this.watermark.on);
+      this.render();
+    });
+    $('#ig-wm-handle').addEventListener('input', (e) => { this.watermark.handle = e.target.value; if (this.watermark.on) this.render(); });
+    $('#ig-wm-logo').addEventListener('change', (e) => this.setLogo(e.target.files[0]));
+    $('#ig-wm-logo-clear').addEventListener('click', () => this.setLogo(null));
+    $$('.ig-wm-pos').forEach((b) => b.addEventListener('click', () => {
+      this.watermark.pos = b.dataset.pos;
+      this.highlight('.ig-wm-pos', b);
       this.render();
     }));
-    [['#ig-text-bold', 'bold'], ['#ig-text-shadow', 'shadow'], ['#ig-text-hl', 'highlight']].forEach(([sel, key]) => {
-      $(sel).addEventListener('click', (e) => {
-        this.text[key] = !this.text[key];
-        const on = this.text[key];
-        e.currentTarget.setAttribute('aria-pressed', String(on));
-        e.currentTarget.classList.toggle('bg-[#d62976]', on);
-        e.currentTarget.classList.toggle('text-white', on);
-        e.currentTarget.classList.toggle('border-[#d62976]', on);
-        this.render();
-      });
-    });
-    // Reflect the default-on "Highlight" toggle.
-    $('#ig-text-hl').setAttribute('aria-pressed', 'true');
-    $('#ig-text-hl').classList.add('bg-[#d62976]', 'text-white', 'border-[#d62976]');
+    $('#ig-wm-size').addEventListener('input', (e) => { this.watermark.size = +e.target.value; if (this.watermark.on) throttledRender(); });
+    $('#ig-wm-opacity').addEventListener('input', (e) => { this.watermark.opacity = +e.target.value; if (this.watermark.on) throttledRender(); });
+
+    // Saveable look presets.
+    $('#ig-preset-save').addEventListener('click', () => this.savePreset());
+    this.renderPresets();
 
     // Background removal (optional, lazy)
     $('#ig-remove-bg').addEventListener('click', () => this.removeBackground());
@@ -276,8 +298,11 @@ const App = {
     }, { passive: false });
     this.canvas.addEventListener('pointerdown', (e) => {
       this.canvas.setPointerCapture?.(e.pointerId);
-      if (this.hitText(e)) { this.textDrag = { x: e.clientX, y: e.clientY }; } // grab the text
-      else { this.drag = { x: e.clientX, y: e.clientY }; } // otherwise reposition the photo
+      const hit = this.hitTextLayer(e);
+      if (hit >= 0) { // grab (and select) that text layer
+        if (hit !== this.activeText) this.selectTextLayer(hit);
+        this.textDrag = { x: e.clientX, y: e.clientY };
+      } else { this.drag = { x: e.clientX, y: e.clientY }; } // otherwise reposition the photo
     });
     this.canvas.addEventListener('pointermove', (e) => { if (this.textDrag) this.onTextDrag(e); else this.onDrag(e); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => this.canvas.addEventListener(ev, () => { this.drag = null; this.textDrag = null; }));
@@ -306,6 +331,13 @@ const App = {
     this.v = 0.5;
     this.orient = { rot: 0, flipH: false, flipV: false };
     this.reflectFlips();
+    // Clear text layers for the fresh photo.
+    this.texts = [];
+    this.activeText = -1;
+    this.textEnabled = false;
+    $('#ig-text-on').checked = false;
+    $('#ig-text-panel').classList.add('hidden');
+    this.syncTextControls();
     this.rebuildSource();
     this.resetAdjustments(false);
     $('#ig-zoom').value = 1;
@@ -415,11 +447,86 @@ const App = {
   },
 
   /* ------------------------------------------------------------- text */
-  // Ask the browser to load the chosen web font, then re-render so the canvas
-  // (which can't wait on font loading itself) paints with the real typeface.
+  activeLayer() { return this.texts[this.activeText] || null; },
+
+  newTextLayer() {
+    return { content: '', font: 'Inter', size: 7, color: '#ffffff', align: 'center',
+      bold: false, shadow: false, highlight: true, x: 0.5, y: 0.5, _box: null };
+  },
+
+  addTextLayer(focus) {
+    // Stagger new layers slightly so they don't stack exactly on top of each other.
+    const layer = this.newTextLayer();
+    layer.y = clamp(0.5 + this.texts.length * 0.08, 0.2, 0.85);
+    this.texts.push(layer);
+    this.activeText = this.texts.length - 1;
+    this.syncTextControls();
+    this.ensureFont();
+    this.render();
+    if (focus) $('#ig-text').focus();
+  },
+
+  deleteTextLayer() {
+    if (this.activeText < 0) return;
+    this.texts.splice(this.activeText, 1);
+    this.activeText = Math.min(this.activeText, this.texts.length - 1);
+    this.syncTextControls();
+    this.render();
+  },
+
+  selectTextLayer(i) {
+    this.activeText = i;
+    this.syncTextControls();
+    this.render();
+  },
+
+  // Populate the text controls from the active layer and refresh the layer chips.
+  syncTextControls() {
+    const l = this.activeLayer();
+    $('#ig-text-delete').disabled = !l;
+    if (l) {
+      $('#ig-text').value = l.content;
+      $('#ig-text-size').value = l.size;
+      $('#ig-text-color').value = l.color;
+      $$('.ig-font').forEach((b) => { const a = b.dataset.font === l.font; b.classList.toggle('ring-2', a); b.classList.toggle('ring-[#d62976]', a); });
+      $$('.ig-text-align').forEach((b) => { const a = b.dataset.align === l.align; b.classList.toggle('bg-[#d62976]', a); b.classList.toggle('text-white', a); });
+      this.reflectTextToggle($('#ig-text-bold'), l.bold);
+      this.reflectTextToggle($('#ig-text-shadow'), l.shadow);
+      this.reflectTextToggle($('#ig-text-hl'), l.highlight);
+    }
+    this.renderTextChips();
+  },
+
+  reflectTextToggle(btn, on) {
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', String(on));
+    btn.classList.toggle('bg-[#d62976]', on);
+    btn.classList.toggle('text-white', on);
+    btn.classList.toggle('border-[#d62976]', on);
+  },
+
+  renderTextChips() {
+    const wrap = $('#ig-text-layers');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    this.texts.forEach((l, i) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      const active = i === this.activeText;
+      chip.className = 'px-2 py-1 rounded-lg border text-[11px] max-w-[8rem] truncate '
+        + (active ? 'bg-[#d62976] text-white border-[#d62976]' : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800');
+      chip.textContent = (l.content.split('\n')[0] || `Text ${i + 1}`).slice(0, 18);
+      chip.addEventListener('click', () => this.selectTextLayer(i));
+      wrap.appendChild(chip);
+    });
+  },
+
+  // Ask the browser to load the active layer's web font, then re-render so the
+  // canvas (which can't wait on font loading itself) paints with the real face.
   ensureFont() {
-    if (!document.fonts || !document.fonts.load) return;
-    document.fonts.load(`700 40px ${this.text.font}`).then(() => this.render()).catch(() => {});
+    const l = this.activeLayer();
+    if (!l || !document.fonts || !document.fonts.load) return;
+    document.fonts.load(`700 40px ${l.font}`).then(() => this.render()).catch(() => {});
   },
 
   // Convert a pointer event to canvas-pixel coordinates.
@@ -431,28 +538,39 @@ const App = {
     };
   },
 
-  // True when a pointer press lands on the current text block.
-  hitText(e) {
-    const box = this._textBox;
-    if (!this.text.on || !box) return false;
+  // Return the topmost text layer index under a pointer press, or -1. Selecting
+  // it (and starting a drag) is done by the caller.
+  hitTextLayer(e) {
+    if (!this.textEnabled) return -1;
     const { px, py } = this.pointerPixel(e);
-    return px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h;
+    for (let i = this.texts.length - 1; i >= 0; i--) {
+      const box = this.texts[i]._box;
+      if (box && px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h) return i;
+    }
+    return -1;
   },
 
   onTextDrag(e) {
+    const l = this.activeLayer();
+    if (!l) return;
     const rect = this.canvas.getBoundingClientRect();
     const dx = (e.clientX - this.textDrag.x) * (this.canvas.width / rect.width);
     const dy = (e.clientY - this.textDrag.y) * (this.canvas.height / rect.height);
-    this.text.x = clamp(this.text.x + dx / this.canvas.width, 0, 1);
-    this.text.y = clamp(this.text.y + dy / this.canvas.height, 0, 1);
+    l.x = clamp(l.x + dx / this.canvas.width, 0, 1);
+    l.y = clamp(l.y + dy / this.canvas.height, 0, 1);
     this.textDrag = { x: e.clientX, y: e.clientY };
     this.render();
   },
 
-  // Paint the text overlay over the whole frame and record its bounds.
-  drawText(ctx, W, H) {
-    const t = this.text;
-    if (!t.on || !t.content.trim()) { this._textBox = null; return; }
+  // Paint every text layer over the frame, recording each layer's bounds.
+  drawTexts(ctx, W, H) {
+    if (!this.textEnabled) { this.texts.forEach((l) => { l._box = null; }); return; }
+    this.texts.forEach((t) => this.drawTextLayer(ctx, W, H, t));
+  },
+
+  // Paint a single text layer and record its bounds on the layer object.
+  drawTextLayer(ctx, W, H, t) {
+    if (!t.content.trim()) { t._box = null; return; }
     const lines = t.content.replace(/\r/g, '').split('\n');
     const size = (t.size / 100) * W;
     const weight = t.bold ? 900 : 700;
@@ -471,7 +589,7 @@ const App = {
     const blockH = lh * lines.length;
     const topY = t.y * H - blockH / 2;
     const anchorX = (w) => (t.align === 'left' ? cx : t.align === 'right' ? cx - w : cx - w / 2);
-    this._textBox = { x: anchorX(maxW) - pad, y: topY - pad, w: maxW + 2 * pad, h: blockH + 2 * pad };
+    t._box = { x: anchorX(maxW) - pad, y: topY - pad, w: maxW + 2 * pad, h: blockH + 2 * pad };
 
     const round = (x, y, w, h, r) => {
       if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
@@ -495,6 +613,132 @@ const App = {
     ctx.fillStyle = t.color;
     lines.forEach((l, i) => ctx.fillText(l, cx, topY + i * lh));
     ctx.restore();
+  },
+
+  /* ------------------------------------------------------- watermark */
+  async setLogo(file) {
+    if (this.watermark.logoUrl) { URL.revokeObjectURL(this.watermark.logoUrl); this.watermark.logoUrl = null; }
+    this.watermark.logoImg = null;
+    if (file) {
+      try {
+        this.watermark.logoUrl = URL.createObjectURL(file);
+        this.watermark.logoImg = await loadImage(this.watermark.logoUrl);
+      } catch { Toast.show("Couldn't load that logo", 'error'); }
+    }
+    $('#ig-wm-logo-clear').classList.toggle('hidden', !this.watermark.logoImg);
+    if (this.watermark.on) this.render();
+  },
+
+  // Draw the logo/@handle watermark into the chosen corner, scaled to the frame.
+  drawWatermark(ctx, W, H) {
+    const wm = this.watermark;
+    const handle = (wm.handle || '').trim();
+    if (!wm.on || (!handle && !wm.logoImg)) return;
+
+    const unit = Math.min(W, H);
+    const pad = unit * 0.035;
+    const logoH = wm.logoImg ? (wm.size / 100) * unit * 1.4 : 0;
+    const fontSize = (wm.size / 100) * unit;
+    const gap = wm.logoImg && handle ? unit * 0.02 : 0;
+
+    ctx.save();
+    ctx.globalAlpha = clamp(wm.opacity / 100, 0, 1);
+    ctx.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
+    ctx.textBaseline = 'top';
+
+    const logoW = wm.logoImg ? logoH * (wm.logoImg.width / wm.logoImg.height) : 0;
+    const textW = handle ? ctx.measureText(handle).width : 0;
+    const blockW = Math.max(logoW, textW);
+    const blockH = logoH + gap + (handle ? fontSize : 0);
+
+    const right = wm.pos === 'tr' || wm.pos === 'br';
+    const bottom = wm.pos === 'bl' || wm.pos === 'br';
+    const x0 = right ? W - pad - blockW : pad;
+    const y0 = bottom ? H - pad - blockH : pad;
+
+    if (wm.logoImg) {
+      ctx.drawImage(wm.logoImg, x0 + (blockW - logoW) / 2, y0, logoW, logoH);
+    }
+    if (handle) {
+      ctx.textAlign = right ? 'right' : 'left';
+      const tx = right ? x0 + blockW : x0;
+      // Legibility shadow so it reads over any background.
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = fontSize * 0.12;
+      ctx.shadowOffsetY = fontSize * 0.04;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(handle, tx, y0 + logoH + gap);
+    }
+    ctx.restore();
+  },
+
+  /* ---------------------------------------------------- look presets */
+  PRESET_KEY: 'ig-look-presets',
+
+  loadPresets() {
+    try { return JSON.parse(localStorage.getItem(this.PRESET_KEY)) || {}; }
+    catch { return {}; }
+  },
+
+  storePresets(presets) {
+    try { localStorage.setItem(this.PRESET_KEY, JSON.stringify(presets)); } catch { /* private mode */ }
+  },
+
+  savePreset() {
+    const name = (prompt('Name this look:') || '').trim();
+    if (!name) return;
+    const presets = this.loadPresets();
+    // Save the effective adjustment values (look + any manual tweaks) at full strength.
+    presets[name] = {};
+    for (const k of ADJ_KEYS) presets[name][k] = this.adj[k];
+    this.storePresets(presets);
+    this.renderPresets();
+    Toast.show(`Saved look "${name}"`, 'success');
+  },
+
+  applyPreset(name) {
+    const preset = this.loadPresets()[name];
+    if (!preset) return;
+    this.baseFilter = { ...FILTERS.original, ...preset };
+    this.adj = { ...this.baseFilter };
+    this.strength = 100;
+    $('#ig-strength').value = 100;
+    $$('.ig-filter').forEach((b) => b.classList.remove('ring-2', 'ring-[#d62976]'));
+    this.syncSliders();
+    this.render();
+  },
+
+  deletePreset(name) {
+    const presets = this.loadPresets();
+    delete presets[name];
+    this.storePresets(presets);
+    this.renderPresets();
+  },
+
+  renderPresets() {
+    const wrap = $('#ig-presets');
+    if (!wrap) return;
+    const presets = this.loadPresets();
+    const names = Object.keys(presets);
+    $('#ig-presets-empty').classList.toggle('hidden', names.length > 0);
+    wrap.innerHTML = '';
+    names.forEach((name) => {
+      const chip = document.createElement('span');
+      chip.className = 'inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg border border-gray-300 dark:border-gray-700 text-xs';
+      const apply = document.createElement('button');
+      apply.type = 'button';
+      apply.className = 'font-medium hover:text-[#d62976] max-w-[7rem] truncate';
+      apply.textContent = name;
+      apply.addEventListener('click', () => this.applyPreset(name));
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'w-4 h-4 grid place-items-center rounded text-gray-400 hover:text-red-500';
+      del.setAttribute('aria-label', `Delete look ${name}`);
+      del.innerHTML = '<i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i>';
+      del.addEventListener('click', () => this.deletePreset(name));
+      chip.appendChild(apply); chip.appendChild(del);
+      wrap.appendChild(chip);
+    });
   },
 
   /* ---------------------------------------------------------- looks */
@@ -657,7 +901,8 @@ const App = {
     const m = Math.round((this.border / 100) * Math.min(W, H));
     if (m > 0) { ctx.fillStyle = this.borderColor; ctx.fillRect(0, 0, W, H); }
     this.paintContent(ctx, m, m, W - 2 * m, H - 2 * m);
-    this.drawText(ctx, W, H);
+    this.drawTexts(ctx, W, H);
+    this.drawWatermark(ctx, W, H);
   },
 
   // Paint the photo (and its background) into the inner destination rect.
@@ -792,7 +1037,7 @@ const App = {
       return;
     }
     if (this.carousel > 1) {
-      this._textBox = null; // text isn't drawn on the panorama preview
+      this.texts.forEach((l) => { l._box = null; }); // text isn't drawn on the panorama preview
       // Preview the whole panorama with dashed tile dividers.
       const n = this.carousel;
       const aspect = this.format.aspect * n;
@@ -902,6 +1147,7 @@ const App = {
     if (this.origUrl) { URL.revokeObjectURL(this.origUrl); this.origUrl = null; }
     if (this.cutoutUrl) { URL.revokeObjectURL(this.cutoutUrl); this.cutoutUrl = null; }
     this.raw = this.img = this.cutout = this.rawOriented = null;
+    this.texts = []; this.activeText = -1;
   },
 };
 

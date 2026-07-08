@@ -400,11 +400,14 @@ const Zoom = {
     this.apply();
     this.modal.classList.remove('hidden');
     this.modal.classList.add('flex');
+    this.release = trapFocus(this.modal);
   },
   close() {
     this.modal.classList.add('hidden');
     this.modal.classList.remove('flex');
     this.img.src = '';
+    this.release?.();
+    this.release = null;
   },
   zoom(delta) {
     this.scale = Math.min(4, Math.max(0.25, this.scale + delta));
@@ -1128,6 +1131,70 @@ const Cropper = {
 };
 
 /* ---------------------------------------------------------------- card view */
+/* --------------------------------------------------- off-main-thread compose */
+/**
+ * Runs the full-resolution export compose+encode in a Web Worker on an
+ * OffscreenCanvas, so downloading a large styled photo doesn't freeze the tab.
+ * Purely an accelerator: Card.exportBlob() falls back to the main-thread
+ * compose() if the worker is unavailable or errors. Previews still compose on
+ * the main thread (they're capped small and need to stay in lock-step with the
+ * UI). See static/js/compose-worker.js.
+ */
+// Resolve the worker next to this module (same /static/js/ dir). Derived from
+// import.meta.url rather than an inline script so it survives the page CSP
+// (script-src 'self', no unsafe-inline) and any static-path change.
+const COMPOSE_WORKER_URL = new URL('./compose-worker.js', import.meta.url).href;
+
+const ComposeWorker = {
+  worker: null,
+  seq: 0,
+  pending: new Map(),
+
+  available() {
+    return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined'
+      && typeof createImageBitmap === 'function';
+  },
+
+  ensure() {
+    if (this.worker) return this.worker;
+    const w = new Worker(COMPOSE_WORKER_URL);
+    w.onmessage = (e) => {
+      const { id, blob, error } = e.data;
+      const p = this.pending.get(id);
+      if (!p) return;
+      this.pending.delete(id);
+      if (error) p.reject(new Error(error)); else p.resolve(blob);
+    };
+    w.onerror = () => {
+      // A worker crash rejects everything in flight so callers fall back.
+      this.pending.forEach((p) => p.reject(new Error('compose worker error')));
+      this.pending.clear();
+      try { w.terminate(); } catch { /* ignore */ }
+      if (this.worker === w) this.worker = null;
+    };
+    this.worker = w;
+    return w;
+  },
+
+  async run(card, { format, bg, crop, sticker, resize }) {
+    const srcBlob = crop && crop.source === 'original' ? card.file : card.processedBlob;
+    if (!srcBlob) throw new Error('no source to compose');
+    const src = await createImageBitmap(srcBlob);
+    const transfer = [src];
+    let blur = null;
+    let image = null;
+    if (bg && bg.type === 'blur') { blur = await createImageBitmap(card.file); transfer.push(blur); }
+    if (bg && bg.type === 'image') { image = await createImageBitmap(await fetch(bg.url).then((r) => r.blob())); transfer.push(image); }
+    const quality = format === 'image/png' ? undefined : CONFIG.encodeQuality;
+    const id = ++this.seq;
+    const worker = this.ensure();
+    return new Promise((resolve, reject) => {
+      this.pending.set(id, { resolve, reject });
+      worker.postMessage({ id, format, quality, bg, crop, sticker, resize, maxDim: 0, src, blur, image }, transfer);
+    });
+  },
+};
+
 let cardSeq = 0;
 
 class Card {
@@ -1239,7 +1306,15 @@ class Card {
       c.addEventListener('input', onSticker),
     );
 
+    // Batch: copy this card's style/export options onto every other card.
+    this.el.querySelector('.apply-all-btn').addEventListener('click', () => App.applyOptionsToAll(this));
+
+    // Per-card undo / redo.
+    this.el.querySelector('.undo-btn').addEventListener('click', () => this.undo());
+    this.el.querySelector('.redo-btn').addEventListener('click', () => this.redo());
+
     this.applyRememberedOptions();
+    this.initHistory(); // baseline = remembered options; user edits become undoable
     $('#results-grid').appendChild(this.el);
   }
 
@@ -1313,11 +1388,134 @@ class Card {
     this.el.querySelector('.view-label').textContent = showSplit ? 'Slider' : 'Side-by-side';
   }
 
+  /** Set a colour input's value and refresh its picker swatch (the picker
+   *  updates its trigger on `change`, and `input` would re-fire the live handler). */
+  setColorInput(sel, value) {
+    const inp = this.el.querySelector(sel);
+    inp.value = value;
+    inp.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  /** Copy another card's background / format / export size / sticker onto this one. */
+  applyOptionsFrom(src) {
+    // Background — solids/gradient/blur/image; also mirror the source controls so
+    // further tweaks on this card start from the copied values.
+    const bg = src.bg;
+    if (bg && typeof bg === 'object') {
+      if (bg.type === 'gradient') {
+        this.setColorInput('.bg-grad-a', bg.from);
+        this.setColorInput('.bg-grad-b', bg.to);
+        this.el.querySelector('.bg-grad-angle').value = bg.angle || 0;
+      } else if (bg.type === 'blur') {
+        this.el.querySelector('.bg-blur-amt').value = bg.amount;
+      }
+      this.setBackgroundSpec({ ...bg });
+    } else if (typeof bg === 'string') {
+      this.setColorInput('.custom-color', bg);
+      this.setBackground(bg);
+    } else {
+      this.setBackground('transparent');
+    }
+
+    // Format + export size.
+    this.setFormat(src.format);
+    if (src.exportSize && src.exportSize.label === 'custom') {
+      this.el.querySelector('.size-custom-w').value = src.exportSize.w;
+      this.el.querySelector('.size-custom-h').value = src.exportSize.h;
+    }
+    this.setExportSize(src.exportSize ? { ...src.exportSize } : null);
+
+    // Sticker effects — set the controls, then read them back so state matches UI.
+    const st = src.sticker;
+    this.el.querySelector('.fx-outline').checked = !!(st && st.outline);
+    this.el.querySelector('.fx-shadow').checked = !!(st && st.shadow);
+    this.el.querySelector('.fx-pad').value = st ? st.pad : 0;
+    if (st && st.outline) {
+      this.el.querySelector('.fx-outline-w').value = st.outlineW;
+      this.setColorInput('.fx-outline-c', st.outlineColor);
+    }
+    this.setSticker();
+  }
+
+  /* ------------------------------------------------------------- undo / redo */
+  // Per-card history of the option state (background/crop/sticker/size/format).
+  // Snapshots are plain data; slider drags are coalesced by a short debounce so
+  // one drag is one undo step.
+
+  /** Capture the current tracked option state as a plain, comparable snapshot. */
+  snapshot() {
+    const clone = (v) => (v && typeof v === 'object' ? { ...v } : v);
+    return {
+      bg: clone(this.bg),
+      cropState: clone(this.cropState),
+      sticker: clone(this.sticker),
+      exportSize: clone(this.exportSize),
+      format: this.format,
+    };
+  }
+
+  /** Seed the history baseline once remembered options are applied. */
+  initHistory() {
+    this.hist = [this.snapshot()];
+    this.histPos = 0;
+    this.updateHistButtons();
+  }
+
+  /** Record a new history entry (debounced) unless we're mid-restore. */
+  recordHistory() {
+    if (this._restoring || !this.hist) return;
+    clearTimeout(this._histTimer);
+    this._histTimer = setTimeout(() => {
+      const snap = this.snapshot();
+      if (JSON.stringify(snap) === JSON.stringify(this.hist[this.histPos])) return;
+      this.hist = this.hist.slice(0, this.histPos + 1); // drop any redo tail
+      this.hist.push(snap);
+      if (this.hist.length > 50) this.hist.shift(); // cap memory
+      this.histPos = this.hist.length - 1;
+      this.updateHistButtons();
+    }, 350);
+  }
+
+  /** Re-apply a snapshot to both state and the on-card controls. */
+  restoreSnapshot(snap) {
+    this._restoring = true;
+    try {
+      // applyOptionsFrom syncs bg/format/size/sticker + their controls; crop is
+      // separate. Flush any pending debounce so it can't clobber the restore.
+      clearTimeout(this._histTimer);
+      this.setCropState(snap.cropState ? { ...snap.cropState } : null);
+      this.applyOptionsFrom(snap);
+    } finally {
+      this._restoring = false;
+    }
+    this.updateHistButtons();
+  }
+
+  updateHistButtons() {
+    const undo = this.el.querySelector('.undo-btn');
+    const redo = this.el.querySelector('.redo-btn');
+    if (undo) undo.disabled = !this.hist || this.histPos <= 0;
+    if (redo) redo.disabled = !this.hist || this.histPos >= this.hist.length - 1;
+  }
+
+  undo() {
+    if (!this.hist || this.histPos <= 0) return;
+    this.histPos -= 1;
+    this.restoreSnapshot(this.hist[this.histPos]);
+  }
+
+  redo() {
+    if (!this.hist || this.histPos >= this.hist.length - 1) return;
+    this.histPos += 1;
+    this.restoreSnapshot(this.hist[this.histPos]);
+  }
+
   /** Set a solid/transparent background (from a swatch or the colour picker). */
   setBackground(value) {
     this.bg = value === 'transparent' ? null : value;
     this.refreshBgActive();
     this.refreshPreview();
+    this.recordHistory();
   }
 
   /** Set a rich background: a gradient, blurred original, or uploaded image. */
@@ -1325,6 +1523,7 @@ class Card {
     this.bg = spec;
     this.refreshBgActive();
     this.refreshPreview();
+    this.recordHistory();
   }
 
   applyGradient() {
@@ -1378,6 +1577,7 @@ class Card {
       b.classList.toggle('bg-primary', active);
       b.classList.toggle('text-white', active);
     });
+    this.recordHistory();
   }
 
   /** Apply (or clear) a crop and refresh the on-card preview. */
@@ -1388,7 +1588,11 @@ class Card {
     if (state) {
       const label = CROPS[state.key] ? CROPS[state.key].label : 'custom';
       meta.textContent = `${humanSize(this.file.size)} · cropped (${label})`;
+    } else if (this.processedBlob) {
+      // Crop cleared (e.g. by undo) — restore the default size readout.
+      meta.textContent = `${humanSize(this.file.size)} → ${humanSize(this.processedBlob.size)}`;
     }
+    this.recordHistory();
   }
 
   /** Read the sticker-effect controls into a state object (or null if all off). */
@@ -1410,6 +1614,7 @@ class Card {
   setSticker() {
     this.sticker = this.readSticker();
     this.refreshPreview();
+    this.recordHistory();
   }
 
   /** Paint a preview surface: a solid colour behind the cut-out, else checkerboard. */
@@ -1500,6 +1705,7 @@ class Card {
       b.classList.toggle('text-white', active);
     });
     this.el.querySelector('.download-label').textContent = LABEL[format];
+    this.recordHistory();
   }
 
   /** Decode a source URL once and reuse the bitmap — dragging a slider fires many
@@ -1614,12 +1820,25 @@ class Card {
     return new Promise((resolve) => canvas.toBlob(resolve, format, quality));
   }
 
+  /** Full-resolution export blob — off the main thread via a worker when it can,
+   *  otherwise the same result from the main-thread compose(). Used for all
+   *  downloads/copy so large exports don't freeze the tab. */
+  async exportBlob(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker, resize = this.exportSize) {
+    // Fast path mirrors compose(): an untouched transparent PNG keeps its bytes.
+    if (!bg && format === 'image/png' && !crop && !sticker && !resize) return this.processedBlob;
+    if (ComposeWorker.available()) {
+      try { return await ComposeWorker.run(this, { format, bg, crop, sticker, resize }); }
+      catch (err) { console.warn('[bg-remover] worker export failed, using main thread:', err); }
+    }
+    return this.compose(format, bg, crop, sticker, resize, 0);
+  }
+
   async download() {
     // Allow download once there's a cut-out, or a crop of the original.
     if (!this.processedBlob && !this.cropState) return;
     let blob;
     try {
-      blob = await this.compose();
+      blob = await this.exportBlob();
     } catch {
       Toast.show('Could not prepare the download', 'error');
       return;
@@ -1638,7 +1857,7 @@ class Card {
   async copy() {
     if (!this.processedBlob && !this.cropState) return;
     try {
-      const blob = await this.compose('image/png', this.bg);
+      const blob = await this.exportBlob('image/png', this.bg);
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       Toast.show('Copied to clipboard', 'success');
     } catch {
@@ -1820,6 +2039,22 @@ const App = {
   refreshToolbar() {
     const doneCount = this.cards.filter((c) => c.done).length;
     $('#download-all-btn').classList.toggle('hidden', doneCount < 2);
+    // "Apply to all" only makes sense with more than one card.
+    const multi = this.cards.length > 1;
+    this.cards.forEach((c) =>
+      c.el.querySelector('.apply-all-wrap')?.classList.toggle('hidden', !multi),
+    );
+  },
+
+  /** Copy one card's background/format/size/sticker options onto every other card. */
+  applyOptionsToAll(source) {
+    const others = this.cards.filter((c) => c !== source);
+    if (!others.length) {
+      Toast.show('Add more images to apply options to all', 'info');
+      return;
+    }
+    others.forEach((c) => c.applyOptionsFrom(source));
+    Toast.show(`Applied to ${others.length} other image${others.length > 1 ? 's' : ''}`, 'success');
   },
 
   async downloadAll() {
@@ -1833,7 +2068,7 @@ const App = {
       let name = `${base}-no-bg.${EXT[card.format]}`;
       if (used[name]) name = `${base}-${used[name]++}-no-bg.${EXT[card.format]}`;
       else used[name] = 1;
-      zip.file(name, await card.compose());
+      zip.file(name, await card.exportBlob());
     }
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
@@ -1848,8 +2083,9 @@ const App = {
 
   bindShortcuts() {
     const modal = $('#shortcuts-modal');
-    const openModal = () => { modal.classList.remove('hidden'); modal.classList.add('flex'); };
-    const closeModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+    let releaseShortcuts = null;
+    const openModal = () => { modal.classList.remove('hidden'); modal.classList.add('flex'); releaseShortcuts = trapFocus(modal); };
+    const closeModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); releaseShortcuts?.(); releaseShortcuts = null; };
     $('#shortcuts-btn').addEventListener('click', openModal);
     $('#shortcuts-close').addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });

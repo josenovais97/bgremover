@@ -1,8 +1,14 @@
 {% load static %}/* BG Remover service worker — app-shell offline cache. */
-// Bump this whenever shipped JS/CSS changes: static filenames aren't hashed in
-// production, so a new cache name is what forces every client to drop the old
-// cached assets and pull the fresh ones (see the `activate` handler).
-const CACHE = 'bgr-v10';
+// Assets are served network-first (see the `fetch` handler), so a redeploy is
+// picked up on the next online load WITHOUT bumping this name — the manual bump
+// is no longer required for freshness. The name is just the offline snapshot's
+// store; only bump it if you ever need to force-evict every client's cache.
+const CACHE = 'bgr-v11';
+// The ~40MB AI model weights + WASM runtime live on a separate, long-lived cache
+// so a normal shell redeploy (which changes CACHE) never evicts them — the model
+// is downloaded once, then served instantly and offline on every repeat use.
+const MODEL_CACHE = 'bgr-model-v1';
+const MODEL_HOSTS = ['staticimgly.com'];
 const SHELL = [
   '/',
   '/convert/',
@@ -10,6 +16,7 @@ const SHELL = [
   '/crop/',
   '{% static "css/tailwind.css" %}',
   '{% static "js/app.js" %}',
+  '{% static "js/compose-worker.js" %}',
   '{% static "js/converter.js" %}',
   '{% static "js/instagram.js" %}',
   '{% static "js/crop.js" %}',
@@ -30,7 +37,8 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      // Keep the current shell cache AND the model cache; drop stale shell caches.
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== MODEL_CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -43,28 +51,34 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // let the browser handle CDNs
 
-  // Navigations: network-first so updates show, fall back to cache when offline.
-  if (req.mode === 'navigate') {
+  // AI model weights/WASM (cross-origin): cache-first into the long-lived model
+  // cache so the ~40MB download happens once, then repeats are instant + offline.
+  if (MODEL_HOSTS.includes(url.hostname)) {
     event.respondWith(
-      fetch(req)
-        .then((res) => { cachePut(req, res.clone()); return res; })
-        .catch(() => caches.match(req).then((r) => r || caches.match('/'))),
+      caches.open(MODEL_CACHE).then((cache) =>
+        cache.match(req).then((hit) =>
+          hit || fetch(req).then((res) => {
+            // Cache full 200s and opaque responses; skip 206 range replies (the
+            // Cache API can't store partial content).
+            if (res && (res.status === 200 || res.type === 'opaque')) cache.put(req, res.clone());
+            return res;
+          }),
+        ),
+      ),
     );
     return;
   }
 
-  // Same-origin assets: stale-while-revalidate. Serve the cached copy instantly
-  // (fast, offline-friendly) but always refetch in the background and update the
-  // cache, so a redeploy is picked up on the next load — no cache-name bump
-  // needed for the change to eventually reach users.
+  if (url.origin !== self.location.origin) return; // let the browser handle other CDNs
+
+  // Same-origin navigations AND assets: network-first. Always fetch fresh when
+  // online (so a redeploy is picked up on the very next load — no cache-name bump
+  // needed), and fall back to the cache when offline. The cache is refreshed on
+  // every successful fetch, so it stays a current offline snapshot.
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const fresh = fetch(req)
-        .then((res) => { cachePut(req, res.clone()); return res; })
-        .catch(() => cached);
-      return cached || fresh;
-    }),
+    fetch(req)
+      .then((res) => { cachePut(req, res.clone()); return res; })
+      .catch(() => caches.match(req).then((r) => r || (req.mode === 'navigate' ? caches.match('/') : undefined))),
   );
 });
