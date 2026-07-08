@@ -305,6 +305,13 @@
                     </label>
                 </div>
             </div>
+
+            <!-- Copy this card's background/format/size/sticker to every image. Shown only with 2+ cards. -->
+            <div class="apply-all-wrap pt-4 border-t border-gray-200/70 dark:border-white/10 hidden">
+                <button type="button" class="apply-all-btn chip" aria-label="Apply this card's background, format, size and sticker options to all images">
+                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Apply these options to all images
+                </button>
+            </div>
         </div>
 
         <!-- Card footer -->
@@ -314,6 +321,14 @@
                 <p class="meta text-xs text-gray-500 dark:text-gray-400 mt-0.5"></p>
             </div>
             <div class="actions flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1 mr-1">
+                    <button type="button" class="undo-btn btn-ghost" aria-label="Undo last change" title="Undo" disabled>
+                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="redo-btn btn-ghost" aria-label="Redo last change" title="Redo" disabled>
+                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <button type="button" class="edit-btn btn-accent" aria-label="Refine edges — erase or restore">
                     <i class="fa-solid fa-brush" aria-hidden="true"></i> Refine
                 </button>

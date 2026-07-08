@@ -61,7 +61,8 @@ const Toast = {
 };
 
 /* ------------------------------------------------------------ global state */
-const target = { mime: 'image/png', ext: 'png', lossy: false, quality: 0.9 };
+// maxDim 0 = keep original size; otherwise cap the longest side (downscale only).
+const target = { mime: 'image/png', ext: 'png', lossy: false, quality: 0.9, maxDim: 0 };
 
 /* --------------------------------------------------------------- convert card */
 class ConvertCard {
@@ -99,24 +100,47 @@ class ConvertCard {
 
   async reconvert() {
     if (!this.img) return;
+    const iw = this.img.naturalWidth;
+    const ih = this.img.naturalHeight;
+    // Cap the longest side if a max dimension is set — downscale only, never up.
+    const scale = target.maxDim ? Math.min(1, target.maxDim / Math.max(iw, ih)) : 1;
+    const w = Math.max(1, Math.round(iw * scale));
+    const h = Math.max(1, Math.round(ih * scale));
+
     const canvas = document.createElement('canvas');
-    canvas.width = this.img.naturalWidth;
-    canvas.height = this.img.naturalHeight;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext('2d');
     if (target.mime === 'image/jpeg') { // JPG has no alpha
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, w, h);
     }
-    ctx.drawImage(this.img, 0, 0);
+    ctx.drawImage(this.img, 0, 0, w, h);
 
+    const label = MIME_LABEL[target.mime];
     this.blob = await new Promise((res) =>
       canvas.toBlob(res, target.mime, target.lossy ? target.quality : undefined),
     );
+
+    const dl = this.el.querySelector('.download-btn');
+    // Unsupported encoders don't error — canvas.toBlob silently falls back to PNG
+    // (so a null check isn't enough). Compare the produced type to what we asked
+    // for; a mismatch means this browser can't encode the target (e.g. AVIF).
+    if (!this.blob || this.blob.type !== target.mime) {
+      this.blob = null;
+      this.el.querySelector('.meta').textContent = `${label} export isn't supported in this browser — try another format.`;
+      dl.disabled = true;
+      dl.classList.add('opacity-50', 'cursor-not-allowed');
+      return;
+    }
+    dl.disabled = false;
+    dl.classList.remove('opacity-50', 'cursor-not-allowed');
     this.ext = target.ext;
-    this.el.querySelector('.to-badge').textContent = MIME_LABEL[target.mime];
-    this.el.querySelector('.dl-label').textContent = MIME_LABEL[target.mime];
+    this.el.querySelector('.to-badge').textContent = label;
+    this.el.querySelector('.dl-label').textContent = label;
+    const dims = scale < 1 ? ` · ${w}×${h}` : '';
     this.el.querySelector('.meta').textContent =
-      `${detectLabel(this.file)} ${humanSize(this.file.size)} → ${MIME_LABEL[target.mime]} ${humanSize(this.blob.size)}`;
+      `${detectLabel(this.file)} ${humanSize(this.file.size)} → ${label} ${humanSize(this.blob.size)}${dims}`;
   }
 
   download() {
@@ -175,6 +199,14 @@ const App = {
     const quality = $('#convert-quality');
     quality.addEventListener('input', () => { $('#quality-value').textContent = `${quality.value}%`; });
     quality.addEventListener('change', () => { target.quality = +quality.value / 100; this.reconvertAll(); });
+
+    // Max dimension (longest side). Blank/invalid = original size.
+    const maxdim = $('#convert-maxdim');
+    maxdim.addEventListener('change', () => {
+      const v = parseInt(maxdim.value, 10);
+      target.maxDim = v > 0 ? v : 0;
+      this.reconvertAll();
+    });
 
     $('#convert-add').addEventListener('click', () => this.input.click());
     $('#convert-clear').addEventListener('click', () => this.clear());
