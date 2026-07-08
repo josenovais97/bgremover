@@ -29,6 +29,18 @@ def check(name, cond):
     print(f"{'PASS' if cond else 'FAIL'}  {name}")
 
 
+# The controls are grouped into tabs; a control is only clickable when its tab is
+# active. These helpers switch to the right tab first. (Sliders driven via
+# dispatchEvent still work while hidden, so only click-targets need this.)
+def tab(pg, name):
+    pg.click(f".ig-tab[data-tab='{name}']")
+
+
+def filt(pg, name):
+    tab(pg, "filters")
+    pg.click(f".ig-filter[data-filter='{name}']")
+
+
 def jpeg_size(path):
     """Read (width, height) from a JPEG's first SOF marker — no image library."""
     with open(path, "rb") as f:
@@ -73,14 +85,14 @@ def main():
               pg.evaluate("()=>{const c=document.querySelector('#ig-canvas');return c.width>0&&c.height>0;}"))
 
         base = snap(pg)
-        pg.click(".ig-filter[data-filter='vivid']")
+        filt(pg, "vivid")
         time.sleep(0.3)
         check("filter preset repaints the canvas", snap(pg) != base)
 
         # Regression: a preset with sharpen>0 must STILL grade colour. Noir sets
         # saturate:0 — the whole canvas should go greyscale. If sharpen were mixed
         # into ctx.filter as a url(), the grade would silently void and colour stay.
-        pg.click(".ig-filter[data-filter='noir']")
+        filt(pg, "noir")
         time.sleep(0.3)
         max_chroma = pg.evaluate(
             "()=>{const c=document.querySelector('#ig-canvas');"
@@ -90,7 +102,7 @@ def main():
         check("sharpen-bearing preset still grades colour (Noir desaturates)", max_chroma < 12)
 
         # Filter strength dials a look back toward the original.
-        pg.click(".ig-filter[data-filter='vivid']")
+        filt(pg, "vivid")
         time.sleep(0.2)
         full = snap(pg)
         pg.eval_on_selector("#ig-strength",
@@ -100,7 +112,7 @@ def main():
 
         # Reset first: vivid clamps this flat-block fixture to 0/255, where a
         # brightness *increase* is a no-op. Darkening from a clean state always moves pixels.
-        pg.click(".ig-filter[data-filter='original']")
+        filt(pg, "original")
         time.sleep(0.2)
         mid = snap(pg)
         pg.eval_on_selector(".ig-adj[data-adj='brightness']",
@@ -108,6 +120,7 @@ def main():
         time.sleep(0.3)
         check("adjustment slider repaints the canvas", snap(pg) != mid)
 
+        tab(pg, "size")
         pg.click(".ig-format[data-key='story']")
         time.sleep(0.3)
         ar = pg.evaluate("()=>{const c=document.querySelector('#ig-canvas');return c.width/c.height;}")
@@ -141,8 +154,9 @@ def main():
 
         # Sharpen repaints the canvas — from a clean (unclamped) state so the
         # sharpen convolution actually shifts edge pixels rather than re-clamping.
+        tab(pg, "size")
         pg.click(".ig-format[data-key='post']")
-        pg.click(".ig-filter[data-filter='original']")
+        filt(pg, "original")
         time.sleep(0.3)
         pre_sharpen = snap(pg)
         pg.eval_on_selector(".ig-adj[data-adj='sharpen']",
@@ -151,7 +165,7 @@ def main():
         check("Sharpen repaints the canvas", snap(pg) != pre_sharpen)
 
         # Grain repaints the canvas.
-        pg.click(".ig-filter[data-filter='original']")
+        filt(pg, "original")
         time.sleep(0.2)
         pre_grain = snap(pg)
         pg.eval_on_selector(".ig-adj[data-adj='grain']",
@@ -160,7 +174,7 @@ def main():
         check("Grain repaints the canvas", snap(pg) != pre_grain)
 
         # Press-and-hold compare shows the (unedited) original, then restores.
-        pg.click(".ig-filter[data-filter='vintage']")
+        filt(pg, "vintage")
         time.sleep(0.2)
         edited = snap(pg)
         pg.dispatch_event("#ig-compare", "pointerdown")
@@ -172,8 +186,9 @@ def main():
               original_view != edited and snap(pg) == edited)
 
         # Safe-zone guides overlay the frame (Story format).
+        tab(pg, "size")
         pg.click(".ig-format[data-key='story']")
-        pg.click(".ig-filter[data-filter='original']")
+        filt(pg, "original")
         time.sleep(0.3)
         pre_safe = snap(pg)
         pg.click("#ig-safezones")
@@ -183,6 +198,7 @@ def main():
         time.sleep(0.2)
 
         # Carousel: 2 tiles at Post format previews a 2:1 panorama and exports a ZIP.
+        tab(pg, "size")
         pg.click(".ig-format[data-key='post']")
         pg.click(".ig-carousel[data-n='2']")
         time.sleep(0.3)

@@ -309,6 +309,23 @@ const App = {
 
     $('#ig-download').addEventListener('click', () => (this.carousel > 1 ? this.downloadCarousel() : this.download()));
     $('#ig-new').addEventListener('click', () => this.reset());
+
+    // Tool tabs — show one control group at a time (compact on laptop/phone).
+    $$('.ig-tab').forEach((t) => t.addEventListener('click', () => this.setTab(t.dataset.tab)));
+  },
+
+  setTab(name) {
+    $$('.ig-tab').forEach((t) => {
+      const active = t.dataset.tab === name;
+      t.setAttribute('aria-selected', String(active));
+      t.classList.toggle('bg-[#d62976]', active);
+      t.classList.toggle('text-white', active);
+      t.classList.toggle('text-gray-600', !active);
+      t.classList.toggle('dark:text-gray-300', !active);
+    });
+    $$('.ig-panel').forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== name));
+    const body = document.querySelector('.ig-panel:not(.hidden)')?.parentElement;
+    if (body) body.scrollTop = 0;
   },
 
   async load(file) {
