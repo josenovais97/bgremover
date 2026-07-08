@@ -82,7 +82,17 @@
     + '.cp-sw.cp-active{box-shadow:inset 0 0 0 1px rgba(0,0,0,0.18),0 0 0 2px #4f46e5;}'
     // Visible border so a white/light swatch trigger isn't invisible on a light panel.
     + '.cp-trigger{cursor:pointer;padding:0;box-sizing:border-box;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.25);min-width:24px;min-height:24px;}'
-    + 'html.dark .cp-trigger{box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3);}';
+    + 'html.dark .cp-trigger{box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3);}'
+    // "Pick from image": samples a pixel from the result image / canvas (getImageData),
+    // NOT the freezing EyeDropper API.
+    + '.cp-pick{margin-top:10px;width:100%;padding:7px;border-radius:8px;border:1px solid rgba(0,0,0,0.12);'
+    + 'background:rgba(0,0,0,0.04);color:#374151;font-size:12px;font-weight:600;cursor:pointer;'
+    + 'display:flex;align-items:center;justify-content:center;gap:6px;}'
+    + 'html.dark .cp-pick{border-color:rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:#d1d5db;}'
+    + '.cp-pick:hover{background:rgba(79,70,229,0.12);color:#4f46e5;}'
+    + '.cp-sampling,.cp-sampling *{cursor:crosshair !important;}'
+    + '.cp-hint{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:90;background:#111827;color:#fff;'
+    + 'padding:8px 14px;border-radius:9999px;font-size:13px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,0.3);pointer-events:none;}';
 
   var style = document.createElement('style');
   style.textContent = css;
@@ -124,7 +134,12 @@
       sw.appendChild(b); swatchEls.push(b);
     });
 
-    pop.appendChild(sv); pop.appendChild(hue); pop.appendChild(row); pop.appendChild(sw);
+    var pick = document.createElement('button');
+    pick.type = 'button'; pick.className = 'cp-pick';
+    pick.innerHTML = '<i class="fa-solid fa-eye-dropper" aria-hidden="true"></i> Pick from image';
+    pick.addEventListener('click', startSampling);
+
+    pop.appendChild(sv); pop.appendChild(hue); pop.appendChild(row); pop.appendChild(sw); pop.appendChild(pick);
     document.body.appendChild(pop);
 
     var svDrag = false;
@@ -155,6 +170,77 @@
     }, true);
     window.addEventListener('resize', function () { if (active) close(); });
     window.addEventListener('scroll', function () { if (active) position(); }, true);
+  }
+
+  /* ------------------------------------------- sample colour from an image */
+  // Read the pixel colour under a click on an <img> (object-contain) or <canvas>.
+  // Uses getImageData on same-origin (blob:) pixels — no EyeDropper API involved.
+  function sampleAt(el, clientX, clientY) {
+    if (!el) return null;
+    try {
+      if (el.tagName === 'CANVAS') {
+        var cr = el.getBoundingClientRect();
+        var cx = Math.round((clientX - cr.left) * (el.width / cr.width));
+        var cy = Math.round((clientY - cr.top) * (el.height / cr.height));
+        var cd = el.getContext('2d').getImageData(cx, cy, 1, 1).data;
+        return cd[3] === 0 ? null : rgbToHex(cd[0], cd[1], cd[2]);
+      }
+      if (el.tagName === 'IMG' && el.naturalWidth) {
+        var r = el.getBoundingClientRect();
+        var iw = el.naturalWidth, ih = el.naturalHeight;
+        var scale = Math.min(r.width / iw, r.height / ih); // object-contain
+        var ox = r.left + (r.width - iw * scale) / 2, oy = r.top + (r.height - ih * scale) / 2;
+        var ix = Math.round((clientX - ox) / scale), iy = Math.round((clientY - oy) / scale);
+        if (ix < 0 || iy < 0 || ix >= iw || iy >= ih) return null;
+        var c = document.createElement('canvas'); c.width = iw; c.height = ih;
+        var g = c.getContext('2d'); g.drawImage(el, 0, 0);
+        var d = g.getImageData(ix, iy, 1, 1).data;
+        return d[3] === 0 ? null : rgbToHex(d[0], d[1], d[2]);
+      }
+    } catch (err) { /* tainted canvas / cross-origin — give up quietly */ }
+    return null;
+  }
+
+  function startSampling() {
+    if (!active) return;
+    var ctx = active; // remember which input/trigger we're editing
+    pop.style.display = 'none';
+    document.documentElement.classList.add('cp-sampling');
+    var hint = document.createElement('div');
+    hint.className = 'cp-hint';
+    hint.textContent = 'Click your image to sample a colour — Esc to cancel';
+    document.body.appendChild(hint);
+
+    function done(sampledHex) {
+      document.documentElement.classList.remove('cp-sampling');
+      hint.remove();
+      document.removeEventListener('click', onClick, true);
+      document.removeEventListener('keydown', onKey, true);
+      active = ctx; // restore
+      if (sampledHex) setFromHex(sampledHex, true);
+      pop.style.display = 'block';
+      position();
+    }
+    function onClick(e) {
+      e.preventDefault(); e.stopPropagation();
+      // Find the first <img>/<canvas> under the pointer — overlays (e.g. the
+      // compare-slider input) can sit on top of the result image.
+      var stack = document.elementsFromPoint(e.clientX, e.clientY);
+      var target = null;
+      for (var i = 0; i < stack.length; i++) {
+        if (stack[i].tagName === 'CANVAS' || stack[i].tagName === 'IMG') { target = stack[i]; break; }
+      }
+      done(sampleAt(target, e.clientX, e.clientY));
+    }
+    function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); done(null); } }
+
+    // Null active while sampling so the outside-click close handler stays quiet;
+    // defer binding so the click that pressed "Pick from image" isn't caught.
+    active = null;
+    setTimeout(function () {
+      document.addEventListener('click', onClick, true);
+      document.addEventListener('keydown', onKey, true);
+    }, 0);
   }
 
   function currentHex() { var c = hsvToRgb(cur.h, cur.s, cur.v); return rgbToHex(c.r, c.g, c.b); }

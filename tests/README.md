@@ -1,6 +1,8 @@
 # Tests
 
-Two layers, matching where the crop logic's risk actually lives.
+Two layers: fast pure-math unit tests, plus browser smoke tests that drive the
+real app in headless Chromium for the behaviours unit tests can't reach (DOM
+wiring, canvas work, focus, downloads).
 
 ## 1. Geometry unit tests (fast, no browser)
 
@@ -36,4 +38,24 @@ python tests/smoke_crop.py
 
 Override the target with `BASE_URL=https://… python tests/smoke_crop.py`.
 
-`tests/fixtures/sample.png` is the input image both layers use.
+## 3. Colour picker + main-flow smoke test (browser, end-to-end)
+
+Guards the in-page colour picker (`static/js/colorpicker.js`) that replaced the
+native `<input type="color">` — the native dialog's built-in **EyeDropper** was
+the freeze, so the picker must never touch that API. Drives the real app: checks
+that every colour input is enhanced with a `.cp-trigger` and the native dialog is
+suppressed, that the popover opens, that an arbitrary hex applies, that "Pick
+from image" samples the pixel under the pointer, and — via a constructor spy —
+that `EyeDropper` is never constructed. Then runs the main flow end-to-end:
+waits for removal, applies a custom background *through the picker*, and exports
+a fixed-size PNG.
+
+```bash
+# same prereqs as the crop smoke test (dev server + Playwright/Chromium + network)
+python tests/smoke_colorpicker.py
+```
+
+Other browser smoke tests follow the same pattern: `smoke_crop_page.py` (the
+standalone crop page) and `smoke_instagram.py` (the Instagram editor).
+
+`tests/fixtures/sample.png` is the input image every layer uses.
