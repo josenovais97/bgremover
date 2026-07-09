@@ -32,6 +32,10 @@ a smoother, safer background-remover workflow.
 - **Undo / redo and “apply to all”** in the background remover — step backward
   and forward through edits per card, and push one card's background, format,
   size and sticker settings onto every image at once.
+- **Landing-page polish** — a privacy reassurance ("Your images never leave your
+  device") right at the dropzone, a friendlier first-run model loader ("Loading
+  the AI — one-time, then instant"), and a sticky **"Remove a background"** button
+  that fades in once the upload area scrolls out of view.
 - **Four new keyword-targeted landing pages** (`/remove-background/<slug>/`) for
   **car photos**, **clothing & fashion**, **pet photos** and **YouTube
   thumbnails** — added to the same `USE_CASES` source, so each is automatically

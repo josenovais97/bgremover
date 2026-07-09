@@ -309,10 +309,10 @@ const ModelStatus = {
   async warm() {
     if (this.started) return;
     this.started = true;
-    this.render('<i class="fa-solid fa-circle-notch fa-spin"></i> Preparing AI model…', 'bg-primary/10 text-primary');
+    this.render('<i class="fa-solid fa-circle-notch fa-spin"></i> Loading the AI — one-time (~40&nbsp;MB), then instant', 'bg-primary/10 text-primary');
     try {
       if (typeof preload === 'function') await preload(CONFIG.removalOptions);
-      this.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI model ready', 'bg-green-500/10 text-green-600 dark:text-green-400');
+      this.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI ready — runs 100% on your device', 'bg-green-500/10 text-green-600 dark:text-green-400');
     } catch {
       // Warm-up is best-effort; real processing will still download on demand.
       this.started = false;

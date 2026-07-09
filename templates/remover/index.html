@@ -45,6 +45,9 @@
                                     <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
                                     Press <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">Ctrl</kbd> + <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">V</kbd> to paste
                                 </p>
+                                <p class="flex items-center gap-2 text-green-600 dark:text-green-400 font-medium">
+                                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Your images never leave your device
+                                </p>
                                 <span id="model-status" class="hidden items-center gap-2 mt-1 px-3 py-1 rounded-full text-xs font-medium"></span>
                             </div>
                         </div>
@@ -518,8 +521,15 @@
         </ul>
     </div>
 </div>
+
+<!-- Sticky CTA — fades in once the dropzone scrolls out of view (landing only) -->
+<button id="sticky-cta" type="button" aria-label="Remove a background — jump to upload"
+        class="fixed bottom-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-40 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary hover:bg-primaryHover text-white font-semibold shadow-xl shadow-primary/40 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Remove a background
+</button>
 {% endblock %}
 
 {% block extra_js %}
 <script type="module" src="{% static 'js/app.js' %}"></script>
+<script src="{% static 'js/landing.js' %}" defer></script>
 {% endblock %}
