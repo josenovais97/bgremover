@@ -134,6 +134,12 @@ Editing release: an interactive crop tool for shaping the finished cut-out.
   the background remover's options, keeping each tool focused.
 
 ### Fixed
+- **Slow removal / "page not responding" freeze** — background removal now uses
+  the quantized **`isnet_quint8`** model instead of the full `isnet`. Inference is
+  markedly faster and the download smaller, so the main-thread stall stays short
+  enough to avoid the browser's "page unresponsive" prompt. Applied across the
+  remover, sticker maker and Instagram editor. (Swap back to `isnet` in
+  `CONFIG.removalOptions` for the last few % of edge quality at the cost of speed.)
 - Instagram looks that included sharpening (Vivid, Warm, Cool, Punch and others)
   silently lost their colour grading: combining an SVG `url()` sharpen filter with
   filter functions in one canvas `ctx.filter` voids the whole filter in Chromium

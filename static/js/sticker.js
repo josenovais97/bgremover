@@ -149,7 +149,7 @@ const App = {
     this.render();
     try {
       const { removeBackground } = await import(MODEL_CDN);
-      const blob = await removeBackground(file);
+      const blob = await removeBackground(file, { model: 'isnet_quint8' });
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);
