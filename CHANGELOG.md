@@ -70,6 +70,11 @@ a smoother, safer background-remover workflow.
 - **Refined controls** — every range slider across the tools now uses a thin
   track with a floating thumb instead of the default browser control, and text
   selection is brand-tinted.
+- **Gradient primary buttons** — the main call-to-action buttons on every page
+  (Select images, Download, …) now carry the brand gradient with a hover-brighten
+  instead of flat indigo.
+- **Success flourish** — a green check-mark pops over the result the moment a
+  background is removed, so the "magic moment" feels rewarding.
 - **Rebranded to ClearBG** (`clearbg.pt`) — new name across the header, footer,
   PWA manifest, error pages and structured data; a new **logo/favicon** (a clean
   photo/image glyph on the brand gradient), full-bleed **maskable** app icons

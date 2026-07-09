@@ -31,6 +31,20 @@
   .dark ::selection { background: rgba(129, 140, 248, 0.30); }
 }
 
+/* Success flourish when a cut-out finishes (the "magic moment") ----------- */
+.done-check > span { opacity: 0; }
+@keyframes check-pop {
+  0%   { opacity: 0; transform: scale(0.3); }
+  35%  { opacity: 1; transform: scale(1.14); }
+  55%  { transform: scale(0.97); }
+  72%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+.card.just-done .done-check > span { animation: check-pop 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .card.just-done .done-check > span { animation: none; }
+}
+
 @layer components {
   /* Glassmorphism -------------------------------------------------------- */
   .glass {

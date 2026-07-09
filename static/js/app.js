@@ -1363,6 +1363,9 @@ class Card {
 
       this.done = true;
       this.setState('done');
+      // Reward the moment: pop a check-mark over the fresh cut-out.
+      this.el.classList.add('just-done');
+      window.setTimeout(() => this.el.classList.remove('just-done'), 1400);
       this.refreshPreview(); // apply any remembered background now the image exists
       Stats.record(performance.now() - started);
       ModelStatus.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI model ready', 'bg-green-500/10 text-green-600 dark:text-green-400');
