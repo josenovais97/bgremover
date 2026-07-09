@@ -19,7 +19,11 @@ const CONFIG = {
   encodeQuality: 0.92, // for JPG/WEBP output
   removalOptions: {
     output: { format: 'image/png', quality: 1 }, // lossless cut-out, full resolution
-    // `model` defaults to 'isnet' (best quality). Use 'isnet_quint8' for speed.
+    // Quantized (int8) model: markedly faster inference and a smaller download
+    // than the default 'isnet', which keeps the main-thread stall short enough to
+    // avoid the browser's "page not responding" prompt. Swap to 'isnet' for the
+    // last few % of edge quality if you don't mind the slower, heavier run.
+    model: 'isnet_quint8',
   },
 };
 
