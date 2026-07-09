@@ -46,6 +46,15 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - **Rotate** (90°) and **flip** H/V, with zoom and drag to frame
 - Export a full-resolution transparent **PNG** (rounded/circle keep transparent corners) or a **JPG** — nothing is uploaded
 
+**Image compressor** (`/compress`) — a separate tool
+- Shrink JPG / PNG / WEBP file size by a **quality** level or a **target size** (e.g. "under 200 KB" — it binary-searches the quality to hit it), with an optional **max-dimension** downscale
+- Shows before→after size and **% saved** per image and across the batch; never produces a file larger than the original
+- Batch + ZIP download, 100% in the browser
+
+**Meme generator** (`/meme-maker`) — a separate tool
+- Drop any image and add classic **top & bottom** captions in a bold outlined meme font (Impact / Anton / Oswald), **drag** them anywhere
+- Tune size, outline, colour and uppercase; export **PNG / JPG** or **copy** to the clipboard — no watermark, nothing uploaded
+
 **Image converter** (`/convert`)
 - Convert any image to PNG / JPG / WEBP / **AVIF** — input format is **auto-detected**
 - Quality control for lossy formats, batch conversion + ZIP download
@@ -136,6 +145,9 @@ bgremover/
 │   ├── js/app.js                     # background remover + editor
 │   ├── js/compose-worker.js          # off-thread full-res export pipeline
 │   ├── js/converter.js               # image converter
+│   ├── js/compressor.js              # image compressor
+│   ├── js/meme.js                    # meme generator
+│   ├── js/landing.js                 # sticky landing-page CTA
 │   ├── js/instagram.js               # Instagram photo editor
 │   ├── js/crop.js                    # standalone crop tool
 │   ├── js/favicon.js                 # favicon / app-icon generator

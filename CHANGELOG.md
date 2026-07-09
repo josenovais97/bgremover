@@ -10,6 +10,16 @@ Toolbox release: two brand-new standalone tools, a richer Instagram editor, and
 a smoother, safer background-remover workflow.
 
 ### Added
+- **Image compressor** (`/compress/`) — shrink JPG / PNG / WEBP file size with a
+  **quality** slider or a **target size** ("under 200 KB" and it binary-searches
+  the quality to hit it), with an optional max-dimension downscale. Shows the
+  before→after size and % saved per image and across the batch, never returns a
+  file bigger than the original, and downloads singly or as a ZIP. 100% in the
+  browser.
+- **Meme generator** (`/meme-maker/`) — drop any image, add classic **top &
+  bottom** captions in a bold outlined meme font (Impact / Anton / Oswald),
+  drag them anywhere, tune size / outline / colour / uppercase, and export a PNG
+  or JPG or copy straight to the clipboard. Nothing is uploaded.
 - **Favicon & app-icon generator** (`/favicon-generator/`) — drop one image and
   get a complete icon set as a ZIP: a multi-size `favicon.ico` (16/32/48), PNGs
   for every common size, a 180×180 Apple touch icon, 192/512 PWA icons plus a

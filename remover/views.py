@@ -181,7 +181,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-SITEMAP_PATHS = ["/", "/convert/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+SITEMAP_PATHS = ["/", "/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
 
 
 @require_GET
@@ -227,6 +227,18 @@ def favicon_generator(request):
 def sticker(request):
     """Render the client-side WhatsApp sticker maker."""
     return render(request, "remover/sticker.html")
+
+
+@require_GET
+def compress(request):
+    """Render the client-side image compressor."""
+    return render(request, "remover/compress.html")
+
+
+@require_GET
+def meme(request):
+    """Render the client-side meme generator."""
+    return render(request, "remover/meme.html")
 
 
 @require_GET
