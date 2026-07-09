@@ -1,4 +1,6 @@
+from django.templatetags.static import static
 from django.urls import path
+from django.views.generic.base import RedirectView
 
 from . import views
 
@@ -14,6 +16,7 @@ urlpatterns = [
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
     path("sw.js", views.service_worker, name="sw"),
     path("manifest.webmanifest", views.manifest, name="manifest"),
+    path("favicon.ico", RedirectView.as_view(url=static("img/favicon.ico"), permanent=False)),
     path("healthz", views.healthz, name="healthz"),
     path("robots.txt", views.robots_txt, name="robots"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap"),
