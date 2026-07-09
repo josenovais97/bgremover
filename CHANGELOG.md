@@ -40,6 +40,11 @@ a smoother, safer background-remover workflow.
   long-tail queries.
 
 ### Changed
+- **Rebranded to ClearBG** (`clearbg.pt`) — new name across the header, footer,
+  PWA manifest, error pages and structured data; a new **logo/favicon** (a bold
+  "C" with a transparency-checkerboard chip), full-bleed **maskable** app icons
+  with a proper safe zone, and a branded Open Graph share image. The GitHub link
+  and tech-stack line were removed from the site chrome.
 - **Full-resolution exports run in a Web Worker** (`compose-worker.js`) on an
   OffscreenCanvas, so downloading a large, heavily-styled image no longer freezes
   the tab. The main thread falls back to the in-page compositor if the worker is
