@@ -54,6 +54,13 @@ a smoother, safer background-remover workflow.
   long-tail queries.
 
 ### Changed
+- **UI polish across every tool** — the app now actually loads its intended
+  typeface (**Inter**, which was declared but never served) and pairs it with a
+  **Bricolage Grotesque** display face on the headlines, so pages read designed
+  rather than templated. Glass surfaces gained a top-edge sheen and a warmer,
+  slightly indigo-tinted dark neutral, and every page carries a subtle ambient
+  brand glow for depth instead of flat grey. All at the shared layer, so it
+  propagates to the whole toolkit.
 - **Rebranded to ClearBG** (`clearbg.pt`) — new name across the header, footer,
   PWA manifest, error pages and structured data; a new **logo/favicon** (a clean
   photo/image glyph on the brand gradient), full-bleed **maskable** app icons
