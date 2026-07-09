@@ -53,52 +53,13 @@
                         </div>
                     </div>
 
-                    <!-- Interactive before/after demo (pure illustration — no upload) -->
+                    <!-- Interactive before/after demo (sample product photo — no upload) -->
                     <figure class="flex flex-col gap-3">
                         <div id="demo" class="demo relative w-full flex-1 min-h-[16rem] aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none checkerboard">
-                            <!-- Original studio background (revealed on the left of the handle) -->
+                            <!-- Real product photo → transparent cut-out (the handle reveals it) -->
+                            <img src="{% static 'img/demo-after.webp' %}" class="absolute inset-0 w-full h-full object-cover" alt="Product photo with the background removed" draggable="false">
                             <div id="demo-before" class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
-                                <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <defs>
-                                        <linearGradient id="demo-bg" x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0" stop-color="#FDCB6E"/><stop offset="1" stop-color="#FF6B9D"/>
-                                        </linearGradient>
-                                        <radialGradient id="demo-glow" cx="0.32" cy="0.24" r="0.65">
-                                            <stop offset="0" stop-color="#ffffff" stop-opacity="0.5"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-                                        </radialGradient>
-                                    </defs>
-                                    <rect width="800" height="600" fill="url(#demo-bg)"/>
-                                    <circle cx="230" cy="150" r="120" fill="#ffffff" opacity="0.12"/>
-                                    <circle cx="650" cy="470" r="175" fill="#ffffff" opacity="0.10"/>
-                                    <rect width="800" height="600" fill="url(#demo-glow)"/>
-                                </svg>
-                            </div>
-                            <!-- Subject (drawn once, always on top; transparent behind it) -->
-                            <div class="absolute inset-0 pointer-events-none">
-                                <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of a portrait with the background removed">
-                                    <defs>
-                                        <linearGradient id="demo-shirt" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#4F46E5"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M175 600 C175 480 280 432 400 432 C520 432 625 480 625 600 Z" fill="url(#demo-shirt)"/>
-                                    <path d="M360 440 Q400 482 440 440 L440 432 L360 432 Z" fill="#4338CA" opacity="0.55"/>
-                                    <path d="M366 388 h68 v46 c0 26 -68 26 -68 0 Z" fill="#E6B08C"/>
-                                    <ellipse cx="400" cy="272" rx="140" ry="156" fill="#33303E"/>
-                                    <path d="M292 250 C286 300 292 340 300 366 C280 330 274 288 282 250 Z" fill="#33303E"/>
-                                    <path d="M508 250 C514 300 508 340 500 366 C520 330 526 288 518 250 Z" fill="#33303E"/>
-                                    <ellipse cx="291" cy="292" rx="17" ry="27" fill="#F4C7A3"/>
-                                    <ellipse cx="509" cy="292" rx="17" ry="27" fill="#F4C7A3"/>
-                                    <ellipse cx="400" cy="286" rx="108" ry="122" fill="#F4C7A3"/>
-                                    <ellipse cx="344" cy="318" rx="17" ry="11" fill="#F49AA5" opacity="0.55"/>
-                                    <ellipse cx="456" cy="318" rx="17" ry="11" fill="#F49AA5" opacity="0.55"/>
-                                    <ellipse cx="362" cy="284" rx="8.5" ry="11.5" fill="#33303E"/>
-                                    <ellipse cx="438" cy="284" rx="8.5" ry="11.5" fill="#33303E"/>
-                                    <path d="M346 262 Q362 254 378 262" stroke="#33303E" stroke-width="5" fill="none" stroke-linecap="round"/>
-                                    <path d="M422 262 Q438 254 454 262" stroke="#33303E" stroke-width="5" fill="none" stroke-linecap="round"/>
-                                    <path d="M372 330 Q400 356 428 330" stroke="#C77B59" stroke-width="6" fill="none" stroke-linecap="round"/>
-                                    <path d="M300 250 C300 170 350 120 400 120 C450 120 500 170 500 250 C470 205 458 200 430 210 C415 175 385 175 370 210 C342 200 330 205 300 250 Z" fill="#33303E"/>
-                                </svg>
+                                <img src="{% static 'img/demo-before.webp' %}" class="w-full h-full object-cover" alt="Original product photo on a studio background" draggable="false">
                             </div>
                             <!-- Divider + handle -->
                             <div id="demo-line" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">

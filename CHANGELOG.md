@@ -59,8 +59,13 @@ a smoother, safer background-remover workflow.
   **Bricolage Grotesque** display face on the headlines, so pages read designed
   rather than templated. Glass surfaces gained a top-edge sheen and a warmer,
   slightly indigo-tinted dark neutral, and every page carries a subtle ambient
-  brand glow for depth instead of flat grey. All at the shared layer, so it
+  brand glow for depth instead of flat grey. **Result cards** now lift with a
+  layered, brand-tinted shadow on hover. All at the shared layer, so it
   propagates to the whole toolkit.
+- **Real before/after hero demo** — the homepage comparison slider now shows an
+  actual photographic studio product shot resolving to a genuine transparent
+  cut-out (with the drop shadow correctly removed), replacing the cartoon
+  illustration — a far more credible first impression.
 - **Rebranded to ClearBG** (`clearbg.pt`) — new name across the header, footer,
   PWA manifest, error pages and structured data; a new **logo/favicon** (a clean
   photo/image glyph on the brand gradient), full-bleed **maskable** app icons
