@@ -107,6 +107,74 @@ USE_CASES = [
             {"icon": "fa-wand-magic-sparkles", "title": "Clean isolation", "text": "Separates ink from paper texture and shadows, with a brush to refine the result."},
         ],
     },
+    {
+        "slug": "car-photos",
+        "nav": "Car photos",
+        "title": "Remove Background from Car Photos — Free & Instant",
+        "description": "Remove the background from car photos for dealer listings and marketplace ads. Put any vehicle on a clean white or transparent backdrop — free, private, in your browser.",
+        "h1": "Remove Backgrounds from Car Photos",
+        "tagline": "Give every vehicle a clean, consistent listing shot for your dealership or marketplace ad — free, unlimited, and processed on your device.",
+        "intro": [
+            "Car listings sell faster when every vehicle sits on a clean, consistent backdrop instead of a cluttered forecourt. This tool cuts the background from your car photos in seconds, so you can drop in pure white or keep a transparent PNG for your template.",
+            "Because the AI runs locally in your browser, you can process a whole lot of stock without uploading a single photo, hitting an API limit, or paying per image.",
+        ],
+        "benefits": [
+            {"icon": "fa-car", "title": "Showroom-clean", "text": "Swap a messy forecourt for a spotless studio-style backdrop that keeps the focus on the car."},
+            {"icon": "fa-layer-group", "title": "Whole-lot batches", "text": "Drop in dozens of shots at once and download them together as a ZIP."},
+            {"icon": "fa-bolt", "title": "Instant & free", "text": "No per-photo cost and no watermark — full-resolution output every time."},
+        ],
+    },
+    {
+        "slug": "clothing",
+        "nav": "Clothing & fashion",
+        "title": "Remove Background from Clothing Photos — Free for Resellers",
+        "description": "Remove the background from clothing and fashion photos for Vinted, Depop, Poshmark or your own shop. Clean white or transparent PNGs — free, private, in your browser.",
+        "h1": "Remove the Background from Clothing Photos",
+        "tagline": "Turn phone snaps of clothes into clean, sellable product shots for Vinted, Depop, Poshmark or your own store — free and unlimited.",
+        "intro": [
+            "Second-hand and boutique fashion sells faster when every item looks consistent and professional. Upload a photo of a garment and the AI isolates it from your carpet, hanger or wall, so you can place it on clean white or a transparent background.",
+            "It all runs in your browser at full resolution, so you can prep an entire wardrobe of listings privately — no uploads, no per-photo fees.",
+        ],
+        "benefits": [
+            {"icon": "fa-shirt", "title": "Sellable in seconds", "text": "Clean cut-outs of tops, dresses and shoes that look at home in any shop grid."},
+            {"icon": "fa-tags", "title": "Consistent listings", "text": "Give every item the same tidy backdrop so your storefront looks professional."},
+            {"icon": "fa-shield-halved", "title": "Private by design", "text": "Your photos never leave your device — nothing is uploaded to a server."},
+        ],
+    },
+    {
+        "slug": "pet-photos",
+        "nav": "Pet photos",
+        "title": "Remove Background from Pet Photos — Free & Private",
+        "description": "Cut out your dog, cat or any pet from a photo for free. Make transparent PNGs for stickers, prints and memes — private and in your browser, nothing uploaded.",
+        "h1": "Remove the Background from Pet Photos",
+        "tagline": "Cut out your dog, cat or any furry friend for stickers, prints, mugs and memes — free, unlimited, and all in your browser.",
+        "intro": [
+            "Want your pet on a mug, a sticker or a custom print? Upload a photo and the AI separates your dog or cat from the background — handling fur and whiskers — so you get a clean transparent PNG to drop anywhere.",
+            "Everything happens on your device, so you can experiment with as many photos as you like — no uploads, no limits, and no watermark.",
+        ],
+        "benefits": [
+            {"icon": "fa-paw", "title": "Great with fur", "text": "Trained to handle soft edges, fur and whiskers for a natural-looking cut-out."},
+            {"icon": "fa-wand-magic-sparkles", "title": "Refine by hand", "text": "Tidy leftover background or restore fine detail with the built-in edge brush."},
+            {"icon": "fa-heart", "title": "Print & sticker ready", "text": "Full-resolution transparent PNGs for mugs, stickers, prints and memes."},
+        ],
+    },
+    {
+        "slug": "youtube-thumbnail",
+        "nav": "YouTube thumbnails",
+        "title": "Remove Background for YouTube Thumbnails — Free",
+        "description": "Cut yourself out of a photo for a click-worthy YouTube thumbnail. Free transparent PNGs to drop over any background — private, in your browser, nothing uploaded.",
+        "h1": "Remove Backgrounds for YouTube Thumbnails",
+        "tagline": "Cut yourself or your subject out cleanly and drop it over a bold background for thumbnails that get the click — free and unlimited.",
+        "intro": [
+            "The best-performing thumbnails put a crisp cut-out of a person or product over a punchy background. Upload your shot and the AI removes the background in seconds, giving you a transparent PNG to composite in your thumbnail editor.",
+            "It runs entirely in your browser at full resolution, so creators can turn thumbnails around fast — no uploads, no subscriptions, and no watermark.",
+        ],
+        "benefits": [
+            {"icon": "fa-clapperboard", "title": "Made for creators", "text": "Clean cut-outs of you or your subject to pop against any thumbnail background."},
+            {"icon": "fa-bolt", "title": "Fast turnaround", "text": "Removes the background in seconds so you can ship the thumbnail and hit publish."},
+            {"icon": "fa-crop-simple", "title": "Full quality", "text": "Full-resolution transparent PNGs with no watermark, ready for any editor."},
+        ],
+    },
 ]
 
 USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
