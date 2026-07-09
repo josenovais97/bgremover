@@ -62,11 +62,12 @@ a smoother, safer background-remover workflow.
   brand glow for depth instead of flat grey. **Result cards** now lift with a
   layered, brand-tinted shadow on hover. All at the shared layer, so it
   propagates to the whole toolkit.
-- **Real before/after hero demo** — the homepage comparison slider now shows an
-  actual photographic studio product shot resolving to a genuine transparent
-  cut-out (with the drop shadow correctly removed), replacing the cartoon
-  illustration, and **rotates through three subjects** (crossfading, pausing on
-  interaction, respecting reduced-motion) — a far more credible first impression.
+- **Real before/after hero demo** — the homepage comparison slider now shows
+  actual photos resolving to genuine transparent cut-outs (a person, a pet and a
+  classic car — covering the profile-picture, pet and car use cases), **rotating
+  through the three** with a crossfade, pausing on interaction and respecting
+  reduced-motion. The cut-outs were produced by ClearBG itself, so they reflect
+  the tool's real output.
 - **Refined controls** — every range slider across the tools now uses a thin
   track with a floating thumb instead of the default browser control, and text
   selection is brand-tinted.
