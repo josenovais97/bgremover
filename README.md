@@ -19,10 +19,23 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - **Export sizes** — keep the original size, or scale to a **profile picture (512×512)**, a **story (1080×1920)**, or any **custom width × height** (aspect preserved, no distortion)
 - Export as PNG (transparent), JPG, or WEBP — no watermark
 
+**Favicon & app-icon generator** (`/favicon-generator`) — a separate tool, no background removal required
+- Drop one image and download a complete icon set as a ZIP: a multi-size `favicon.ico` (16/32/48), PNGs for every common size, a 180×180 **Apple touch icon**, 192/512 **PWA icons** plus a **maskable** 512 with a safe zone
+- Includes a ready `site.webmanifest` (app name, short name, theme colour) and the exact `<link>` **HTML to paste** into your `<head>`
+- Choose a background (transparent or any colour), a **shape** (square / rounded / circle) and padding; preview the real 16px icon in a browser-tab mock-up
+- 100% in the browser — nothing is uploaded
+
+**WhatsApp & Telegram sticker maker** (`/sticker-maker`) — a separate tool
+- Removes the background automatically, then adds the classic sticker **outline** (colour + thickness) and a **draggable caption** in bold / clean / tall / script fonts
+- Exports a ready-to-use **512×512 transparent WebP** (or PNG) — exactly what WhatsApp and Telegram expect
+- 100% in the browser — nothing is uploaded
+
 **Instagram photo editor** (`/instagram`) — a separate tool, no background removal required
 - Upload a photo and edit it immediately: pick a **format** (Post, Portrait, Story/Reel, Landscape, Profile) that crops to the right aspect and exports at Instagram's **exact pixel sizes**
 - **Fill or Fit** — crop to the frame, or post the whole photo with **no crop**, filling the gaps with a blurred copy or a solid colour; add a coloured **border**
 - **12 on-trend one-tap looks** (Vivid, Punch, Clean, Golden, Moody, Film, Noir, Warm, Cool, Fade, Vintage) with a **strength** slider, plus **adjustments** — brightness, contrast, saturation, warmth, **sharpen**, **film grain**, vignette
+- **Text captions** (font, colour, size, drag to place), a **logo / watermark** overlay you can upload and position, and a coloured **frame**
+- **Save your own looks** ("My looks") to reuse a favourite grade across photos
 - **Press-and-hold compare** against the original, and **Story/Reel safe-zone guides** so captions/UI don't cover faces
 - **Carousel splitter** — slice a wide photo into a seamless **swipeable carousel** (2–3 tiles), exported as a ZIP
 - **Crop & reposition** with drag + zoom; **optionally remove the background** and drop in a solid colour
@@ -34,7 +47,7 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - Export a full-resolution transparent **PNG** (rounded/circle keep transparent corners) or a **JPG** — nothing is uploaded
 
 **Image converter** (`/convert`)
-- Convert any image to PNG / JPG / WEBP — input format is **auto-detected**
+- Convert any image to PNG / JPG / WEBP / **AVIF** — input format is **auto-detected**
 - Quality control for lossy formats, batch conversion + ZIP download
 - Also runs 100% in the browser
 - Model warm-up preload so the first result is fast
@@ -42,6 +55,8 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 
 **Batch & extras**
 - Batch processing (select multiple images)
+- **Undo / redo** per card, and **apply one card's** background, format, size & sticker settings **to all** images at once
+- Full-resolution exports run in a **Web Worker** (OffscreenCanvas), so downloading a large, heavily-styled image never freezes the tab
 - Download all as a ZIP
 - Copy result to clipboard
 - **Remembers your background & format** across the session so batch runs stay fast
@@ -60,8 +75,9 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
   from a single source (see `remover.views.faq_jsonld`), and `BreadcrumbList`
   on landing pages
 - Keyword-targeted **use-case landing pages** (`/remove-background/<slug>/`) for
-  product photos, profile pictures, logos and signatures — generated from a
-  single `USE_CASES` list that also feeds the sitemap and internal links
+  product photos, profile pictures, logos, signatures, car photos, clothing &
+  fashion, pet photos and YouTube thumbnails — generated from a single
+  `USE_CASES` list that also feeds the sitemap and internal links
 - `robots.txt` + `sitemap.xml` (auto-generated from the page list)
 - Search-engine ownership verification via optional meta tags (Google / Bing)
 
@@ -98,7 +114,7 @@ bgremover/
 │   ├── wsgi.py               # exposes `app` for Vercel
 │   └── asgi.py
 ├── remover/
-│   ├── views.py              # index + convert + use-case pages + healthz + robots + sitemap
+│   ├── views.py              # index + convert + instagram + crop + favicon + sticker + use-case pages + healthz + robots + sitemap
 │   ├── context_processors.py # SEO tokens + shared footer nav data
 │   ├── urls.py
 │   ├── models.py             # intentionally empty (no DB)
@@ -109,6 +125,8 @@ bgremover/
 │   ├── remover/convert.html  # image format converter
 │   ├── remover/instagram.html # Instagram photo editor
 │   ├── remover/crop.html     # standalone crop tool
+│   ├── remover/favicon.html  # favicon / app-icon generator
+│   ├── remover/sticker.html  # WhatsApp / Telegram sticker maker
 │   ├── remover/use_case.html # keyword-targeted landing page (data-driven)
 │   ├── seo/{robots.txt,sitemap.xml}
 │   └── {404.html,500.html}
@@ -116,7 +134,13 @@ bgremover/
 │   ├── src/input.css                 # Tailwind source
 │   ├── css/tailwind.css              # compiled + minified (committed)
 │   ├── js/app.js                     # background remover + editor
+│   ├── js/compose-worker.js          # off-thread full-res export pipeline
 │   ├── js/converter.js               # image converter
+│   ├── js/instagram.js               # Instagram photo editor
+│   ├── js/crop.js                    # standalone crop tool
+│   ├── js/favicon.js                 # favicon / app-icon generator
+│   ├── js/sticker.js                 # sticker maker
+│   ├── js/colorpicker.js             # shared custom colour picker
 │   ├── js/theme.js                   # pre-paint theme + toggle (all pages)
 │   └── img/{favicon.svg,og-image.svg}
 ├── deploy/nginx.conf

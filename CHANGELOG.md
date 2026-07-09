@@ -4,6 +4,55 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-07-09
+
+Toolbox release: two brand-new standalone tools, a richer Instagram editor, and
+a smoother, safer background-remover workflow.
+
+### Added
+- **Favicon & app-icon generator** (`/favicon-generator/`) — drop one image and
+  get a complete icon set as a ZIP: a multi-size `favicon.ico` (16/32/48), PNGs
+  for every common size, a 180×180 Apple touch icon, 192/512 PWA icons plus a
+  **maskable** 512 with a safe zone, a ready `site.webmanifest`, and the exact
+  `<link>` HTML to paste. Pick a background (transparent or any colour), a shape
+  (square / rounded / circle) and padding, set the app name / short name / theme
+  colour, and preview the real 16px icon in a browser-tab mock-up. 100% in the
+  browser.
+- **WhatsApp & Telegram sticker maker** (`/sticker-maker/`) — removes the
+  background automatically, adds the classic sticker **outline** (colour +
+  thickness) and a **draggable caption** in bold / clean / tall / script fonts,
+  and exports a ready-to-use **512×512 transparent WebP** (or PNG). Nothing is
+  uploaded.
+- **AVIF export** in the image converter — next-gen, smallest-file output on
+  Chromium, alongside PNG / JPG / WEBP.
+- **Instagram editor upgrades** — add **text captions** (font, colour, size,
+  drag to place), a **logo / watermark** overlay you can upload and position, a
+  coloured **frame**, and **save your own looks** (My looks) for reuse. The
+  optional background removal now drops in a solid colour inline.
+- **Undo / redo and “apply to all”** in the background remover — step backward
+  and forward through edits per card, and push one card's background, format,
+  size and sticker settings onto every image at once.
+- **Four new keyword-targeted landing pages** (`/remove-background/<slug>/`) for
+  **car photos**, **clothing & fashion**, **pet photos** and **YouTube
+  thumbnails** — added to the same `USE_CASES` source, so each is automatically
+  indexed in the sitemap, linked from the footer, and carries breadcrumb
+  structured data. These widen search entry points on lower-competition
+  long-tail queries.
+
+### Changed
+- **Full-resolution exports run in a Web Worker** (`compose-worker.js`) on an
+  OffscreenCanvas, so downloading a large, heavily-styled image no longer freezes
+  the tab. The main thread falls back to the in-page compositor if the worker is
+  unavailable, and a parity guard keeps the two in sync.
+- **Colour picker** rebuilt: an arbitrary-colour picker without the flaky
+  eyedropper, a visible swatch border, and no GPU-freezing `backdrop-filter`.
+
+### Fixed
+- Compositing very large images could freeze the tab (unbounded preview
+  resolution) — preview resolution is now capped.
+- Various colour-picker glitches on label-wrapped inputs and the native colour
+  dialog appearing unexpectedly.
+
 ## [1.2.0] — 2026-07-06
 
 Editing release: an interactive crop tool for shaping the finished cut-out.
@@ -122,6 +171,7 @@ Initial public release.
 - Stateless Django backend (no database) deployable to Vercel, Docker, or a
   classic Nginx + Gunicorn VPS.
 
+[1.3.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.3.0
 [1.2.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.2.0
 [1.1.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.1.0
 [1.0.0]: https://github.com/josenovais97/bgremover/releases/tag/v1.0.0
