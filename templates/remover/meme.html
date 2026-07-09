@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free Meme Generator — Add Top &amp; Bottom Text to Any Image{% endblock %}
+{% block description %}Make memes free in your browser. Upload any image, add classic top and bottom text with the bold outlined meme font, drag it anywhere, and download a PNG or JPG. Nothing is uploaded.{% endblock %}
+{% block og_title %}Free Meme Maker — Classic Impact Text, Private &amp; Instant{% endblock %}
+
+{% block extra_seo %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Oswald:wght@700&amp;display=swap">
+{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero + dropzone -->
+    <section class="max-w-3xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <i class="fa-solid fa-face-laugh" aria-hidden="true"></i> Made locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Meme
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-500">Generator</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Drop any image, add the classic <strong>top &amp; bottom text</strong>, drag it where you want, and download a
+                ready-to-share PNG or JPG. Free, no watermark, 100% private.
+            </p>
+        </div>
+
+        <div id="mm-dropzone" role="button" tabindex="0" aria-label="Upload an image to make a meme. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <input type="file" id="mm-input" class="sr-only" accept="image/png,image/jpeg,image/webp">
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="mm-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-image" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drop an image</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — a photo, screenshot or template</p>
+                <button id="mm-browse" type="button" class="mt-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select an image
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="mm-editor" class="hidden max-w-5xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6 items-start">
+        <!-- Canvas -->
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
+            <canvas id="mm-canvas" class="max-w-full h-auto max-h-[70vh] rounded-xl checkerboard touch-none cursor-grab" aria-label="Meme preview"></canvas>
+            <p class="text-[11px] text-gray-400 text-center"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Drag the text on the image to move it.</p>
+        </div>
+
+        <!-- Options -->
+        <div class="space-y-4">
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Text</span>
+                <input id="mm-top" type="text" placeholder="Top text" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <input id="mm-bottom" type="text" placeholder="Bottom text" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" class="mm-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none ring-2 ring-primary" data-font="Impact" style="font-family:Impact,'Anton',sans-serif" title="Classic">Impact</button>
+                    <button type="button" class="mm-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none" data-font="Anton" style="font-family:Anton,sans-serif" title="Bold">Anton</button>
+                    <button type="button" class="mm-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none" data-font="Oswald" style="font-family:Oswald,sans-serif" title="Condensed">Oswald</button>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Style</span>
+                <label class="flex items-center gap-2 text-xs">
+                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Size</span>
+                    <input id="mm-size" type="range" min="4" max="16" step="0.5" value="8" class="w-full accent-primary" aria-label="Text size">
+                </label>
+                <label class="flex items-center gap-2 text-xs">
+                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Outline</span>
+                    <input id="mm-outline" type="range" min="0" max="12" step="0.5" value="6" class="w-full accent-primary" aria-label="Outline thickness">
+                </label>
+                <div class="flex items-center justify-between gap-2 text-xs">
+                    <label class="flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">Colour</span><input id="mm-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Text colour"></label>
+                    <label class="inline-flex items-center gap-1.5 cursor-pointer select-none"><input id="mm-caps" type="checkbox" class="accent-primary w-4 h-4" checked> UPPERCASE</label>
+                </div>
+            </div>
+
+            <button id="mm-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-primary hover:bg-primaryHover transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download meme (PNG)
+            </button>
+            <div class="flex gap-2">
+                <button id="mm-download-jpg" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>JPG
+                </button>
+                <button id="mm-copy" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <i class="fa-regular fa-copy mr-1.5" aria-hidden="true"></i>Copy
+                </button>
+                <button id="mm-new" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEO / help content -->
+    <section aria-labelledby="mm-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="mm-how" class="text-2xl font-bold text-center">How to make a meme</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">1.</span>Drop an image</div><p class="text-sm text-gray-500 dark:text-gray-400">Any photo, screenshot or classic template — it never leaves your device.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">2.</span>Add the text</div><p class="text-sm text-gray-500 dark:text-gray-400">Type top and bottom captions in the bold outlined meme font, then drag them into place.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">3.</span>Download &amp; share</div><p class="text-sm text-gray-500 dark:text-gray-400">Export a PNG or JPG, or copy straight to your clipboard. No watermark.</p></div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/meme.js' %}"></script>
+{% endblock %}

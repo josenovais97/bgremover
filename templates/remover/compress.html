@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Compress Images Free — Shrink JPG, PNG &amp; WEBP in Your Browser{% endblock %}
+{% block description %}Compress and shrink images for free — reduce JPG, PNG and WEBP file size with a quality slider or a target size (e.g. under 200 KB). 100% in your browser, batch supported, nothing uploaded.{% endblock %}
+{% block og_title %}Free Image Compressor — Shrink Images Privately &amp; Instantly{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero + dropzone -->
+    <section class="max-w-3xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <i class="fa-solid fa-compress" aria-hidden="true"></i> Compressed locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Compress Images to a
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-500">Smaller Size</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Drop an image and shrink its file size — set a quality level or a target size like <strong>under&nbsp;200&nbsp;KB</strong>. Batch supported, full control, 100% private.
+            </p>
+        </div>
+
+        <div id="cmp-dropzone" role="button" tabindex="0" aria-label="Upload images to compress. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <input type="file" id="cmp-input" class="sr-only" accept="image/*" multiple>
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="cmp-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drag &amp; drop your images</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — multiple files welcome</p>
+                <button id="cmp-browse" type="button" class="mt-2 px-8 py-3 bg-primary hover:bg-primaryHover text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select images
+                </button>
+                <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">Shrinks JPG, PNG &amp; WEBP · Choose a quality or a target file size</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Controls -->
+    <section id="cmp-controls" class="hidden max-w-5xl mx-auto glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-end gap-5 lg:gap-8">
+            <div class="space-y-2">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Output format</span>
+                <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
+                    <button type="button" data-format="image/webp" data-ext="webp" class="cmp-format-btn px-4 py-2 bg-primary text-white" title="Best compression, supports transparency">WEBP</button>
+                    <button type="button" data-format="image/jpeg" data-ext="jpg" class="cmp-format-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Smallest for photos, no transparency">JPG</button>
+                    <button type="button" data-format="image/png" data-ext="png" class="cmp-format-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Lossless — best for graphics with few colours">PNG</button>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Mode</span>
+                <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
+                    <button type="button" data-mode="quality" class="cmp-mode-btn px-4 py-2 bg-primary text-white">Quality</button>
+                    <button type="button" data-mode="size" class="cmp-mode-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Target size</button>
+                </div>
+            </div>
+
+            <div id="cmp-quality-wrap" class="space-y-2 grow">
+                <label for="cmp-quality" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    Quality <span id="cmp-quality-value" class="text-primary">75%</span>
+                </label>
+                <input id="cmp-quality" type="range" min="10" max="100" value="75" class="w-full accent-primary">
+            </div>
+
+            <div id="cmp-size-wrap" class="hidden space-y-2">
+                <label for="cmp-target" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Target size</label>
+                <div class="flex items-center gap-2">
+                    <input id="cmp-target" type="number" min="5" step="5" value="200" aria-label="Target maximum file size in kilobytes"
+                           class="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="text-xs text-gray-400 whitespace-nowrap">KB or smaller</span>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label for="cmp-maxdim" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Max dimension</label>
+                <div class="flex items-center gap-2">
+                    <input id="cmp-maxdim" type="number" min="16" step="1" placeholder="Original" aria-label="Maximum output dimension in pixels (longest side); leave blank to keep original size"
+                           class="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="text-xs text-gray-400 whitespace-nowrap">px longest side</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <p id="cmp-summary" class="text-sm text-gray-500 dark:text-gray-400"></p>
+            <div class="flex flex-wrap items-center gap-2 ml-auto">
+                <button id="cmp-download-all" type="button" class="hidden px-4 py-2.5 bg-primary hover:bg-primaryHover text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>Download all (ZIP)
+                </button>
+                <button id="cmp-add" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>Add more
+                </button>
+                <button id="cmp-clear" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>Clear
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results -->
+    <section id="cmp-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
+
+    <!-- SEO / help content -->
+    <section aria-labelledby="cmp-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="cmp-how" class="text-2xl font-bold text-center">How to compress an image</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">1.</span>Drop your images</div><p class="text-sm text-gray-500 dark:text-gray-400">Add one or many — JPG, PNG or WEBP. Everything stays on your device.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">2.</span>Pick quality or size</div><p class="text-sm text-gray-500 dark:text-gray-400">Slide the quality, or set a target like “under 200&nbsp;KB” and we hit it automatically.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Grab the smaller file, or download them all as a ZIP. No watermark, no sign-up.</p></div>
+        </div>
+    </section>
+</div>
+
+<!-- Compress card template -->
+<template id="cmp-card-template">
+    <article class="card glass rounded-2xl shadow-lg border border-gray-200/70 dark:border-gray-800/70 overflow-hidden animate-fade-in-up">
+        <div class="preview relative aspect-video checkerboard grid place-items-center overflow-hidden">
+            <img class="thumb max-h-full max-w-full object-contain" alt="Image preview" draggable="false">
+            <span class="saved-badge hidden absolute top-2 right-2 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-green-500 text-white">−0%</span>
+        </div>
+        <div class="p-4 space-y-3">
+            <div class="min-w-0">
+                <p class="filename text-sm font-medium truncate" title="">image</p>
+                <p class="meta text-xs text-gray-500 dark:text-gray-400">Compressing…</p>
+            </div>
+            <div class="h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+                <div class="bar h-full bg-gradient-to-r from-primary to-fuchsia-500 transition-all duration-300" style="width:0%"></div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" class="remove-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove this image">
+                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
+                </button>
+                <button type="button" class="download-btn inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary hover:bg-primaryHover text-white shadow ml-auto transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Download compressed image">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i> Download
+                </button>
+            </div>
+        </div>
+    </article>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/compressor.js' %}"></script>
+{% endblock %}
