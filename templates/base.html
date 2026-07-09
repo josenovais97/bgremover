@@ -16,7 +16,7 @@
     <meta name="keywords" content="background remover, remove background, transparent png, free background removal, ai background remover, remove bg">
 
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="BG Remover">
+    <meta property="og:site_name" content="ClearBG">
     <meta property="og:title" content="{% block og_title %}Free AI Background Remover — No Watermark{% endblock %}">
     <meta property="og:description" content="Remove image backgrounds instantly and 100% free. Everything runs privately in your browser.">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
@@ -33,7 +33,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "BG Remover",
+      "name": "ClearBG",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "Any (web browser)",
       "description": "Free AI background remover that runs entirely in your browser. No uploads, no watermarks, full-resolution transparent PNG export.",
@@ -52,7 +52,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "BG Remover",
+      "name": "ClearBG",
       "url": "{{ request.scheme }}://{{ request.get_host }}/"
     }
     </script>
@@ -91,11 +91,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between py-4">
                 <div class="flex items-center gap-3 sm:gap-5">
-                    <a href="{% url 'remover:index' %}" class="group flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl" aria-label="BG Remover home">
+                    <a href="{% url 'remover:index' %}" class="group flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl" aria-label="ClearBG home">
                         <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-fuchsia-500 text-white shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
                             <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
                         </span>
-                        <span class="font-bold text-lg tracking-tight hidden sm:inline">BG Remover</span>
+                        <span class="font-bold text-lg tracking-tight hidden sm:inline">ClearBG</span>
                     </a>
 
                     {% with active=request.resolver_match.url_name %}
@@ -123,9 +123,6 @@
                 </div>
 
                 <nav class="flex items-center gap-1 glass rounded-full p-1.5 shadow-sm border border-gray-200/70 dark:border-gray-800/70" aria-label="Utilities">
-                    <a href="https://github.com/josenovais97/bgremover" target="_blank" rel="noopener noreferrer" class="tip hidden sm:grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Source on GitHub" data-tooltip="Source on GitHub">
-                        <i class="fa-brands fa-github text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
-                    </a>
                     <button id="shortcuts-btn" type="button" class="tip hidden sm:grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Keyboard shortcuts" data-tooltip="Shortcuts">
                         <i class="fa-regular fa-keyboard text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
                     </button>
@@ -167,7 +164,7 @@
                     <i class="fa-solid fa-mug-hot" aria-hidden="true"></i> Buy me a coffee
                 </a>
             </p>
-            <p>&copy; {% now "Y" %} BG Remover. Free &amp; open source. Built with Django &amp; Tailwind CSS.</p>
+            <p>&copy; {% now "Y" %} ClearBG. Free, private, and unlimited.</p>
         </div>
     </footer>
 

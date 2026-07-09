@@ -1,4 +1,4 @@
-{% load static %}/* BG Remover service worker — app-shell offline cache. */
+{% load static %}/* ClearBG service worker — app-shell offline cache. */
 // Assets are served network-first (see the `fetch` handler), so a redeploy is
 // picked up on the next online load WITHOUT bumping this name — the manual bump
 // is no longer required for freshness. The name is just the offline snapshot's
