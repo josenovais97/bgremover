@@ -65,7 +65,11 @@ a smoother, safer background-remover workflow.
 - **Real before/after hero demo** — the homepage comparison slider now shows an
   actual photographic studio product shot resolving to a genuine transparent
   cut-out (with the drop shadow correctly removed), replacing the cartoon
-  illustration — a far more credible first impression.
+  illustration, and **rotates through three subjects** (crossfading, pausing on
+  interaction, respecting reduced-motion) — a far more credible first impression.
+- **Refined controls** — every range slider across the tools now uses a thin
+  track with a floating thumb instead of the default browser control, and text
+  selection is brand-tinted.
 - **Rebranded to ClearBG** (`clearbg.pt`) — new name across the header, footer,
   PWA manifest, error pages and structured data; a new **logo/favicon** (a clean
   photo/image glyph on the brand gradient), full-bleed **maskable** app icons

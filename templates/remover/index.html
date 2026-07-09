@@ -56,10 +56,11 @@
                     <!-- Interactive before/after demo (sample product photo — no upload) -->
                     <figure class="flex flex-col gap-3">
                         <div id="demo" class="demo relative w-full flex-1 min-h-[16rem] aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none checkerboard">
-                            <!-- Real product photo → transparent cut-out (the handle reveals it) -->
-                            <img src="{% static 'img/demo-after.webp' %}" class="absolute inset-0 w-full h-full object-cover" alt="Product photo with the background removed" draggable="false">
+                            <!-- Real product photo → transparent cut-out (the handle reveals it;
+                                 landing.js rotates through demo1/2/3 subjects). -->
+                            <img id="demo-after-img" src="{% static 'img/demo1-after.webp' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500" alt="Product photo with the background removed" draggable="false">
                             <div id="demo-before" class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
-                                <img src="{% static 'img/demo-before.webp' %}" class="w-full h-full object-cover" alt="Original product photo on a studio background" draggable="false">
+                                <img id="demo-before-img" src="{% static 'img/demo1-before.webp' %}" class="w-full h-full object-cover transition-opacity duration-500" alt="Original product photo on a studio background" draggable="false">
                             </div>
                             <!-- Divider + handle -->
                             <div id="demo-line" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
