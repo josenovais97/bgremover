@@ -1,5 +1,5 @@
 /**
- * BG Remover — client-side application.
+ * ClearBG — client-side application.
  *
  * All background removal runs in the browser via @imgly/background-removal
  * (ISNet / U²-Net). Nothing is uploaded to the server. The library and the

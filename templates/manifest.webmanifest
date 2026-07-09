@@ -1,6 +1,6 @@
 {% load static %}{
-  "name": "BG Remover — Free Background Remover & Image Converter",
-  "short_name": "BG Remover",
+  "name": "ClearBG — Free Background Remover & Image Converter",
+  "short_name": "ClearBG",
   "description": "Remove image backgrounds and convert formats for free, privately, in your browser.",
   "start_url": "/",
   "scope": "/",

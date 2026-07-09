@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   BG Remover — custom styles layered on top of Tailwind.
+   ClearBG — custom styles layered on top of Tailwind.
    Compiled to static/css/tailwind.css via `npm run build:css`.
    ========================================================================== */
 
