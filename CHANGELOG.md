@@ -41,8 +41,8 @@ a smoother, safer background-remover workflow.
 
 ### Changed
 - **Rebranded to ClearBG** (`clearbg.pt`) — new name across the header, footer,
-  PWA manifest, error pages and structured data; a new **logo/favicon** (a bold
-  "C" with a transparency-checkerboard chip), full-bleed **maskable** app icons
+  PWA manifest, error pages and structured data; a new **logo/favicon** (a clean
+  photo/image glyph on the brand gradient), full-bleed **maskable** app icons
   with a proper safe zone, and a branded Open Graph share image. The GitHub link
   and tech-stack line were removed from the site chrome.
 - **Full-resolution exports run in a Web Worker** (`compose-worker.js`) on an
