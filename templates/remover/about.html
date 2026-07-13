@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About ClearBG — Free, Private, In-Browser Image Tools{% endblock %}
+{% block description %}ClearBG is a free suite of privacy-first image tools that run entirely in your browser — background removal, upscaling, passport photos and more. No uploads, no accounts, no watermarks.{% endblock %}
+
+{% block content %}
+<article class="max-w-3xl mx-auto space-y-10">
+    <header class="space-y-3 text-center">
+        <div class="mx-auto w-16 h-16 grid place-items-center">
+            <img src="{% static 'img/favicon.svg' %}" alt="" width="64" height="64" class="w-16 h-16 rounded-2xl shadow-lg shadow-primary/30" aria-hidden="true">
+        </div>
+        <h1 class="text-4xl font-extrabold tracking-tight">About ClearBG</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300">Free, private image tools that run entirely in your browser.</p>
+    </header>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Our mission</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Most online image tools upload your photos to a server, put them behind a paywall, or stamp them with a watermark. ClearBG takes the opposite approach: the AI and all processing run <strong>on your device</strong>, so your images never leave your browser. That makes every tool genuinely free, unlimited, private by design, and fast.</p>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold">The tools</h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+            {% for item in tool_nav %}
+            <a href="{{ item.url }}" class="glass rounded-xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex items-center gap-3 hover:border-primary/60 transition-colors group">
+                <span class="w-9 h-9 shrink-0 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="{{ item.icon }}" aria-hidden="true"></i></span>
+                <span class="font-medium group-hover:text-primary transition-colors">{{ item.label }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Privacy first</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Nothing you edit is uploaded or stored. Read the full details in our <a class="text-primary hover:underline" href="{% url 'remover:privacy' %}">Privacy Policy</a>.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Contact</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Questions, feedback or a bug to report? Email <a class="text-primary hover:underline" href="mailto:josenovais97@gmail.com">josenovais97@gmail.com</a> — we'd love to hear from you.</p>
+    </section>
+
+    <section class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-6 text-center space-y-3">
+        <h2 class="text-xl font-bold">Support ClearBG</h2>
+        <p class="text-gray-600 dark:text-gray-300 text-sm">ClearBG is free and always will be. If it saved you time, you can support its development:</p>
+        <a href="https://buymeacoffee.com/josenovais" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-[#0d0c0c] bg-[#FFDD00] hover:bg-[#ffd400] shadow-sm hover:shadow transition-all hover:-translate-y-0.5">
+            <i class="fa-solid fa-mug-hot" aria-hidden="true"></i> Buy me a coffee
+        </a>
+    </section>
+</article>
+{% endblock %}

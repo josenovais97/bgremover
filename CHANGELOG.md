@@ -4,6 +4,41 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] — 2026-07-13
+
+SEO growth release: programmatic passport-size pages, FAQ rich results, and more
+long-tail landing pages.
+
+### Added
+- **Passport photo pages by country** (`/passport-photo/<country>/`) — 22
+  programmatic landing pages (US, UK, Canada, Schengen/EU, India, China, Japan,
+  Brazil and more) targeting high-intent "\<country\> passport photo size"
+  queries. Each shows the exact size in mm + pixels @300 DPI, background and
+  head-size requirements, a country-specific FAQ, breadcrumb structured data, and
+  a CTA that opens the maker **with that size pre-selected** (via `?w=&h=&country=`).
+  All are listed in the sitemap and cross-linked.
+- **FAQ sections with `FAQPage` structured data** on the home page and the
+  passport and upscaler tools (plus the country pages) — real, keyword-rich
+  content that can earn expanded FAQ rich results in search. The visible
+  accordion and the JSON-LD render from one source (`remover/seo_content.py`).
+- **More use-case landing pages** — eBay listings, Discord avatars, and Twitch /
+  streaming, bringing the keyword-targeted `/remove-background/<slug>/` set to 11.
+- The passport tool now lists **all supported countries** with internal links to
+  their size pages.
+- **About, Privacy Policy and Terms of Use pages** (`/about/`, `/privacy/`,
+  `/terms/`) — accurate to the privacy-first architecture, linked in the footer
+  and sitemap. The privacy policy discloses analytics and AdSense cookie use
+  (commonly required for AdSense approval), and the About page cross-links every
+  tool with a contact address.
+- **`Organization` structured data** (name, URL, logo) site-wide for brand
+  recognition in search.
+
+### Changed
+- **Sitemap** now includes `<lastmod>` and differentiated `<priority>` per page
+  (home 1.0, tools 0.9, landing/country 0.7, info 0.4) instead of a flat 1.0.
+- **404 page** now links to every tool so a wrong URL still lands somewhere useful.
+- Removed a duplicate Google Fonts request in `<head>` (minor page-load win).
+
 ## [1.4.0] — 2026-07-13
 
 Two new AI tools, a big background-removal speed-up, and monetization wiring.

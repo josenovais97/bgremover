@@ -165,7 +165,24 @@ const App = {
     $('#pp-sheet').addEventListener('click', () => this.exportSheet());
     $('#pp-new').addEventListener('click', () => this.reset());
 
-    this.applyPreset();
+    // Deep link from a country landing page: /passport-photo/?w=35&h=45&country=UK
+    // pre-selects that exact size as a custom preset.
+    const params = new URLSearchParams(location.search);
+    const uw = parseInt(params.get('w'), 10);
+    const uh = parseInt(params.get('h'), 10);
+    if (uw >= 10 && uw <= 200 && uh >= 10 && uh <= 200) {
+      this.custom = { w: uw, h: uh };
+      $('#pp-cw').value = uw;
+      $('#pp-ch').value = uh;
+      const country = params.get('country');
+      if (country) {
+        const label = $('#pp-preset-note');
+        if (label) label.textContent = `${country} · ${uw}×${uh} mm`;
+      }
+      this.setPreset('custom');
+    } else {
+      this.applyPreset();
+    }
   },
 
   frame() {

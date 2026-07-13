@@ -56,6 +56,16 @@
       "url": "{{ request.scheme }}://{{ request.get_host }}/"
     }
     </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "ClearBG",
+      "url": "{{ request.scheme }}://{{ request.get_host }}/",
+      "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/favicon-96.png' %}",
+      "description": "Free, privacy-first image tools that run entirely in your browser — background removal, upscaling, passport photos and more."
+    }
+    </script>
     {% block extra_seo %}{% endblock %}
     {% endblock %}
 
@@ -80,7 +90,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 
@@ -164,6 +173,12 @@
                     <i class="fa-solid fa-mug-hot" aria-hidden="true"></i> Buy me a coffee
                 </a>
             </p>
+            <nav class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2" aria-label="Site">
+                <a href="{% url 'remover:about' %}" class="hover:text-primary transition-colors">About</a>
+                <a href="{% url 'remover:privacy' %}" class="hover:text-primary transition-colors">Privacy Policy</a>
+                <a href="{% url 'remover:terms' %}" class="hover:text-primary transition-colors">Terms of Use</a>
+                <a href="mailto:josenovais97@gmail.com" class="hover:text-primary transition-colors">Contact</a>
+            </nav>
             <p>&copy; {% now "Y" %} ClearBG. Free, private, and unlimited.</p>
         </div>
     </footer>

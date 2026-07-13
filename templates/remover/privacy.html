@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy — ClearBG{% endblock %}
+{% block description %}How ClearBG handles your data: your images are never uploaded — all processing runs in your browser. Learn what we collect (almost nothing) and the third parties involved.{% endblock %}
+{% block extra_seo %}<meta name="robots" content="index, follow">{% endblock %}
+
+{% block content %}
+<article class="max-w-3xl mx-auto space-y-8">
+    <header class="space-y-2 text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight">Privacy Policy</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Last updated {% now "F j, Y" %}</p>
+    </header>
+
+    <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 flex items-start gap-3">
+        <i class="fa-solid fa-shield-halved text-green-500 text-xl mt-0.5" aria-hidden="true"></i>
+        <p class="text-sm text-gray-700 dark:text-gray-300"><strong>The short version:</strong> your images never leave your device. Every tool on ClearBG runs entirely in your browser, so we never receive, see, or store the photos you edit.</p>
+    </div>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Your images</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Background removal, upscaling, cropping, conversion and every other tool run locally in your browser using in-browser AI and canvas processing. Your images are <strong>never uploaded to a server</strong>, never stored, and never transmitted to us or anyone else. When you close the tab, they're gone.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">What we collect</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">We don't ask you to create an account and we don't collect personal information. The limited data involved is:</p>
+        <ul class="space-y-3 text-gray-600 dark:text-gray-300">
+            <li><strong>Anonymous usage analytics.</strong> We use Vercel Web Analytics to understand aggregate traffic (page views, referrers, country, device type). It's privacy-friendly, does not use cookies, and does not collect personally identifiable information.</li>
+            <li><strong>On-device preferences.</strong> Your theme choice and recent in-session history are stored in your browser's <code>localStorage</code>. This never leaves your device and we can't read it.</li>
+            <li><strong>Advertising (on some pages).</strong> Our informational and landing pages may show ads via Google AdSense. Google and its partners may use cookies to serve and personalise ads. The interactive tool pages are kept ad-free.</li>
+        </ul>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Cookies &amp; advertising</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">ClearBG itself does not set tracking cookies. Where ads are shown, third-party vendors — including Google — may use cookies to serve ads based on your prior visits to this and other websites. You can opt out of personalised advertising by visiting <a class="text-primary hover:underline" href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>, and learn more at <a class="text-primary hover:underline" href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">Google's advertising policies</a>. In the EU/UK, ads are shown subject to a consent prompt.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Third-party services</h2>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+            <li><strong>Vercel</strong> — hosting and privacy-friendly analytics.</li>
+            <li><strong>Google</strong> — AdSense (on content pages) and web fonts.</li>
+            <li><strong>jsDelivr &amp; Cloudflare (cdnjs)</strong> — content-delivery networks that serve the AI model, libraries and icon fonts to your browser.</li>
+        </ul>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">These providers may process technical data (such as your IP address) as needed to deliver files to your browser, under their own privacy policies.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Children</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">ClearBG is a general-purpose tool and is not directed at children under 13. We do not knowingly collect personal information from children.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Changes &amp; contact</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">We may update this policy from time to time; the date above reflects the latest revision. Questions? See our <a class="text-primary hover:underline" href="{% url 'remover:about' %}">About page</a> for how to get in touch.</p>
+    </section>
+</article>
+{% endblock %}
