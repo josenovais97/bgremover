@@ -15,6 +15,7 @@ from django.views.decorators.http import require_GET
 
 from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, country_faqs
 from .seo_content import INDEX_FAQS, PASSPORT_FAQS, UPSCALER_FAQS, faq_jsonld
+from .translations import localize_use_case
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +272,7 @@ def use_case(request, slug):
     case = USE_CASES_BY_SLUG.get(slug)
     if case is None:
         raise Http404("Unknown use case")
-    return render(request, "remover/use_case.html", {"case": case})
+    return render(request, "remover/use_case.html", {"case": localize_use_case(case)})
 
 
 @require_GET

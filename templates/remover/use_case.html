@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n_extras %}
 
 {% block title %}{{ case.title }}{% endblock %}
 {% block description %}{{ case.description }}{% endblock %}
@@ -25,7 +25,7 @@
     <!-- Hero -->
     <section class="max-w-3xl mx-auto text-center space-y-6 animate-fade-in-up">
         <nav class="text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
-            <a href="{% url 'remover:index' %}" class="hover:text-primary transition-colors">Background Remover</a>
+            <a href="{% url 'remover:index' %}" class="hover:text-primary transition-colors">{% t "Background Remover" %}</a>
             <i class="fa-solid fa-chevron-right text-xs mx-1.5" aria-hidden="true"></i>
             <span class="text-gray-700 dark:text-gray-300">{{ case.nav }}</span>
         </nav>
@@ -35,7 +35,7 @@
         <p class="text-lg text-gray-600 dark:text-gray-300">{{ case.tagline }}</p>
         <div class="pt-2">
             <a href="{% url 'remover:index' %}" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Open the free tool
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {% t "Open the free tool" %}
             </a>
         </div>
     </section>
@@ -50,7 +50,7 @@
     <!-- Benefits -->
     <section aria-labelledby="benefits-title" class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-2">
-            <h2 id="benefits-title" class="text-3xl font-bold">Why use it</h2>
+            <h2 id="benefits-title" class="text-3xl font-bold">{% t "Why use it" %}</h2>
         </div>
         <div class="grid gap-5 sm:grid-cols-3">
             {% for b in case.benefits %}
@@ -66,34 +66,34 @@
     <!-- How it works -->
     <section aria-labelledby="how-title" class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-2">
-            <h2 id="how-title" class="text-3xl font-bold">How it works</h2>
-            <p class="text-gray-600 dark:text-gray-300">Three steps, right in your browser. No account, no uploads.</p>
+            <h2 id="how-title" class="text-3xl font-bold">{% t "How it works" %}</h2>
+            <p class="text-gray-600 dark:text-gray-300">{% t "Three steps, right in your browser. No account, no uploads." %}</p>
         </div>
         <ol class="grid gap-6 sm:grid-cols-3">
             <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
                 <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-upload" aria-hidden="true"></i></div>
-                <h3 class="font-semibold">1. Add your image</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Drag &amp; drop, browse, or paste — batch upload works too.</p>
+                <h3 class="font-semibold">{% t "1. Add your image" %}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% t "Drag & drop, browse, or paste — batch upload works too." %}</p>
             </li>
             <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
                 <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></div>
-                <h3 class="font-semibold">2. AI removes the background</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Runs on your device in seconds — nothing is uploaded.</p>
+                <h3 class="font-semibold">{% t "2. AI removes the background" %}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% t "Runs on your device in seconds — nothing is uploaded." %}</p>
             </li>
             <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
                 <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-download" aria-hidden="true"></i></div>
-                <h3 class="font-semibold">3. Download</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Transparent PNG, or pick a background color. Full quality.</p>
+                <h3 class="font-semibold">{% t "3. Download" %}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% t "Transparent PNG, or pick a background color. Full quality." %}</p>
             </li>
         </ol>
     </section>
 
     <!-- CTA -->
     <section class="max-w-3xl mx-auto text-center glass rounded-3xl border border-gray-200/70 dark:border-gray-800/70 p-10 space-y-4">
-        <h2 class="text-2xl font-bold">Ready to try it?</h2>
-        <p class="text-gray-600 dark:text-gray-300">It's free, unlimited, and completely private.</p>
+        <h2 class="text-2xl font-bold">{% t "Ready to try it?" %}</h2>
+        <p class="text-gray-600 dark:text-gray-300">{% t "It's free, unlimited, and completely private." %}</p>
         <a href="{% url 'remover:index' %}" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Remove a background now
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {% t "Remove a background now" %}
         </a>
     </section>
 </div>

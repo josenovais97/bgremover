@@ -30,6 +30,7 @@ const SHELL = [
   '{% static "js/upscaler.js" %}',
   '{% static "js/theme.js" %}',
   '{% static "js/colorpicker.js" %}',
+  '{% static "js/nav.js" %}',
   '/manifest.webmanifest',
   '{% static "img/favicon.svg" %}',
   '{% static "img/icon-192.png" %}',

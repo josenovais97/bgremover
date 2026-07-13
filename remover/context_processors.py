@@ -1,9 +1,11 @@
 """Template context processors."""
 from django.conf import settings
-from django.urls import reverse
+from django.urls import reverse, translate_url
+from django.utils.translation import get_language
 
 from config.middleware import ISOLATED_VIEWS
 
+from .translations import t as tr
 from .views import USE_CASES
 
 # The tool switcher in the header. Defined once here so every item renders with
@@ -23,8 +25,19 @@ TOOL_NAV = [
 ]
 
 
+def _alternate_urls(request):
+    """Absolute English + Portuguese URLs for the current page (for hreflang)."""
+    try:
+        return {
+            "en": request.build_absolute_uri(translate_url(request.path, "en")),
+            "pt": request.build_absolute_uri(translate_url(request.path, "pt")),
+        }
+    except Exception:
+        return {}
+
+
 def seo(request):
-    """Expose SEO verification tokens and shared nav/ad data to all templates."""
+    """Expose SEO verification tokens and shared nav/ad/i18n data to templates."""
     # Ads run on the marketing / SEO landing pages ONLY — the interactive tool
     # pages stay ad-free and fast (and the cross-origin-isolated ones would block
     # ad frames via COEP anyway). `ISOLATED_VIEWS` is imported so this decision
@@ -32,15 +45,20 @@ def seo(request):
     match = getattr(request, "resolver_match", None)
     url_name = match.url_name if match is not None else None
     ads_allowed = url_name == "use_case" and url_name not in ISOLATED_VIEWS
+    alternates = _alternate_urls(request)
     return {
         "google_site_verification": settings.GOOGLE_SITE_VERIFICATION,
         "bing_site_verification": settings.BING_SITE_VERIFICATION,
-        # Landing pages are surfaced in the footer of every page so internal
-        # links reach them from anywhere on the site.
-        "use_cases": USE_CASES,
-        # Header tool switcher (URL resolved here so the template just loops).
-        "tool_nav": [{**t, "url": reverse(f"remover:{t['name']}")} for t in TOOL_NAV],
+        # Landing pages are surfaced in the footer of every page; the nav label is
+        # translated so the footer localises too.
+        "use_cases": [{"slug": c["slug"], "nav": tr(c["nav"])} for c in USE_CASES],
+        # Header tool switcher (URL + translated label resolved here).
+        "tool_nav": [{**item, "label": tr(item["label"]), "url": reverse(f"remover:{item['name']}")} for item in TOOL_NAV],
         # Monetization: expose the AdSense config only where ads are allowed.
         "adsense_client": settings.ADSENSE_CLIENT if ads_allowed else "",
         "adsense_slot_landing": settings.ADSENSE_SLOT_LANDING,
+        # i18n
+        "LANGUAGE_CODE": get_language() or "en",
+        "alt_en": alternates.get("en"),
+        "alt_pt": alternates.get("pt"),
     }
