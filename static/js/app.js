@@ -1365,6 +1365,8 @@ class Card {
 
       this.done = true;
       this.setState('done');
+      // Count this cut-out toward the global "images processed" counter.
+      window.__clearbgReport?.(1);
       // Reward the moment: pop a check-mark over the fresh cut-out.
       this.el.classList.add('just-done');
       window.setTimeout(() => this.el.classList.remove('just-done'), 1400);

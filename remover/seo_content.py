@@ -58,6 +58,28 @@ PASSPORT_FAQS = [
      "a": "Most countries require a plain white or light-grey background. The tool removes your original background and drops in a clean, even colour automatically."},
 ]
 
+ECOMMERCE_FAQS = [
+    {"q": "What size should an Amazon product photo be?",
+     "a": "Amazon's main image must be on a pure white (RGB 255,255,255) background with the product filling about 85% of the frame. This tool exports 2000×2000 px, which is large enough for Amazon's zoom feature."},
+    {"q": "Is this free and private?",
+     "a": "Yes. It's completely free with no watermark, and the background removal runs in your browser, so your product photos are never uploaded."},
+    {"q": "Can I use it for Etsy and Shopify too?",
+     "a": "Yes. Pick Etsy (2000×2000) or Shopify (2048×2048) and the product is centred on white at the right size. You can also export a transparent PNG."},
+    {"q": "Can I process a whole catalogue?",
+     "a": "Yes — there are no per-image limits or fees. Process as many products as you like, one after another, entirely on your device."},
+]
+
+BLUR_FAQS = [
+    {"q": "How does the background blur work?",
+     "a": "The AI detects your subject and keeps it perfectly sharp while blurring everything behind it, recreating a camera's portrait-mode depth-of-field effect."},
+    {"q": "Is it free and private?",
+     "a": "Yes. It's free with no watermark, and the whole effect is computed in your browser — your photo is never uploaded."},
+    {"q": "What photos work best?",
+     "a": "Photos with a clear subject (a person, pet or product) separated from the background work best, just like phone portrait mode."},
+    {"q": "Can I control how strong the blur is?",
+     "a": "Yes — a slider takes you from a subtle, natural depth effect to a strong, dreamy background blur."},
+]
+
 UPSCALER_FAQS = [
     {"q": "How does AI upscaling work?",
      "a": "A neural super-resolution model reconstructs realistic detail as it enlarges the image, giving cleaner edges and textures than a plain resize that just stretches pixels."},

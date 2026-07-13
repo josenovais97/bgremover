@@ -63,7 +63,7 @@ PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), interest-cohort=
 #     third-party model-weight fetches.
 #   * The marketing / SEO landing pages are excluded so they stay embeddable and
 #     third-party ad scripts (which COEP would otherwise block) can run there.
-ISOLATED_VIEWS = {"index", "instagram", "sticker", "passport"}
+ISOLATED_VIEWS = {"index", "instagram", "sticker", "passport", "ecommerce", "blur"}
 
 COOP = "same-origin"
 # 'credentialless' keeps the existing cross-origin CDN assets (Google Fonts,

@@ -57,6 +57,18 @@ ADSENSE_CLIENT = env("ADSENSE_CLIENT", default="ca-pub-9381565116085110")
 # blank to rely on AdSense Auto ads (enabled in the AdSense dashboard) instead.
 ADSENSE_SLOT_LANDING = env("ADSENSE_SLOT_LANDING", default="")
 
+# --- Social-proof counter ----------------------------------------------------
+# A global "images processed" counter backed by Upstash Redis (REST API), which
+# works from serverless functions. When these env vars are unset the counter is
+# simply disabled (the badge stays hidden) — no fake numbers are ever shown.
+#
+# Accept either naming scheme so it works no matter how the store is added:
+#   * Upstash integration / manual setup → UPSTASH_REDIS_REST_URL / _TOKEN
+#   * Vercel Storage ("Vercel KV", Upstash-backed) → KV_REST_API_URL / _TOKEN
+UPSTASH_REDIS_REST_URL = env("UPSTASH_REDIS_REST_URL", default="") or env("KV_REST_API_URL", default="")
+UPSTASH_REDIS_REST_TOKEN = env("UPSTASH_REDIS_REST_TOKEN", default="") or env("KV_REST_API_TOKEN", default="")
+STATS_KEY = env("STATS_KEY", default="clearbg:processed")
+
 # --- Applications ------------------------------------------------------------
 # The app is deliberately stateless: no models, no auth, no admin, no DB.
 # This keeps it fast, secure by minimal surface area, and serverless-friendly.

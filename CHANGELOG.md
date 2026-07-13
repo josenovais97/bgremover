@@ -4,6 +4,33 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] — 2026-07-13
+
+eCommerce tools, portrait-mode blur, and a real social-proof counter.
+
+### Added
+- **Marketplace product photos** (`/ecommerce/`) — one click removes the
+  background, centres the product on pure white and exports the exact size
+  **Amazon** (2000×2000, ~85% fill), **Etsy** (2000×2000) and **Shopify**
+  (2048×2048) require. Optional transparent PNG and a soft-shadow toggle. Fully
+  client-side; verified end-to-end (removal → compose → JPEG export).
+- **AI background blur / portrait mode** (`/blur-background/`) — uses the
+  removal mask to keep the subject sharp while blurring the background, for a
+  phone-style depth effect, with an adjustable strength slider. Client-side.
+- **Social-proof counter** — a genuine global "images processed" total backed by
+  Upstash Redis (`/api/stats/`, env-gated via `UPSTASH_REDIS_REST_*`). Tools
+  report a cut-out via `__clearbgReport()`; the home hero shows the live total.
+  When Upstash isn't configured the counter is disabled and the badge stays
+  hidden — **no fabricated numbers**.
+- FAQ + `FAQPage` schema on both new tools; nav, footer and sitemap updated;
+  Portuguese nav/footer labels for the new tools.
+
+### Note
+- The AI Image Generator and AI Product Photography were scoped out for now:
+  they require a paid server-side generative model (and would upload user photos
+  to a third party), which conflicts with the free/in-browser/private model.
+  Deferred as a deliberate, separate decision.
+
 ## [1.6.0] — 2026-07-13
 
 Portuguese localisation, hreflang, and a robust responsive tool nav.
