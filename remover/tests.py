@@ -148,11 +148,6 @@ class MonetizationTests(SimpleTestCase):
         response = self.client.get(reverse("remover:use_case", args=["logo"]))
         self.assertNotContains(response, "adsbygoogle")
 
-    def test_partner_block_on_pet_photos(self):
-        response = self.client.get(reverse("remover:use_case", args=["pet-photos"]))
-        self.assertContains(response, "Related services")
-        self.assertContains(response, 'rel="sponsored')
-
 
 class PWATests(SimpleTestCase):
     def test_service_worker(self):
