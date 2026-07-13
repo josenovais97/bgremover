@@ -10,10 +10,22 @@
   const el = document.getElementById('social-proof');
   const numEl = document.getElementById('social-proof-count');
   const lang = document.documentElement.lang || 'en';
-  const fmt = (n) => { try { return n.toLocaleString(lang); } catch (e) { return String(n); } };
+
+  // Only show the badge once the count is worth showing. 1 = always show.
+  // Raise this (e.g. 500 or 1000) to keep the badge hidden until the number is
+  // genuinely impressive — a tiny count is weaker social proof than none.
+  const MIN_DISPLAY = 1;
+
+  // Compact, readable numbers: 3 → "3", 1240 → "1.2k", 34500 → "34.5k", 2.1M.
+  function fmt(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1e4) return Math.round(n / 1e3) + 'k';
+    if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+    try { return n.toLocaleString(lang); } catch (e) { return String(n); }
+  }
 
   function show(count) {
-    if (!el || !numEl || typeof count !== 'number' || count <= 0) return;
+    if (!el || !numEl || typeof count !== 'number' || count < MIN_DISPLAY) return;
     numEl.textContent = fmt(count);
     el.classList.remove('hidden');
   }

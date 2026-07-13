@@ -422,6 +422,15 @@ def stats(request):
     ``{"enabled": bool, "count": int|None}`` — disabled (no number) when Upstash
     isn't configured, so the UI never shows a fabricated figure.
     """
+    # `enabled` reflects whether the store is CONFIGURED — not whether the counter
+    # has a value yet. A brand-new database has no key, so a read returns nothing;
+    # that's a count of 0, not "disabled".
+    configured = bool(settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN)
+    if not configured:
+        response = JsonResponse({"enabled": False, "count": None})
+        response["Cache-Control"] = "no-store"
+        return response
+
     key = settings.STATS_KEY
     if request.method == "POST":
         try:
@@ -434,10 +443,10 @@ def stats(request):
     else:
         result = _upstash(f"get/{key}")
     try:
-        count = int(result) if result is not None else None
+        count = int(result) if result is not None else 0  # missing key = 0
     except (ValueError, TypeError):
-        count = None
-    response = JsonResponse({"enabled": count is not None, "count": count})
+        count = 0
+    response = JsonResponse({"enabled": True, "count": count})
     response["Cache-Control"] = "no-store"
     return response
 
