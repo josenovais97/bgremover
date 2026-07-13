@@ -115,6 +115,53 @@ class NewToolTests(SimpleTestCase):
         self.assertContains(response, reverse("remover:upscaler"))
 
 
+class EcommerceBlurTests(SimpleTestCase):
+    def test_ecommerce_renders(self):
+        response = self.client.get(reverse("remover:ecommerce"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ec-dropzone")
+        self.assertContains(response, "Amazon")
+        self.assertContains(response, "FAQPage")
+
+    def test_blur_renders(self):
+        response = self.client.get(reverse("remover:blur"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "bl-dropzone")
+        self.assertContains(response, "portrait")
+
+    def test_in_sitemap_and_nav(self):
+        sitemap = self.client.get(reverse("remover:sitemap"))
+        self.assertContains(sitemap, "/ecommerce/")
+        self.assertContains(sitemap, "/blur-background/")
+        index = self.client.get(reverse("remover:index"))
+        self.assertContains(index, reverse("remover:ecommerce"))
+        self.assertContains(index, reverse("remover:blur"))
+
+    def test_both_are_isolated(self):
+        for name in ("ecommerce", "blur"):
+            response = self.client.get(reverse(f"remover:{name}"))
+            self.assertEqual(response["Cross-Origin-Embedder-Policy"], "credentialless", name)
+
+
+class StatsCounterTests(SimpleTestCase):
+    def test_disabled_when_upstash_unset(self):
+        # No Upstash env in tests → counter reports disabled with no number.
+        get = self.client.get(reverse("remover:stats"))
+        self.assertEqual(get.status_code, 200)
+        self.assertJSONEqual(get.content, {"enabled": False, "count": None})
+
+    def test_post_increment_disabled_gracefully(self):
+        post = self.client.post(
+            reverse("remover:stats"), data='{"n": 3}', content_type="application/json"
+        )
+        self.assertEqual(post.status_code, 200)
+        self.assertJSONEqual(post.content, {"enabled": False, "count": None})
+
+    def test_home_has_social_proof_placeholder(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, 'id="social-proof"')
+
+
 class PassportCountryTests(SimpleTestCase):
     def test_every_country_page_renders(self):
         from remover.passport_data import COUNTRIES

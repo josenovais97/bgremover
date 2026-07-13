@@ -167,6 +167,8 @@
                 <a href="{% url 'remover:sticker' %}" class="hover:text-primary transition-colors">{% t "Sticker Maker" %}</a>
                 <a href="{% url 'remover:passport' %}" class="hover:text-primary transition-colors">{% t "Passport Photo" %}</a>
                 <a href="{% url 'remover:upscaler' %}" class="hover:text-primary transition-colors">{% t "Image Upscaler" %}</a>
+                <a href="{% url 'remover:ecommerce' %}" class="hover:text-primary transition-colors">{% t "Product Photos" %}</a>
+                <a href="{% url 'remover:blur' %}" class="hover:text-primary transition-colors">{% t "Background Blur" %}</a>
                 <a href="{% url 'remover:favicon' %}" class="hover:text-primary transition-colors">{% t "Favicon Generator" %}</a>
                 {% for c in use_cases %}
                 <a href="{% url 'remover:use_case' c.slug %}" class="hover:text-primary transition-colors">{{ c.nav }}</a>
@@ -208,6 +210,8 @@
     <script src="{% static 'js/colorpicker.js' %}"></script>
     <!-- Collapses overflowing tool-nav items into a "More" menu so it never clips. -->
     <script src="{% static 'js/nav.js' %}" defer></script>
+    <!-- Social-proof counter (defines __clearbgReport; shows the hero total). -->
+    <script src="{% static 'js/stats.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
 </body>

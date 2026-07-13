@@ -4,17 +4,27 @@ Views for the background remover.
 The heavy lifting (AI background removal) runs client-side, so these views only
 render the single-page app and the SEO helper endpoints (robots.txt, sitemap).
 """
+import json
 import logging
+import urllib.request
 
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.cache import cache_control
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
 from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, country_faqs
-from .seo_content import INDEX_FAQS, PASSPORT_FAQS, UPSCALER_FAQS, faq_jsonld
+from .seo_content import (
+    BLUR_FAQS,
+    ECOMMERCE_FAQS,
+    INDEX_FAQS,
+    PASSPORT_FAQS,
+    UPSCALER_FAQS,
+    faq_jsonld,
+)
 from .translations import localize_use_case
 
 logger = logging.getLogger(__name__)
@@ -236,7 +246,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/upscale/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/upscale/", "/ecommerce/", "/blur-background/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
@@ -354,6 +364,24 @@ def upscaler(request):
 
 
 @require_GET
+def ecommerce(request):
+    """Render the client-side marketplace (Amazon/Etsy/Shopify) product-photo maker."""
+    return render(request, "remover/ecommerce.html", {
+        "faqs": ECOMMERCE_FAQS,
+        "faq_jsonld": faq_jsonld(ECOMMERCE_FAQS),
+    })
+
+
+@require_GET
+def blur(request):
+    """Render the client-side AI background-blur (portrait mode) tool."""
+    return render(request, "remover/blur.html", {
+        "faqs": BLUR_FAQS,
+        "faq_jsonld": faq_jsonld(BLUR_FAQS),
+    })
+
+
+@require_GET
 def about(request):
     """Render the About / contact page."""
     return render(request, "remover/about.html")
@@ -369,6 +397,49 @@ def privacy(request):
 def terms(request):
     """Render the terms of use."""
     return render(request, "remover/terms.html")
+
+
+def _upstash(path):
+    """Call the Upstash Redis REST API; return the ``result`` value or None."""
+    base = settings.UPSTASH_REDIS_REST_URL.rstrip("/")
+    token = settings.UPSTASH_REDIS_REST_TOKEN
+    if not base or not token:
+        return None
+    req = urllib.request.Request(f"{base}/{path}", headers={"Authorization": f"Bearer {token}"})
+    try:
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            return json.loads(resp.read().decode()).get("result")
+    except Exception as exc:  # network / auth / parse — fail closed, never break the page
+        logger.warning("Upstash request failed: %s", exc)
+        return None
+
+
+@csrf_exempt
+def stats(request):
+    """Global 'images processed' counter (Upstash-backed).
+
+    GET reads the total; POST ``{"n": <int>}`` increments it. Returns
+    ``{"enabled": bool, "count": int|None}`` — disabled (no number) when Upstash
+    isn't configured, so the UI never shows a fabricated figure.
+    """
+    key = settings.STATS_KEY
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body or b"{}")
+            n = int(payload.get("n", 1)) if isinstance(payload, dict) else 1
+        except (ValueError, TypeError, json.JSONDecodeError):
+            n = 1
+        n = max(1, min(n, 50))  # cap: it's a public, unauthenticated vanity counter
+        result = _upstash(f"incrby/{key}/{n}")
+    else:
+        result = _upstash(f"get/{key}")
+    try:
+        count = int(result) if result is not None else None
+    except (ValueError, TypeError):
+        count = None
+    response = JsonResponse({"enabled": count is not None, "count": count})
+    response["Cache-Control"] = "no-store"
+    return response
 
 
 @require_GET
