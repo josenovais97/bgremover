@@ -13,6 +13,9 @@ from django.urls import reverse
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET
 
+from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, country_faqs
+from .seo_content import INDEX_FAQS, PASSPORT_FAQS, UPSCALER_FAQS, faq_jsonld
+
 logger = logging.getLogger(__name__)
 
 
@@ -175,19 +178,91 @@ USE_CASES = [
             {"icon": "fa-crop-simple", "title": "Full quality", "text": "Full-resolution transparent PNGs with no watermark, ready for any editor."},
         ],
     },
+    {
+        "slug": "ebay",
+        "nav": "eBay listings",
+        "title": "Remove Background from eBay Photos — Free & Instant",
+        "description": "Give your eBay listings clean white or transparent backgrounds for free. Make items look professional and sell faster — private, unlimited, and processed in your browser.",
+        "h1": "Remove Backgrounds from eBay Photos",
+        "tagline": "Turn cluttered phone snaps into clean, professional eBay listing photos — free, unlimited, and processed on your device.",
+        "intro": [
+            "Listings with clean, consistent photos win more clicks and sell faster. Drop in a photo of your item and the AI strips the messy background so you can drop in pure white — the look buyers trust — or keep a transparent PNG for your template.",
+            "Because the AI runs locally in your browser, you can prep an entire inventory without uploading a single photo, hitting an API limit, or paying per image.",
+        ],
+        "benefits": [
+            {"icon": "fa-tag", "title": "Sell faster", "text": "Clean white backgrounds make items look professional and build buyer trust."},
+            {"icon": "fa-layer-group", "title": "Batch your inventory", "text": "Drop in dozens of items at once and download them together as a ZIP."},
+            {"icon": "fa-bolt", "title": "Free & unlimited", "text": "No per-photo cost and no watermark — full-resolution output every time."},
+        ],
+    },
+    {
+        "slug": "discord-pfp",
+        "nav": "Discord avatars",
+        "title": "Discord Profile Picture Background Remover — Free",
+        "description": "Make a clean Discord PFP by removing the background from your photo or avatar. Free transparent PNGs to drop on any color — private, in your browser, nothing uploaded.",
+        "h1": "Remove the Background from Your Discord PFP",
+        "tagline": "Cut yourself or your character out cleanly for a crisp Discord avatar — free, unlimited, and all in your browser.",
+        "intro": [
+            "A clean profile picture makes your Discord presence pop. Upload a photo, selfie or piece of art and the AI isolates the subject, so you can keep it transparent or drop in any solid color or gradient before you crop to a circle.",
+            "Everything happens on your device, so you can try as many looks as you like — no uploads, no limits, and no watermark.",
+        ],
+        "benefits": [
+            {"icon": "fa-circle-user", "title": "Crisp avatars", "text": "Clean cut-outs that read well even at Discord's small avatar size."},
+            {"icon": "fa-palette", "title": "Any color or gradient", "text": "Drop your cut-out onto a solid color, gradient or blurred backdrop, then crop to a circle."},
+            {"icon": "fa-shield-halved", "title": "Private by design", "text": "Your photo never leaves your browser — nothing is uploaded to a server."},
+        ],
+    },
+    {
+        "slug": "twitch",
+        "nav": "Twitch & streaming",
+        "title": "Remove Background for Twitch & Streaming — No Green Screen",
+        "description": "Cut yourself out of a photo for Twitch panels, overlays and emotes — no green screen needed. Free transparent PNGs, private and in your browser, nothing uploaded.",
+        "h1": "Remove Backgrounds for Twitch and Streaming",
+        "tagline": "Make clean cut-outs for panels, overlays and emotes without a green screen — free, unlimited, and processed on your device.",
+        "intro": [
+            "Great channel branding starts with clean assets. Upload a photo and the AI removes the background so you get a transparent PNG for your Twitch panels, stream overlays, schedule graphics or emotes — no green screen or manual masking required.",
+            "It all runs in your browser at full resolution, so you can build a whole set of on-brand graphics privately — no uploads, no per-image fees, no watermark.",
+        ],
+        "benefits": [
+            {"icon": "fa-tower-broadcast", "title": "No green screen", "text": "Get a clean cut-out from any photo — no chroma key or studio setup needed."},
+            {"icon": "fa-icons", "title": "Panels & emotes", "text": "Transparent PNGs ready for overlays, panels, schedules and emote art."},
+            {"icon": "fa-crop-simple", "title": "Full quality", "text": "Full-resolution, watermark-free exports for any streaming layout tool."},
+        ],
+    },
 ]
 
 USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-SITEMAP_PATHS = ["/", "/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/upscale/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/upscale/"]
+INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
+SITEMAP_PATHS = (
+    ["/"] + TOOL_PATHS
+    + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+    + [f"/passport-photo/{c['slug']}/" for c in COUNTRIES]
+    + INFO_PATHS
+)
+
+
+def _sitemap_priority(path):
+    """Relative importance hint for crawlers (home > tools > landing > info)."""
+    if path == "/":
+        return "1.0"
+    if path in TOOL_PATHS:
+        return "0.9"
+    if path in INFO_PATHS:
+        return "0.4"
+    return "0.7"  # keyword landing + country pages
 
 
 @require_GET
 def index(request):
     """Render the main single-page application."""
-    return render(request, "remover/index.html")
+    return render(request, "remover/index.html", {
+        "faqs": INDEX_FAQS,
+        "faq_jsonld": faq_jsonld(INDEX_FAQS),
+    })
 
 
 @require_GET
@@ -244,13 +319,55 @@ def meme(request):
 @require_GET
 def passport(request):
     """Render the client-side passport / ID photo maker."""
-    return render(request, "remover/passport.html")
+    return render(request, "remover/passport.html", {
+        "countries": COUNTRIES,
+        "faqs": PASSPORT_FAQS,
+        "faq_jsonld": faq_jsonld(PASSPORT_FAQS),
+    })
+
+
+@require_GET
+def passport_country(request, country):
+    """Render a per-country passport-photo landing page (programmatic SEO)."""
+    c = COUNTRIES_BY_SLUG.get(country)
+    if c is None:
+        raise Http404("Unknown country")
+    faqs = country_faqs(c)
+    # A few sibling countries for internal linking (keeps crawlers moving).
+    others = [x for x in COUNTRIES if x["slug"] != country][:8]
+    return render(request, "remover/passport_country.html", {
+        "country": c,
+        "others": others,
+        "faqs": faqs,
+        "faq_jsonld": faq_jsonld(faqs),
+    })
 
 
 @require_GET
 def upscaler(request):
     """Render the client-side AI image upscaler."""
-    return render(request, "remover/upscaler.html")
+    return render(request, "remover/upscaler.html", {
+        "faqs": UPSCALER_FAQS,
+        "faq_jsonld": faq_jsonld(UPSCALER_FAQS),
+    })
+
+
+@require_GET
+def about(request):
+    """Render the About / contact page."""
+    return render(request, "remover/about.html")
+
+
+@require_GET
+def privacy(request):
+    """Render the privacy policy."""
+    return render(request, "remover/privacy.html")
+
+
+@require_GET
+def terms(request):
+    """Render the terms of use."""
+    return render(request, "remover/terms.html")
 
 
 @require_GET
@@ -290,9 +407,15 @@ def robots_txt(request):
 @require_GET
 @cache_control(max_age=3600)
 def sitemap_xml(request):
-    """Serve a minimal XML sitemap for the static routes."""
+    """Serve an XML sitemap for the static routes, with per-URL priority."""
+    from datetime import date
+
     site_url = settings.SITE_URL.rstrip("/")
-    urls = [f"{site_url}{path}" for path in SITEMAP_PATHS]
+    lastmod = date.today().isoformat()
+    urls = [
+        {"loc": f"{site_url}{path}", "priority": _sitemap_priority(path), "lastmod": lastmod}
+        for path in SITEMAP_PATHS
+    ]
     return render(
         request,
         "seo/sitemap.xml",

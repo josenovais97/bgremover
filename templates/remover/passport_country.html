@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ country.name }} Passport Photo Size &amp; Free Online Maker | ClearBG{% endblock %}
+{% block description %}The {{ country.name }} passport photo size is {% if country.imperial %}{{ country.imperial }} ({{ country.w_mm }}×{{ country.h_mm }} mm){% else %}{{ country.w_mm }}×{{ country.h_mm }} mm{% endif %}. Make a compliant {{ country.name }} passport or visa photo free in your browser — removes the background, sets a {{ country.bg }} backdrop, exports the exact size at 300 DPI. Nothing is uploaded.{% endblock %}
+{% block og_title %}{{ country.name }} Passport Photo — Correct Size, Free &amp; Private{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Passport Photo Maker", "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'remover:passport' %}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ country.name }}", "item": "{{ request.build_absolute_uri }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-14">
+
+    <!-- Hero -->
+    <section class="max-w-3xl mx-auto text-center space-y-6 animate-fade-in-up">
+        <nav class="text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+            <a href="{% url 'remover:passport' %}" class="hover:text-primary transition-colors">Passport Photo Maker</a>
+            <i class="fa-solid fa-chevron-right text-xs mx-1.5" aria-hidden="true"></i>
+            <span class="text-gray-700 dark:text-gray-300">{{ country.name }}</span>
+        </nav>
+        <div class="mx-auto w-16 h-16 grid place-items-center rounded-2xl bg-primary/10 text-primary text-3xl shadow-lg shadow-primary/20" aria-hidden="true">
+            <i class="fa-solid fa-passport"></i>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-500">{{ country.name }} Passport Photo</span>
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300">
+            Make a compliant {{ country.name }} passport or visa photo in seconds — free, private, and processed entirely
+            in your browser. We remove the background, set a {{ country.bg }} backdrop, and export the exact size.
+        </p>
+        <div class="pt-2">
+            <a href="{% url 'remover:passport' %}?w={{ country.w_mm }}&amp;h={{ country.h_mm }}&amp;country={{ country.name|urlencode }}"
+               class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <i class="fa-solid fa-id-card" aria-hidden="true"></i> Make a {{ country.name }} passport photo
+            </a>
+        </div>
+    </section>
+
+    <!-- Spec table -->
+    <section aria-labelledby="spec-title" class="max-w-3xl mx-auto space-y-5">
+        <h2 id="spec-title" class="text-2xl font-bold text-center">{{ country.name }} passport photo requirements</h2>
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-hidden">
+            <div class="flex items-center justify-between gap-4 px-5 py-4">
+                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-ruler-combined mr-2 text-primary" aria-hidden="true"></i>Photo size</span>
+                <span class="font-semibold text-right">{% if country.imperial %}{{ country.imperial }} · {% endif %}{{ country.w_mm }} × {{ country.h_mm }} mm</span>
+            </div>
+            <div class="flex items-center justify-between gap-4 px-5 py-4">
+                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-expand mr-2 text-primary" aria-hidden="true"></i>Pixels (300 DPI)</span>
+                <span class="font-semibold text-right tabular-nums">{{ country.w_px }} × {{ country.h_px }} px</span>
+            </div>
+            <div class="flex items-center justify-between gap-4 px-5 py-4">
+                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-fill-drip mr-2 text-primary" aria-hidden="true"></i>Background</span>
+                <span class="font-semibold text-right capitalize">{{ country.bg }}</span>
+            </div>
+            <div class="flex items-start justify-between gap-4 px-5 py-4">
+                <span class="text-gray-500 dark:text-gray-400 shrink-0"><i class="fa-solid fa-user mr-2 text-primary" aria-hidden="true"></i>Head size</span>
+                <span class="font-medium text-right text-sm">{{ country.head }}</span>
+            </div>
+        </div>
+        {% if country.note %}<p class="text-sm text-gray-500 dark:text-gray-400 text-center">{{ country.note }}</p>{% endif %}
+    </section>
+
+    <!-- How it works -->
+    <section aria-labelledby="how-title" class="max-w-5xl mx-auto space-y-8">
+        <h2 id="how-title" class="text-2xl font-bold text-center">How to make your {{ country.name }} photo</h2>
+        <ol class="grid gap-6 sm:grid-cols-3">
+            <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
+                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-upload" aria-hidden="true"></i></div>
+                <h3 class="font-semibold">1. Upload a portrait</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">A clear, front-facing photo with even lighting. The background is removed automatically.</p>
+            </li>
+            <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
+                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-crop-simple" aria-hidden="true"></i></div>
+                <h3 class="font-semibold">2. Fit the guides</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">The {{ country.w_mm }}×{{ country.h_mm }} mm frame is pre-selected — line your head up with the crown and chin guides.</p>
+            </li>
+            <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
+                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-download" aria-hidden="true"></i></div>
+                <h3 class="font-semibold">3. Download or print</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Export the exact size at 300 DPI, or a 6×4 inch sheet of copies for any photo kiosk.</p>
+            </li>
+        </ol>
+        <div class="text-center">
+            <a href="{% url 'remover:passport' %}?w={{ country.w_mm }}&amp;h={{ country.h_mm }}&amp;country={{ country.name|urlencode }}"
+               class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Start now — it's free
+            </a>
+        </div>
+    </section>
+
+    {% include 'remover/partials/faq.html' %}
+
+    <!-- Other countries -->
+    <section aria-labelledby="others-title" class="max-w-4xl mx-auto space-y-4">
+        <h2 id="others-title" class="text-sm font-semibold uppercase tracking-wide text-gray-400 text-center">Passport photo sizes for other countries</h2>
+        <div class="flex flex-wrap justify-center gap-2">
+            {% for o in others %}
+            <a href="{% url 'remover:passport_country' o.slug %}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border border-gray-200/70 dark:border-gray-800/70 hover:border-primary/60 hover:text-primary transition-colors">
+                {{ o.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <p class="max-w-2xl mx-auto text-center text-xs text-gray-400">
+        This is a free helper tool, not an official government service. Requirements can change — always confirm the exact
+        rules for your application before submitting. Your photo is processed entirely in your browser and is never uploaded.
+    </p>
+</div>
+{% endblock %}

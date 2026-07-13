@@ -114,6 +114,77 @@ class NewToolTests(SimpleTestCase):
         self.assertContains(response, reverse("remover:upscaler"))
 
 
+class PassportCountryTests(SimpleTestCase):
+    def test_every_country_page_renders(self):
+        from remover.passport_data import COUNTRIES
+        for c in COUNTRIES:
+            url = reverse("remover:passport_country", args=[c["slug"]])
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200, c["slug"])
+            self.assertContains(response, c["name"])
+            self.assertContains(response, f"{c['w_px']} × {c['h_px']} px")
+            self.assertContains(response, "FAQPage")
+
+    def test_unknown_country_is_404(self):
+        response = self.client.get(reverse("remover:passport_country", args=["atlantis"]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_country_pages_in_sitemap(self):
+        from remover.passport_data import COUNTRIES
+        response = self.client.get(reverse("remover:sitemap"))
+        for c in COUNTRIES:
+            self.assertContains(response, f"/passport-photo/{c['slug']}/")
+
+    def test_passport_tool_links_countries(self):
+        response = self.client.get(reverse("remover:passport"))
+        self.assertContains(response, reverse("remover:passport_country", args=["united-states"]))
+
+
+class InfoPageTests(SimpleTestCase):
+    def test_info_pages_render(self):
+        for name in ("about", "privacy", "terms"):
+            response = self.client.get(reverse(f"remover:{name}"))
+            self.assertEqual(response.status_code, 200, name)
+
+    def test_privacy_covers_key_points(self):
+        response = self.client.get(reverse("remover:privacy"))
+        self.assertContains(response, "never leave your device")
+        self.assertContains(response, "AdSense")
+
+    def test_footer_links_legal_pages(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, reverse("remover:privacy"))
+        self.assertContains(response, reverse("remover:terms"))
+        self.assertContains(response, reverse("remover:about"))
+
+    def test_info_pages_in_sitemap(self):
+        response = self.client.get(reverse("remover:sitemap"))
+        for path in ("/about/", "/privacy/", "/terms/"):
+            self.assertContains(response, path)
+
+    def test_sitemap_has_lastmod_and_priorities(self):
+        response = self.client.get(reverse("remover:sitemap"))
+        self.assertContains(response, "<lastmod>")
+        self.assertContains(response, "<priority>1.0</priority>")  # home
+        self.assertContains(response, "<priority>0.9</priority>")  # a tool
+
+    def test_organization_schema_present(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, '"@type": "Organization"')
+
+
+class FaqTests(SimpleTestCase):
+    def test_index_has_faq_schema(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, "FAQPage")
+        self.assertContains(response, "Frequently asked questions")
+
+    def test_tool_pages_have_faq(self):
+        for name in ("passport", "upscaler"):
+            response = self.client.get(reverse(f"remover:{name}"))
+            self.assertContains(response, "FAQPage")
+
+
 class CrossOriginIsolationTests(SimpleTestCase):
     """COOP+COEP (isolation) is scoped to the WASM background-removal pages."""
 

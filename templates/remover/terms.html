@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms of Use — ClearBG{% endblock %}
+{% block description %}The terms of use for ClearBG's free, in-browser image tools. Provided as-is, free to use, with no warranty. Not an official passport-photo or document service.{% endblock %}
+
+{% block content %}
+<article class="max-w-3xl mx-auto space-y-8">
+    <header class="space-y-2 text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight">Terms of Use</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Last updated {% now "F j, Y" %}</p>
+    </header>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Acceptance</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">By using ClearBG you agree to these terms. If you don't agree, please don't use the site.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">The service</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">ClearBG provides free, browser-based image tools (background removal, upscaling, cropping, conversion, and more). The tools run on your device; we don't host or store your files. The service is provided free of charge for personal and commercial use.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Your content &amp; responsibilities</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">You are responsible for the images you process and must have the right to use them. Don't use ClearBG to create unlawful, infringing, or harmful content. Because processing happens entirely in your browser, you retain full ownership of your images and their outputs.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Passport &amp; ID photos</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">The passport / ID photo tool is a free helper, <strong>not an official government service</strong>. While it produces common official sizes, requirements vary and change. Always confirm your government's exact rules before submitting a photo. We are not responsible for rejected applications.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">No warranty</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">The service is provided "as is" and "as available", without warranties of any kind. We don't guarantee that results will be perfect, uninterrupted, or fit for a particular purpose.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Limitation of liability</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">To the maximum extent permitted by law, ClearBG and its creator are not liable for any damages arising from your use of, or inability to use, the service.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold">Changes &amp; contact</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">We may update these terms; continued use means you accept the changes. See the <a class="text-primary hover:underline" href="{% url 'remover:privacy' %}">Privacy Policy</a> and <a class="text-primary hover:underline" href="{% url 'remover:about' %}">About page</a> for more.</p>
+    </section>
+</article>
+{% endblock %}
