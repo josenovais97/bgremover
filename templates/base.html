@@ -108,10 +108,10 @@
                     </a>
 
                     {% with active=request.resolver_match.url_name %}
-                    <nav class="flex items-center gap-1 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar min-w-0" aria-label="Tools">
+                    <nav class="flex items-center gap-0.5 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar min-w-0" aria-label="Tools">
                         {% for item in tool_nav %}
-                        <a href="{{ item.url }}" {% if active == item.name %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap flex items-center px-3 py-1.5 rounded-full transition-colors {% if active == item.name %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="{{ item.icon }} mr-1.5" aria-hidden="true"></i>{{ item.label }}
+                        <a href="{{ item.url }}" {% if active == item.name %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap flex items-center px-2.5 py-1.5 rounded-full transition-colors {% if active == item.name %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <i class="{{ item.icon }} mr-1" aria-hidden="true"></i>{{ item.label }}
                         </a>
                         {% endfor %}
                     </nav>
