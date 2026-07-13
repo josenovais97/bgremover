@@ -19,11 +19,13 @@ const CONFIG = {
   encodeQuality: 0.92, // for JPG/WEBP output
   removalOptions: {
     output: { format: 'image/png', quality: 1 }, // lossless cut-out, full resolution
-    // Quantized (int8) model: markedly faster inference and a smaller download
-    // than the default 'isnet', which keeps the main-thread stall short enough to
-    // avoid the browser's "page not responding" prompt. Swap to 'isnet' for the
-    // last few % of edge quality if you don't mind the slower, heavier run.
-    model: 'isnet_quint8',
+    // Adaptive model quality. When the page is cross-origin isolated (COOP+COEP
+    // set by the server for this route) the WASM runtime can use its
+    // multi-threaded + SIMD backend, so the full-quality 'isnet' model runs fast
+    // enough to keep the main thread responsive. Without isolation (e.g. Safari)
+    // we fall back to the quantized 'isnet_quint8': smaller and faster, avoiding
+    // the browser's "page not responding" prompt at a small edge-quality cost.
+    model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8',
   },
 };
 

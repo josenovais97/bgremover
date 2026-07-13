@@ -62,6 +62,13 @@
     <!-- Vercel Web Analytics (privacy-friendly; active once enabled in Vercel) -->
     <script defer src="/_vercel/insights/script.js"></script>
 
+    {% if adsense_client %}
+    <!-- Google AdSense (marketing / SEO pages only; never on the isolated tool
+         pages, whose COEP would block ad frames). Enable Auto ads in the AdSense
+         dashboard, or drop explicit units via the ad_slot partial. -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}" crossorigin="anonymous"></script>
+    {% endif %}
+
     <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
     <link rel="icon" href="{% static 'img/favicon-96.png' %}" sizes="96x96" type="image/png">
     <link rel="icon" href="{% static 'img/favicon-48.png' %}" sizes="48x48" type="image/png">
@@ -123,6 +130,12 @@
                         <a href="{% url 'remover:meme' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'meme' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
                             <i class="fa-solid fa-face-laugh mr-1" aria-hidden="true"></i>Meme
                         </a>
+                        <a href="{% url 'remover:passport' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'passport' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <i class="fa-solid fa-passport mr-1" aria-hidden="true"></i>Passport
+                        </a>
+                        <a href="{% url 'remover:upscaler' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'upscaler' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <i class="fa-solid fa-up-right-and-down-left-from-center mr-1" aria-hidden="true"></i>Upscale
+                        </a>
                         <a href="{% url 'remover:favicon' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'favicon' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
                             <i class="fa-solid fa-star mr-1" aria-hidden="true"></i>Favicon
                         </a>
@@ -157,6 +170,8 @@
                 <a href="{% url 'remover:instagram' %}" class="hover:text-primary transition-colors">Instagram Editor</a>
                 <a href="{% url 'remover:crop' %}" class="hover:text-primary transition-colors">Crop Image</a>
                 <a href="{% url 'remover:sticker' %}" class="hover:text-primary transition-colors">Sticker Maker</a>
+                <a href="{% url 'remover:passport' %}" class="hover:text-primary transition-colors">Passport Photo</a>
+                <a href="{% url 'remover:upscaler' %}" class="hover:text-primary transition-colors">Image Upscaler</a>
                 <a href="{% url 'remover:favicon' %}" class="hover:text-primary transition-colors">Favicon Generator</a>
                 {% for c in use_cases %}
                 <a href="{% url 'remover:use_case' c.slug %}" class="hover:text-primary transition-colors">{{ c.nav }}</a>

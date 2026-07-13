@@ -179,9 +179,34 @@ USE_CASES = [
 
 USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
+# Affiliate / partner placements per landing page. The URLs are PLACEHOLDERS —
+# swap the `?ref=YOURID` links for your real affiliate URLs. Rendered as a
+# tasteful "Related services" block on the matching landing page; pages without
+# an entry show nothing. Links are marked rel="sponsored" in the template.
+PARTNERS = {
+    "pet-photos": [
+        {"label": "Print on canvas, mugs & stickers", "url": "https://example-print.com/?ref=YOURID", "note": "Turn your cut-out pet into a canvas, mug or sticker sheet.", "icon": "fa-mug-hot"},
+    ],
+    "product-photos": [
+        {"label": "Launch a hosted store", "url": "https://example-store.com/?ref=YOURID", "note": "Open an online shop for your products in minutes.", "icon": "fa-store"},
+    ],
+    "clothing": [
+        {"label": "Print-on-demand apparel", "url": "https://example-print.com/?ref=YOURID", "note": "Turn designs into shirts and hoodies with no inventory.", "icon": "fa-shirt"},
+    ],
+    "logo": [
+        {"label": "Get fast web hosting", "url": "https://example-host.com/?ref=YOURID", "note": "Put your logo on a real website with cheap, fast hosting.", "icon": "fa-server"},
+    ],
+    "youtube-thumbnail": [
+        {"label": "Creator analytics tools", "url": "https://example-tools.com/?ref=YOURID", "note": "Test thumbnails and track what earns the click.", "icon": "fa-chart-line"},
+    ],
+}
+
+for _case in USE_CASES:
+    _case["partners"] = PARTNERS.get(_case["slug"], [])
+
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-SITEMAP_PATHS = ["/", "/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+SITEMAP_PATHS = ["/", "/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/upscale/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
 
 
 @require_GET
@@ -239,6 +264,18 @@ def compress(request):
 def meme(request):
     """Render the client-side meme generator."""
     return render(request, "remover/meme.html")
+
+
+@require_GET
+def passport(request):
+    """Render the client-side passport / ID photo maker."""
+    return render(request, "remover/passport.html")
+
+
+@require_GET
+def upscaler(request):
+    """Render the client-side AI image upscaler."""
+    return render(request, "remover/upscaler.html")
 
 
 @require_GET

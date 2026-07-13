@@ -1091,7 +1091,9 @@ const App = {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Removing…';
     try {
       const { removeBackground } = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm');
-      const blob = await removeBackground(this.file, { model: 'isnet_quint8' });
+      // Full 'isnet' when cross-origin isolated (threaded WASM); quantized
+      // fallback otherwise. See config/middleware.py ISOLATED_VIEWS.
+      const blob = await removeBackground(this.file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);

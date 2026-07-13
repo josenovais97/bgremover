@@ -4,6 +4,39 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-07-13
+
+Two new AI tools, a big background-removal speed-up, and monetization wiring.
+
+### Added
+- **Passport & ID photo maker** (`/passport-photo/`) — removes the background,
+  drops the subject on a compliant background (white / off-white / grey / blue),
+  and exports the **exact biometric pixel size at 300 DPI** for the US (2×2 in),
+  EU / Schengen / UK / India / Australia (35×45 mm), Canada (50×70 mm), China
+  visa (33×48 mm) or any **custom** size. Includes crown/chin/centre **guide
+  lines** and a head oval, **auto-fit**, drag-and-zoom positioning, and a
+  **6×4 inch print sheet** tiled with copies (with cut lines) for photo kiosks.
+  100% in the browser.
+- **AI image upscaler** (`/upscale/`) — enlarges images **2× or 4×** with a
+  neural super-resolution model (ESRGAN via UpscalerJS + TensorFlow.js) running
+  on the **GPU (WebGL)**. Large inputs are processed in tiles to stay within GPU
+  memory; the model is lazy-loaded on first use and cached. No watermark, nothing
+  uploaded.
+- **Monetization** — Google AdSense loader (env-gated via `ADSENSE_CLIENT`) plus
+  an optional in-content ad unit (`ADSENSE_SLOT_LANDING`), and curated affiliate
+  "Related services" blocks — all rendered on the **marketing / SEO landing
+  pages only**. The interactive tool pages stay ad-free and fast.
+
+### Changed
+- **Faster background removal.** The background-remover, sticker, Instagram and
+  passport pages are now served **cross-origin isolated** (COOP + COEP
+  `credentialless`), which unlocks multi-threaded + SIMD WASM. On isolated pages
+  the tool now runs the **full-quality `isnet` model** (instead of the quantized
+  `isnet_quint8`) without freezing the page — a large speed and edge-quality win.
+  Non-isolating browsers (e.g. Safari) transparently keep the quantized fallback.
+- CSP: allow the AdSense script/frame hosts (used only on landing pages) and
+  broaden `img-src` to `https:` for ad creatives.
+
 ## [1.3.0] — 2026-07-09
 
 Toolbox release: two brand-new standalone tools, a richer Instagram editor, and
