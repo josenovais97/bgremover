@@ -108,7 +108,7 @@
                     </a>
 
                     {% with active=request.resolver_match.url_name %}
-                    <nav class="flex items-center gap-1 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto max-w-full" aria-label="Tools">
+                    <nav class="flex items-center gap-1 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar max-w-full" aria-label="Tools">
                         <a href="{% url 'remover:index' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'index' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
                             <i class="fa-solid fa-wand-magic-sparkles mr-1" aria-hidden="true"></i>Remove BG
                         </a>
