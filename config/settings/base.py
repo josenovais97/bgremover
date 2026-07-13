@@ -70,6 +70,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # LocaleMiddleware activates the language from the URL prefix (/pt/…). It must
+    # sit before CommonMiddleware so URL handling sees the active language.
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -99,7 +102,16 @@ WSGI_APPLICATION = "config.wsgi.application"
 # defaults DATABASES to empty, which is exactly what we want here.
 
 # --- Internationalization ----------------------------------------------------
-LANGUAGE_CODE = "en-us"
+# English is the default (served without a URL prefix); Portuguese is served
+# under /pt/. Translations are provided by a lightweight in-code catalogue
+# (remover.translations) rather than gettext .mo files, so no gettext build
+# tooling is needed at deploy time. i18n_patterns still handles the routing and
+# language activation. See config/urls.py.
+LANGUAGE_CODE = "en"
+LANGUAGES = [
+    ("en", "English"),
+    ("pt", "Português"),
+]
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True

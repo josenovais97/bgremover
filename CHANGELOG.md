@@ -4,6 +4,31 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] — 2026-07-13
+
+Portuguese localisation, hreflang, and a robust responsive tool nav.
+
+### Added
+- **Portuguese (pt-PT) site** served under `/pt/` via `i18n_patterns`
+  (`prefix_default_language=False`, so English stays at the root). Translations
+  live in a lightweight in-code catalogue (`remover/translations.py`) resolved by
+  a `{% t %}` template tag — **no gettext build tooling required** — with
+  graceful English fallback for any untranslated string. Translated so far: the
+  shared chrome (nav, footer, buttons), the home page, and **all 11 use-case
+  landing pages** (titles, descriptions, headings and body copy — the primary
+  Portuguese SEO target).
+- **hreflang** alternates (`en`, `pt`, `x-default`) on every page and a language
+  switcher (English · Português) in the footer, so Google serves the right
+  language and the two versions don't compete.
+- **Responsive tool-nav overflow menu** (`static/js/nav.js`): tools that don't
+  fit collapse into a "More ▾" dropdown instead of clipping or scrolling —
+  adapts to any width and OS font metrics, with a horizontal-scroll fallback when
+  JS is off.
+
+### Changed
+- The tool-nav items are slightly more compact so more fit before the overflow
+  menu kicks in.
+
 ## [1.5.0] — 2026-07-13
 
 SEO growth release: programmatic passport-size pages, FAQ rich results, and more

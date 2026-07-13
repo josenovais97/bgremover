@@ -1,5 +1,5 @@
-{% load static %}<!DOCTYPE html>
-<html lang="en" class="antialiased scroll-smooth">
+{% load static i18n_extras %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="antialiased scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +13,11 @@
     <meta name="description" content="{% block description %}Remove image backgrounds instantly and 100% free. AI runs in your browser — no uploads, no watermarks, no quality loss. Export transparent PNGs in full resolution.{% endblock %}">
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
     <meta name="robots" content="index, follow">
+    {% if alt_en and alt_pt %}
+    <link rel="alternate" hreflang="en" href="{{ alt_en }}">
+    <link rel="alternate" hreflang="pt" href="{{ alt_pt }}">
+    <link rel="alternate" hreflang="x-default" href="{{ alt_en }}">
+    {% endif %}
     <meta name="keywords" content="background remover, remove background, transparent png, free background removal, ai background remover, remove bg">
 
     <meta property="og:type" content="website">
@@ -98,7 +103,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col font-sans">
 
-    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white">Skip to content</a>
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white">{% t "Skip to content" %}</a>
 
     <!-- Decorative background glow -->
     <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -117,13 +122,19 @@
                     </a>
 
                     {% with active=request.resolver_match.url_name %}
-                    <nav class="flex items-center gap-0.5 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar min-w-0" aria-label="Tools">
-                        {% for item in tool_nav %}
-                        <a href="{{ item.url }}" {% if active == item.name %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap flex items-center px-2.5 py-1.5 rounded-full transition-colors {% if active == item.name %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="{{ item.icon }} mr-1" aria-hidden="true"></i>{{ item.label }}
-                        </a>
-                        {% endfor %}
-                    </nav>
+                    <div id="tool-switcher" class="relative min-w-0">
+                        <nav id="tool-nav" class="flex items-center gap-0.5 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar" aria-label="Tools">
+                            {% for item in tool_nav %}
+                            <a data-nav-item href="{{ item.url }}" {% if active == item.name %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap inline-flex items-center px-2.5 py-1.5 rounded-full transition-colors {% if active == item.name %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                                <i class="{{ item.icon }} mr-1" aria-hidden="true"></i>{{ item.label }}
+                            </a>
+                            {% endfor %}
+                            <button id="tool-more-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More tools" style="display:none" class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
+                                {% t "More" %} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+                            </button>
+                        </nav>
+                        <div id="tool-more-panel" class="hidden absolute right-0 top-full mt-2 w-56 max-h-[70vh] overflow-y-auto flex flex-col gap-0.5 p-1.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-xl z-50" role="menu"></div>
+                    </div>
                     {% endwith %}
                 </div>
 
@@ -147,39 +158,47 @@
     <footer class="mt-auto border-t border-gray-200/60 dark:border-gray-800/60 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500 dark:text-gray-400 space-y-4">
             <nav class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2" aria-label="Tools and use cases">
-                <a href="{% url 'remover:index' %}" class="hover:text-primary transition-colors">Background Remover</a>
-                <a href="{% url 'remover:convert' %}" class="hover:text-primary transition-colors">Image Converter</a>
-                <a href="{% url 'remover:compress' %}" class="hover:text-primary transition-colors">Image Compressor</a>
-                <a href="{% url 'remover:meme' %}" class="hover:text-primary transition-colors">Meme Maker</a>
-                <a href="{% url 'remover:instagram' %}" class="hover:text-primary transition-colors">Instagram Editor</a>
-                <a href="{% url 'remover:crop' %}" class="hover:text-primary transition-colors">Crop Image</a>
-                <a href="{% url 'remover:sticker' %}" class="hover:text-primary transition-colors">Sticker Maker</a>
-                <a href="{% url 'remover:passport' %}" class="hover:text-primary transition-colors">Passport Photo</a>
-                <a href="{% url 'remover:upscaler' %}" class="hover:text-primary transition-colors">Image Upscaler</a>
-                <a href="{% url 'remover:favicon' %}" class="hover:text-primary transition-colors">Favicon Generator</a>
+                <a href="{% url 'remover:index' %}" class="hover:text-primary transition-colors">{% t "Background Remover" %}</a>
+                <a href="{% url 'remover:convert' %}" class="hover:text-primary transition-colors">{% t "Image Converter" %}</a>
+                <a href="{% url 'remover:compress' %}" class="hover:text-primary transition-colors">{% t "Image Compressor" %}</a>
+                <a href="{% url 'remover:meme' %}" class="hover:text-primary transition-colors">{% t "Meme Maker" %}</a>
+                <a href="{% url 'remover:instagram' %}" class="hover:text-primary transition-colors">{% t "Instagram Editor" %}</a>
+                <a href="{% url 'remover:crop' %}" class="hover:text-primary transition-colors">{% t "Crop Image" %}</a>
+                <a href="{% url 'remover:sticker' %}" class="hover:text-primary transition-colors">{% t "Sticker Maker" %}</a>
+                <a href="{% url 'remover:passport' %}" class="hover:text-primary transition-colors">{% t "Passport Photo" %}</a>
+                <a href="{% url 'remover:upscaler' %}" class="hover:text-primary transition-colors">{% t "Image Upscaler" %}</a>
+                <a href="{% url 'remover:favicon' %}" class="hover:text-primary transition-colors">{% t "Favicon Generator" %}</a>
                 {% for c in use_cases %}
                 <a href="{% url 'remover:use_case' c.slug %}" class="hover:text-primary transition-colors">{{ c.nav }}</a>
                 {% endfor %}
             </nav>
             <p class="flex items-center justify-center gap-2">
                 <i class="fa-solid fa-shield-halved text-green-500" aria-hidden="true"></i>
-                Your images never leave your device — processing happens 100% in your browser.
+                {% t "Your images never leave your device — processing happens 100% in your browser." %}
             </p>
             <p class="flex flex-col items-center gap-2">
-                <span>This tool is free — if it saved you time, you can support it:</span>
+                <span>{% t "This tool is free — if it saved you time, you can support it:" %}</span>
                 <a href="https://buymeacoffee.com/josenovais" target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-[#0d0c0c] bg-[#FFDD00] hover:bg-[#ffd400] shadow-sm hover:shadow transition-all hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                    aria-label="Buy me a coffee (opens in a new tab)">
-                    <i class="fa-solid fa-mug-hot" aria-hidden="true"></i> Buy me a coffee
+                    <i class="fa-solid fa-mug-hot" aria-hidden="true"></i> {% t "Buy me a coffee" %}
                 </a>
             </p>
             <nav class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2" aria-label="Site">
-                <a href="{% url 'remover:about' %}" class="hover:text-primary transition-colors">About</a>
-                <a href="{% url 'remover:privacy' %}" class="hover:text-primary transition-colors">Privacy Policy</a>
-                <a href="{% url 'remover:terms' %}" class="hover:text-primary transition-colors">Terms of Use</a>
-                <a href="mailto:josenovais97@gmail.com" class="hover:text-primary transition-colors">Contact</a>
+                <a href="{% url 'remover:about' %}" class="hover:text-primary transition-colors">{% t "About" %}</a>
+                <a href="{% url 'remover:privacy' %}" class="hover:text-primary transition-colors">{% t "Privacy Policy" %}</a>
+                <a href="{% url 'remover:terms' %}" class="hover:text-primary transition-colors">{% t "Terms of Use" %}</a>
+                <a href="mailto:josenovais97@gmail.com" class="hover:text-primary transition-colors">{% t "Contact" %}</a>
             </nav>
-            <p>&copy; {% now "Y" %} ClearBG. Free, private, and unlimited.</p>
+            {% if alt_en and alt_pt %}
+            <div class="flex items-center justify-center gap-2 text-xs" aria-label="{% t 'Language' %}">
+                <i class="fa-solid fa-globe text-gray-400" aria-hidden="true"></i>
+                <a href="{{ alt_en }}" hreflang="en" class="{% if LANGUAGE_CODE == 'en' %}text-primary font-semibold{% else %}hover:text-primary{% endif %} transition-colors">English</a>
+                <span class="text-gray-300 dark:text-gray-700">·</span>
+                <a href="{{ alt_pt }}" hreflang="pt" class="{% if LANGUAGE_CODE == 'pt' %}text-primary font-semibold{% else %}hover:text-primary{% endif %} transition-colors">Português</a>
+            </div>
+            {% endif %}
+            <p>&copy; {% now "Y" %} ClearBG. {% t "Free, private, and unlimited." %}</p>
         </div>
     </footer>
 
@@ -187,6 +206,8 @@
 
     <!-- Custom colour picker replacing the unreliable native <input type=color> dialog. -->
     <script src="{% static 'js/colorpicker.js' %}"></script>
+    <!-- Collapses overflowing tool-nav items into a "More" menu so it never clips. -->
+    <script src="{% static 'js/nav.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
 </body>

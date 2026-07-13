@@ -1,6 +1,7 @@
 """Tests for the remover views and SEO endpoints."""
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
+from django.utils import translation
 
 from remover.views import USE_CASES
 
@@ -183,6 +184,44 @@ class FaqTests(SimpleTestCase):
         for name in ("passport", "upscaler"):
             response = self.client.get(reverse(f"remover:{name}"))
             self.assertContains(response, "FAQPage")
+
+
+class I18nTests(SimpleTestCase):
+    def tearDown(self):
+        # Requesting /pt/ activates Portuguese on the thread; reset it so the
+        # language doesn't leak into other tests (production re-activates per
+        # request via LocaleMiddleware, so this is a test-only concern).
+        translation.activate("en")
+
+    def test_portuguese_home_renders(self):
+        response = self.client.get("/pt/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Remova Fundos de Imagens")   # translated H1
+        self.assertContains(response, 'lang="pt"')
+
+    def test_english_home_unprefixed(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Remove Image Backgrounds")
+
+    def test_portuguese_landing_page_translated(self):
+        response = self.client.get("/pt/remove-background/product-photos/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Remova Fundos de Fotos de Produtos")
+
+    def test_hreflang_alternates_present(self):
+        response = self.client.get("/")
+        self.assertContains(response, 'hreflang="pt"')
+        self.assertContains(response, 'hreflang="x-default"')
+        self.assertContains(response, "/pt/")
+
+    def test_language_switcher_present(self):
+        response = self.client.get("/")
+        self.assertContains(response, "Português")
+
+    def test_nav_translated_in_pt(self):
+        response = self.client.get("/pt/")
+        self.assertContains(response, "Remover Fundo")  # "Remove BG" nav label
 
 
 class CrossOriginIsolationTests(SimpleTestCase):
