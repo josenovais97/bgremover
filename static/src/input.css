@@ -147,6 +147,15 @@
 }
 
 @layer utilities {
+  /* Hide the scrollbar but keep scroll/swipe (used by the tool nav pill) --- */
+  .no-scrollbar {
+    -ms-overflow-style: none;   /* IE / old Edge */
+    scrollbar-width: none;      /* Firefox */
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;              /* Chromium / Safari */
+  }
+
   /* Transparent checkerboard (shown behind cut-out images) --------------- */
   .checkerboard {
     background-color: #fff;
