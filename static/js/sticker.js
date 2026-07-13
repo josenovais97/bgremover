@@ -149,7 +149,9 @@ const App = {
     this.render();
     try {
       const { removeBackground } = await import(MODEL_CDN);
-      const blob = await removeBackground(file, { model: 'isnet_quint8' });
+      // Full 'isnet' when the page is cross-origin isolated (threaded WASM);
+      // quantized fallback otherwise. See config/middleware.py ISOLATED_VIEWS.
+      const blob = await removeBackground(file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);

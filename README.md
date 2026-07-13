@@ -55,6 +55,17 @@ A production-ready, privacy-first web app that removes image backgrounds **entir
 - Drop any image and add classic **top & bottom** captions in a bold outlined meme font (Impact / Anton / Oswald), **drag** them anywhere
 - Tune size, outline, colour and uppercase; export **PNG / JPG** or **copy** to the clipboard — no watermark, nothing uploaded
 
+**Passport & ID photo maker** (`/passport-photo`) — a separate tool
+- Removes the background and drops you on a compliant background (white / off-white / grey / blue)
+- Exports the **exact biometric pixel size at 300 DPI** — US **2×2 in**, EU / Schengen / UK / India / Australia **35×45 mm**, Canada **50×70 mm**, China visa **33×48 mm**, or a **custom** size in millimetres
+- **Guide lines** (crown / chin / centre) + head oval, **auto-fit**, and drag-and-zoom positioning
+- Optional **6×4 inch print sheet** tiled with copies (with cut lines) for photo kiosks — 100% in the browser
+
+**AI image upscaler** (`/upscale`) — a separate tool
+- Enlarge any image **2× or 4×** with a neural super-resolution model (ESRGAN via UpscalerJS + TensorFlow.js) running on your **GPU (WebGL)**
+- Adds detail instead of just stretching pixels; large inputs are processed in **tiles** to stay within GPU memory
+- Model is lazy-loaded on first use and cached; no watermark, nothing uploaded
+
 **Image converter** (`/convert`)
 - Convert any image to PNG / JPG / WEBP / **AVIF** — input format is **auto-detected**
 - Quality control for lossy formats, batch conversion + ZIP download
@@ -219,6 +230,8 @@ python -c "import secrets; print(secrets.token_urlsafe(50))"
 | `SECURE_SSL_REDIRECT`   | –            | `False` if TLS is terminated upstream.             |
 | `GOOGLE_SITE_VERIFICATION` | –         | Token from Google Search Console (HTML-tag method). |
 | `BING_SITE_VERIFICATION`   | –         | Token from Bing Webmaster Tools.                   |
+| `ADSENSE_CLIENT`        | –            | AdSense publisher ID (`ca-pub-…`). Ads load on landing pages only; clear to disable. |
+| `ADSENSE_SLOT_LANDING`  | –            | Optional ad-unit slot ID for the in-content landing-page unit. |
 
 > `SITE_URL` must include the scheme (`https://…`); a bare domain is auto-corrected
 > to `https://` so the sitemap never emits invalid URLs.

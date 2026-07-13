@@ -88,6 +88,72 @@ class ConvertPageTests(SimpleTestCase):
         self.assertContains(response, "Remove BG")
 
 
+class NewToolTests(SimpleTestCase):
+    def test_passport_renders(self):
+        response = self.client.get(reverse("remover:passport"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "remover/passport.html")
+        self.assertContains(response, "pp-dropzone")
+        self.assertContains(response, "Passport")
+
+    def test_upscaler_renders(self):
+        response = self.client.get(reverse("remover:upscaler"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "remover/upscaler.html")
+        self.assertContains(response, "up-dropzone")
+        self.assertContains(response, "Upscaler")
+
+    def test_new_tools_in_sitemap(self):
+        response = self.client.get(reverse("remover:sitemap"))
+        self.assertContains(response, "/passport-photo/")
+        self.assertContains(response, "/upscale/")
+
+    def test_new_tools_in_nav(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, reverse("remover:passport"))
+        self.assertContains(response, reverse("remover:upscaler"))
+
+
+class CrossOriginIsolationTests(SimpleTestCase):
+    """COOP+COEP (isolation) is scoped to the WASM background-removal pages."""
+
+    def test_isolated_pages_get_coep(self):
+        for name in ("index", "instagram", "sticker", "passport"):
+            response = self.client.get(reverse(f"remover:{name}"))
+            self.assertEqual(response["Cross-Origin-Embedder-Policy"], "credentialless", name)
+
+    def test_upscaler_is_not_isolated(self):
+        # The upscaler uses the WebGL/GPU backend and must NOT be isolated, so
+        # its third-party model fetches aren't constrained by COEP.
+        response = self.client.get(reverse("remover:upscaler"))
+        self.assertNotIn("Cross-Origin-Embedder-Policy", response)
+
+    def test_landing_pages_are_not_isolated(self):
+        response = self.client.get(reverse("remover:use_case", args=["logo"]))
+        self.assertNotIn("Cross-Origin-Embedder-Policy", response)
+
+
+class MonetizationTests(SimpleTestCase):
+    @override_settings(ADSENSE_CLIENT="ca-pub-test")
+    def test_ads_only_on_landing_pages(self):
+        landing = self.client.get(reverse("remover:use_case", args=["logo"]))
+        self.assertContains(landing, "ca-pub-test")
+        # Tool pages (isolated and non-isolated) stay ad-free.
+        for name in ("index", "upscaler", "convert"):
+            response = self.client.get(reverse(f"remover:{name}"))
+            self.assertNotContains(response, "adsbygoogle")
+
+    @override_settings(ADSENSE_CLIENT="")
+    def test_ads_disabled_when_client_unset(self):
+        response = self.client.get(reverse("remover:use_case", args=["logo"]))
+        self.assertNotContains(response, "adsbygoogle")
+
+    def test_partner_block_on_pet_photos(self):
+        response = self.client.get(reverse("remover:use_case", args=["pet-photos"]))
+        self.assertContains(response, "Related services")
+        self.assertContains(response, 'rel="sponsored')
+
+
 class PWATests(SimpleTestCase):
     def test_service_worker(self):
         response = self.client.get(reverse("remover:sw"))

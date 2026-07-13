@@ -47,6 +47,16 @@ if SITE_URL and "://" not in SITE_URL:
 GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")
 BING_SITE_VERIFICATION = env("BING_SITE_VERIFICATION", default="")
 
+# --- Monetization ------------------------------------------------------------
+# Google AdSense publisher ID (ca-pub-…). When set, the AdSense loader is
+# injected on the marketing / SEO pages ONLY — never on the cross-origin-isolated
+# tool pages, whose COEP would block the ad frames (and which we keep ad-free and
+# fast on purpose). Ads are opt-out by clearing this env var.
+ADSENSE_CLIENT = env("ADSENSE_CLIENT", default="ca-pub-9381565116085110")
+# Optional explicit ad-unit slot for the in-content unit on landing pages. Leave
+# blank to rely on AdSense Auto ads (enabled in the AdSense dashboard) instead.
+ADSENSE_SLOT_LANDING = env("ADSENSE_SLOT_LANDING", default="")
+
 # --- Applications ------------------------------------------------------------
 # The app is deliberately stateless: no models, no auth, no admin, no DB.
 # This keeps it fast, secure by minimal surface area, and serverless-friendly.
