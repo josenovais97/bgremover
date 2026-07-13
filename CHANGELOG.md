@@ -23,9 +23,9 @@ Two new AI tools, a big background-removal speed-up, and monetization wiring.
   memory; the model is lazy-loaded on first use and cached. No watermark, nothing
   uploaded.
 - **Monetization** — Google AdSense loader (env-gated via `ADSENSE_CLIENT`) plus
-  an optional in-content ad unit (`ADSENSE_SLOT_LANDING`), and curated affiliate
-  "Related services" blocks — all rendered on the **marketing / SEO landing
-  pages only**. The interactive tool pages stay ad-free and fast.
+  an optional in-content ad unit (`ADSENSE_SLOT_LANDING`), rendered on the
+  **marketing / SEO landing pages only**. The interactive tool pages stay ad-free
+  and fast.
 
 ### Changed
 - **Faster background removal.** The background-remover, sticker, Instagram and

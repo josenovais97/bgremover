@@ -100,50 +100,25 @@
     <!-- Minimal floating header -->
     <header class="w-full z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between py-4">
-                <div class="flex items-center gap-3 sm:gap-5">
-                    <a href="{% url 'remover:index' %}" class="group flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl" aria-label="ClearBG home">
+            <div class="flex items-center justify-between gap-3 py-4">
+                <div class="flex items-center gap-3 sm:gap-5 min-w-0">
+                    <a href="{% url 'remover:index' %}" class="group flex items-center gap-2.5 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl" aria-label="ClearBG home">
                         <img src="{% static 'img/favicon.svg' %}" alt="" width="36" height="36" class="w-9 h-9 rounded-xl shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform" aria-hidden="true">
                         <span class="font-bold text-lg tracking-tight hidden sm:inline">ClearBG</span>
                     </a>
 
                     {% with active=request.resolver_match.url_name %}
-                    <nav class="flex items-center gap-1 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar max-w-full" aria-label="Tools">
-                        <a href="{% url 'remover:index' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'index' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-wand-magic-sparkles mr-1" aria-hidden="true"></i>Remove BG
+                    <nav class="flex items-center gap-1 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar min-w-0" aria-label="Tools">
+                        {% for item in tool_nav %}
+                        <a href="{{ item.url }}" {% if active == item.name %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap flex items-center px-3 py-1.5 rounded-full transition-colors {% if active == item.name %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <i class="{{ item.icon }} mr-1.5" aria-hidden="true"></i>{{ item.label }}
                         </a>
-                        <a href="{% url 'remover:convert' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'convert' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-arrow-right-arrow-left mr-1" aria-hidden="true"></i>Convert
-                        </a>
-                        <a href="{% url 'remover:compress' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'compress' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-compress mr-1" aria-hidden="true"></i>Compress
-                        </a>
-                        <a href="{% url 'remover:instagram' %}" class="px-3 py-1.5 rounded-full transition-colors {% if active == 'instagram' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-brands fa-instagram mr-1" aria-hidden="true"></i>Instagram
-                        </a>
-                        <a href="{% url 'remover:crop' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'crop' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-crop-simple mr-1" aria-hidden="true"></i>Crop
-                        </a>
-                        <a href="{% url 'remover:sticker' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'sticker' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-note-sticky mr-1" aria-hidden="true"></i>Stickers
-                        </a>
-                        <a href="{% url 'remover:meme' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'meme' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-face-laugh mr-1" aria-hidden="true"></i>Meme
-                        </a>
-                        <a href="{% url 'remover:passport' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'passport' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-passport mr-1" aria-hidden="true"></i>Passport
-                        </a>
-                        <a href="{% url 'remover:upscaler' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'upscaler' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-up-right-and-down-left-from-center mr-1" aria-hidden="true"></i>Upscale
-                        </a>
-                        <a href="{% url 'remover:favicon' %}" class="px-3 py-1.5 rounded-full transition-colors whitespace-nowrap {% if active == 'favicon' %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
-                            <i class="fa-solid fa-star mr-1" aria-hidden="true"></i>Favicon
-                        </a>
+                        {% endfor %}
                     </nav>
                     {% endwith %}
                 </div>
 
-                <nav class="flex items-center gap-1 glass rounded-full p-1.5 shadow-sm border border-gray-200/70 dark:border-gray-800/70" aria-label="Utilities">
+                <nav class="flex items-center gap-1 glass rounded-full p-1.5 shadow-sm border border-gray-200/70 dark:border-gray-800/70 shrink-0" aria-label="Utilities">
                     <button id="shortcuts-btn" type="button" class="tip hidden sm:grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Keyboard shortcuts" data-tooltip="Shortcuts">
                         <i class="fa-regular fa-keyboard text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
                     </button>
