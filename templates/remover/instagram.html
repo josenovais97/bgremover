@@ -14,8 +14,8 @@
 <div class="space-y-12">
 
     <!-- Hero + dropzone -->
-    <section class="max-w-3xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up">
+    <section class="max-w-5xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-[#d62976]/10 text-[#d62976]">
                 <i class="fa-brands fa-instagram" aria-hidden="true"></i> Edit locally — nothing is uploaded
             </span>
@@ -29,8 +29,9 @@
             </p>
         </div>
 
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
         <div id="ig-dropzone" role="button" tabindex="0" aria-label="Upload a photo to edit. Drag and drop, click to browse, or paste."
-             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-[#d62976] transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976]">
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-[#d62976] transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976] flex flex-col justify-center">
             <input type="file" id="ig-input" class="sr-only" accept="image/*">
             <div class="flex flex-col items-center justify-center space-y-4 text-center">
                 <div id="ig-icon" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl text-white bg-gradient-to-br from-[#feda75] via-[#d62976] to-[#4f5bd5] group-hover:scale-110 transition-transform duration-300">
@@ -42,6 +43,8 @@
                     <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
                 </button>
             </div>
+        </div>
+        {% include 'remover/partials/demo.html' with before='img/demo-instagram-before.webp' after='img/demo-instagram-after.webp' before_label='Original' after_label='Instagram' caption='Drag the handle — sample photo, nothing uploaded' %}
         </div>
     </section>
 
