@@ -5,6 +5,32 @@
 {% block description %}Add a phone-style portrait-mode blur to any photo, free and in your browser. AI keeps your subject sharp and blurs the background for a professional depth effect. No uploads, no watermark.{% endblock %}
 {% block og_title %}AI Background Blur — Portrait Mode, Free &amp; Private{% endblock %}
 
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Background Blur",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free AI background-blur (portrait mode) tool that runs entirely in your browser. Keeps your subject sharp and blurs the background — no upload, no watermark.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to blur a photo background",
+  "step": [
+    { "@type": "HowToStep", "name": "Upload a photo", "text": "Drop a photo — the AI finds your subject automatically in your browser." },
+    { "@type": "HowToStep", "name": "Adjust the blur", "text": "Slide from a subtle depth effect to a strong, dreamy background blur." },
+    { "@type": "HowToStep", "name": "Download", "text": "Export the full-resolution JPG or PNG — free, no watermark." }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="space-y-12">
 

@@ -158,6 +158,7 @@ const App = {
       this.setBusy(false);
       this.ensureFont();
       this.render();
+      window.__clearbgReport?.(1);
       Toast.show('Background removed — add your outline & text', 'success');
     } catch (err) {
       console.error('[sticker] bg removal failed:', err);

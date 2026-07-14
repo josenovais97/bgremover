@@ -7,6 +7,29 @@
 
 {% block extra_seo %}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Pacifico&amp;family=Bebas+Neue&amp;display=swap">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Sticker Maker",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free WhatsApp & Telegram sticker maker that runs entirely in your browser. Removes the background, adds a die-cut outline, and exports a 512×512 transparent WebP — no upload, no watermark.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to make a sticker",
+  "step": [
+    { "@type": "HowToStep", "name": "Upload a photo", "text": "Drop a photo — the background is removed automatically in your browser." },
+    { "@type": "HowToStep", "name": "Add an outline and caption", "text": "Add a clean white die-cut outline and an optional caption." },
+    { "@type": "HowToStep", "name": "Export", "text": "Download a ready-to-use 512×512 transparent WebP — free, no watermark." }
+  ]
+}
+</script>
 {% endblock %}
 
 {% block content %}

@@ -11,9 +11,9 @@ Driven by static/js/demo.js, which wires every [data-demo] block on the page.
 {% endcomment %}
 <figure class="flex flex-col gap-3 w-full">
     <div data-demo class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none{% if checker %} checkerboard{% endif %}">
-        <img src="{% static after %}" class="absolute inset-0 w-full h-full object-cover" alt="{{ after_label }}" draggable="false">
+        <img src="{% static after %}" width="820" height="616" fetchpriority="high" class="absolute inset-0 w-full h-full object-cover" alt="{{ after_label }}" draggable="false">
         <div data-demo-before class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
-            <img src="{% static before %}" class="w-full h-full object-cover" alt="{{ before_label }}" draggable="false">
+            <img src="{% static before %}" width="820" height="616" class="w-full h-full object-cover" alt="{{ before_label }}" draggable="false">
         </div>
         <div data-demo-line class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg grid place-items-center text-primary">

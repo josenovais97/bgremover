@@ -235,6 +235,7 @@ const App = {
       this.setBusy(false);
       this.autoFit();
       this.render();
+      window.__clearbgReport?.(1);
       Toast.show('Background removed — position the head inside the guides', 'success');
     } catch (err) {
       console.error('[passport] bg removal failed:', err);

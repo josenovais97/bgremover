@@ -3,12 +3,16 @@
 // picked up on the next online load WITHOUT bumping this name — the manual bump
 // is no longer required for freshness. The name is just the offline snapshot's
 // store; only bump it if you ever need to force-evict every client's cache.
-const CACHE = 'bgr-v13';
+const CACHE = 'bgr-v14';
 // The ~40MB AI model weights + WASM runtime live on a separate, long-lived cache
 // so a normal shell redeploy (which changes CACHE) never evicts them — the model
 // is downloaded once, then served instantly and offline on every repeat use.
 const MODEL_CACHE = 'bgr-model-v1';
-const MODEL_HOSTS = ['staticimgly.com'];
+// Cross-origin hosts served cache-first into the long-lived model cache: the
+// ~40MB AI model weights/WASM (staticimgly.com) AND the version-pinned library
+// ESM (@imgly, JSZip on cdn.jsdelivr.net). Both are immutable per version, so a
+// CDN outage can't break repeat visitors — everything is served from cache.
+const MODEL_HOSTS = ['staticimgly.com', 'cdn.jsdelivr.net'];
 const SHELL = [
   '/',
   '/convert/',
@@ -20,6 +24,10 @@ const SHELL = [
   '/ecommerce/',
   '/blur-background/',
   '{% static "css/tailwind.css" %}',
+  '{% static "css/fontawesome.css" %}',
+  '{% static "webfonts/fa-solid-900.woff2" %}',
+  '{% static "webfonts/fa-regular-400.woff2" %}',
+  '{% static "webfonts/fa-brands-400.woff2" %}',
   '{% static "js/app.js" %}',
   '{% static "js/compose-worker.js" %}',
   '{% static "js/converter.js" %}',
@@ -65,8 +73,9 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // AI model weights/WASM (cross-origin): cache-first into the long-lived model
-  // cache so the ~40MB download happens once, then repeats are instant + offline.
+  // AI model weights/WASM + version-pinned library ESM (cross-origin): cache-first
+  // into the long-lived model cache so the heavy download happens once, then
+  // repeats are instant + offline and survive a CDN outage.
   if (MODEL_HOSTS.includes(url.hostname)) {
     event.respondWith(
       caches.open(MODEL_CACHE).then((cache) =>

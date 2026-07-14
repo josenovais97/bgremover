@@ -90,12 +90,14 @@
     <link rel="icon" href="{% static 'img/favicon-32.png' %}" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% url 'remover:manifest' %}">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
+    <!-- Self-hosted Font Awesome subset (only the icons this site uses) — same-origin,
+         ~16KB total vs ~300KB from the CDN, no render-blocking third-party request. -->
+    <link rel="preload" href="{% static 'webfonts/fa-solid-900.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 
     <!-- Set theme before paint (external so no inline script is needed). -->
