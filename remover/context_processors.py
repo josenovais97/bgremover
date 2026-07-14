@@ -23,6 +23,7 @@ TOOL_NAV = [
     {"name": "upscaler", "icon": "fa-solid fa-up-right-and-down-left-from-center", "label": "Upscale"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce"},
     {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur"},
+    {"name": "portrait", "icon": "fa-solid fa-image-portrait", "label": "Portrait"},
     {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon"},
 ]
 
