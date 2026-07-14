@@ -1,13 +1,15 @@
 {% load static %}
-{# Reusable before/after comparison demo (drag-to-reveal slider).
-   Include it and pass these keyword params:
-     before, after   - static image paths, e.g. "img/demo-blur-before.webp"
-     before_label    - badge shown top-left (the original)
-     after_label     - badge shown top-right (the result)
-     caption         - small helper line under the frame
-     checker         - truthy to show the transparency checkerboard (for cut-outs)
-   Driven by static/js/demo.js, which wires every [data-demo] block on the page. #}
-<figure class="flex flex-col gap-3 w-full max-w-2xl mx-auto">
+{% comment %}
+Reusable before/after comparison demo (drag-to-reveal slider).
+Include it and pass these keyword params:
+  before, after  - static image paths, e.g. "img/demo-blur-before.webp"
+  before_label   - badge shown top-left (the original)
+  after_label    - badge shown top-right (the result)
+  caption        - small helper line under the frame
+  checker        - truthy to show the transparency checkerboard (for cut-outs)
+Driven by static/js/demo.js, which wires every [data-demo] block on the page.
+{% endcomment %}
+<figure class="flex flex-col gap-3 w-full">
     <div data-demo class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none{% if checker %} checkerboard{% endif %}">
         <img src="{% static after %}" class="absolute inset-0 w-full h-full object-cover" alt="{{ after_label }}" draggable="false">
         <div data-demo-before class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">

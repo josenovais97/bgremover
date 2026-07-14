@@ -12,9 +12,9 @@
 {% block content %}
 <div class="space-y-12">
 
-    <!-- Hero + dropzone -->
-    <section class="max-w-3xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up">
+    <!-- Hero: dropzone + live demo side by side -->
+    <section class="max-w-5xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
                 <i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Made locally — nothing is uploaded
             </span>
@@ -28,8 +28,9 @@
             </p>
         </div>
 
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
         <div id="stk-dropzone" role="button" tabindex="0" aria-label="Upload a photo to make a sticker. Drag and drop, click to browse, or paste."
-             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
             <input type="file" id="stk-input" class="sr-only" accept="image/png,image/jpeg,image/webp">
             <div class="flex flex-col items-center justify-center space-y-4 text-center">
                 <div id="stk-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
@@ -42,12 +43,8 @@
                 </button>
             </div>
         </div>
-    </section>
-
-    <!-- Before/after demo -->
-    <section aria-labelledby="stk-demo-h" class="space-y-4">
-        <h2 id="stk-demo-h" class="text-2xl font-bold text-center">See it in action</h2>
         {% include 'remover/partials/demo.html' with before='img/demo-sticker-before.webp' after='img/demo-sticker-after.webp' before_label='Original' after_label='Sticker' caption='Drag the handle — sample photo, nothing uploaded' checker=True %}
+        </div>
     </section>
 
     <!-- Editor -->
