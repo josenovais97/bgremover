@@ -23,7 +23,6 @@ from .seo_content import (
     INDEX_FAQS,
     PASSPORT_FAQS,
     PORTRAIT_FAQS,
-    UPSCALER_FAQS,
     faq_jsonld,
 )
 from .translations import localize_use_case
@@ -247,7 +246,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/upscale/", "/ecommerce/", "/blur-background/", "/portrait-mode/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/portrait-mode/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
@@ -352,15 +351,6 @@ def passport_country(request, country):
         "others": others,
         "faqs": faqs,
         "faq_jsonld": faq_jsonld(faqs),
-    })
-
-
-@require_GET
-def upscaler(request):
-    """Render the client-side AI image upscaler."""
-    return render(request, "remover/upscaler.html", {
-        "faqs": UPSCALER_FAQS,
-        "faq_jsonld": faq_jsonld(UPSCALER_FAQS),
     })
 
 

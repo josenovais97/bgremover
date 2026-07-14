@@ -44,6 +44,12 @@
         </div>
     </section>
 
+    <!-- Before/after demo -->
+    <section aria-labelledby="stk-demo-h" class="space-y-4">
+        <h2 id="stk-demo-h" class="text-2xl font-bold text-center">See it in action</h2>
+        {% include 'remover/partials/demo.html' with before='img/demo-sticker-before.webp' after='img/demo-sticker-after.webp' before_label='Original' after_label='Sticker' caption='Drag the handle — sample photo, nothing uploaded' checker=True %}
+    </section>
+
     <!-- Editor -->
     <section id="stk-editor" class="hidden max-w-5xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6 items-start">
         <!-- Canvas -->

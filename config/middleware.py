@@ -58,9 +58,6 @@ PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), interest-cohort=
 # browser's "page unresponsive" prompt.
 #
 # Isolation is scoped to *just* these tool pages on purpose:
-#   * The upscaler is intentionally excluded — it runs on the WebGL/GPU backend,
-#     which needs no isolation, and COEP would only add a failure surface for its
-#     third-party model-weight fetches.
 #   * The marketing / SEO landing pages are excluded so they stay embeddable and
 #     third-party ad scripts (which COEP would otherwise block) can run there.
 ISOLATED_VIEWS = {"index", "instagram", "sticker", "passport", "ecommerce", "blur"}

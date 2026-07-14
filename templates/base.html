@@ -68,7 +68,7 @@
       "name": "ClearBG",
       "url": "{{ request.scheme }}://{{ request.get_host }}/",
       "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/favicon-96.png' %}",
-      "description": "Free, privacy-first image tools that run entirely in your browser — background removal, upscaling, passport photos and more."
+      "description": "Free, privacy-first image tools that run entirely in your browser — background removal, image conversion, passport photos and more."
     }
     </script>
     {% block extra_seo %}{% endblock %}
@@ -166,7 +166,6 @@
                 <a href="{% url 'remover:crop' %}" class="hover:text-primary transition-colors">{% t "Crop Image" %}</a>
                 <a href="{% url 'remover:sticker' %}" class="hover:text-primary transition-colors">{% t "Sticker Maker" %}</a>
                 <a href="{% url 'remover:passport' %}" class="hover:text-primary transition-colors">{% t "Passport Photo" %}</a>
-                <a href="{% url 'remover:upscaler' %}" class="hover:text-primary transition-colors">{% t "Image Upscaler" %}</a>
                 <a href="{% url 'remover:ecommerce' %}" class="hover:text-primary transition-colors">{% t "Product Photos" %}</a>
                 <a href="{% url 'remover:blur' %}" class="hover:text-primary transition-colors">{% t "Background Blur" %}</a>
                 <a href="{% url 'remover:portrait' %}" class="hover:text-primary transition-colors">{% t "Portrait Mode" %}</a>
@@ -213,6 +212,8 @@
     <script src="{% static 'js/nav.js' %}" defer></script>
     <!-- Social-proof counter (defines __clearbgReport; shows the hero total). -->
     <script src="{% static 'js/stats.js' %}" defer></script>
+    <!-- Drives the reusable before/after demo slider on the tool pages. -->
+    <script src="{% static 'js/demo.js' %}" defer></script>
 
     {% block extra_js %}{% endblock %}
 </body>

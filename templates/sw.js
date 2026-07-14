@@ -3,7 +3,7 @@
 // picked up on the next online load WITHOUT bumping this name — the manual bump
 // is no longer required for freshness. The name is just the offline snapshot's
 // store; only bump it if you ever need to force-evict every client's cache.
-const CACHE = 'bgr-v11';
+const CACHE = 'bgr-v13';
 // The ~40MB AI model weights + WASM runtime live on a separate, long-lived cache
 // so a normal shell redeploy (which changes CACHE) never evicts them — the model
 // is downloaded once, then served instantly and offline on every repeat use.
@@ -17,7 +17,6 @@ const SHELL = [
   '/favicon-generator/',
   '/sticker-maker/',
   '/passport-photo/',
-  '/upscale/',
   '/ecommerce/',
   '/blur-background/',
   '{% static "css/tailwind.css" %}',
@@ -29,10 +28,10 @@ const SHELL = [
   '{% static "js/favicon.js" %}',
   '{% static "js/sticker.js" %}',
   '{% static "js/passport.js" %}',
-  '{% static "js/upscaler.js" %}',
   '{% static "js/ecommerce.js" %}',
   '{% static "js/blur.js" %}',
   '{% static "js/stats.js" %}',
+  '{% static "js/demo.js" %}',
   '{% static "js/theme.js" %}',
   '{% static "js/colorpicker.js" %}',
   '{% static "js/nav.js" %}',
