@@ -16,6 +16,7 @@ urlpatterns = [
     path("upscale/", views.upscaler, name="upscaler"),
     path("ecommerce/", views.ecommerce, name="ecommerce"),
     path("blur-background/", views.blur, name="blur"),
+    path("portrait-mode/", views.portrait, name="portrait"),
     path("api/stats/", views.stats, name="stats"),
     path("instagram/", views.instagram, name="instagram"),
     path("crop/", views.crop, name="crop"),

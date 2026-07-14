@@ -1,10 +1,11 @@
 /**
  * AI image upscaler — 100% client-side.
  *
- * Enlarges an image 2×/4× with a neural super-resolution model (ESRGAN via
- * UpscalerJS + TensorFlow.js), running on the GPU (WebGL) in the browser.
- * Large images are processed in tiles (patchSize) so they don't blow the GPU
- * memory. Nothing is uploaded.
+ * Enlarges an image 2×/4× with a neural super-resolution model (ESRGAN-medium
+ * via UpscalerJS + TensorFlow.js), running on the GPU (WebGL) in the browser.
+ * Each scale uses its own native model (x2 / x4) — 4× is a single pass, not two
+ * stacked 2× passes, so artifacts don't compound. Large images are processed in
+ * tiles (patchSize) so they don't blow the GPU memory. Nothing is uploaded.
  *
  * Self-contained (own helpers/toast). Only absolute-URL (CDN) ESM imports are
  * used, since Django's static storage doesn't rewrite ES-module import paths.
@@ -54,7 +55,7 @@ const App = {
   resultUrl: null,
   scale: 2,
   busy: false,
-  _upscaler: null,  // lazily-created UpscalerJS instance (2× ESRGAN model)
+  _models: {},      // scale (2|4) -> lazily-created UpscalerJS instance
 
   init() {
     this.dropzone = $('#up-dropzone');
@@ -125,30 +126,23 @@ const App = {
     if (label) $('#up-progress-label').textContent = label;
   },
 
-  async ensureUpscaler() {
-    if (this._upscaler) return this._upscaler;
+  async ensureUpscaler(scale) {
+    if (this._models[scale]) return this._models[scale];
     this.setProgress(0, 'Loading the AI model…');
     // Lazy CDN imports — heavy, so only fetched the first time someone upscales.
-    const [{ default: Upscaler }, { default: model }] = await Promise.all([
+    // The ESRGAN packages export named per-scale models (x2/x3/x4), NOT a
+    // `default`; pick the one matching the chosen scale so we run a real,
+    // higher-quality model instead of UpscalerJS's low-end fallback.
+    const [{ default: Upscaler }, esrgan] = await Promise.all([
       import('https://cdn.jsdelivr.net/npm/upscaler/+esm'),
-      import('https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-slim/+esm'),
+      import('https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium/+esm'),
     ]);
     // tfjs is a peer dependency pulled in by upscaler; import it too so the
     // WebGL backend is registered before we run.
     await import('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/+esm');
-    this._upscaler = new Upscaler({ model });
-    return this._upscaler;
-  },
-
-  /** Upscale `img` by 2× with the model, tiling large inputs. Returns a data URL. */
-  async upscale2x(img, onRate) {
-    const upscaler = await this.ensureUpscaler();
-    return upscaler.upscale(img, {
-      output: 'base64',
-      patchSize: 64,
-      padding: 4,
-      progress: (rate) => onRate?.(rate),
-    });
+    const model = scale === 4 ? esrgan.x4 : esrgan.x2;
+    this._models[scale] = new Upscaler({ model });
+    return this._models[scale];
   },
 
   async run() {
@@ -158,15 +152,16 @@ const App = {
     $('#up-download').classList.add('hidden');
     this.setProgress(0, 'Loading the AI model…');
     try {
-      let out;
-      if (this.scale === 2) {
-        out = await this.upscale2x(this.source, (r) => this.setProgress(r * 100, `Enhancing… ${Math.round(r * 100)}%`));
-      } else {
-        // 4× = two 2× passes (the model is 2×).
-        const mid = await this.upscale2x(this.source, (r) => this.setProgress(r * 50, `Enhancing… pass 1 · ${Math.round(r * 100)}%`));
-        const midImg = await loadImage(mid);
-        out = await this.upscale2x(midImg, (r) => this.setProgress(50 + r * 50, `Enhancing… pass 2 · ${Math.round(r * 100)}%`));
-      }
+      const upscaler = await this.ensureUpscaler(this.scale);
+      // patchSize matches the model's native training size (128) so tiling
+      // seams don't appear; padding blends the tile edges. Large inputs still
+      // tile, which keeps GPU memory in check.
+      const out = await upscaler.upscale(this.source, {
+        output: 'base64',
+        patchSize: 128,
+        padding: 6,
+        progress: (r) => this.setProgress(r * 100, `Enhancing… ${Math.round(r * 100)}%`),
+      });
       this.clearResult();
       this.resultUrl = out; // base64 data URL
       const result = await loadImage(out);
