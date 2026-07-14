@@ -30,13 +30,30 @@
     el.classList.remove('hidden');
   }
 
+  // Which tool the visitor is on, derived from the URL path (locale prefix
+  // stripped) so per-tool conversion tracking needs no change in each tool's JS.
+  const TOOL_BY_PATH = {
+    '/': 'home', '/blur-background/': 'blur', '/portrait-mode/': 'portrait',
+    '/ecommerce/': 'ecommerce', '/sticker-maker/': 'sticker',
+    '/passport-photo/': 'passport', '/instagram/': 'instagram', '/crop/': 'crop',
+    '/convert/': 'convert', '/compress/': 'compress', '/meme-maker/': 'meme',
+    '/favicon-generator/': 'favicon',
+  };
+  function toolId() {
+    const p = location.pathname.replace(/^\/pt(\/|$)/, '/');
+    if (TOOL_BY_PATH[p]) return TOOL_BY_PATH[p];
+    if (p.indexOf('/passport-photo/') === 0) return 'passport';  // country sub-pages
+    return 'other';
+  }
+
   // Report a real cut-out (fire-and-forget). Available on every page.
-  window.__clearbgReport = function (n) {
+  // `event` defaults to 'processed'; pass 'downloaded' on a successful export.
+  window.__clearbgReport = function (n, event) {
     try {
       fetch('/api/stats/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ n: n || 1 }),
+        body: JSON.stringify({ n: n || 1, tool: toolId(), event: event || 'processed' }),
         keepalive: true,
       }).then((r) => r.json()).then((d) => { if (d && d.enabled) show(d.count); }).catch(() => {});
     } catch (e) { /* ignore */ }

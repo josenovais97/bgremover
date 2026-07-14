@@ -5,6 +5,32 @@
 {% block description %}Turn a flat photo into a portrait-mode shot with a soft, blurred bokeh background. The AI keeps your subject sharp and fakes DSLR depth of field — free, no upload, no watermark, right in your browser.{% endblock %}
 {% block og_title %}Portrait Mode Online — Fake DSLR Depth of Field, Free{% endblock %}
 
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Portrait Mode",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free portrait-mode / bokeh tool that runs entirely in your browser. Adds DSLR-style depth of field to any photo — no upload, no watermark.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to add portrait mode to a photo",
+  "step": [
+    { "@type": "HowToStep", "name": "Upload a photo", "text": "Drop any flat photo — the AI detects your subject in your browser." },
+    { "@type": "HowToStep", "name": "Dial the bokeh", "text": "Slide from a natural depth of field to a strong, creamy bokeh blur." },
+    { "@type": "HowToStep", "name": "Download", "text": "Export the full-resolution image — free, no watermark." }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="space-y-12">
 

@@ -414,13 +414,30 @@ def _upstash(path):
         return None
 
 
+# Per-tool / per-action conversion counters. Tool + event are validated against
+# these whitelists BEFORE they're used to build the Upstash REST key, so a
+# malicious client can never inject arbitrary Redis keys/commands via the path.
+STATS_EVENTS = {"processed", "downloaded"}
+STATS_TOOLS = {
+    "home", "blur", "portrait", "ecommerce", "sticker", "passport",
+    "instagram", "crop", "convert", "compress", "meme", "favicon",
+}
+
+
+def _stats_ns():
+    """Key namespace for the per-tool counters (derived from STATS_KEY)."""
+    return (settings.STATS_KEY or "clearbg:processed").split(":", 1)[0]
+
+
 @csrf_exempt
 def stats(request):
-    """Global 'images processed' counter (Upstash-backed).
+    """Global 'images processed' counter + per-tool conversion events (Upstash).
 
-    GET reads the total; POST ``{"n": <int>}`` increments it. Returns
-    ``{"enabled": bool, "count": int|None}`` — disabled (no number) when Upstash
-    isn't configured, so the UI never shows a fabricated figure.
+    GET reads the total; ``GET ?breakdown=1`` returns the per-tool/per-event
+    counts; POST ``{"n": <int>, "tool": <str>, "event": <str>}`` increments the
+    global counter (for ``processed`` events) and the validated per-tool counter.
+    Returns ``{"enabled": bool, ...}`` — disabled (no number) when Upstash isn't
+    configured, so the UI never shows a fabricated figure.
     """
     # `enabled` reflects whether the store is CONFIGURED — not whether the counter
     # has a value yet. A brand-new database has no key, so a read returns nothing;
@@ -432,14 +449,46 @@ def stats(request):
         return response
 
     key = settings.STATS_KEY
+
+    # Per-tool breakdown: one MGET over the whitelisted keys (safe, server-built).
+    if request.method == "GET" and request.GET.get("breakdown"):
+        ns = _stats_ns()
+        keys = [f"{ns}:evt:{ev}:{t}" for ev in sorted(STATS_EVENTS) for t in sorted(STATS_TOOLS)]
+        raw = _upstash("mget/" + "/".join(keys)) or []
+        breakdown = {}
+        for k, v in zip(keys, raw):
+            name = k.split(":evt:", 1)[1]
+            try:
+                breakdown[name] = int(v) if v is not None else 0
+            except (ValueError, TypeError):
+                breakdown[name] = 0
+        response = JsonResponse({"enabled": True, "breakdown": breakdown})
+        response["Cache-Control"] = "no-store"
+        return response
+
     if request.method == "POST":
         try:
             payload = json.loads(request.body or b"{}")
-            n = int(payload.get("n", 1)) if isinstance(payload, dict) else 1
         except (ValueError, TypeError, json.JSONDecodeError):
+            payload = {}
+        if not isinstance(payload, dict):
+            payload = {}
+        try:
+            n = int(payload.get("n", 1))
+        except (ValueError, TypeError):
             n = 1
         n = max(1, min(n, 50))  # cap: it's a public, unauthenticated vanity counter
-        result = _upstash(f"incrby/{key}/{n}")
+        event = payload.get("event", "processed")
+        tool = payload.get("tool")
+        # The global 'images processed' badge only counts real cut-outs, so it's
+        # incremented for 'processed' events (and legacy payloads with no event).
+        if event == "processed":
+            result = _upstash(f"incrby/{key}/{n}")
+        else:
+            result = _upstash(f"get/{key}")
+        # Per-tool / per-event counter (whitelisted → safe key).
+        if event in STATS_EVENTS and tool in STATS_TOOLS:
+            _upstash(f"incrby/{_stats_ns()}:evt:{event}:{tool}/{n}")
     else:
         result = _upstash(f"get/{key}")
     try:
