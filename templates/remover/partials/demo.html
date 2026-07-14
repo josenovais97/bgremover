@@ -1,0 +1,28 @@
+{% load static %}
+{# Reusable before/after comparison demo (drag-to-reveal slider).
+   Include it and pass these keyword params:
+     before, after   - static image paths, e.g. "img/demo-blur-before.webp"
+     before_label    - badge shown top-left (the original)
+     after_label     - badge shown top-right (the result)
+     caption         - small helper line under the frame
+     checker         - truthy to show the transparency checkerboard (for cut-outs)
+   Driven by static/js/demo.js, which wires every [data-demo] block on the page. #}
+<figure class="flex flex-col gap-3 w-full max-w-2xl mx-auto">
+    <div data-demo class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none{% if checker %} checkerboard{% endif %}">
+        <img src="{% static after %}" class="absolute inset-0 w-full h-full object-cover" alt="{{ after_label }}" draggable="false">
+        <div data-demo-before class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
+            <img src="{% static before %}" class="w-full h-full object-cover" alt="{{ before_label }}" draggable="false">
+        </div>
+        <div data-demo-line class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg grid place-items-center text-primary">
+                <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
+            </div>
+        </div>
+        <input type="range" min="0" max="100" value="50" data-demo-range class="compare-range absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20" aria-label="Drag to compare the original and the result">
+        <span class="absolute top-3 left-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">{{ before_label }}</span>
+        <span class="absolute top-3 right-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">{{ after_label }}</span>
+    </div>
+    <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+        <i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>{{ caption }}
+    </figcaption>
+</figure>

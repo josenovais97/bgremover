@@ -20,7 +20,6 @@ TOOL_NAV = [
     {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers"},
     {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme"},
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport"},
-    {"name": "upscaler", "icon": "fa-solid fa-up-right-and-down-left-from-center", "label": "Upscale"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce"},
     {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur"},
     {"name": "portrait", "icon": "fa-solid fa-image-portrait", "label": "Portrait"},

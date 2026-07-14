@@ -92,16 +92,3 @@ PORTRAIT_FAQS = [
     {"q": "Can I control the amount of background blur?",
      "a": "Yes — a slider takes you from a subtle, natural depth-of-field to a strong, creamy bokeh, and the subject stays crisp throughout."},
 ]
-
-UPSCALER_FAQS = [
-    {"q": "How does AI upscaling work?",
-     "a": "A neural super-resolution model reconstructs realistic detail as it enlarges the image, giving cleaner edges and textures than a plain resize that just stretches pixels."},
-    {"q": "Is the image upscaler free?",
-     "a": "Yes — free and unlimited, with no watermark. The model runs on your device's GPU, so there are no per-image limits or costs."},
-    {"q": "Are my images uploaded?",
-     "a": "No. Upscaling runs locally in your browser using WebGL, so your images never leave your device."},
-    {"q": "Should I choose 2× or 4×?",
-     "a": "Use 2× for a quick, high-quality bump. 4× uses a dedicated model that enlarges further and is best for smaller source images; very large inputs are processed in tiles."},
-    {"q": "What's the best input for upscaling?",
-     "a": "Smaller, reasonably sharp images upscale fastest and look best. Extremely blurry or heavily compressed images have less detail for the model to recover."},
-]

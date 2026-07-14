@@ -97,22 +97,20 @@ class NewToolTests(SimpleTestCase):
         self.assertContains(response, "pp-dropzone")
         self.assertContains(response, "Passport")
 
-    def test_upscaler_renders(self):
-        response = self.client.get(reverse("remover:upscaler"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "remover/upscaler.html")
-        self.assertContains(response, "up-dropzone")
-        self.assertContains(response, "Upscaler")
+    def test_upscale_redirects_to_home(self):
+        # The upscaler was removed (client-side super-resolution froze the tab);
+        # its indexed URL 301-redirects to home so it never 404s.
+        response = self.client.get("/upscale/")
+        self.assertRedirects(response, "/", status_code=301, target_status_code=200)
 
     def test_new_tools_in_sitemap(self):
         response = self.client.get(reverse("remover:sitemap"))
         self.assertContains(response, "/passport-photo/")
-        self.assertContains(response, "/upscale/")
+        self.assertNotContains(response, "/upscale/")
 
     def test_new_tools_in_nav(self):
         response = self.client.get(reverse("remover:index"))
         self.assertContains(response, reverse("remover:passport"))
-        self.assertContains(response, reverse("remover:upscaler"))
 
 
 class EcommerceBlurTests(SimpleTestCase):
@@ -228,7 +226,7 @@ class FaqTests(SimpleTestCase):
         self.assertContains(response, "Frequently asked questions")
 
     def test_tool_pages_have_faq(self):
-        for name in ("passport", "upscaler"):
+        for name in ("passport", "portrait"):
             response = self.client.get(reverse(f"remover:{name}"))
             self.assertContains(response, "FAQPage")
 
@@ -279,10 +277,10 @@ class CrossOriginIsolationTests(SimpleTestCase):
             response = self.client.get(reverse(f"remover:{name}"))
             self.assertEqual(response["Cross-Origin-Embedder-Policy"], "credentialless", name)
 
-    def test_upscaler_is_not_isolated(self):
-        # The upscaler uses the WebGL/GPU backend and must NOT be isolated, so
-        # its third-party model fetches aren't constrained by COEP.
-        response = self.client.get(reverse("remover:upscaler"))
+    def test_convert_is_not_isolated(self):
+        # The converter is pure canvas work (no in-browser removal model), so it
+        # must NOT be cross-origin isolated.
+        response = self.client.get(reverse("remover:convert"))
         self.assertNotIn("Cross-Origin-Embedder-Policy", response)
 
     def test_landing_pages_are_not_isolated(self):
@@ -296,7 +294,7 @@ class MonetizationTests(SimpleTestCase):
         landing = self.client.get(reverse("remover:use_case", args=["logo"]))
         self.assertContains(landing, "ca-pub-test")
         # Tool pages (isolated and non-isolated) stay ad-free.
-        for name in ("index", "upscaler", "convert"):
+        for name in ("index", "convert"):
             response = self.client.get(reverse(f"remover:{name}"))
             self.assertNotContains(response, "adsbygoogle")
 

@@ -41,6 +41,12 @@
         </div>
     </section>
 
+    <!-- Before/after demo -->
+    <section aria-labelledby="pt-demo-h" class="space-y-4">
+        <h2 id="pt-demo-h" class="text-2xl font-bold text-center">See portrait mode in action</h2>
+        {% include 'remover/partials/demo.html' with before='img/demo-blur-before.webp' after='img/demo-blur-after.webp' before_label='Original' after_label='Portrait mode' caption='Drag the handle — sample photo, nothing uploaded' %}
+    </section>
+
     <!-- Editor -->
     <section id="bl-editor" class="hidden max-w-5xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6 items-start">
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">

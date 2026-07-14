@@ -13,7 +13,10 @@ urlpatterns = [
     path("meme-maker/", views.meme, name="meme"),
     path("passport-photo/", views.passport, name="passport"),
     path("passport-photo/<slug:country>/", views.passport_country, name="passport_country"),
-    path("upscale/", views.upscaler, name="upscaler"),
+    # The AI upscaler was removed (client-side super-resolution froze the tab).
+    # Keep the indexed URL alive with a 301 to home so it never 404s — for search
+    # engines and for old service-worker caches that still request it.
+    path("upscale/", RedirectView.as_view(pattern_name="remover:index", permanent=True)),
     path("ecommerce/", views.ecommerce, name="ecommerce"),
     path("blur-background/", views.blur, name="blur"),
     path("portrait-mode/", views.portrait, name="portrait"),

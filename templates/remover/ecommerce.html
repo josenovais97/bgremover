@@ -55,6 +55,12 @@
         </div>
     </section>
 
+    <!-- Before/after demo -->
+    <section aria-labelledby="ec-demo-h" class="space-y-4">
+        <h2 id="ec-demo-h" class="text-2xl font-bold text-center">See it in action</h2>
+        {% include 'remover/partials/demo.html' with before='img/demo-ecommerce-before.webp' after='img/demo-ecommerce-after.webp' before_label='Original' after_label='Clean white' caption='Drag the handle — sample product, nothing uploaded' %}
+    </section>
+
     <!-- Editor -->
     <section id="ec-editor" class="hidden max-w-5xl mx-auto grid lg:grid-cols-[1fr_22rem] gap-6 items-start">
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
