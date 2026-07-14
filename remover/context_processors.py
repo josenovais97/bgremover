@@ -22,7 +22,6 @@ TOOL_NAV = [
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce"},
     {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur"},
-    {"name": "portrait", "icon": "fa-solid fa-image-portrait", "label": "Portrait"},
     {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon"},
 ]
 

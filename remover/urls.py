@@ -19,7 +19,9 @@ urlpatterns = [
     path("upscale/", RedirectView.as_view(pattern_name="remover:index", permanent=True)),
     path("ecommerce/", views.ecommerce, name="ecommerce"),
     path("blur-background/", views.blur, name="blur"),
-    path("portrait-mode/", views.portrait, name="portrait"),
+    # /portrait-mode/ was merged into /blur-background/ (same tool). 301 so the
+    # indexed URL keeps its link equity instead of 404-ing.
+    path("portrait-mode/", RedirectView.as_view(pattern_name="remover:blur", permanent=True)),
     path("api/stats/", views.stats, name="stats"),
     path("instagram/", views.instagram, name="instagram"),
     path("crop/", views.crop, name="crop"),
