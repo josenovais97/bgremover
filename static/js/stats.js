@@ -33,7 +33,7 @@
   // Which tool the visitor is on, derived from the URL path (locale prefix
   // stripped) so per-tool conversion tracking needs no change in each tool's JS.
   const TOOL_BY_PATH = {
-    '/': 'home', '/blur-background/': 'blur', '/portrait-mode/': 'portrait',
+    '/': 'home', '/blur-background/': 'blur',
     '/ecommerce/': 'ecommerce', '/sticker-maker/': 'sticker',
     '/passport-photo/': 'passport', '/instagram/': 'instagram', '/crop/': 'crop',
     '/convert/': 'convert', '/compress/': 'compress', '/meme-maker/': 'meme',

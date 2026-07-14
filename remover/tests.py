@@ -226,7 +226,7 @@ class FaqTests(SimpleTestCase):
         self.assertContains(response, "Frequently asked questions")
 
     def test_tool_pages_have_faq(self):
-        for name in ("passport", "portrait"):
+        for name in ("passport", "blur"):
             response = self.client.get(reverse(f"remover:{name}"))
             self.assertContains(response, "FAQPage")
 

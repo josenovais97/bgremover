@@ -79,16 +79,3 @@ BLUR_FAQS = [
     {"q": "Can I control how strong the blur is?",
      "a": "Yes — a slider takes you from a subtle, natural depth effect to a strong, dreamy background blur."},
 ]
-
-PORTRAIT_FAQS = [
-    {"q": "How do I add portrait mode to a photo that wasn't shot with it?",
-     "a": "Upload any flat-looking photo and the AI detects your subject, then blurs everything behind it to fake the shallow depth of field a DSLR or phone portrait mode produces — no lens or camera setting required."},
-    {"q": "What is a bokeh / depth-of-field effect?",
-     "a": "Bokeh is the soft, out-of-focus background you get from a wide-aperture lens. This tool recreates that look digitally so an ordinary snapshot gets a professional, blurred-background depth effect."},
-    {"q": "Does it work on old phone or webcam photos?",
-     "a": "Yes. It's ideal for flat images from older phones, webcams or scans that never had portrait mode — the AI separates the subject and adds the blur after the fact."},
-    {"q": "Is it free and private?",
-     "a": "Completely. There's no watermark or sign-up, and the effect is computed entirely in your browser, so your photo is never uploaded."},
-    {"q": "Can I control the amount of background blur?",
-     "a": "Yes — a slider takes you from a subtle, natural depth-of-field to a strong, creamy bokeh, and the subject stays crisp throughout."},
-]

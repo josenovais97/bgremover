@@ -22,7 +22,6 @@ from .seo_content import (
     ECOMMERCE_FAQS,
     INDEX_FAQS,
     PASSPORT_FAQS,
-    PORTRAIT_FAQS,
     faq_jsonld,
 )
 from .translations import localize_use_case
@@ -246,7 +245,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/portrait-mode/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
@@ -369,15 +368,6 @@ def blur(request):
     return render(request, "remover/blur.html", {
         "faqs": BLUR_FAQS,
         "faq_jsonld": faq_jsonld(BLUR_FAQS),
-    })
-
-
-@require_GET
-def portrait(request):
-    """Render the portrait-mode / bokeh landing page (reuses the blur tool)."""
-    return render(request, "remover/portrait.html", {
-        "faqs": PORTRAIT_FAQS,
-        "faq_jsonld": faq_jsonld(PORTRAIT_FAQS),
     })
 
 
