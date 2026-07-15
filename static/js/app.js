@@ -1996,6 +1996,21 @@ const App = {
     });
     this.fileInput.addEventListener('change', (e) => this.handleFiles(e.target.files));
 
+    // "Try a sample" — fetch a bundled photo and run it through the normal
+    // pipeline, so a first-time visitor can see the tool work without uploading.
+    const trySample = $('#try-sample');
+    if (trySample) {
+      trySample.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        ModelStatus.warm();
+        try {
+          const resp = await fetch(trySample.dataset.src);
+          const blob = await resp.blob();
+          this.handleFiles([new File([blob], 'sample.jpg', { type: blob.type || 'image/webp' })]);
+        } catch { Toast.show("Couldn't load the sample", 'error'); }
+      });
+    }
+
     // Warm up the model as soon as the user shows intent (once).
     ['pointerenter', 'focusin', 'touchstart'].forEach((evt) =>
       this.dropzone.addEventListener(evt, () => ModelStatus.warm(), { once: true, passive: true }),
