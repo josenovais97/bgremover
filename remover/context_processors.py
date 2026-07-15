@@ -20,6 +20,7 @@ TOOL_NAV = [
     {"name": "instagram", "icon": "fa-brands fa-instagram", "label": "Instagram", "group": "create"},
     {"name": "crop", "icon": "fa-solid fa-crop-simple", "label": "Crop", "group": "edit"},
     {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers", "group": "create"},
+    {"name": "text_behind", "icon": "fa-solid fa-font", "label": "Text Behind", "group": "create"},
     {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme", "group": "create"},
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos"},
@@ -50,6 +51,7 @@ TOOL_ACCENTS = {
     "meme": ("192 38 211", "162 28 175"),       # fuchsia
     "instagram": ("214 41 118", "185 30 99"),   # instagram pink
     "sticker": ("217 119 6", "180 83 9"),       # amber
+    "text_behind": ("13 148 136", "15 118 110"), # teal
     "passport": ("220 38 38", "185 28 28"),     # red
     "passport_country": ("220 38 38", "185 28 28"),
     "favicon": ("202 138 4", "161 98 7"),       # yellow/gold
