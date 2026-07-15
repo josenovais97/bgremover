@@ -9,6 +9,7 @@
  * Self-contained (own helpers/toast) — only absolute-URL (CDN) imports are used.
  */
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
+import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 
 /* --------------------------------------------------------------- helpers */
 const $ = (s, r = document) => r.querySelector(s);
@@ -58,33 +59,34 @@ const MARKETS = {
 
 /* --------------------------------------------------------------------- app */
 const App = {
-  cutout: null,
-  bbox: null,
+  items: [],           // { file, name, cutout, bbox, cutoutUrl, status, canvas, statusEl }
   market: 'amazon',
   bg: '#ffffff',       // '' = transparent
   shadow: false,
+  fillOverride: null,
+  busy: false,
 
   init() {
     this.dropzone = $('#ec-dropzone');
     this.input = $('#ec-input');
     this.editor = $('#ec-editor');
-    this.canvas = $('#ec-canvas');
+    this.grid = $('#ec-grid');
 
     const open = () => this.input.click();
     $('#ec-browse').addEventListener('click', (e) => { e.stopPropagation(); open(); });
     this.dropzone.addEventListener('click', open);
     this.dropzone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-    this.input.addEventListener('change', (e) => this.load(e.target.files[0]));
+    this.input.addEventListener('change', (e) => this.load(e.target.files));
 
     const icon = $('#ec-icon');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((evt) =>
       this.dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }));
     ['dragenter', 'dragover'].forEach((evt) => this.dropzone.addEventListener(evt, () => { this.dropzone.classList.add('border-primary', 'bg-primary/5'); icon.classList.add('scale-110'); }));
     ['dragleave', 'drop'].forEach((evt) => this.dropzone.addEventListener(evt, () => { this.dropzone.classList.remove('border-primary', 'bg-primary/5'); icon.classList.remove('scale-110'); }));
-    this.dropzone.addEventListener('drop', (e) => this.load(e.dataTransfer.files[0]));
+    this.dropzone.addEventListener('drop', (e) => this.load(e.dataTransfer.files));
     document.addEventListener('paste', (e) => {
-      const f = [...(e.clipboardData?.items || [])].find((i) => i.kind === 'file');
-      if (f) this.load(f.getAsFile());
+      const files = [...(e.clipboardData?.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile()).filter(Boolean);
+      if (files.length) this.load(files);
     });
 
     // Marketplace buttons.
@@ -120,49 +122,120 @@ const App = {
     $('#ec-download').addEventListener('click', () => this.export());
     $('#ec-new').addEventListener('click', () => this.reset());
 
-    this.setBusy(false);
+    this.updateButton();
+    this.updateDownload();
   },
 
   fill() {
     return this.fillOverride != null ? this.fillOverride : MARKETS[this.market].fill;
   },
 
+  doneItems() {
+    return this.items.filter((it) => it.status === 'done');
+  },
+
   updateButton() {
-    $('#ec-download-label').textContent = `Download ${MARKETS[this.market].label} photo`;
     $('#ec-fill').value = Math.round(this.fill() * 100);
   },
 
-  setBusy(busy, text) {
-    $('#ec-status').classList.toggle('hidden', !busy);
-    if (text) $('#ec-status-text').textContent = text;
-    $('#ec-download').disabled = busy || !this.cutout;
+  // Enable/label the download control from the current queue state.
+  updateDownload() {
+    const done = this.doneItems().length;
+    const btn = $('#ec-download');
+    btn.disabled = this.busy || done === 0;
+    $('#ec-download-label').textContent = done > 1
+      ? `Download all ${done} · ${MARKETS[this.market].label} (ZIP)`
+      : `Download ${MARKETS[this.market].label} photo`;
   },
 
-  async load(file) {
+  // Add a card to the results grid for one file; processing happens in the queue.
+  addItem(file) {
+    const tile = document.createElement('div');
+    tile.className = 'ec-item glass rounded-xl border border-gray-200/70 dark:border-gray-800/70 p-2 flex flex-col gap-2';
+    tile.innerHTML = `
+      <div class="relative">
+        <canvas class="ec-item-canvas w-full rounded-lg block" width="480" height="480"></canvas>
+        <div class="ec-item-status absolute inset-0 grid place-items-center rounded-lg bg-white/70 dark:bg-gray-950/70 backdrop-blur-sm text-[11px] font-medium">
+          <span class="flex items-center gap-1.5 text-primary"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Removing…</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-2">
+        <span class="ec-item-name text-[11px] truncate text-gray-500 dark:text-gray-400" title="${file.name}">${file.name}</span>
+        <button type="button" class="ec-item-dl shrink-0 w-7 h-7 grid place-items-center rounded-lg text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-40" title="Download this photo" disabled>
+          <i class="fa-solid fa-download text-xs" aria-hidden="true"></i>
+        </button>
+      </div>`;
+    this.grid.appendChild(tile);
+    const item = {
+      file, name: file.name, cutout: null, bbox: null, cutoutUrl: null, status: 'queued',
+      canvas: tile.querySelector('.ec-item-canvas'),
+      statusEl: tile.querySelector('.ec-item-status'),
+    };
+    tile.querySelector('.ec-item-dl').addEventListener('click', () => this.exportOne(item));
+    item.dlBtn = tile.querySelector('.ec-item-dl');
+    this.items.push(item);
+    return item;
+  },
+
+  setItemStatus(item, show, text = '', error = false) {
+    item.statusEl.classList.toggle('hidden', !show);
+    if (show) {
+      item.statusEl.innerHTML = error
+        ? `<span class="flex items-center gap-1.5 text-red-500"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ${text}</span>`
+        : `<span class="flex items-center gap-1.5 text-primary"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> ${text}</span>`;
+    }
+  },
+
+  async load(fileList) {
+    // Snapshot the files BEFORE clearing the input — `fileList` is the live
+    // input.files, so resetting the value first would empty it out.
+    const files = [...(fileList || [])].filter((f) => f && /^image\//.test(f.type));
     this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
-    this.cutout = null;
-    this.fillOverride = null;
+    if (!files.length) { Toast.show('Please choose image files', 'error'); return; }
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
-    this.updateButton();
-    this.setBusy(true, 'Removing background…');
-    this.render();
-    try {
-      const blob = await removeBackground(file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
-      if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
-      this.cutoutUrl = URL.createObjectURL(blob);
-      this.cutout = await loadImage(this.cutoutUrl);
-      this.bbox = this.alphaBBox(this.cutout);
-      window.__clearbgReport?.(1);
-      this.setBusy(false);
-      this.render();
-      Toast.show('Done — pick a marketplace and download', 'success');
-    } catch (err) {
-      console.error('[ecommerce] bg removal failed:', err);
-      Toast.show('Background removal failed', 'error');
-      this.setBusy(false);
+    files.forEach((f) => this.addItem(f));
+    this.updateDownload();
+    await this.processQueue();
+  },
+
+  // Remove backgrounds one at a time (the model is heavy; sequential keeps
+  // memory flat and the UI responsive as each card fills in).
+  async processQueue() {
+    if (this.busy) return;
+    this.busy = true;
+    this.updateDownload();
+    for (const it of this.items) {
+      if (it.status !== 'queued') continue;
+      it.status = 'processing';
+      this.setItemStatus(it, true, 'Removing…');
+      try {
+        const blob = await removeBackground(it.file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
+        it.cutoutUrl = URL.createObjectURL(blob);
+        it.cutout = await loadImage(it.cutoutUrl);
+        it.bbox = this.alphaBBox(it.cutout);
+        it.status = 'done';
+        window.__clearbgReport?.(1);
+        this.setItemStatus(it, false);
+        it.dlBtn.disabled = false;
+        this.paintItem(it);
+      } catch (err) {
+        console.error('[ecommerce] bg removal failed:', err);
+        it.status = 'error';
+        this.setItemStatus(it, true, 'Failed', true);
+      }
+      this.updateDownload();
     }
+    this.busy = false;
+    this.updateDownload();
+    const done = this.doneItems().length;
+    if (done) Toast.show(`Ready — ${done} photo${done > 1 ? 's' : ''}. Pick a marketplace and download.`, 'success');
+  },
+
+  paintItem(it) {
+    if (!it.cutout) return;
+    this.paint(it.canvas, 480, it);
+    it.canvas.classList.toggle('checkerboard', !this.bg);
   },
 
   alphaBBox(img) {
@@ -186,21 +259,21 @@ const App = {
     return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
   },
 
-  /** Compose the product photo into `canvas` at `size` px. */
-  paint(canvas, size) {
+  /** Compose one product's cut-out into `canvas` at `size` px. */
+  paint(canvas, size, item) {
     canvas.width = size; canvas.height = size;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, size, size);
     if (this.bg) { ctx.fillStyle = this.bg; ctx.fillRect(0, 0, size, size); }
-    if (!this.cutout || !this.bbox) return;
+    if (!item || !item.cutout || !item.bbox) return;
 
     const target = size * this.fill();
-    const scale = target / Math.max(this.bbox.w, this.bbox.h);
-    const dw = this.cutout.naturalWidth * scale;
-    const dh = this.cutout.naturalHeight * scale;
+    const scale = target / Math.max(item.bbox.w, item.bbox.h);
+    const dw = item.cutout.naturalWidth * scale;
+    const dh = item.cutout.naturalHeight * scale;
     // Centre the product's bounding box within the frame.
-    const bcx = (this.bbox.x + this.bbox.w / 2) * scale;
-    const bcy = (this.bbox.y + this.bbox.h / 2) * scale;
+    const bcx = (item.bbox.x + item.bbox.w / 2) * scale;
+    const bcy = (item.bbox.y + item.bbox.h / 2) * scale;
     const dx = size / 2 - bcx;
     const dy = size / 2 - bcy;
 
@@ -211,41 +284,78 @@ const App = {
       ctx.shadowOffsetY = size * 0.02;
     }
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(this.cutout, dx, dy, dw, dh);
+    ctx.drawImage(item.cutout, dx, dy, dw, dh);
     if (this.shadow) ctx.restore();
   },
 
+  // Repaint every finished card at preview size (settings apply to all).
   render() {
-    // Preview at a manageable size; export re-renders at full resolution.
-    this.paint(this.canvas, 640);
-    this.canvas.classList.toggle('checkerboard', !this.bg);
+    for (const it of this.items) if (it.status === 'done') this.paintItem(it);
+    this.updateDownload();
+  },
+
+  fmt() {
+    const transparent = !this.bg; // white → JPEG (what marketplaces want), else PNG
+    return { transparent, mime: transparent ? 'image/png' : 'image/jpeg', ext: transparent ? 'png' : 'jpg' };
+  },
+
+  async renderExportBlob(item) {
+    const c = document.createElement('canvas');
+    this.paint(c, MARKETS[this.market].size, item);
+    const { mime } = this.fmt();
+    return new Promise((res) => c.toBlob(res, mime, 0.95));
+  },
+
+  saveBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
+  },
+
+  async exportOne(item) {
+    if (item.status !== 'done') return;
+    const m = MARKETS[this.market];
+    const { ext } = this.fmt();
+    const blob = await this.renderExportBlob(item);
+    if (!blob) { Toast.show('Export failed', 'error'); return; }
+    const base = item.name.replace(/\.[^.]+$/, '');
+    this.saveBlob(blob, `${base}-${m.label.toLowerCase()}-${m.size}.${ext}`);
   },
 
   async export() {
-    if (!this.cutout) return;
+    const done = this.doneItems();
+    if (!done.length) return;
     const m = MARKETS[this.market];
-    const c = document.createElement('canvas');
-    this.paint(c, m.size);
-    // JPEG for white backgrounds (what marketplaces want); PNG when transparent.
-    const transparent = !this.bg;
-    const fmt = transparent ? 'image/png' : 'image/jpeg';
-    const ext = transparent ? 'png' : 'jpg';
-    const blob = await new Promise((res) => c.toBlob(res, fmt, 0.95));
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `${m.label.toLowerCase()}-product-${m.size}.${ext}`;
-    document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
-    const kb = Math.round(blob.size / 1024);
-    $('#ec-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>${m.label} photo saved · ${m.size}×${m.size}px · ${kb} KB`;
+    const { ext } = this.fmt();
+    if (done.length === 1) {
+      await this.exportOne(done[0]);
+      $('#ec-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>${m.label} photo saved · ${m.size}×${m.size}px`;
+      return;
+    }
+    // Batch → one ZIP.
+    $('#ec-done').textContent = 'Zipping…';
+    const zip = new JSZip();
+    let i = 0;
+    for (const it of done) {
+      const blob = await this.renderExportBlob(it);
+      if (blob) zip.file(`${String(++i).padStart(2, '0')}-${m.label.toLowerCase()}-${m.size}.${ext}`, blob);
+    }
+    const out = await zip.generateAsync({ type: 'blob' });
+    this.saveBlob(out, `${m.label.toLowerCase()}-products-${done.length}.zip`);
+    $('#ec-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>${done.length} ${m.label} photos saved as a ZIP · ${m.size}×${m.size}px`;
   },
 
   reset() {
     this.editor.classList.add('hidden');
     this.dropzone.parentElement.classList.remove('hidden');
-    if (this.cutoutUrl) { URL.revokeObjectURL(this.cutoutUrl); this.cutoutUrl = null; }
-    this.cutout = null; this.bbox = null;
+    for (const it of this.items) if (it.cutoutUrl) URL.revokeObjectURL(it.cutoutUrl);
+    this.items = [];
+    this.fillOverride = null;
+    this.grid.innerHTML = '';
     $('#ec-done').textContent = '';
+    this.updateButton();
+    this.updateDownload();
   },
 };
 
