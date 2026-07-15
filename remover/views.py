@@ -22,6 +22,7 @@ from .seo_content import (
     ECOMMERCE_FAQS,
     INDEX_FAQS,
     PASSPORT_FAQS,
+    QR_FAQS,
     TEXTBEHIND_FAQS,
     faq_jsonld,
 )
@@ -246,7 +247,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
@@ -378,6 +379,15 @@ def text_behind(request):
     return render(request, "remover/text_behind.html", {
         "faqs": TEXTBEHIND_FAQS,
         "faq_jsonld": faq_jsonld(TEXTBEHIND_FAQS),
+    })
+
+
+@require_GET
+def qr(request):
+    """Render the client-side QR code generator."""
+    return render(request, "remover/qr.html", {
+        "faqs": QR_FAQS,
+        "faq_jsonld": faq_jsonld(QR_FAQS),
     })
 
 

@@ -90,3 +90,14 @@ TEXTBEHIND_FAQS = [
     {"q": "Can I change the font, size, colour and position?",
      "a": "Yes — pick from several display fonts, set the size, colour and opacity, and drag the text anywhere on the image to place it behind your subject."},
 ]
+
+QR_FAQS = [
+    {"q": "Is this QR code generator free?",
+     "a": "Yes — free, unlimited, no watermark and no sign-up. The codes are static, so they never expire."},
+    {"q": "Do the QR codes expire or track scans?",
+     "a": "No. These are static QR codes built entirely in your browser — no redirect, no tracking, nothing uploaded — so they work forever and stay private."},
+    {"q": "What can I put in a QR code?",
+     "a": "Any text: a website URL, Wi-Fi details, an email address, a phone number, or plain text. Just paste it in and the code updates instantly."},
+    {"q": "Can I change the colours and download a vector file?",
+     "a": "Yes — set the foreground and background colours and size, then download a crisp PNG or a scalable SVG that stays sharp at any print size."},
+]
