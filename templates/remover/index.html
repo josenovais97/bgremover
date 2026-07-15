@@ -337,6 +337,17 @@
                 <button type="button" class="copy-btn btn-ghost" aria-label="Copy result to clipboard">
                     <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy
                 </button>
+                <!-- Continue editing this cut-out in another tool, no re-upload (see handoff.js). -->
+                <div class="continue-wrap relative">
+                    <button type="button" class="continue-btn btn-ghost" aria-haspopup="true" aria-expanded="false" aria-label="Continue editing this result in another tool">
+                        <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Continue in <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+                    </button>
+                    <div class="continue-menu hidden absolute left-0 bottom-full mb-2 w-44 flex flex-col gap-0.5 p-1.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-xl z-30" role="menu">
+                        <a data-tool href="{% url 'remover:crop' %}" role="menuitem" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i class="fa-solid fa-crop-simple w-4 text-center text-gray-400" aria-hidden="true"></i> Crop</a>
+                        <a data-tool href="{% url 'remover:sticker' %}" role="menuitem" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i class="fa-solid fa-note-sticky w-4 text-center text-gray-400" aria-hidden="true"></i> Sticker</a>
+                        <a data-tool href="{% url 'remover:instagram' %}" role="menuitem" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i class="fa-brands fa-instagram w-4 text-center text-gray-400" aria-hidden="true"></i> Instagram</a>
+                    </div>
+                </div>
                 <div class="flex items-center gap-2 ml-auto">
                     <button type="button" class="remove-btn btn-danger" aria-label="Remove this image">
                         <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove

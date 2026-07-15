@@ -1,3 +1,5 @@
+import { takeHandoff } from './handoff.js';
+
 /**
  * Standalone image crop tool — 100% client-side, no background removal.
  *
@@ -313,4 +315,8 @@ const App = {
   },
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  // If we arrived via "Continue in Crop" from another tool, load that image.
+  takeHandoff().then((file) => { if (file) App.load(file); });
+});
