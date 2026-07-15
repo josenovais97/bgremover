@@ -124,6 +124,17 @@ EXIF_FAQS = [
      "a": "Geotagged photos reveal exactly where they were taken — often your home. Stripping the GPS tag before you post protects your privacy."},
 ]
 
+RESIZE_FAQS = [
+    {"q": "Is this image resizer free?",
+     "a": "Yes — free, unlimited, no watermark and no sign-up. Resize as many images as you like."},
+    {"q": "Will resizing reduce quality?",
+     "a": "Making an image smaller stays crisp. Enlarging past the original size can look soft, since there's no extra detail to add — best results come from scaling down."},
+    {"q": "Can I keep the aspect ratio?",
+     "a": "Yes. Lock the ratio and changing the width updates the height automatically so the image never looks stretched; unlock it to set exact dimensions."},
+    {"q": "Is my image uploaded?",
+     "a": "No — resizing happens entirely in your browser, so your images never leave your device."},
+]
+
 ALTERNATIVE_FAQS = [
     {"q": "Is ClearBG really a free remove.bg alternative?",
      "a": "Yes — background removal is free and unlimited with no credits, no sign-up and no watermark. You export full-resolution transparent PNGs at no cost."},
