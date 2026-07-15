@@ -22,6 +22,7 @@ from .seo_content import (
     ECOMMERCE_FAQS,
     INDEX_FAQS,
     PASSPORT_FAQS,
+    TEXTBEHIND_FAQS,
     faq_jsonld,
 )
 from .translations import localize_use_case
@@ -245,7 +246,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
@@ -368,6 +369,15 @@ def blur(request):
     return render(request, "remover/blur.html", {
         "faqs": BLUR_FAQS,
         "faq_jsonld": faq_jsonld(BLUR_FAQS),
+    })
+
+
+@require_GET
+def text_behind(request):
+    """Render the client-side text-behind-image effect tool."""
+    return render(request, "remover/text_behind.html", {
+        "faqs": TEXTBEHIND_FAQS,
+        "faq_jsonld": faq_jsonld(TEXTBEHIND_FAQS),
     })
 
 

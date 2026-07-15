@@ -79,3 +79,14 @@ BLUR_FAQS = [
     {"q": "Can I control how strong the blur is?",
      "a": "Yes — a slider takes you from a subtle, natural depth effect to a strong, dreamy background blur."},
 ]
+
+TEXTBEHIND_FAQS = [
+    {"q": "How does the text-behind-image effect work?",
+     "a": "The AI cuts your subject out of the photo, then your text is drawn on top of the original background but underneath the subject — so the subject appears to stand in front of the words, like a magazine cover."},
+    {"q": "Is it free and private?",
+     "a": "Yes. It's completely free with no watermark, and everything — the cut-out and the text layering — happens in your browser. Your photo is never uploaded."},
+    {"q": "What photos work best?",
+     "a": "Photos with a clear subject (a person, pet or product) that stands out from the background give the strongest depth, since the subject needs to overlap the text convincingly."},
+    {"q": "Can I change the font, size, colour and position?",
+     "a": "Yes — pick from several display fonts, set the size, colour and opacity, and drag the text anywhere on the image to place it behind your subject."},
+]
