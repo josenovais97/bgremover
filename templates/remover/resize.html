@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static i18n_extras %}
+
+{% block title %}Free Image Resizer — Resize Photos by Pixels or Percentage{% endblock %}
+{% block description %}Resize any image to exact pixels or a percentage, free and in your browser. Lock the aspect ratio, pick a preset size, and export JPG, PNG or WEBP. Nothing is uploaded, no watermark.{% endblock %}
+{% block og_title %}Free Image Resizer — Exact Pixels, Private{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Image Resizer",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free image resizer that runs entirely in your browser. Resize by pixels or percentage with the aspect ratio locked — no upload, no watermark.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero -->
+    <section class="max-w-2xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <i class="fa-solid fa-expand" aria-hidden="true"></i> Made locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Image
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primaryHover">Resizer</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Resize any photo to exact <strong>pixels</strong> or a <strong>percentage</strong> — aspect ratio
+                locked so nothing stretches. Free, full quality and 100% private.
+            </p>
+        </div>
+
+        <div id="rs-dropzone" role="button" tabindex="0" aria-label="Upload a photo. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
+            <input type="file" id="rs-input" class="sr-only" accept="image/png,image/jpeg,image/webp">
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="rs-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-expand" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drop a photo</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                <button id="rs-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="rs-editor" class="hidden max-w-5xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6 items-start">
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
+            <div class="relative w-full grid place-items-center min-h-[12rem]">
+                <img id="rs-preview" alt="Preview" class="max-w-full max-h-[58vh] rounded-lg shadow-md checkerboard">
+            </div>
+            <p id="rs-dims" class="text-xs text-gray-500 dark:text-gray-400 text-center"></p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
+                <div class="flex items-end gap-2">
+                    <label class="flex-1"><span class="text-gray-500 dark:text-gray-400">Width</span>
+                        <input id="rs-w" type="number" min="1" class="mt-1 w-full px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Width in pixels"></label>
+                    <span class="pb-2 text-gray-400">×</span>
+                    <label class="flex-1"><span class="text-gray-500 dark:text-gray-400">Height</span>
+                        <input id="rs-h" type="number" min="1" class="mt-1 w-full px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Height in pixels"></label>
+                </div>
+                <label class="inline-flex items-center gap-2 cursor-pointer select-none"><input id="rs-lock" type="checkbox" class="accent-primary w-4 h-4" checked> Lock aspect ratio</label>
+            </div>
+
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
+                <span class="text-gray-500 dark:text-gray-400">Scale</span>
+                <div id="rs-scale" class="grid grid-cols-4 gap-1.5 font-medium">
+                    <button type="button" class="rs-pct px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pct="25">25%</button>
+                    <button type="button" class="rs-pct px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pct="50">50%</button>
+                    <button type="button" class="rs-pct px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pct="75">75%</button>
+                    <button type="button" class="rs-pct px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pct="100">100%</button>
+                </div>
+                <span class="text-gray-500 dark:text-gray-400">Fit within</span>
+                <div id="rs-presets" class="grid grid-cols-4 gap-1.5 font-medium">
+                    <button type="button" class="rs-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-max="320">320</button>
+                    <button type="button" class="rs-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-max="640">640</button>
+                    <button type="button" class="rs-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-max="1280">1280</button>
+                    <button type="button" class="rs-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-max="1920">1920</button>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-2 text-xs">
+                <span class="text-gray-500 dark:text-gray-400">Format</span>
+                <div id="rs-fmt" class="grid grid-cols-4 gap-1.5 font-medium">
+                    <button type="button" class="rs-fmt-btn px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-fmt="">Same</button>
+                    <button type="button" class="rs-fmt-btn px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-fmt="image/jpeg">JPG</button>
+                    <button type="button" class="rs-fmt-btn px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-fmt="image/png">PNG</button>
+                    <button type="button" class="rs-fmt-btn px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-fmt="image/webp">WEBP</button>
+                </div>
+            </div>
+
+            <button id="rs-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download
+            </button>
+            <button id="rs-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New
+            </button>
+        </div>
+    </section>
+
+    <!-- SEO / help -->
+    <section aria-labelledby="rs-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="rs-how" class="text-2xl font-bold text-center">Resize in three steps</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">Any JPG, PNG or WEBP — it's read straight in your browser.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">2.</span>Set the size</div><p class="text-sm text-gray-500 dark:text-gray-400">Type exact pixels, pick a percentage, or fit within a preset. Aspect ratio stays locked.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Export JPG, PNG or WEBP at the new size — free, no watermark.</p></div>
+        </div>
+    </section>
+
+    {% include 'remover/partials/faq.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/resize.js' %}"></script>
+{% endblock %}

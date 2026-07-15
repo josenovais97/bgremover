@@ -31,6 +31,7 @@ urlpatterns = [
     path("qr-code-generator/", views.qr, name="qr"),
     path("redact-image/", views.redact, name="redact"),
     path("exif-remover/", views.exif, name="exif"),
+    path("resize-image/", views.resize, name="resize"),
     path("remove-bg-alternative/", views.alternative, name="alternative"),
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
     path("about/", views.about, name="about"),

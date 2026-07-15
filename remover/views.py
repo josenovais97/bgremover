@@ -26,6 +26,7 @@ from .seo_content import (
     PASSPORT_FAQS,
     QR_FAQS,
     REDACT_FAQS,
+    RESIZE_FAQS,
     TEXTBEHIND_FAQS,
     faq_jsonld,
 )
@@ -250,7 +251,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 LANDING_PATHS = ["/remove-bg-alternative/"]
 SITEMAP_PATHS = (
@@ -402,6 +403,15 @@ def redact(request):
     return render(request, "remover/redact.html", {
         "faqs": REDACT_FAQS,
         "faq_jsonld": faq_jsonld(REDACT_FAQS),
+    })
+
+
+@require_GET
+def resize(request):
+    """Render the client-side image resizer."""
+    return render(request, "remover/resize.html", {
+        "faqs": RESIZE_FAQS,
+        "faq_jsonld": faq_jsonld(RESIZE_FAQS),
     })
 
 

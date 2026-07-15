@@ -17,6 +17,7 @@ TOOL_NAV = [
     {"name": "index", "icon": "fa-solid fa-wand-magic-sparkles", "label": "Remove BG", "group": "edit"},
     {"name": "convert", "icon": "fa-solid fa-arrow-right-arrow-left", "label": "Convert", "group": "optimize"},
     {"name": "compress", "icon": "fa-solid fa-compress", "label": "Compress", "group": "optimize"},
+    {"name": "resize", "icon": "fa-solid fa-expand", "label": "Resize", "group": "optimize"},
     {"name": "instagram", "icon": "fa-brands fa-instagram", "label": "Instagram", "group": "create"},
     {"name": "crop", "icon": "fa-solid fa-crop-simple", "label": "Crop", "group": "edit"},
     {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers", "group": "create"},
@@ -61,6 +62,7 @@ TOOL_ACCENTS = {
     "qr": ("71 85 105", "51 65 85"),            # slate
     "redact": ("225 29 72", "190 18 60"),       # rose
     "exif": ("22 163 74", "21 128 61"),         # green
+    "resize": ("234 88 12", "194 65 12"),       # orange
 }
 _DEFAULT_ACCENT = ("79 70 229", "67 56 202")
 
