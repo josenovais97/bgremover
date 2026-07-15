@@ -54,6 +54,7 @@ UI = {
     "Passport Photo": "Foto de Passaporte",
     "Product Photos": "Fotos de Produtos",
     "Background Blur": "Desfoque de Fundo",
+    "Blur & Redact": "Desfocar e Ocultar",
     "Favicon Generator": "Gerador de Favicon",
     "QR Code Generator": "Gerador de Código QR",
     "images processed": "imagens processadas",
