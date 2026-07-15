@@ -34,7 +34,7 @@ UI = {
     "Portrait": "Retrato",
     "Favicon": "Favicon",
     "More": "Mais",
-    "Live": "Ao vivo",
+    "nothing uploaded": "nada carregado",
     "All tools": "Todas as ferramentas",
     "Remove & Edit": "Remover e Editar",
     "Convert & Optimize": "Converter e Otimizar",

@@ -16,11 +16,10 @@
   // genuinely impressive — a tiny count is weaker social proof than none.
   const MIN_DISPLAY = 1;
 
-  // Compact, readable numbers: 3 → "3", 1240 → "1.2k", 34500 → "34.5k", 2.1M.
+  // Full, concrete numbers up to 999,999 ("12,412") — more tangible than
+  // "12k"; compact "M" only once it gets truly large.
   function fmt(n) {
     if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
-    if (n >= 1e4) return Math.round(n / 1e3) + 'k';
-    if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
     try { return n.toLocaleString(lang); } catch (e) { return String(n); }
   }
 
