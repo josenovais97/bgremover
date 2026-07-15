@@ -122,6 +122,10 @@
                     <span><b class="font-semibold">Download</b> a transparent PNG, full quality</span>
                 </li>
             </ol>
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                {% t "Coming from another tool?" %}
+                <a href="{% url 'remover:alternative' %}" class="text-primary font-medium hover:underline">{% t "See how we compare to remove.bg" %} →</a>
+            </p>
         </section>
 
         {% include 'remover/partials/faq.html' %}

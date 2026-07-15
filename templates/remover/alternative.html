@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static i18n_extras %}
+
+{% block title %}Free remove.bg Alternative — No Uploads, No Credits, No Watermark{% endblock %}
+{% block description %}Looking for a free remove.bg alternative? ClearBG removes backgrounds in your browser — unlimited, full-resolution, no uploads, no credits and no watermark. See how they compare.{% endblock %}
+{% block og_title %}The Free, Private remove.bg Alternative{% endblock %}
+
+{% block content %}
+<div class="space-y-16">
+
+    <!-- Hero -->
+    <section class="max-w-3xl mx-auto text-center space-y-6 animate-fade-in-up">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Private by design — nothing is uploaded
+        </span>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+            The free
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primaryHover">remove.bg alternative</span>
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300">
+            Remove image backgrounds free and unlimited — at <strong>full resolution</strong>, with no credits, no sign-up
+            and no watermark. And because the AI runs in your browser, your images never leave your device.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a href="{% url 'remover:index' %}" class="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Remove a background free
+            </a>
+            <span class="text-sm text-gray-500 dark:text-gray-400">No account. No credits. Just drop an image.</span>
+        </div>
+    </section>
+
+    <!-- Comparison table -->
+    <section aria-labelledby="cmp" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="cmp" class="text-2xl font-bold text-center">ClearBG vs remove.bg</h2>
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200/70 dark:border-gray-800/70 text-left">
+                            <th class="p-4 font-semibold text-gray-500 dark:text-gray-400 font-normal">Feature</th>
+                            <th class="p-4 font-bold text-primary">ClearBG</th>
+                            <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">remove.bg</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200/60 dark:divide-gray-800/60">
+                        {% for row in rows %}
+                        <tr>
+                            <td class="p-4 font-medium">{{ row.0 }}</td>
+                            <td class="p-4 text-green-600 dark:text-green-400"><i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>{{ row.1 }}</td>
+                            <td class="p-4 text-gray-500 dark:text-gray-400">{{ row.2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p class="text-center text-xs text-gray-400">Comparison based on each service's publicly documented free tier. remove.bg is a trademark of its respective owner; this page is not affiliated with or endorsed by them.</p>
+    </section>
+
+    <!-- Why switch -->
+    <section class="max-w-4xl mx-auto space-y-6">
+        <h2 class="text-2xl font-bold text-center">Why people switch</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2">
+                <div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-lock text-primary" aria-hidden="true"></i>Truly private</div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Your photos are processed on your device and never uploaded — ideal for client work, IDs and anything confidential.</p>
+            </div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2">
+                <div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-infinity text-primary" aria-hidden="true"></i>Free &amp; full-res</div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Unlimited removals with full-resolution PNG export — no credits, no per-image fees, no watermark.</p>
+            </div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2">
+                <div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-layer-group text-primary" aria-hidden="true"></i>A whole toolkit</div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Convert, compress, crop, stickers, passport photos, product shots, blur, redact and more — all free and private.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="max-w-2xl mx-auto text-center space-y-4">
+        <h2 class="text-2xl font-bold">Try it — it's free and instant</h2>
+        <p class="text-gray-600 dark:text-gray-300">Drop an image and get a clean, transparent PNG in seconds. Nothing to install, nothing to upload.</p>
+        <a href="{% url 'remover:index' %}" class="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Remove a background free
+        </a>
+    </section>
+
+    {% include 'remover/partials/faq.html' %}
+</div>
+{% endblock %}

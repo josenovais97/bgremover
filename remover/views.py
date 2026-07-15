@@ -18,6 +18,7 @@ from django.views.decorators.http import require_GET
 
 from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, country_faqs
 from .seo_content import (
+    ALTERNATIVE_FAQS,
     BLUR_FAQS,
     ECOMMERCE_FAQS,
     INDEX_FAQS,
@@ -250,10 +251,12 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 # defines the pages so a new landing page is indexed automatically.
 TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
+LANDING_PATHS = ["/remove-bg-alternative/"]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
     + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
     + [f"/passport-photo/{c['slug']}/" for c in COUNTRIES]
+    + LANDING_PATHS
     + INFO_PATHS
 )
 
@@ -398,6 +401,27 @@ def redact(request):
     return render(request, "remover/redact.html", {
         "faqs": REDACT_FAQS,
         "faq_jsonld": faq_jsonld(REDACT_FAQS),
+    })
+
+
+@require_GET
+def alternative(request):
+    """SEO comparison landing page targeting 'free remove.bg alternative'."""
+    # (feature, ClearBG, remove.bg) — based on each service's public free tier.
+    rows = [
+        ("Price", "Free & unlimited", "Free preview; paid credits for full use"),
+        ("Your images", "Never uploaded — processed in-browser", "Uploaded to their servers"),
+        ("Full-resolution download", "Free", "Requires paid credits / subscription"),
+        ("Watermark", "None", "None"),
+        ("Batch processing", "Free", "Paid plans / API"),
+        ("Sign-up", "Not required", "Account needed for credits / API"),
+        ("Refine / edge brush", "Built in", "Limited"),
+        ("Other image tools", "12+ (convert, crop, stickers…)", "Background removal focused"),
+    ]
+    return render(request, "remover/alternative.html", {
+        "rows": rows,
+        "faqs": ALTERNATIVE_FAQS,
+        "faq_jsonld": faq_jsonld(ALTERNATIVE_FAQS),
     })
 
 
