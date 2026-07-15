@@ -1,59 +1,52 @@
 /**
- * Responsive tool-nav overflow menu.
+ * Header tool switcher: pill row + "All tools" mega-menu.
  *
- * The header tool switcher lists every tool. When they don't all fit on the
- * current screen (which varies by width AND OS font metrics), the trailing items
- * are moved into a "More ▾" dropdown instead of being clipped or forcing a
- * horizontal scroll. Recomputed on resize and once web fonts have loaded.
+ * The pill row shows as many tools as fit on the current screen (which varies by
+ * width AND OS font metrics); pills that don't fit are hidden rather than clipped
+ * or scrolled. Every tool — including any hidden pill — is always reachable from
+ * the grouped "All tools" menu, which is server-rendered (see base.html) so its
+ * contents are stable and don't shuffle as the window resizes.
  *
  * Progressive enhancement: with JS off, the nav keeps its `overflow-x-auto`
- * scroll fallback and the "More" button stays hidden.
+ * scroll fallback and every tool is still reachable from the footer.
+ *
+ * The nav KEEPS `overflow-x-auto`: it's what constrains `clientWidth` to the
+ * space actually available (otherwise the row grows to fit its content and
+ * would report that everything fits, colliding with the header's utilities).
+ * The mega-menu panel lives outside `#tool-nav`, so it is never clipped by it.
  */
 (function () {
-  const wrap = document.getElementById('tool-switcher');
   const nav = document.getElementById('tool-nav');
   const moreBtn = document.getElementById('tool-more-btn');
   const panel = document.getElementById('tool-more-panel');
-  if (!wrap || !nav || !moreBtn || !panel) return;
+  if (!nav || !moreBtn || !panel) return;
 
-  // In JS mode the dropdown handles overflow, so drop the scroll fallback
-  // (which would otherwise clip the absolutely-positioned "More" button).
-  nav.classList.remove('overflow-x-auto', 'no-scrollbar');
+  const chevron = moreBtn.querySelector('[data-chevron]');
+  const pills = [...nav.querySelectorAll('[data-nav-item]')];
 
   const closePanel = () => {
     panel.classList.add('hidden');
     moreBtn.setAttribute('aria-expanded', 'false');
+    if (chevron) chevron.style.transform = '';
   };
   const openPanel = () => {
     panel.classList.remove('hidden');
     moreBtn.setAttribute('aria-expanded', 'true');
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
   };
 
   function layout() {
-    // 1. Reset: move everything back into the row, hide the button.
-    [...panel.querySelectorAll('[data-nav-item]')].forEach((el) => {
-      el.classList.remove('w-full');
-      nav.insertBefore(el, moreBtn);
+    // Reveal every pill, then hide those whose right edge would sit past the
+    // space left once the always-present menu button is accounted for.
+    // Use inline `display` (not the `hidden` attribute) — a Tailwind display
+    // utility like `inline-flex` would otherwise out-rank `[hidden]` and the
+    // pill would stay visible, leaving the row overflowing.
+    pills.forEach((el) => { el.style.display = ''; });
+    if (nav.scrollWidth <= nav.clientWidth + 1) return; // everything fits
+    const limit = nav.getBoundingClientRect().left + nav.clientWidth - moreBtn.offsetWidth - 8;
+    pills.forEach((el) => {
+      if (el.getBoundingClientRect().right > limit) el.style.display = 'none';
     });
-    moreBtn.style.display = 'none';
-    closePanel();
-
-    // 2. Does the full row fit? If so, we're done.
-    if (nav.scrollWidth <= nav.clientWidth + 1) return;
-
-    // 3. Reveal the button (so we can budget for its width) and move any item
-    //    whose right edge would sit past the available space into the panel.
-    moreBtn.style.display = 'inline-flex';
-    const limit = nav.getBoundingClientRect().left + nav.clientWidth - moreBtn.offsetWidth - 10;
-    let moved = false;
-    [...nav.querySelectorAll('[data-nav-item]')].forEach((el) => {
-      if (el.getBoundingClientRect().right > limit) {
-        el.classList.add('w-full');
-        panel.appendChild(el);
-        moved = true;
-      }
-    });
-    if (!moved) moreBtn.style.display = 'none';
   }
 
   moreBtn.addEventListener('click', (e) => {

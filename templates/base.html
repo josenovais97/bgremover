@@ -127,15 +127,37 @@
                     <div id="tool-switcher" class="relative min-w-0">
                         <nav id="tool-nav" class="flex items-center gap-0.5 p-1 rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200/70 dark:border-gray-800/70 text-sm font-medium overflow-x-auto no-scrollbar" aria-label="Tools">
                             {% for item in tool_nav %}
-                            <a data-nav-item href="{{ item.url }}" {% if active == item.name %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap inline-flex items-center px-2.5 py-1.5 rounded-full transition-colors {% if active == item.name %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                            <a data-nav-item {% if active == item.name %}data-active{% endif %} href="{{ item.url }}" {% if active == item.name %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap inline-flex items-center px-2.5 py-1.5 rounded-full transition-colors {% if active == item.name %}bg-white dark:bg-gray-800 text-primary shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
                                 <i class="{{ item.icon }} mr-1" aria-hidden="true"></i>{{ item.label }}
                             </a>
                             {% endfor %}
-                            <button id="tool-more-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More tools" style="display:none" class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
-                                {% t "More" %} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+                            <button id="tool-more-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="tool-more-panel" class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white/70 dark:hover:bg-gray-800 transition-colors">
+                                <i class="fa-solid fa-table-cells-large text-[11px]" aria-hidden="true"></i>
+                                <span class="hidden sm:inline">{% t "All tools" %}</span>
+                                <i class="fa-solid fa-chevron-down text-[10px] transition-transform" data-chevron aria-hidden="true"></i>
                             </button>
                         </nav>
-                        <div id="tool-more-panel" class="hidden absolute right-0 top-full mt-2 w-56 max-h-[70vh] overflow-y-auto flex flex-col gap-0.5 p-1.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-xl z-50" role="menu"></div>
+
+                        <!-- Grouped "All tools" mega-menu. Server-rendered from tool_groups so
+                             its contents are stable (unlike a width-dependent overflow dump). -->
+                        <div id="tool-more-panel" class="hidden absolute right-0 top-full mt-2 w-[19rem] sm:w-[30rem] max-h-[75vh] overflow-y-auto p-3 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-xl z-50" role="menu" aria-label="{% t 'All tools' %}">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                                {% for group in tool_groups %}
+                                <div>
+                                    <p class="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{{ group.label }}</p>
+                                    <div class="flex flex-col gap-0.5">
+                                        {% for item in group.items %}
+                                        <a href="{{ item.url }}" role="menuitem" {% if active == item.name %}aria-current="page"{% endif %}
+                                           class="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm transition-colors {% if active == item.name %}bg-primary/10 text-primary font-medium{% else %}text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800{% endif %}">
+                                            <i class="{{ item.icon }} w-4 text-center {% if active == item.name %}text-primary{% else %}text-gray-400 dark:text-gray-500{% endif %}" aria-hidden="true"></i>
+                                            <span class="truncate">{{ item.label }}</span>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                     {% endwith %}
                 </div>
