@@ -1,3 +1,5 @@
+import { takeHandoff } from './handoff.js';
+
 /**
  * WhatsApp / Telegram sticker maker — 100% client-side.
  *
@@ -310,4 +312,8 @@ const App = {
   },
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  // If we arrived via "Continue in Sticker" from another tool, load that image.
+  takeHandoff().then((file) => { if (file) App.load(file); });
+});

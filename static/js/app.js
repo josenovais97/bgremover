@@ -10,6 +10,7 @@
  */
 import { removeBackground, preload } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
+import { putHandoff } from './handoff.js';
 
 /* ------------------------------------------------------------------ config */
 const CONFIG = {
@@ -1251,6 +1252,27 @@ class Card {
     this.el.querySelector('.options-btn').addEventListener('click', () =>
       this.el.querySelector('.options-panel').classList.toggle('hidden'),
     );
+
+    // "Continue in <tool>" — hand the cut-out to another tool with no re-upload.
+    const contBtn = this.el.querySelector('.continue-btn');
+    const contMenu = this.el.querySelector('.continue-menu');
+    if (contBtn && contMenu) {
+      contBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = contMenu.classList.toggle('hidden');
+        contBtn.setAttribute('aria-expanded', String(!open));
+      });
+      document.addEventListener('click', () => contMenu.classList.add('hidden'));
+      $$('[data-tool]', contMenu).forEach((a) =>
+        a.addEventListener('click', async (e) => {
+          if (!this.processedBlob) return; // nothing to hand off yet
+          e.preventDefault();
+          const base = (this.file?.name || 'cutout').replace(/\.[^.]+$/, '');
+          await putHandoff(this.processedBlob, `${base}.png`);
+          location.href = a.href;
+        }),
+      );
+    }
     $$('.zoomable', this.el).forEach((img) =>
       img.addEventListener('click', () => this.done && Zoom.open(this.processedUrl)),
     );

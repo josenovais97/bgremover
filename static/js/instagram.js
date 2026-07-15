@@ -1,3 +1,5 @@
+import { takeHandoff } from './handoff.js';
+
 /**
  * Instagram photo editor — 100% client-side.
  *
@@ -1246,4 +1248,8 @@ const App = {
   },
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  // If we arrived via "Continue in Instagram" from another tool, load that image.
+  takeHandoff().then((file) => { if (file) App.load(file); });
+});
