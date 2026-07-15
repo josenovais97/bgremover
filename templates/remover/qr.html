@@ -49,14 +49,65 @@
         <div class="space-y-4">
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-2">
                 <label for="qr-text" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Content</label>
-                <textarea id="qr-text" rows="3" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" placeholder="https://…  ·  Wi-Fi  ·  email  ·  any text">https://clearbg.pt</textarea>
+                <textarea id="qr-text" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" placeholder="https://…  ·  Wi-Fi  ·  email  ·  any text">https://clearbg.pt</textarea>
             </div>
 
+            <!-- Style presets -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
+                <span class="text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide text-[11px]">Style</span>
+                <div id="qr-presets" class="grid grid-cols-4 gap-1.5 font-medium">
+                    <button type="button" class="qr-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-preset="classic">Classic</button>
+                    <button type="button" class="qr-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-preset="rounded">Rounded</button>
+                    <button type="button" class="qr-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-preset="dots">Dots</button>
+                    <button type="button" class="qr-preset px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-preset="soft">Soft</button>
+                </div>
+                <div class="space-y-1.5">
+                    <span class="text-gray-500 dark:text-gray-400">Pattern</span>
+                    <div class="grid grid-cols-3 gap-1.5 font-medium">
+                        <button type="button" class="qr-mod px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-shape="square">Square</button>
+                        <button type="button" class="qr-mod px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="rounded">Rounded</button>
+                        <button type="button" class="qr-mod px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="dots">Dots</button>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <span class="text-gray-500 dark:text-gray-400">Corners (eyes)</span>
+                    <div class="grid grid-cols-3 gap-1.5 font-medium">
+                        <button type="button" class="qr-eye px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-eye="square">Square</button>
+                        <button type="button" class="qr-eye px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-eye="rounded">Rounded</button>
+                        <button type="button" class="qr-eye px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-eye="circle">Circle</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colours -->
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
-                    <label class="inline-flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">Foreground</span><input id="qr-fg" type="color" value="#000000" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Foreground colour"></label>
+                    <label class="inline-flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">Foreground</span><input id="qr-fg" type="color" value="#111827" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Foreground colour"></label>
                     <label class="inline-flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">Background</span><input id="qr-bg" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Background colour"></label>
                 </div>
+                <label class="inline-flex items-center gap-2 cursor-pointer select-none"><input id="qr-gradient" type="checkbox" class="accent-primary w-4 h-4"> Gradient</label>
+                <div id="qr-gradient-row" class="hidden items-center gap-2">
+                    <span class="text-gray-500 dark:text-gray-400">to</span>
+                    <input id="qr-fg2" type="color" value="#4f46e5" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Gradient second colour">
+                    <input id="qr-grad-angle" type="range" min="0" max="360" step="15" value="45" class="w-full accent-primary" aria-label="Gradient angle" title="Angle">
+                </div>
+            </div>
+
+            <!-- Logo -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-2 text-xs">
+                <span class="text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide text-[11px]">Logo</span>
+                <div class="flex items-center gap-2">
+                    <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer font-medium">
+                        <i class="fa-solid fa-image" aria-hidden="true"></i> Add logo
+                        <input id="qr-logo" type="file" accept="image/*" class="sr-only" aria-label="Upload a centre logo">
+                    </label>
+                    <button id="qr-logo-clear" type="button" class="hidden px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Remove</button>
+                </div>
+                <p class="text-[11px] text-gray-400">A logo automatically raises error correction so the code still scans.</p>
+            </div>
+
+            <!-- Size / ECC / margin -->
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
                 <label class="flex items-center gap-2"><span class="w-24 shrink-0 text-gray-500 dark:text-gray-400">Size</span><input id="qr-size" type="range" min="128" max="1024" step="32" value="512" class="w-full accent-primary" aria-label="Export size"><span id="qr-size-val" class="w-10 text-right tabular-nums text-gray-500 dark:text-gray-400">512</span></label>
                 <div class="space-y-1.5">
                     <span class="text-gray-500 dark:text-gray-400">Error correction</span>
@@ -66,9 +117,8 @@
                         <button type="button" class="qr-ecc-btn px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ecc="Q" title="Quartile (~25%)">Q</button>
                         <button type="button" class="qr-ecc-btn px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-ecc="H" title="High (~30%)">H</button>
                     </div>
-                    <p class="text-[11px] text-gray-400">Higher levels stay scannable even if the code is partly covered or damaged.</p>
                 </div>
-                <label class="inline-flex items-center gap-2 cursor-pointer select-none pt-1"><input id="qr-margin" type="checkbox" class="accent-primary w-4 h-4" checked> Quiet-zone margin</label>
+                <label class="inline-flex items-center gap-2 cursor-pointer select-none"><input id="qr-margin" type="checkbox" class="accent-primary w-4 h-4" checked> Quiet-zone margin</label>
             </div>
 
             <button id="qr-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
