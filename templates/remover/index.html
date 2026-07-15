@@ -88,11 +88,11 @@
                 </div>
 
                 <!-- Trust badges -->
-                <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No watermark</span>
-                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No sign-up</span>
-                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> 100% private</span>
-                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> Unlimited use</span>
+                <div class="flex flex-wrap items-center justify-center gap-2.5 text-sm">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No watermark</span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No sign-up</span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> 100% private</span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> Unlimited use</span>
                 </div>
             </div>
         </section>
@@ -228,20 +228,30 @@
                 </div>
             </div>
 
-            <!-- Rich backgrounds: gradient, blurred original, uploaded image -->
+            <!-- Rich backgrounds: gradient, blurred original, uploaded image.
+                 Each style sits on its own row with its controls attached, so it
+                 reads as one unit instead of a wrapped jumble of chips + sliders. -->
             <div class="space-y-2.5">
                 <span class="opt-label">Fill style</span>
-                <div class="flex items-center gap-2.5 flex-wrap">
-                    <button type="button" class="bg-style chip bg-grad-btn" data-style="gradient"><i class="fa-solid fa-swatchbook" aria-hidden="true"></i>Gradient</button>
-                    <input type="color" value="#4F46E5" class="bg-grad-a color-chip" aria-label="Gradient color 1">
-                    <input type="color" value="#EC4899" class="bg-grad-b color-chip" aria-label="Gradient color 2">
-                    <input type="range" class="bg-grad-angle slider w-16" min="0" max="360" step="5" value="45" aria-label="Gradient angle" title="Angle">
-                    <span class="h-6 w-px bg-gray-200 dark:bg-white/10" aria-hidden="true"></span>
-                    <button type="button" class="bg-style chip bg-blur-btn" data-style="blur"><i class="fa-solid fa-droplet" aria-hidden="true"></i>Blur photo</button>
-                    <input type="range" class="bg-blur-amt slider w-16" min="0.01" max="0.12" step="0.01" value="0.05" aria-label="Blur amount">
-                    <label class="bg-style chip bg-image-btn cursor-pointer" data-style="image"><i class="fa-solid fa-image" aria-hidden="true"></i>Image
-                        <input type="file" accept="image/*" class="bg-image-input hidden" aria-label="Upload background image">
-                    </label>
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-2 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/70 dark:border-white/10 p-1.5">
+                        <button type="button" class="bg-style chip bg-grad-btn" data-style="gradient"><i class="fa-solid fa-swatchbook" aria-hidden="true"></i>Gradient</button>
+                        <div class="flex items-center gap-1.5 ml-auto">
+                            <input type="color" value="#4F46E5" class="bg-grad-a color-chip" aria-label="Gradient color 1" title="Gradient color 1">
+                            <input type="color" value="#EC4899" class="bg-grad-b color-chip" aria-label="Gradient color 2" title="Gradient color 2">
+                            <input type="range" class="bg-grad-angle slider w-20" min="0" max="360" step="5" value="45" aria-label="Gradient angle" title="Angle">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/70 dark:border-white/10 p-1.5">
+                        <button type="button" class="bg-style chip bg-blur-btn" data-style="blur"><i class="fa-solid fa-droplet" aria-hidden="true"></i>Blur photo</button>
+                        <input type="range" class="bg-blur-amt slider w-24 ml-auto" min="0.01" max="0.12" step="0.01" value="0.05" aria-label="Blur amount" title="Blur amount">
+                    </div>
+                    <div class="flex items-center gap-2 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/70 dark:border-white/10 p-1.5">
+                        <label class="bg-style chip bg-image-btn cursor-pointer" data-style="image"><i class="fa-solid fa-image" aria-hidden="true"></i>Image
+                            <input type="file" accept="image/*" class="bg-image-input hidden" aria-label="Upload background image">
+                        </label>
+                        <span class="ml-auto text-[11px] text-gray-400 dark:text-gray-500 pr-1">Use your own photo</span>
+                    </div>
                 </div>
             </div>
 
@@ -306,10 +316,10 @@
             <div class="actions flex flex-wrap items-center gap-2">
                 <div class="flex items-center gap-1 mr-1">
                     <button type="button" class="undo-btn btn-ghost" aria-label="Undo last change" title="Undo" disabled>
-                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                        <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
                     </button>
                     <button type="button" class="redo-btn btn-ghost" aria-label="Redo last change" title="Redo" disabled>
-                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                        <i class="fa-solid fa-arrow-rotate-left inline-block -scale-x-100" aria-hidden="true"></i>
                     </button>
                 </div>
                 <button type="button" class="edit-btn btn-accent" aria-label="Refine edges — erase or restore">
@@ -382,7 +392,7 @@
                 </div>
             </div>
             <div class="flex lg:flex-col gap-2 w-full">
-                <button id="editor-undo" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-rotate-left mr-1.5" aria-hidden="true"></i>Undo</button>
+                <button id="editor-undo" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>Undo</button>
                 <button id="editor-reset" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrows-rotate mr-1.5" aria-hidden="true"></i>Reset</button>
             </div>
             <p class="hidden lg:block text-xs text-gray-400 leading-relaxed">
@@ -448,7 +458,7 @@
             <div class="space-y-2 w-full">
                 <span class="text-xs uppercase tracking-wide text-gray-400">Orientation</span>
                 <div class="grid grid-cols-3 gap-2 text-sm">
-                    <button id="crop-rotate" type="button" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Rotate 90°"><i class="fa-solid fa-rotate-right mr-1" aria-hidden="true"></i>Rotate</button>
+                    <button id="crop-rotate" type="button" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Rotate 90°"><i class="fa-solid fa-arrow-rotate-left inline-block -scale-x-100 mr-1" aria-hidden="true"></i>Rotate</button>
                     <button id="crop-flip-h" type="button" aria-pressed="false" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Flip horizontal"><i class="fa-solid fa-arrows-left-right mr-1" aria-hidden="true"></i>Flip</button>
                     <button id="crop-flip-v" type="button" aria-pressed="false" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Flip vertical"><i class="fa-solid fa-arrows-up-down mr-1" aria-hidden="true"></i>Flip</button>
                 </div>
