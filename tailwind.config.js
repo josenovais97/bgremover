@@ -18,8 +18,10 @@ module.exports = {
         display: ['"Bricolage Grotesque"', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
-        primary: '#4F46E5',
-        primaryHover: '#4338CA',
+        // Resolve to CSS variables so each page can set its own accent (the
+        // per-tool signature colour) — see input.css :root and base.html.
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        primaryHover: 'rgb(var(--color-primary-hover) / <alpha-value>)',
       },
       keyframes: {
         'fade-in-up': {
