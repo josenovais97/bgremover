@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static i18n_extras %}
+
+{% block title %}Blur &amp; Redact Photos — Free Face, Plate &amp; Info Blur{% endblock %}
+{% block description %}Blur or pixelate faces, license plates, addresses and sensitive info in any photo, free and in your browser. Drag a box over anything to hide it, then export. Nothing is uploaded — fully private.{% endblock %}
+{% block og_title %}Blur &amp; Redact — Hide Faces &amp; Info, Free &amp; Private{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Blur & Redact",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free tool to blur, pixelate or black out faces and sensitive information in photos, entirely in your browser — no upload, no watermark.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to blur a face or sensitive info in a photo",
+  "step": [
+    { "@type": "HowToStep", "name": "Upload a photo", "text": "Drop a photo — it's processed only in your browser, never uploaded." },
+    { "@type": "HowToStep", "name": "Drag over what to hide", "text": "Draw a box over each face, plate or piece of text you want to hide." },
+    { "@type": "HowToStep", "name": "Pick a style and download", "text": "Choose blur, pixelate or a solid bar and export the full-resolution image." }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero -->
+    <section class="max-w-2xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Made locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Blur &amp;
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primaryHover">Redact</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Hide faces, license plates, addresses or any sensitive info — just <strong>drag a box</strong> over it.
+                Blur, pixelate or black it out. Free, and 100% private.
+            </p>
+        </div>
+
+        <div id="rd-dropzone" role="button" tabindex="0" aria-label="Upload a photo. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
+            <input type="file" id="rd-input" class="sr-only" accept="image/png,image/jpeg,image/webp">
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="rd-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drop a photo</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — nothing is uploaded, so sensitive photos stay on your device</p>
+                <button id="rd-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="rd-editor" class="hidden max-w-6xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6 items-start">
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
+            <div class="relative w-full grid place-items-center">
+                <canvas id="rd-canvas" class="max-w-full max-h-[62vh] rounded-lg shadow-md touch-none cursor-crosshair" aria-label="Photo — drag to draw a redaction box"></canvas>
+            </div>
+            <p class="text-[11px] text-gray-400 text-center"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Drag over each area you want to hide</p>
+            <p id="rd-done" class="text-xs text-gray-500 dark:text-gray-400 text-center" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Style</span>
+                <div class="grid grid-cols-3 gap-1.5 text-xs font-medium">
+                    <button type="button" class="rd-mode px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-mode="blur">Blur</button>
+                    <button type="button" class="rd-mode px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-mode="pixelate">Pixelate</button>
+                    <button type="button" class="rd-mode px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-mode="black">Black bar</button>
+                </div>
+                <label id="rd-strength-row" class="flex items-center gap-2 text-xs pt-1"><span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Strength</span><input id="rd-strength" type="range" min="1" max="100" step="1" value="50" class="w-full accent-primary" aria-label="Effect strength"></label>
+                <p class="text-[11px] text-gray-400">For anything that must stay unreadable, use <strong>Pixelate</strong> or <strong>Black bar</strong> — a light blur can sometimes be reversed.</p>
+            </div>
+
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex items-center gap-2 text-xs font-medium">
+                <button id="rd-undo" type="button" class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-40" disabled><i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>Undo box</button>
+                <button id="rd-clear" type="button" class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition disabled:opacity-40" disabled><i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>Clear</button>
+            </div>
+
+            <button id="rd-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download (PNG)
+            </button>
+            <div class="flex gap-2">
+                <button id="rd-download-jpg" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50">
+                    <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>JPG
+                </button>
+                <button id="rd-new" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEO / help -->
+    <section aria-labelledby="rd-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="rd-how" class="text-2xl font-bold text-center">Hide anything, without uploading it</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">It's processed entirely in your browser — ideal for screenshots, IDs and private photos.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">2.</span>Box what to hide</div><p class="text-sm text-gray-500 dark:text-gray-400">Drag over each face, plate, address or piece of text. Add as many boxes as you need.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Blur, pixelate or black-bar it, then export a full-resolution PNG or JPG.</p></div>
+        </div>
+        <p class="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-sm">
+            Because nothing is uploaded, this is a safe way to redact IDs, bank statements, medical records or anything you'd never want to send to a server.
+        </p>
+    </section>
+
+    {% include 'remover/partials/faq.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/redact.js' %}"></script>
+{% endblock %}

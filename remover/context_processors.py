@@ -25,6 +25,7 @@ TOOL_NAV = [
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos"},
     {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur", "group": "edit"},
+    {"name": "redact", "icon": "fa-solid fa-shield-halved", "label": "Redact", "group": "edit"},
     {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon", "group": "optimize"},
     {"name": "qr", "icon": "fa-solid fa-table-cells-large", "label": "QR Code", "group": "optimize"},
 ]
@@ -57,6 +58,7 @@ TOOL_ACCENTS = {
     "passport_country": ("220 38 38", "185 28 28"),
     "favicon": ("202 138 4", "161 98 7"),       # yellow/gold
     "qr": ("71 85 105", "51 65 85"),            # slate
+    "redact": ("225 29 72", "190 18 60"),       # rose
 }
 _DEFAULT_ACCENT = ("79 70 229", "67 56 202")
 

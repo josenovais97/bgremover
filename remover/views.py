@@ -23,6 +23,7 @@ from .seo_content import (
     INDEX_FAQS,
     PASSPORT_FAQS,
     QR_FAQS,
+    REDACT_FAQS,
     TEXTBEHIND_FAQS,
     faq_jsonld,
 )
@@ -247,7 +248,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
@@ -388,6 +389,15 @@ def qr(request):
     return render(request, "remover/qr.html", {
         "faqs": QR_FAQS,
         "faq_jsonld": faq_jsonld(QR_FAQS),
+    })
+
+
+@require_GET
+def redact(request):
+    """Render the client-side redact / blur (hide faces & info) tool."""
+    return render(request, "remover/redact.html", {
+        "faqs": REDACT_FAQS,
+        "faq_jsonld": faq_jsonld(REDACT_FAQS),
     })
 
 

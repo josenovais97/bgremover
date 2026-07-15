@@ -101,3 +101,14 @@ QR_FAQS = [
     {"q": "Can I change the colours and download a vector file?",
      "a": "Yes — set the foreground and background colours and size, then download a crisp PNG or a scalable SVG that stays sharp at any print size."},
 ]
+
+REDACT_FAQS = [
+    {"q": "Is it safe to blur sensitive photos here?",
+     "a": "Yes — the whole tool runs in your browser and nothing is uploaded, so faces, license plates, addresses and documents never leave your device."},
+    {"q": "Does blurring really hide the information?",
+     "a": "Use the Pixelate or Black-bar modes for anything that must stay unreadable — a heavy blur can sometimes be reversed, but a solid bar or coarse pixelation cannot."},
+    {"q": "How do I blur a face or a plate?",
+     "a": "Just drag a box over each area you want to hide. Add as many boxes as you like, then pick blur, pixelate or a black bar and download."},
+    {"q": "Is it free and watermark-free?",
+     "a": "Completely free, unlimited and with no watermark — export a full-resolution PNG or JPG."},
+]
