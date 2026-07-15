@@ -112,3 +112,14 @@ REDACT_FAQS = [
     {"q": "Is it free and watermark-free?",
      "a": "Completely free, unlimited and with no watermark — export a full-resolution PNG or JPG."},
 ]
+
+ALTERNATIVE_FAQS = [
+    {"q": "Is ClearBG really a free remove.bg alternative?",
+     "a": "Yes — background removal is free and unlimited with no credits, no sign-up and no watermark. You export full-resolution transparent PNGs at no cost."},
+    {"q": "Do I have to upload my images like on remove.bg?",
+     "a": "No. ClearBG runs the AI entirely in your browser, so your images never leave your device — nothing is uploaded to a server. That's the biggest difference for privacy-sensitive work."},
+    {"q": "Is the quality as good?",
+     "a": "It uses a modern in-browser segmentation model that handles hair and fine edges well, with a built-in refine brush to touch up any tricky areas — and there's no resolution cap on the free export."},
+    {"q": "What else can ClearBG do that remove.bg can't?",
+     "a": "Beyond background removal it includes a whole free toolkit — image converter and compressor, crop, Instagram editor, stickers, passport photos, product-photo maker, background blur, a text-behind-image effect, a QR generator and a blur/redact tool — all private and in your browser."},
+]
