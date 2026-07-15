@@ -24,10 +24,31 @@
     try { return n.toLocaleString(lang); } catch (e) { return String(n); }
   }
 
+  // Count up from 0 to the real total the first time the badge appears — a
+  // small flourish that draws the eye without inventing any numbers.
+  function animateCount(target) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      numEl.textContent = fmt(target);
+      return;
+    }
+    const duration = 900;
+    const start = performance.now();
+    function step(now) {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+      numEl.textContent = fmt(Math.round(target * eased));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  let revealed = false;
   function show(count) {
     if (!el || !numEl || typeof count !== 'number' || count < MIN_DISPLAY) return;
-    numEl.textContent = fmt(count);
+    if (revealed) { numEl.textContent = fmt(count); return; }
+    revealed = true;
     el.classList.remove('hidden');
+    animateCount(count);
   }
 
   // Which tool the visitor is on, derived from the URL path (locale prefix
