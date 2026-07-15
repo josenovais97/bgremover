@@ -316,9 +316,22 @@ const ModelStatus = {
   async warm() {
     if (this.started) return;
     this.started = true;
-    this.render('<i class="fa-solid fa-circle-notch fa-spin"></i> Loading the AI — one-time (~40&nbsp;MB), then instant', 'bg-primary/10 text-primary');
+    const label = (extra) => this.render(
+      `<i class="fa-solid fa-circle-notch fa-spin"></i> Loading the AI${extra} <span class="opacity-70">· one-time ~40&nbsp;MB</span>`,
+      'bg-primary/10 text-primary',
+    );
+    label('');
     try {
-      if (typeof preload === 'function') await preload(CONFIG.removalOptions);
+      if (typeof preload === 'function') {
+        // Surface real download progress in the badge instead of an
+        // indeterminate spinner — the first-run wait then feels informative.
+        await preload({
+          ...CONFIG.removalOptions,
+          progress: (key, current, total) => {
+            if (total && String(key).startsWith('fetch')) label(` — ${Math.round((current / total) * 100)}%`);
+          },
+        });
+      }
       this.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI ready — runs 100% on your device', 'bg-green-500/10 text-green-600 dark:text-green-400');
     } catch {
       // Warm-up is best-effort; real processing will still download on demand.
