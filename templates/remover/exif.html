@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static i18n_extras %}
+
+{% block title %}Free EXIF Remover — View &amp; Remove Photo Metadata (GPS) Online{% endblock %}
+{% block description %}See and remove the hidden metadata in your photos — GPS location, camera, date and more — free and in your browser. Strips EXIF losslessly with no quality loss. Nothing is uploaded.{% endblock %}
+{% block og_title %}EXIF Remover — Strip Photo Metadata &amp; GPS, Free &amp; Private{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG EXIF Remover",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free tool to view and remove EXIF / metadata (including GPS location) from photos, entirely in your browser — lossless, no upload, no watermark.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero -->
+    <section class="max-w-2xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Read locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                EXIF &amp; Metadata
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primaryHover">Remover</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                See the hidden data in your photos — <strong>GPS location</strong>, camera, date — and strip it out
+                before you share. Lossless, free and 100% private.
+            </p>
+        </div>
+
+        <div id="ex-dropzone" role="button" tabindex="0" aria-label="Upload a photo. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
+            <input type="file" id="ex-input" class="sr-only" accept="image/jpeg,image/png,image/webp,image/tiff,image/heic">
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="ex-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-database" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drop a photo</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG photos carry the most hidden data</p>
+                <button id="ex-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Result -->
+    <section id="ex-editor" class="hidden max-w-5xl mx-auto grid lg:grid-cols-[1fr_22rem] gap-6 items-start">
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
+            <img id="ex-preview" alt="Your photo" class="max-w-full max-h-[60vh] rounded-lg shadow-md">
+            <p id="ex-filemeta" class="text-xs text-gray-500 dark:text-gray-400 text-center"></p>
+        </div>
+
+        <div class="space-y-4">
+            <div id="ex-summary" class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 text-sm"></div>
+
+            <div id="ex-gps" class="hidden rounded-2xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-700 dark:text-red-300">
+                <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Location data found</div>
+                <p id="ex-gps-detail" class="mt-1 text-xs"></p>
+            </div>
+
+            <details id="ex-details" class="hidden glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 overflow-hidden">
+                <summary class="cursor-pointer list-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex items-center justify-between">
+                    <span>All metadata</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                </summary>
+                <div id="ex-list" class="px-4 pb-4 max-h-72 overflow-y-auto text-xs space-y-1.5"></div>
+            </details>
+
+            <button id="ex-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                <i class="fa-solid fa-shield-halved mr-1.5" aria-hidden="true"></i>Download clean copy
+            </button>
+            <button id="ex-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New photo
+            </button>
+        </div>
+    </section>
+
+    <!-- SEO / help -->
+    <section aria-labelledby="ex-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="ex-how" class="text-2xl font-bold text-center">What's hiding in your photos</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-primary" aria-hidden="true"></i>GPS location</div><p class="text-sm text-gray-500 dark:text-gray-400">Phones tag photos with the exact coordinates they were taken — often your home. Strip it before posting.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock text-primary" aria-hidden="true"></i>Date &amp; device</div><p class="text-sm text-gray-500 dark:text-gray-400">The exact timestamp, camera and even the software used are all embedded in the file.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-shield-halved text-primary" aria-hidden="true"></i>Lossless &amp; private</div><p class="text-sm text-gray-500 dark:text-gray-400">JPEGs are cleaned losslessly with zero quality loss, and nothing ever leaves your device.</p></div>
+        </div>
+    </section>
+
+    {% include 'remover/partials/faq.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/exif.js' %}"></script>
+{% endblock %}

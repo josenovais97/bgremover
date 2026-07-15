@@ -113,6 +113,17 @@ REDACT_FAQS = [
      "a": "Completely free, unlimited and with no watermark — export a full-resolution PNG or JPG."},
 ]
 
+EXIF_FAQS = [
+    {"q": "What is EXIF / photo metadata?",
+     "a": "Hidden data your camera or phone saves inside a photo — GPS location, the exact date and time, and the device model. It travels with the file when you share it."},
+    {"q": "Is removing it private?",
+     "a": "Yes — the photo is read and cleaned entirely in your browser and never uploaded, so even geotagged private photos stay on your device."},
+    {"q": "Does removing metadata reduce quality?",
+     "a": "No. For JPEGs the metadata is stripped losslessly — the actual image data is untouched, so there's zero quality loss."},
+    {"q": "Why remove location data before sharing?",
+     "a": "Geotagged photos reveal exactly where they were taken — often your home. Stripping the GPS tag before you post protects your privacy."},
+]
+
 ALTERNATIVE_FAQS = [
     {"q": "Is ClearBG really a free remove.bg alternative?",
      "a": "Yes — background removal is free and unlimited with no credits, no sign-up and no watermark. You export full-resolution transparent PNGs at no cost."},
