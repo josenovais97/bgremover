@@ -37,4 +37,6 @@ urlpatterns = [
     path("healthz", views.healthz, name="healthz"),
     path("robots.txt", views.robots_txt, name="robots"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap"),
+    # Yandex Webmaster site-ownership verification file.
+    path("yandex_ee6a725348d1a333.html", views.yandex_verify, name="yandex_verify"),
 ]

@@ -525,6 +525,16 @@ def robots_txt(request):
 
 
 @require_GET
+def yandex_verify(request):
+    """Yandex Webmaster site-ownership verification file (served at the root)."""
+    return HttpResponse(
+        '<html>\n    <head>\n        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n'
+        "    </head>\n    <body>Verification: ee6a725348d1a333</body>\n</html>",
+        content_type="text/html",
+    )
+
+
+@require_GET
 @cache_control(max_age=3600)
 def sitemap_xml(request):
     """Serve an XML sitemap for the static routes, with per-URL priority."""
