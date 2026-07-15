@@ -32,7 +32,7 @@
             <i class="fa-solid fa-passport"></i>
         </div>
         <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-500">{{ country.name }} Passport Photo</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primaryHover">{{ country.name }} Passport Photo</span>
         </h1>
         <p class="text-lg text-gray-600 dark:text-gray-300">
             Make a compliant {{ country.name }} passport or visa photo in seconds — free, private, and processed entirely
@@ -40,7 +40,7 @@
         </p>
         <div class="pt-2">
             <a href="{% url 'remover:passport' %}?w={{ country.w_mm }}&amp;h={{ country.h_mm }}&amp;country={{ country.name|urlencode }}"
-               class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+               class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <i class="fa-solid fa-id-card" aria-hidden="true"></i> Make a {{ country.name }} passport photo
             </a>
         </div>
@@ -92,7 +92,7 @@
         </ol>
         <div class="text-center">
             <a href="{% url 'remover:passport' %}?w={{ country.w_mm }}&amp;h={{ country.h_mm }}&amp;country={{ country.name|urlencode }}"
-               class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+               class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Start now — it's free
             </a>
         </div>

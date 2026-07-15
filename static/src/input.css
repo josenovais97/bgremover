@@ -8,6 +8,13 @@
    ========================================================================== */
 
 @layer base {
+  /* Per-tool accent. `primary`/`primaryHover` resolve to these RGB triples
+     (see tailwind.config.js). base.html overrides them per page from the view,
+     so each tool gets a signature colour without touching any template. */
+  :root {
+    --color-primary: 79 70 229;        /* indigo — brand default */
+    --color-primary-hover: 67 56 202;
+  }
   /* Display face for the big headlines; body stays Inter (loaded in base.html).
      Applying to h1 site-wide gives every tool a distinctive, non-templated hero
      without touching each template. */
@@ -18,17 +25,18 @@
   body {
     /* Inter's stylistic sets: single-storey a, straighter glyphs — subtly nicer. */
     font-feature-settings: 'cv11', 'ss01';
-    /* Ambient brand glow at the top of every page — depth instead of flat grey. */
-    background-image: radial-gradient(1100px 560px at 50% -8%, rgba(99, 102, 241, 0.07), transparent 62%);
+    /* Ambient accent glow at the top of every page — depth instead of flat grey.
+       Uses the per-tool accent so the whole page is subtly tinted to its colour. */
+    background-image: radial-gradient(1100px 560px at 50% -8%, rgb(var(--color-primary) / 0.07), transparent 62%);
     background-attachment: fixed;
     background-repeat: no-repeat;
   }
   .dark body {
-    background-image: radial-gradient(1100px 560px at 50% -8%, rgba(129, 140, 248, 0.12), transparent 62%);
+    background-image: radial-gradient(1100px 560px at 50% -8%, rgb(var(--color-primary) / 0.16), transparent 62%);
   }
-  /* Brand-tinted text selection — a small detail that reads considered. */
-  ::selection { background: rgba(99, 102, 241, 0.22); }
-  .dark ::selection { background: rgba(129, 140, 248, 0.30); }
+  /* Accent-tinted text selection — a small detail that reads considered. */
+  ::selection { background: rgb(var(--color-primary) / 0.22); }
+  .dark ::selection { background: rgb(var(--color-primary) / 0.30); }
 }
 
 /* Success flourish when a cut-out finishes (the "magic moment") ----------- */
@@ -86,7 +94,7 @@
   /* Primary call-to-action (Download). */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-           text-white bg-gradient-to-r from-primary to-fuchsia-500 shadow-lg shadow-primary/25
+           text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25
            transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/40
            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
            dark:focus-visible:ring-offset-gray-900;

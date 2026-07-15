@@ -15,7 +15,7 @@
                 </span>
                 <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">
                     {% t "Remove Image Backgrounds" %}
-                    <span class="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-500">{% t "Automatically & Free" %}</span>
+                    <span class="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-primaryHover">{% t "Automatically & Free" %}</span>
                 </h1>
                 <p class="text-lg text-gray-600 dark:text-gray-300">
                     {% t "Drop an image and get a clean, transparent PNG in seconds. No sign-up, no watermarks, no quality loss — the AI runs entirely on your device." %}
@@ -45,7 +45,7 @@
                             </div>
                             <h2 class="text-2xl font-semibold">{% t "Drag & drop your images" %}</h2>
                             <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — you can select multiple files" %}</p>
-                            <button id="browse-btn" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                            <button id="browse-btn" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
                                 <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select images" %}
                             </button>
                             <div class="pt-4 text-sm text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
@@ -128,7 +128,7 @@
                 <span><i class="fa-solid fa-database text-primary mr-1.5" aria-hidden="true"></i>saved <b id="stat-saved">0</b> images total</span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <button id="download-all-btn" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <button id="download-all-btn" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                     <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>Download all (ZIP)
                 </button>
                 <button id="add-more-btn" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -347,7 +347,7 @@
         <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-brush text-primary" aria-hidden="true"></i> Refine edges</div>
         <div class="flex items-center gap-2">
             <button id="editor-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>
-            <button id="editor-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <button id="editor-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>Apply
             </button>
         </div>
@@ -411,7 +411,7 @@
         <div class="flex items-center gap-2">
             <button id="crop-remove" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Remove crop</button>
             <button id="crop-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>
-            <button id="crop-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <button id="crop-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>Apply
             </button>
         </div>
@@ -504,7 +504,7 @@
 
 <!-- Sticky CTA — fades in once the dropzone scrolls out of view (landing only) -->
 <button id="sticky-cta" type="button" aria-label="Remove a background — jump to upload"
-        class="fixed bottom-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-40 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-fuchsia-500 hover:brightness-110 text-white font-semibold shadow-xl shadow-primary/40 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+        class="fixed bottom-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-40 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-semibold shadow-xl shadow-primary/40 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
     <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Remove a background
 </button>
 {% endblock %}
