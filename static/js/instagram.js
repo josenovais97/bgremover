@@ -88,7 +88,14 @@ const FILTERS = {
   cool: { brightness: 102, contrast: 106, saturate: 110, warmth: -40, sharpen: 12, grain: 0, vignette: 6 },
   fade: { brightness: 111, contrast: 86, saturate: 80, warmth: 12, sharpen: 0, grain: 8, vignette: 0 },
   vintage: { brightness: 105, contrast: 110, saturate: 74, warmth: 34, sharpen: 6, grain: 16, vignette: 38 },
+  crisp: { brightness: 102, contrast: 114, saturate: 108, warmth: 0, sharpen: 44, grain: 0, vignette: 0 },
+  sunset: { brightness: 104, contrast: 108, saturate: 128, warmth: 60, sharpen: 12, grain: 4, vignette: 14 },
+  mint: { brightness: 105, contrast: 100, saturate: 106, warmth: -28, sharpen: 10, grain: 0, vignette: 0 },
 };
+
+// Display order + labels for the filter thumbnails (built in buildFilterButtons).
+const FILTER_ORDER = ['original', 'vivid', 'punch', 'crisp', 'clean', 'golden', 'sunset', 'warm', 'cool', 'mint', 'film', 'fade', 'vintage', 'moody', 'noir'];
+const FILTER_LABELS = { original: 'Original', vivid: 'Vivid', punch: 'Punch', crisp: 'Crisp', clean: 'Clean', golden: 'Golden', sunset: 'Sunset', warm: 'Warm', cool: 'Cool', mint: 'Mint', film: 'Film', fade: 'Fade', vintage: 'Vintage', moody: 'Moody', noir: 'Noir' };
 
 /* ------------------------------------------------------------ geometry */
 // Cover-crop: sample a rect of the source at the target aspect, positioned by
@@ -180,6 +187,7 @@ const App = {
     $('#ig-border').addEventListener('input', (e) => { this.border = +e.target.value; throttledRender(); });
     $('#ig-border-color').addEventListener('input', (e) => { this.borderColor = e.target.value; if (this.border > 0) throttledRender(); });
     // Looks + strength
+    this.buildFilterButtons();
     $$('.ig-filter').forEach((b) => b.addEventListener('click', () => this.applyFilter(b)));
     $('#ig-strength').addEventListener('input', (e) => this.setStrength(+e.target.value));
     // Adjustment sliders (manual tweaks become the new base at full strength)
@@ -191,6 +199,14 @@ const App = {
       $$('.ig-filter').forEach((b) => b.classList.remove('ring-2', 'ring-[#d62976]'));
       this.render();
     }));
+    // Double-click a slider to reset just that adjustment to its neutral default.
+    $$('.ig-adj').forEach((s) => {
+      s.title = 'Double-click to reset';
+      s.addEventListener('dblclick', () => {
+        s.value = FILTERS.original[s.dataset.adj];
+        s.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
     $('#ig-reset').addEventListener('click', () => this.resetAdjustments());
     // Carousel splitter
     $$('.ig-carousel').forEach((b) => b.addEventListener('click', () => this.setCarousel(+b.dataset.n, b)));
@@ -426,6 +442,7 @@ const App = {
     const base = this.bgRemoved ? this.cutout : this.raw;
     this.img = this.orientedOf(base);
     this.rawOriented = this.orientedOf(this.raw);
+    this.refreshFilterThumbs(); // keep the look previews matching the current photo
   },
 
   rotate(deg) {
@@ -763,6 +780,65 @@ const App = {
     const o = {};
     for (const k of ADJ_KEYS) o[k] = a[k] + (b[k] - a[k]) * t;
     return o;
+  },
+
+  // Build the filter thumbnail grid once (buttons are tinted per-look; the
+  // photo itself is filled in by refreshFilterThumbs() when one loads).
+  buildFilterButtons() {
+    const wrap = $('#ig-filters');
+    if (!wrap) return;
+    wrap.innerHTML = FILTER_ORDER.map((key) => `
+      <button type="button" data-filter="${key}" title="${FILTER_LABELS[key]}"
+              class="ig-filter group relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976] transition">
+        <span class="ig-filter-thumb block aspect-square bg-gray-100 dark:bg-gray-800 relative">
+          <img alt="" class="w-full h-full object-cover" draggable="false">
+          <span class="ig-filter-tint absolute inset-0 pointer-events-none"></span>
+        </span>
+        <span class="block px-0.5 py-1 text-[10px] font-medium text-center truncate text-gray-600 dark:text-gray-300">${FILTER_LABELS[key]}</span>
+      </button>`).join('');
+  },
+
+  // A small centre-cropped JPEG of the current photo, reused as the src of
+  // every thumbnail (the browser decodes it once; CSS does the per-look grade).
+  filterThumbURL() {
+    const img = this.rawOriented || this.raw;
+    if (!img) return '';
+    const S = 128;
+    const c = document.createElement('canvas');
+    c.width = c.height = S;
+    const x = c.getContext('2d');
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const s = Math.min(iw, ih);
+    x.drawImage(img, (iw - s) / 2, (ih - s) / 2, s, s, 0, 0, S, S);
+    return c.toDataURL('image/jpeg', 0.8);
+  },
+
+  // Approximate each look on the thumbnails with CSS: brightness/contrast/
+  // saturate as a filter, warmth as a soft-light tint, vignette as an inset
+  // shadow. (Grain/sharpen are omitted — invisible at thumbnail size.)
+  refreshFilterThumbs() {
+    const url = this.filterThumbURL();
+    if (!url) return;
+    $$('#ig-filters .ig-filter').forEach((btn) => {
+      const f = FILTERS[btn.dataset.filter];
+      const img = btn.querySelector('img');
+      img.src = url;
+      img.style.filter = `brightness(${f.brightness}%) contrast(${f.contrast}%) saturate(${f.saturate}%)`;
+      const tint = btn.querySelector('.ig-filter-tint');
+      const w = f.warmth / 100;
+      if (Math.abs(w) < 0.02) {
+        tint.style.background = 'transparent';
+      } else {
+        tint.style.mixBlendMode = 'soft-light';
+        tint.style.background = w > 0
+          ? `rgba(255,150,50,${Math.min(0.9, w * 0.9).toFixed(3)})`
+          : `rgba(40,140,255,${Math.min(0.9, -w * 0.85).toFixed(3)})`;
+      }
+      tint.style.boxShadow = f.vignette
+        ? `inset 0 0 ${Math.round(6 + f.vignette * 0.32)}px rgba(0,0,0,${(f.vignette / 100 * 0.75).toFixed(2)})`
+        : 'none';
+    });
   },
 
   applyFilter(btn) {

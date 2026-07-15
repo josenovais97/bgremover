@@ -66,10 +66,10 @@
                     <i class="fa-solid fa-eye sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Hold to compare</span>
                 </button>
                 <button id="ig-safezones" type="button" aria-pressed="false" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Show where Instagram's Story/Reel UI covers the frame">
-                    <i class="fa-solid fa-table-cells-large sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Safe zones</span>
+                    <i class="fa-solid fa-mobile-screen sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Safe zones</span>
                 </button>
                 <button id="ig-grid" type="button" aria-pressed="false" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rule-of-thirds composition grid">
-                    <i class="fa-solid fa-border-all sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Grid</span>
+                    <i class="fa-solid fa-table-cells-large sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Grid</span>
                 </button>
             </div>
             <p id="ig-hint" class="text-[11px] text-gray-400 text-center">Drag the photo to reposition · scroll or pinch-slider to zoom</p>
@@ -136,8 +136,8 @@
               <div class="space-y-3 pt-4 border-t border-gray-200/70 dark:border-white/10">
                 <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Transform</span>
                 <div class="grid grid-cols-4 gap-2 text-sm">
-                    <button id="ig-rot-l" type="button" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rotate left 90°" aria-label="Rotate left 90 degrees"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>
-                    <button id="ig-rot-r" type="button" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rotate right 90°" aria-label="Rotate right 90 degrees"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i></button>
+                    <button id="ig-rot-l" type="button" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rotate left 90°" aria-label="Rotate left 90 degrees"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i></button>
+                    <button id="ig-rot-r" type="button" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rotate right 90°" aria-label="Rotate right 90 degrees"><i class="fa-solid fa-arrow-rotate-left inline-block -scale-x-100" aria-hidden="true"></i></button>
                     <button id="ig-flip-h" type="button" aria-pressed="false" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Flip horizontal" aria-label="Flip horizontal"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i></button>
                     <button id="ig-flip-v" type="button" aria-pressed="false" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Flip vertical" aria-label="Flip vertical"><i class="fa-solid fa-arrows-up-down" aria-hidden="true"></i></button>
                 </div>
@@ -158,20 +158,8 @@
             <div class="ig-panel hidden space-y-4" data-panel="filters" role="tabpanel">
               <div class="space-y-3">
                 <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Looks</span>
-                <div id="ig-filters" class="flex flex-wrap gap-2 text-xs font-medium">
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-filter="original">Original</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="vivid">Vivid</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="punch">Punch</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="clean">Clean</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="golden">Golden</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="moody">Moody</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="film">Film</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="noir">Noir</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="warm">Warm</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="cool">Cool</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="fade">Fade</button>
-                    <button type="button" class="ig-filter px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-filter="vintage">Vintage</button>
-                </div>
+                <!-- Live preview thumbnails (built + tinted from the loaded photo in instagram.js). -->
+                <div id="ig-filters" class="grid grid-cols-4 gap-1.5"></div>
                 <label class="flex items-center gap-2 text-xs pt-1">
                     <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Strength</span>
                     <input id="ig-strength" type="range" min="0" max="100" value="100" class="w-full accent-[#d62976]" aria-label="Filter strength">
@@ -326,9 +314,16 @@
         <h2 id="ig-sizes" class="text-2xl font-bold text-center">Instagram photo sizes (2026)</h2>
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {% for f in formats %}
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-1 text-center">
-                <div class="font-semibold">{{ f.label }}</div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ f.sub }} — {{ f.w }} × {{ f.h }} px</p>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 flex flex-col items-center gap-3 text-center">
+                <!-- Proportional preview of the frame shape (height-fixed, width from aspect). -->
+                <div class="h-16 flex items-center justify-center">
+                    <div class="h-full rounded-md bg-gradient-to-br from-[#feda75]/40 via-[#d62976]/40 to-[#4f5bd5]/40 border border-[#d62976]/30 shadow-sm"
+                         style="aspect-ratio: {{ f.w }}/{{ f.h }}"></div>
+                </div>
+                <div class="space-y-1">
+                    <div class="font-semibold">{{ f.label }}</div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ f.sub }} — {{ f.w }} × {{ f.h }} px</p>
+                </div>
             </div>
             {% endfor %}
         </div>
