@@ -26,6 +26,7 @@ TOOL_NAV = [
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos"},
     {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur", "group": "edit"},
     {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon", "group": "optimize"},
+    {"name": "qr", "icon": "fa-solid fa-table-cells-large", "label": "QR Code", "group": "optimize"},
 ]
 
 # Categories for the "All tools" mega-menu, in display order. Each groups the
@@ -55,6 +56,7 @@ TOOL_ACCENTS = {
     "passport": ("220 38 38", "185 28 28"),     # red
     "passport_country": ("220 38 38", "185 28 28"),
     "favicon": ("202 138 4", "161 98 7"),       # yellow/gold
+    "qr": ("71 85 105", "51 65 85"),            # slate
 }
 _DEFAULT_ACCENT = ("79 70 229", "67 56 202")
 

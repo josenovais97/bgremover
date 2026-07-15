@@ -55,6 +55,7 @@ UI = {
     "Product Photos": "Fotos de Produtos",
     "Background Blur": "Desfoque de Fundo",
     "Favicon Generator": "Gerador de Favicon",
+    "QR Code Generator": "Gerador de Código QR",
     "images processed": "imagens processadas",
     "Tools": "Ferramentas",
     "Use cases": "Casos de uso",
