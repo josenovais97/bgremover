@@ -28,6 +28,7 @@ TOOL_NAV = [
     {"name": "redact", "icon": "fa-solid fa-shield-halved", "label": "Redact", "group": "edit"},
     {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon", "group": "optimize"},
     {"name": "qr", "icon": "fa-solid fa-table-cells-large", "label": "QR Code", "group": "optimize"},
+    {"name": "exif", "icon": "fa-solid fa-database", "label": "EXIF", "group": "optimize"},
 ]
 
 # Categories for the "All tools" mega-menu, in display order. Each groups the
@@ -59,6 +60,7 @@ TOOL_ACCENTS = {
     "favicon": ("202 138 4", "161 98 7"),       # yellow/gold
     "qr": ("71 85 105", "51 65 85"),            # slate
     "redact": ("225 29 72", "190 18 60"),       # rose
+    "exif": ("22 163 74", "21 128 61"),         # green
 }
 _DEFAULT_ACCENT = ("79 70 229", "67 56 202")
 

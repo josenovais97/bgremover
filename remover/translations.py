@@ -57,6 +57,7 @@ UI = {
     "Blur & Redact": "Desfocar e Ocultar",
     "Favicon Generator": "Gerador de Favicon",
     "QR Code Generator": "Gerador de Código QR",
+    "EXIF Remover": "Removedor de EXIF",
     "Coming from another tool?": "Vem de outra ferramenta?",
     "See how we compare to remove.bg": "Veja como nos comparamos ao remove.bg",
     "images processed": "imagens processadas",
