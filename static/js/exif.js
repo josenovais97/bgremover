@@ -64,6 +64,22 @@ const loadImage = (src) => new Promise((resolve, reject) => {
   const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src;
 });
 
+// EXIF Orientation says how a viewer must ROTATE the stored pixels, not whether
+// the photo is landscape or portrait — the spec's own label for value 1 is
+// "Horizontal (normal)", which reads as a shape claim and confuses everyone.
+// Keyed by both exifr's translated string and the raw number (if translation is
+// ever disabled) so either shape resolves.
+const ORIENTATION = {
+  1: 'Upright — no rotation', 'Horizontal (normal)': 'Upright — no rotation',
+  2: 'Mirrored left–right', 'Mirror horizontal': 'Mirrored left–right',
+  3: 'Rotated 180°', 'Rotate 180': 'Rotated 180°',
+  4: 'Mirrored top–bottom', 'Mirror vertical': 'Mirrored top–bottom',
+  5: 'Mirrored + rotated 270° CW', 'Mirror horizontal and rotate 270 CW': 'Mirrored + rotated 270° CW',
+  6: 'Rotated 90° clockwise', 'Rotate 90 CW': 'Rotated 90° clockwise',
+  7: 'Mirrored + rotated 90° CW', 'Mirror horizontal and rotate 90 CW': 'Mirrored + rotated 90° CW',
+  8: 'Rotated 270° clockwise', 'Rotate 270 CW': 'Rotated 270° clockwise',
+};
+
 // Human labels for the fields worth calling out up top.
 const NOTABLE = {
   Make: 'Camera make', Model: 'Camera model', LensModel: 'Lens',
@@ -119,6 +135,7 @@ const App = {
 
   /** Photographers read these as f/1.85 and 1/1433s, not as raw decimals. */
   fmtKeyed(key, v) {
+    if (key === 'Orientation') return ORIENTATION[v] || this.fmtValue(v);
     if (typeof v === 'number') {
       if (key === 'FNumber') return `f/${v.toFixed(2).replace(/\.?0+$/, '')}`;
       if (key === 'ExposureTime') return v < 1 ? `1/${Math.round(1 / v)}s` : `${v}s`;
