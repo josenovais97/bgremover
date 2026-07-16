@@ -23,6 +23,7 @@ TOOL_NAV = [
     {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers", "group": "create"},
     {"name": "text_behind", "icon": "fa-solid fa-font", "label": "Text Behind", "group": "create"},
     {"name": "watermark", "icon": "fa-solid fa-stamp", "label": "Watermark", "group": "create"},
+    {"name": "gif", "icon": "fa-solid fa-images", "label": "GIF Maker", "group": "create"},
     {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme", "group": "create"},
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos"},
@@ -65,6 +66,7 @@ TOOL_ACCENTS = {
     "exif": ("22 163 74", "21 128 61"),         # green
     "resize": ("234 88 12", "194 65 12"),       # orange
     "watermark": ("101 163 13", "77 124 15"),   # lime
+    "gif": ("147 51 234", "126 34 206"),        # purple
 }
 _DEFAULT_ACCENT = ("79 70 229", "67 56 202")
 
