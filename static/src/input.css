@@ -15,29 +15,46 @@
      Two families, because an accent used as a surface and the same accent used as
      text have opposite contrast needs (see TOOL_ACCENTS in context_processors.py):
 
-       --color-primary / -hover  SURFACE. Carries white text, so it must stay dark
-                                 in both themes — it does NOT vary by theme.
-       --color-primary-text      TEXT on the page background. Inverts by theme:
-                                 the surface shade in light, a lighter shade in dark.
+       --color-primary / -hover       SURFACE pair. Carries white text, so it must
+                                      stay dark in both themes — does NOT vary.
+       --color-primary-text / -alt    TEXT pair on the page background. Inverts by
+                                      theme: the surface pair in light, lighter
+                                      shades in dark.
 
-     --accent-text-dark is supplied inline by base.html; the text token is derived
+     Both families are pairs because the hero headline paints a gradient AS text
+     (bg-clip-text from-primaryText to-primaryTextAlt) — both stops need contrast.
+
+     --accent-text-dark* is supplied inline by base.html; the text tokens are derived
      from it HERE rather than inline because an inline style can't be overridden by
      a stylesheet rule, which is exactly what the `.dark` flip below needs to do. */
   :root {
-    --color-primary: 79 70 229;        /* indigo 600 — brand default */
-    --color-primary-hover: 67 56 202;  /* indigo 700 */
-    --accent-text-dark: 129 140 248;   /* indigo 400 */
+    --color-primary: 79 70 229;          /* indigo 600 — brand default */
+    --color-primary-hover: 67 56 202;    /* indigo 700 */
+    --accent-text-dark: 129 140 248;     /* indigo 400 */
+    --accent-text-dark-alt: 165 180 252; /* indigo 300 */
   }
-  body { --color-primary-text: var(--color-primary); }
-  .dark body { --color-primary-text: var(--accent-text-dark); }
+  body {
+    --color-primary-text: var(--color-primary);
+    --color-primary-text-alt: var(--color-primary-hover);
+  }
+  .dark body {
+    --color-primary-text: var(--accent-text-dark);
+    --color-primary-text-alt: var(--accent-text-dark-alt);
+  }
 
   /* Escape hatches for surfaces that DON'T follow the theme: the editor/crop
      modals are always dark, the compare-slider handle is always white. Set on the
      surface itself, they re-point the text token for everything inside — so
      `text-primaryText` stays readable there in both themes. These win over the
      `body` rules by proximity (nearest ancestor), not specificity. */
-  .on-dark-surface { --color-primary-text: var(--accent-text-dark); }
-  .on-light-surface { --color-primary-text: var(--color-primary); }
+  .on-dark-surface {
+    --color-primary-text: var(--accent-text-dark);
+    --color-primary-text-alt: var(--accent-text-dark-alt);
+  }
+  .on-light-surface {
+    --color-primary-text: var(--color-primary);
+    --color-primary-text-alt: var(--color-primary-hover);
+  }
   /* Display face for the big headlines; body stays Inter (loaded in base.html).
      Applying to h1 site-wide gives every tool a distinctive, non-templated hero
      without touching each template. */
