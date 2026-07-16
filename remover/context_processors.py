@@ -22,6 +22,7 @@ TOOL_NAV = [
     {"name": "crop", "icon": "fa-solid fa-crop-simple", "label": "Crop", "group": "edit"},
     {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers", "group": "create"},
     {"name": "text_behind", "icon": "fa-solid fa-font", "label": "Text Behind", "group": "create"},
+    {"name": "watermark", "icon": "fa-solid fa-stamp", "label": "Watermark", "group": "create"},
     {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme", "group": "create"},
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos"},
@@ -63,6 +64,7 @@ TOOL_ACCENTS = {
     "redact": ("225 29 72", "190 18 60"),       # rose
     "exif": ("22 163 74", "21 128 61"),         # green
     "resize": ("234 88 12", "194 65 12"),       # orange
+    "watermark": ("101 163 13", "77 124 15"),   # lime
 }
 _DEFAULT_ACCENT = ("79 70 229", "67 56 202")
 

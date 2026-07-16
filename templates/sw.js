@@ -3,7 +3,7 @@
 // picked up on the next online load WITHOUT bumping this name — the manual bump
 // is no longer required for freshness. The name is just the offline snapshot's
 // store; only bump it if you ever need to force-evict every client's cache.
-const CACHE = 'bgr-v21';
+const CACHE = 'bgr-v22';
 // The ~40MB AI model weights + WASM runtime live on a separate, long-lived cache
 // so a normal shell redeploy (which changes CACHE) never evicts them — the model
 // is downloaded once, then served instantly and offline on every repeat use.
@@ -41,6 +41,7 @@ const SHELL = [
   '{% static "js/redact.js" %}',
   '{% static "js/exif.js" %}',
   '{% static "js/resize.js" %}',
+  '{% static "js/watermark.js" %}',
   '{% static "js/passport.js" %}',
   '{% static "js/ecommerce.js" %}',
   '{% static "js/blur.js" %}',

@@ -51,6 +51,7 @@ UI = {
     "Crop Image": "Recortar Imagem",
     "Sticker Maker": "Criador de Autocolantes",
     "Text Behind Image": "Texto Atrás da Imagem",
+    "Watermark": "Marca de Água",
     "Passport Photo": "Foto de Passaporte",
     "Product Photos": "Fotos de Produtos",
     "Background Blur": "Desfoque de Fundo",

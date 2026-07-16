@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static i18n_extras %}
+
+{% block title %}Free Watermark Tool — Add a Text Watermark to Photos{% endblock %}
+{% block description %}Add a text watermark to your photos free and in your browser — single or tiled, with custom size, colour, opacity and rotation. Protect product shots and client work. Nothing is uploaded.{% endblock %}
+{% block og_title %}Add a Watermark — Free &amp; Private{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Watermark Tool",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Free watermark tool that runs entirely in your browser. Add a single or tiled text watermark with custom size, colour and opacity — no upload, no watermark from us.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero -->
+    <section class="max-w-2xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <i class="fa-solid fa-stamp" aria-hidden="true"></i> Made locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Add a
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primaryHover">Watermark</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Protect your photos with a text watermark — a subtle corner mark or a <strong>tiled</strong> pattern
+                that's hard to crop out. Free, full quality and 100% private.
+            </p>
+        </div>
+
+        <div id="wm-dropzone" role="button" tabindex="0" aria-label="Upload a photo. Drag and drop, click to browse, or paste."
+             class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
+            <input type="file" id="wm-input" class="sr-only" accept="image/png,image/jpeg,image/webp">
+            <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                <div id="wm-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fa-solid fa-stamp" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-2xl font-semibold">Drop a photo</h2>
+                <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                <button id="wm-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="wm-editor" class="hidden max-w-6xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6 items-start">
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
+            <canvas id="wm-canvas" class="max-w-full max-h-[62vh] rounded-lg shadow-md" aria-label="Watermark preview"></canvas>
+            <p id="wm-done" class="text-xs text-gray-500 dark:text-gray-400 text-center" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-2">
+                <label for="wm-text" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Watermark text</label>
+                <input id="wm-text" type="text" value="© Your Name" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" placeholder="© Your Name / @handle">
+            </div>
+
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
+                <div class="grid grid-cols-2 gap-1.5 font-medium">
+                    <button type="button" class="wm-mode px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-mode="single">Single</button>
+                    <button type="button" class="wm-mode px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-mode="tile">Tiled</button>
+                </div>
+                <div id="wm-pos-wrap" class="space-y-1.5">
+                    <span class="text-gray-500 dark:text-gray-400">Position</span>
+                    <div id="wm-pos" class="grid grid-cols-3 gap-1 w-28">
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="tl" aria-label="Top left"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="tc" aria-label="Top centre"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="tr" aria-label="Top right"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="ml" aria-label="Middle left"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="mc" aria-label="Middle centre"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="mr" aria-label="Middle right"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="bl" aria-label="Bottom left"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="bc" aria-label="Bottom centre"></button>
+                        <button type="button" class="wm-pos-btn aspect-square rounded border border-primary bg-primary/10 ring-2 ring-primary" data-pos="br" aria-label="Bottom right"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
+                <label class="flex items-center gap-2"><span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Size</span><input id="wm-size" type="range" min="2" max="16" step="0.5" value="5" class="w-full accent-primary" aria-label="Watermark size"></label>
+                <label class="flex items-center gap-2"><span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Opacity</span><input id="wm-opacity" type="range" min="5" max="100" step="1" value="45" class="w-full accent-primary" aria-label="Opacity"></label>
+                <label class="flex items-center gap-2"><span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Rotation</span><input id="wm-rotate" type="range" min="-90" max="90" step="5" value="0" class="w-full accent-primary" aria-label="Rotation"></label>
+                <div class="flex items-center gap-2 pt-1">
+                    <label class="inline-flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">Colour</span><input id="wm-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Watermark colour"></label>
+                    <label class="inline-flex items-center gap-1.5 ml-auto cursor-pointer"><input id="wm-shadow" type="checkbox" class="accent-primary w-4 h-4" checked> Shadow</label>
+                </div>
+            </div>
+
+            <button id="wm-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download
+            </button>
+            <button id="wm-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New
+            </button>
+        </div>
+    </section>
+
+    <!-- SEO / help -->
+    <section aria-labelledby="wm-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="wm-how" class="text-2xl font-bold text-center">Watermark in three steps</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">Read straight in your browser — nothing is uploaded, so unreleased shots stay private.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">2.</span>Style your mark</div><p class="text-sm text-gray-500 dark:text-gray-400">Type your text, choose single or tiled, and set the size, colour, opacity and angle.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Export a full-resolution JPG or PNG with the watermark baked in.</p></div>
+        </div>
+    </section>
+
+    {% include 'remover/partials/faq.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/watermark.js' %}"></script>
+{% endblock %}
