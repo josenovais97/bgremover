@@ -135,6 +135,17 @@ RESIZE_FAQS = [
      "a": "No — resizing happens entirely in your browser, so your images never leave your device."},
 ]
 
+WATERMARK_FAQS = [
+    {"q": "Is this watermark tool free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark from us (only the one you add). Export a full-resolution copy."},
+    {"q": "Is my photo uploaded?",
+     "a": "No. The watermark is drawn onto your photo entirely in your browser, so nothing is ever uploaded — ideal for unreleased product shots and client work."},
+    {"q": "What's the difference between single and tiled?",
+     "a": "Single places one watermark where you choose (great for a subtle logo in a corner). Tiled repeats it diagonally across the whole image, which is much harder to crop out."},
+    {"q": "Can I change the size, colour and opacity?",
+     "a": "Yes — set the text, size, colour, opacity and rotation, and the preview updates live before you download."},
+]
+
 ALTERNATIVE_FAQS = [
     {"q": "Is ClearBG really a free remove.bg alternative?",
      "a": "Yes — background removal is free and unlimited with no credits, no sign-up and no watermark. You export full-resolution transparent PNGs at no cost."},
