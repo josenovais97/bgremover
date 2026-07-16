@@ -27,6 +27,7 @@ from .seo_content import (
     QR_FAQS,
     REDACT_FAQS,
     RESIZE_FAQS,
+    GIF_FAQS,
     WATERMARK_FAQS,
     TEXTBEHIND_FAQS,
     faq_jsonld,
@@ -252,7 +253,7 @@ USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 LANDING_PATHS = ["/remove-bg-alternative/"]
 SITEMAP_PATHS = (
@@ -413,6 +414,15 @@ def watermark(request):
     return render(request, "remover/watermark.html", {
         "faqs": WATERMARK_FAQS,
         "faq_jsonld": faq_jsonld(WATERMARK_FAQS),
+    })
+
+
+@require_GET
+def gif(request):
+    """Render the client-side animated GIF maker."""
+    return render(request, "remover/gif.html", {
+        "faqs": GIF_FAQS,
+        "faq_jsonld": faq_jsonld(GIF_FAQS),
     })
 
 

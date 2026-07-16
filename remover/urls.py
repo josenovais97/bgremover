@@ -33,6 +33,7 @@ urlpatterns = [
     path("exif-remover/", views.exif, name="exif"),
     path("resize-image/", views.resize, name="resize"),
     path("watermark-image/", views.watermark, name="watermark"),
+    path("gif-maker/", views.gif, name="gif"),
     path("remove-bg-alternative/", views.alternative, name="alternative"),
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
     path("about/", views.about, name="about"),

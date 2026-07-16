@@ -52,6 +52,7 @@ UI = {
     "Sticker Maker": "Criador de Autocolantes",
     "Text Behind Image": "Texto Atrás da Imagem",
     "Watermark": "Marca de Água",
+    "GIF Maker": "Criador de GIF",
     "Passport Photo": "Foto de Passaporte",
     "Product Photos": "Fotos de Produtos",
     "Background Blur": "Desfoque de Fundo",

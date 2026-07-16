@@ -146,6 +146,21 @@ WATERMARK_FAQS = [
      "a": "Yes — set the text, size, colour, opacity and rotation, and the preview updates live before you download."},
 ]
 
+GIF_FAQS = [
+    {"q": "Is this GIF maker free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark. Add as many frames as you like and export a full-quality animated GIF."},
+    {"q": "Are my photos uploaded?",
+     "a": "No. The GIF is encoded entirely in your browser, so your photos never leave your device. Nothing is uploaded to a server."},
+    {"q": "How many images do I need?",
+     "a": "At least two, though three or more makes for a smoother animation. There's no upper limit — but very long GIFs get large, so a handful of frames usually works best."},
+    {"q": "Can I change the speed and order?",
+     "a": "Yes — set the frame delay to speed the animation up or slow it down, reorder frames, remove any you don't want, and preview the result before downloading."},
+    {"q": "Why is my GIF file so big?",
+     "a": "GIF is an old format that stores every frame separately, so size grows with frame count and dimensions. Lowering the output size is the most effective way to shrink it."},
+    {"q": "Do the images need to be the same size?",
+     "a": "No. Frames are fitted onto a canvas of the size you pick, so mixed dimensions and orientations work fine."},
+]
+
 ALTERNATIVE_FAQS = [
     {"q": "Is ClearBG really a free remove.bg alternative?",
      "a": "Yes — background removal is free and unlimited with no credits, no sign-up and no watermark. You export full-resolution transparent PNGs at no cost."},
