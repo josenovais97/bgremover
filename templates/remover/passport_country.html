@@ -24,11 +24,11 @@
     <!-- Hero -->
     <section class="max-w-3xl mx-auto text-center space-y-6 animate-fade-in-up">
         <nav class="text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
-            <a href="{% url 'remover:passport' %}" class="hover:text-primary transition-colors">Passport Photo Maker</a>
+            <a href="{% url 'remover:passport' %}" class="hover:text-primaryText transition-colors">Passport Photo Maker</a>
             <i class="fa-solid fa-chevron-right text-xs mx-1.5" aria-hidden="true"></i>
             <span class="text-gray-700 dark:text-gray-300">{{ country.name }}</span>
         </nav>
-        <div class="mx-auto w-16 h-16 grid place-items-center rounded-2xl bg-primary/10 text-primary text-3xl shadow-lg shadow-primary/20" aria-hidden="true">
+        <div class="mx-auto w-16 h-16 grid place-items-center rounded-2xl bg-primary/10 text-primaryText text-3xl shadow-lg shadow-primary/20" aria-hidden="true">
             <i class="fa-solid fa-passport"></i>
         </div>
         <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
@@ -51,19 +51,19 @@
         <h2 id="spec-title" class="text-2xl font-bold text-center">{{ country.name }} passport photo requirements</h2>
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 divide-y divide-gray-200/70 dark:divide-gray-800/70 overflow-hidden">
             <div class="flex items-center justify-between gap-4 px-5 py-4">
-                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-ruler-combined mr-2 text-primary" aria-hidden="true"></i>Photo size</span>
+                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-ruler-combined mr-2 text-primaryText" aria-hidden="true"></i>Photo size</span>
                 <span class="font-semibold text-right">{% if country.imperial %}{{ country.imperial }} · {% endif %}{{ country.w_mm }} × {{ country.h_mm }} mm</span>
             </div>
             <div class="flex items-center justify-between gap-4 px-5 py-4">
-                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-expand mr-2 text-primary" aria-hidden="true"></i>Pixels (300 DPI)</span>
+                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-expand mr-2 text-primaryText" aria-hidden="true"></i>Pixels (300 DPI)</span>
                 <span class="font-semibold text-right tabular-nums">{{ country.w_px }} × {{ country.h_px }} px</span>
             </div>
             <div class="flex items-center justify-between gap-4 px-5 py-4">
-                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-fill-drip mr-2 text-primary" aria-hidden="true"></i>Background</span>
+                <span class="text-gray-500 dark:text-gray-400"><i class="fa-solid fa-fill-drip mr-2 text-primaryText" aria-hidden="true"></i>Background</span>
                 <span class="font-semibold text-right capitalize">{{ country.bg }}</span>
             </div>
             <div class="flex items-start justify-between gap-4 px-5 py-4">
-                <span class="text-gray-500 dark:text-gray-400 shrink-0"><i class="fa-solid fa-user mr-2 text-primary" aria-hidden="true"></i>Head size</span>
+                <span class="text-gray-500 dark:text-gray-400 shrink-0"><i class="fa-solid fa-user mr-2 text-primaryText" aria-hidden="true"></i>Head size</span>
                 <span class="font-medium text-right text-sm">{{ country.head }}</span>
             </div>
         </div>
@@ -75,17 +75,17 @@
         <h2 id="how-title" class="text-2xl font-bold text-center">How to make your {{ country.name }} photo</h2>
         <ol class="grid gap-6 sm:grid-cols-3">
             <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
-                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-upload" aria-hidden="true"></i></div>
+                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primaryText text-xl"><i class="fa-solid fa-upload" aria-hidden="true"></i></div>
                 <h3 class="font-semibold">1. Upload a portrait</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400">A clear, front-facing photo with even lighting. The background is removed automatically.</p>
             </li>
             <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
-                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-crop-simple" aria-hidden="true"></i></div>
+                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primaryText text-xl"><i class="fa-solid fa-crop-simple" aria-hidden="true"></i></div>
                 <h3 class="font-semibold">2. Fit the guides</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400">The {{ country.w_mm }}×{{ country.h_mm }} mm frame is pre-selected — line your head up with the crown and chin guides.</p>
             </li>
             <li class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 text-center space-y-3">
-                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primary text-xl"><i class="fa-solid fa-download" aria-hidden="true"></i></div>
+                <div class="mx-auto w-12 h-12 grid place-items-center rounded-xl bg-primary/10 text-primaryText text-xl"><i class="fa-solid fa-download" aria-hidden="true"></i></div>
                 <h3 class="font-semibold">3. Download or print</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400">Export the exact size at 300 DPI, or a 6×4 inch sheet of copies for any photo kiosk.</p>
             </li>
@@ -105,7 +105,7 @@
         <h2 id="others-title" class="text-sm font-semibold uppercase tracking-wide text-gray-400 text-center">Passport photo sizes for other countries</h2>
         <div class="flex flex-wrap justify-center gap-2">
             {% for o in others %}
-            <a href="{% url 'remover:passport_country' o.slug %}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border border-gray-200/70 dark:border-gray-800/70 hover:border-primary/60 hover:text-primary transition-colors">
+            <a href="{% url 'remover:passport_country' o.slug %}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border border-gray-200/70 dark:border-gray-800/70 hover:border-primary/60 hover:text-primaryText transition-colors">
                 {{ o.name }}
             </a>
             {% endfor %}

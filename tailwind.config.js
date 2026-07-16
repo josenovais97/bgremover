@@ -20,8 +20,13 @@ module.exports = {
       colors: {
         // Resolve to CSS variables so each page can set its own accent (the
         // per-tool signature colour) — see input.css :root and base.html.
+        // primary/primaryHover are SURFACES (white text sits on them, so they
+        // don't vary by theme); primaryText is the accent as TEXT on the page
+        // background, and inverts in dark mode. Using primary for text is the
+        // bug this split exists to prevent — reach for primaryText there.
         primary: 'rgb(var(--color-primary) / <alpha-value>)',
         primaryHover: 'rgb(var(--color-primary-hover) / <alpha-value>)',
+        primaryText: 'rgb(var(--color-primary-text) / <alpha-value>)',
       },
       keyframes: {
         'fade-in-up': {

@@ -318,7 +318,7 @@ const ModelStatus = {
     this.started = true;
     const label = (extra) => this.render(
       `<i class="fa-solid fa-circle-notch fa-spin"></i> Loading the AI${extra} <span class="opacity-70">· one-time ~40&nbsp;MB</span>`,
-      'bg-primary/10 text-primary',
+      'bg-primary/10 text-primaryText',
     );
     label('');
     try {
@@ -1266,26 +1266,51 @@ class Card {
       this.el.querySelector('.options-panel').classList.toggle('hidden'),
     );
 
-    // "Continue in <tool>" — hand the cut-out to another tool with no re-upload.
-    const contBtn = this.el.querySelector('.continue-btn');
-    const contMenu = this.el.querySelector('.continue-menu');
-    if (contBtn && contMenu) {
-      contBtn.addEventListener('click', (e) => {
+    // Overflow menu: copy, view toggle, "Continue in <tool>", remove. Those
+    // actions stay reachable without crowding the card's primary row.
+    const moreBtn = this.el.querySelector('.more-btn');
+    const moreMenu = this.el.querySelector('.more-menu');
+    if (moreBtn && moreMenu) {
+      const closeMore = () => {
+        moreMenu.classList.add('hidden');
+        moreMenu.classList.remove('flex');
+        moreBtn.setAttribute('aria-expanded', 'false');
+      };
+      moreBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const open = contMenu.classList.toggle('hidden');
-        contBtn.setAttribute('aria-expanded', String(!open));
+        const opening = moreMenu.classList.contains('hidden');
+        // Only ever one menu open across all cards.
+        $$('.more-menu').forEach((m) => {
+          m.classList.add('hidden');
+          m.classList.remove('flex');
+        });
+        $$('.more-btn').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+        if (opening) {
+          moreMenu.classList.remove('hidden');
+          moreMenu.classList.add('flex');
+          moreBtn.setAttribute('aria-expanded', 'true');
+        }
       });
-      document.addEventListener('click', () => contMenu.classList.add('hidden'));
-      $$('[data-tool]', contMenu).forEach((a) =>
-        a.addEventListener('click', async (e) => {
-          if (!this.processedBlob) return; // nothing to hand off yet
-          e.preventDefault();
-          const base = (this.file?.name || 'cutout').replace(/\.[^.]+$/, '');
-          await putHandoff(this.processedBlob, `${base}.png`);
-          location.href = a.href;
-        }),
-      );
+      // Click-away and Esc both dismiss; picking an item closes it by bubbling here.
+      document.addEventListener('click', closeMore);
+      this.el.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !moreMenu.classList.contains('hidden')) {
+          closeMore();
+          moreBtn.focus();
+        }
+      });
     }
+
+    // "Continue in <tool>" — hand the cut-out to another tool with no re-upload.
+    $$('[data-tool]', this.el).forEach((a) =>
+      a.addEventListener('click', async (e) => {
+        if (!this.processedBlob) return; // nothing to hand off yet
+        e.preventDefault();
+        const base = (this.file?.name || 'cutout').replace(/\.[^.]+$/, '');
+        await putHandoff(this.processedBlob, `${base}.png`);
+        location.href = a.href;
+      }),
+    );
     $$('.zoomable', this.el).forEach((img) =>
       img.addEventListener('click', () => this.done && Zoom.open(this.processedUrl)),
     );
@@ -1430,7 +1455,10 @@ class Card {
     const split = this.el.querySelector('.view-split');
     const showSplit = compare.classList.toggle('hidden');
     split.classList.toggle('hidden', !showSplit);
-    this.el.querySelector('.toggle-view-btn i').className = showSplit ? 'fa-solid fa-sliders' : 'fa-solid fa-table-columns';
+    // Swap only the glyph — the layout classes keep it aligned with the other
+    // menu-item icons, so they must survive the assignment.
+    const icon = showSplit ? 'fa-sliders' : 'fa-table-columns';
+    this.el.querySelector('.toggle-view-btn i').className = `fa-solid ${icon} w-4 text-center text-gray-400`;
     this.el.querySelector('.view-label').textContent = showSplit ? 'Slider' : 'Side-by-side';
   }
 

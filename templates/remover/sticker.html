@@ -38,7 +38,7 @@
     <!-- Hero: dropzone + live demo side by side -->
     <section class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
-            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
                 <i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Made locally — nothing is uploaded
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
@@ -56,7 +56,7 @@
              class="glass relative rounded-3xl shadow-xl p-8 sm:p-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
             <input type="file" id="stk-input" class="sr-only" accept="image/png,image/jpeg,image/webp">
             <div class="flex flex-col items-center justify-center space-y-4 text-center">
-                <div id="stk-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                <div id="stk-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-solid fa-note-sticky" aria-hidden="true"></i>
                 </div>
                 <h2 class="text-2xl font-semibold">Drop a photo</h2>
@@ -77,7 +77,7 @@
             <div class="relative">
                 <canvas id="stk-canvas" width="512" height="512" class="w-72 h-72 sm:w-80 sm:h-80 rounded-xl checkerboard touch-none cursor-grab" aria-label="Sticker preview"></canvas>
                 <div id="stk-status" class="absolute inset-0 grid place-items-center rounded-xl bg-white/70 dark:bg-gray-950/70 backdrop-blur-sm text-sm font-medium">
-                    <span class="flex items-center gap-2 text-primary"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span id="stk-status-text">Removing background…</span></span>
+                    <span class="flex items-center gap-2 text-primaryText"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span id="stk-status-text">Removing background…</span></span>
                 </div>
             </div>
             <p id="stk-size-note" class="text-xs text-gray-400 text-center"><i class="fa-brands fa-whatsapp mr-1" aria-hidden="true"></i>512×512 transparent WebP — WhatsApp ready</p>
@@ -138,9 +138,9 @@
     <section aria-labelledby="stk-how" class="max-w-4xl mx-auto space-y-6">
         <h2 id="stk-how" class="text-2xl font-bold text-center">How to make a sticker</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">We cut out the subject automatically — no green screen, no manual masking.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">2.</span>Outline &amp; caption</div><p class="text-sm text-gray-500 dark:text-gray-400">Add the classic white sticker border and drag your own text anywhere.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primary mr-1.5">3.</span>Export &amp; add</div><p class="text-sm text-gray-500 dark:text-gray-400">Download the 512×512 WebP and add it via a sticker app like Sticker.ly or WSTick.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">We cut out the subject automatically — no green screen, no manual masking.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Outline &amp; caption</div><p class="text-sm text-gray-500 dark:text-gray-400">Add the classic white sticker border and drag your own text anywhere.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Export &amp; add</div><p class="text-sm text-gray-500 dark:text-gray-400">Download the 512×512 WebP and add it via a sticker app like Sticker.ly or WSTick.</p></div>
         </div>
         <p class="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-sm">
             The exported sticker is a transparent 512×512 WebP with a small margin — exactly what WhatsApp and Telegram
