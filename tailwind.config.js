@@ -27,6 +27,8 @@ module.exports = {
         primary: 'rgb(var(--color-primary) / <alpha-value>)',
         primaryHover: 'rgb(var(--color-primary-hover) / <alpha-value>)',
         primaryText: 'rgb(var(--color-primary-text) / <alpha-value>)',
+        // Second text stop, for a gradient painted as text (bg-clip-text).
+        primaryTextAlt: 'rgb(var(--color-primary-text-alt) / <alpha-value>)',
       },
       keyframes: {
         'fade-in-up': {

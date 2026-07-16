@@ -400,28 +400,36 @@ class AccentContrastTests(SimpleTestCase):
         return tuple(int(c) for c in value.split())
 
     def test_accents_meet_aa_in_both_themes(self):
-        for tool, (surface, hover, text_dark) in TOOL_ACCENTS.items():
+        for tool, (surface, hover, text_dark, text_dark_alt) in TOOL_ACCENTS.items():
             with self.subTest(tool=tool):
-                # Surface + hover carry white text, in both themes.
-                for role, value in (("surface", surface), ("hover", hover)):
+                # The surface pair carries white text, in both themes. Both stops
+                # matter: they're also the light-theme gradient headline.
+                for role, value in (("surface", surface), ("surface_hover", hover)):
                     ratio = self._ratio(self._rgb(value), self.WHITE)
                     self.assertGreaterEqual(
                         ratio, self.AA,
                         f"{tool} {role} ({value}) is {ratio:.2f}:1 against white text; "
                         f"needs {self.AA}:1 — use a darker shade.",
                     )
-                # text_dark is the accent as text on the dark surface.
-                ratio = self._ratio(self._rgb(text_dark), self.DARK)
-                self.assertGreaterEqual(
-                    ratio, self.AA,
-                    f"{tool} text_dark ({text_dark}) is {ratio:.2f}:1 on the dark "
-                    f"surface; needs {self.AA}:1 — use a lighter shade.",
-                )
+                # The text pair is the accent as text on the dark surface. Both
+                # stops matter: the hero gradient headline paints text_dark ->
+                # text_dark_alt, so checking only the first would miss a headline
+                # whose far end fades into the background.
+                for role, value in (("text_dark", text_dark), ("text_dark_alt", text_dark_alt)):
+                    ratio = self._ratio(self._rgb(value), self.DARK)
+                    self.assertGreaterEqual(
+                        ratio, self.AA,
+                        f"{tool} {role} ({value}) is {ratio:.2f}:1 on the dark "
+                        f"surface; needs {self.AA}:1 — use a lighter shade.",
+                    )
 
     def test_accent_table_is_well_formed(self):
         for tool, value in TOOL_ACCENTS.items():
             with self.subTest(tool=tool):
-                self.assertEqual(len(value), 3, f"{tool}: expected (surface, hover, text_dark)")
+                self.assertEqual(
+                    len(value), 4,
+                    f"{tool}: expected (surface, surface_hover, text_dark, text_dark_alt)",
+                )
                 for part in value:
                     self.assertEqual(len(self._rgb(part)), 3, f"{tool}: {part!r} is not 'R G B'")
 
@@ -429,12 +437,35 @@ class AccentContrastTests(SimpleTestCase):
 class AccentWiringTests(SimpleTestCase):
     """The accent only reaches the page if the view actually emits the variables."""
 
-    def test_tool_page_emits_all_three_accent_vars(self):
+    def test_tool_page_emits_every_accent_var(self):
         response = self.client.get(reverse("remover:resize"))
-        surface, hover, text_dark = TOOL_ACCENTS["resize"]
+        surface, hover, text_dark, text_dark_alt = TOOL_ACCENTS["resize"]
         self.assertContains(response, f"--color-primary: {surface}")
         self.assertContains(response, f"--color-primary-hover: {hover}")
         self.assertContains(response, f"--accent-text-dark: {text_dark}")
+        self.assertContains(response, f"--accent-text-dark-alt: {text_dark_alt}")
+
+    def test_gradient_headlines_use_the_text_pair_not_the_surface_pair(self):
+        """A gradient painted as text must read from the text tokens.
+
+        `from-primary to-primaryHover` is correct on a button (a real surface) and
+        wrong on `bg-clip-text`, where it renders the headline in surface shades —
+        illegible in dark mode. The distinction is invisible in review, so pin it.
+        """
+        import re
+        from pathlib import Path
+
+        offenders = []
+        root = Path(__file__).resolve().parent.parent
+        for path in (root / "templates").rglob("*.html"):
+            for i, line in enumerate(path.read_text().split("\n"), 1):
+                if "bg-clip-text" in line and re.search(r"from-primary\b(?!Text)", line):
+                    offenders.append(f"{path.relative_to(root)}:{i}")
+        self.assertFalse(
+            offenders,
+            "Gradient text using the surface tokens (use from-primaryText / "
+            "to-primaryTextAlt instead):\n  " + "\n  ".join(offenders),
+        )
 
     def test_theme_color_follows_the_tool_accent(self):
         response = self.client.get(reverse("remover:resize"))

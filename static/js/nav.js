@@ -36,17 +36,23 @@
   };
 
   function layout() {
-    // Reveal every pill, then hide those whose right edge would sit past the
-    // space left once the always-present menu button is accounted for.
+    // Reveal every pill, then hide from the first one that doesn't fit onward.
     // Use inline `display` (not the `hidden` attribute) — a Tailwind display
     // utility like `inline-flex` would otherwise out-rank `[hidden]` and the
     // pill would stay visible, leaving the row overflowing.
     pills.forEach((el) => { el.style.display = ''; });
     if (nav.scrollWidth <= nav.clientWidth + 1) return; // everything fits
     const limit = nav.getBoundingClientRect().left + nav.clientWidth - moreBtn.offsetWidth - 8;
-    pills.forEach((el) => {
-      if (el.getBoundingClientRect().right > limit) el.style.display = 'none';
-    });
+
+    // Measure every pill BEFORE hiding any. Hiding reflows the row and pulls the
+    // later pills leftwards, so a measure-and-hide loop would find that a pill
+    // which didn't fit now does — leaving an arbitrary set on show (tools 1-8 and
+    // then #14). TOOL_NAV is ordered most-used first, so the row must be a stable
+    // prefix of it: cut at the first pill that overflows and hide the rest.
+    const rights = pills.map((el) => el.getBoundingClientRect().right);
+    const firstOverflowing = rights.findIndex((right) => right > limit);
+    if (firstOverflowing === -1) return;
+    pills.slice(firstOverflowing).forEach((el) => { el.style.display = 'none'; });
   }
 
   moreBtn.addEventListener('click', (e) => {
