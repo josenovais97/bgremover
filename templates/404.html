@@ -2,7 +2,7 @@
 {% block title %}Page not found — ClearBG{% endblock %}
 {% block content %}
 <section class="max-w-lg mx-auto text-center py-16 space-y-6">
-    <div class="mx-auto w-20 h-20 grid place-items-center rounded-2xl bg-primary/10 text-primary text-4xl">
+    <div class="mx-auto w-20 h-20 grid place-items-center rounded-2xl bg-primary/10 text-primaryText text-4xl">
         <i class="fa-solid fa-compass" aria-hidden="true"></i>
     </div>
     <h1 class="text-4xl font-extrabold">404</h1>
@@ -15,7 +15,7 @@
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Or jump to a tool:</p>
         <nav class="flex flex-wrap justify-center gap-2" aria-label="Tools">
             {% for item in tool_nav %}
-            <a href="{{ item.url }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-gray-200/70 dark:border-gray-800/70 hover:border-primary/60 hover:text-primary transition-colors">
+            <a href="{{ item.url }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-gray-200/70 dark:border-gray-800/70 hover:border-primary/60 hover:text-primaryText transition-colors">
                 <i class="{{ item.icon }} text-xs" aria-hidden="true"></i>{{ item.label }}
             </a>
             {% endfor %}

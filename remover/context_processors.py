@@ -44,31 +44,50 @@ TOOL_GROUPS = [
 ]
 
 
-# Per-tool signature accent colours as "R G B" (primary, hover). Resolved into
-# the --color-primary CSS variables in base.html so each tool page re-tints every
-# `primary` element to its own colour. Unlisted views fall back to the brand indigo.
+# Per-tool signature accent colours as "R G B", each a (surface, hover, text_dark)
+# triple resolved into CSS variables in base.html. Unlisted views fall back to the
+# brand indigo.
+#
+# Why three values and not one: `primary` does two jobs with opposite contrast
+# needs. As a SURFACE (`bg-primary`/`from-primary` under white text) it must stay
+# dark enough to carry that text in BOTH themes, so it does not vary by theme. As
+# TEXT on the page background (`text-primaryText`) it must invert — a shade that
+# reads on white is unreadable on the dark surface, and vice versa. `text_dark` is
+# that dark-theme text shade; in light mode the text token just reuses `surface`.
+#
+# Every value below is a Tailwind palette shade chosen so all three roles clear
+# WCAG AA (4.5:1) — surface and hover against white, text_dark against the dark
+# glass surface. Shades were picked by contrast measurement, not by eye: each hue
+# uses the most vivid shade that still passes, so the signature colour survives.
+# AccentContrastTests recomputes those ratios, so an edit below that dips under AA
+# fails the suite rather than shipping.
 TOOL_ACCENTS = {
-    "index": ("79 70 229", "67 56 202"),        # indigo (brand)
-    "blur": ("2 132 199", "3 105 161"),         # sky
-    "ecommerce": ("5 150 105", "4 120 87"),     # emerald
-    "convert": ("124 58 237", "109 40 217"),    # violet
-    "compress": ("8 145 178", "14 116 144"),    # cyan
-    "crop": ("37 99 235", "29 78 216"),         # blue
-    "meme": ("192 38 211", "162 28 175"),       # fuchsia
-    "instagram": ("214 41 118", "185 30 99"),   # instagram pink
-    "sticker": ("217 119 6", "180 83 9"),       # amber
-    "text_behind": ("13 148 136", "15 118 110"), # teal
-    "passport": ("220 38 38", "185 28 28"),     # red
-    "passport_country": ("220 38 38", "185 28 28"),
-    "favicon": ("202 138 4", "161 98 7"),       # yellow/gold
-    "qr": ("71 85 105", "51 65 85"),            # slate
-    "redact": ("225 29 72", "190 18 60"),       # rose
-    "exif": ("22 163 74", "21 128 61"),         # green
-    "resize": ("234 88 12", "194 65 12"),       # orange
-    "watermark": ("101 163 13", "77 124 15"),   # lime
-    "gif": ("147 51 234", "126 34 206"),        # purple
+    "index": ("79 70 229", "67 56 202", "129 140 248"),        # indigo 600/700/400 (brand)
+    "blur": ("3 105 161", "7 89 133", "2 132 199"),            # sky 700/800/600
+    "ecommerce": ("4 120 87", "6 95 70", "5 150 105"),         # emerald 700/800/600
+    "convert": ("124 58 237", "109 40 217", "167 139 250"),    # violet 600/700/400
+    "compress": ("14 116 144", "21 94 117", "8 145 178"),      # cyan 700/800/600
+    "crop": ("37 99 235", "29 78 216", "59 130 246"),          # blue 600/700/500
+    "meme": ("192 38 211", "162 28 175", "217 70 239"),        # fuchsia 600/700/500
+    "instagram": ("219 39 119", "190 24 93", "236 72 153"),    # pink 600/700/500
+    "sticker": ("180 83 9", "146 64 14", "217 119 6"),         # amber 700/800/600
+    "text_behind": ("15 118 110", "17 94 89", "13 148 136"),   # teal 700/800/600
+    "passport": ("220 38 38", "185 28 28", "239 68 68"),       # red 600/700/500
+    "passport_country": ("220 38 38", "185 28 28", "239 68 68"),
+    "favicon": ("161 98 7", "133 77 14", "202 138 4"),         # yellow 700/800/600
+    "qr": ("100 116 139", "71 85 105", "148 163 184"),         # slate 500/600/400
+    "redact": ("225 29 72", "190 18 60", "244 63 94"),         # rose 600/700/500
+    "exif": ("21 128 61", "22 101 52", "22 163 74"),           # green 700/800/600
+    "resize": ("194 65 12", "154 52 18", "234 88 12"),         # orange 700/800/600
+    "watermark": ("77 124 15", "63 98 18", "101 163 13"),      # lime 700/800/600
+    "gif": ("147 51 234", "126 34 206", "168 85 247"),         # purple 600/700/500
 }
-_DEFAULT_ACCENT = ("79 70 229", "67 56 202")
+_DEFAULT_ACCENT = TOOL_ACCENTS["index"]
+
+
+def _hex(rgb):
+    """"R G B" -> "#rrggbb" (for <meta name=theme-color>, which takes no rgb())."""
+    return "#" + "".join(f"{int(c):02x}" for c in rgb.split())
 
 
 def _alternate_urls(request):
@@ -92,7 +111,7 @@ def seo(request):
     url_name = match.url_name if match is not None else None
     ads_allowed = url_name == "use_case" and url_name not in ISOLATED_VIEWS
     alternates = _alternate_urls(request)
-    accent, accent_hover = TOOL_ACCENTS.get(url_name, _DEFAULT_ACCENT)
+    accent, accent_hover, accent_text_dark = TOOL_ACCENTS.get(url_name, _DEFAULT_ACCENT)
     # Header tool switcher: resolve URL + translated label once, reused by both
     # the pill row and the grouped "All tools" mega-menu.
     tool_nav = [
@@ -106,6 +125,9 @@ def seo(request):
     return {
         "accent_rgb": accent,
         "accent_rgb_hover": accent_hover,
+        "accent_rgb_text_dark": accent_text_dark,
+        # Browser chrome (address bar / PWA) matches the tool's accent too.
+        "accent_hex": _hex(accent),
         "google_site_verification": settings.GOOGLE_SITE_VERIFICATION,
         "bing_site_verification": settings.BING_SITE_VERIFICATION,
         # Landing pages are surfaced in the footer of every page; the nav label is

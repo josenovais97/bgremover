@@ -92,7 +92,7 @@ const App = {
     // Marketplace buttons.
     const wrap = $('#ec-markets');
     wrap.innerHTML = Object.entries(MARKETS).map(([k, m]) =>
-      `<button type="button" data-market="${k}" class="ec-market text-left px-4 py-3 rounded-xl border transition ${k === this.market ? 'border-primary bg-primary/5 text-primary' : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800'}">
+      `<button type="button" data-market="${k}" class="ec-market text-left px-4 py-3 rounded-xl border transition ${k === this.market ? 'border-primary bg-primary/5 text-primaryText' : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800'}">
         <span class="block font-semibold">${m.label} Ready</span>
         <span class="block text-xs text-gray-400">${m.note}</span>
       </button>`).join('');
@@ -102,7 +102,7 @@ const App = {
       this.market = b.dataset.market;
       $$('.ec-market').forEach((x) => {
         const a = x.dataset.market === this.market;
-        x.classList.toggle('border-primary', a); x.classList.toggle('bg-primary/5', a); x.classList.toggle('text-primary', a);
+        x.classList.toggle('border-primary', a); x.classList.toggle('bg-primary/5', a); x.classList.toggle('text-primaryText', a);
         x.classList.toggle('border-gray-300', !a); x.classList.toggle('dark:border-gray-700', !a);
       });
       this.updateButton();
@@ -156,12 +156,12 @@ const App = {
       <div class="relative">
         <canvas class="ec-item-canvas w-full rounded-lg block" width="480" height="480"></canvas>
         <div class="ec-item-status absolute inset-0 grid place-items-center rounded-lg bg-white/70 dark:bg-gray-950/70 backdrop-blur-sm text-[11px] font-medium">
-          <span class="flex items-center gap-1.5 text-primary"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Removing…</span>
+          <span class="flex items-center gap-1.5 text-primaryText"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Removing…</span>
         </div>
       </div>
       <div class="flex items-center justify-between gap-2">
         <span class="ec-item-name text-[11px] truncate text-gray-500 dark:text-gray-400" title="${file.name}">${file.name}</span>
-        <button type="button" class="ec-item-dl shrink-0 w-7 h-7 grid place-items-center rounded-lg text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-40" title="Download this photo" disabled>
+        <button type="button" class="ec-item-dl shrink-0 w-7 h-7 grid place-items-center rounded-lg text-gray-500 hover:text-primaryText hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-40" title="Download this photo" disabled>
           <i class="fa-solid fa-download text-xs" aria-hidden="true"></i>
         </button>
       </div>`;
@@ -182,7 +182,7 @@ const App = {
     if (show) {
       item.statusEl.innerHTML = error
         ? `<span class="flex items-center gap-1.5 text-red-500"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ${text}</span>`
-        : `<span class="flex items-center gap-1.5 text-primary"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> ${text}</span>`;
+        : `<span class="flex items-center gap-1.5 text-primaryText"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> ${text}</span>`;
     }
   },
 

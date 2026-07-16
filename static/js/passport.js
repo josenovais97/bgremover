@@ -114,7 +114,7 @@ const App = {
     // Preset buttons.
     const presetWrap = $('#pp-presets');
     presetWrap.innerHTML = Object.entries(PRESETS).map(([k, p]) =>
-      `<button type="button" data-preset="${k}" class="pp-preset text-left px-3 py-2 rounded-lg border text-xs transition ${k === this.presetKey ? 'border-primary bg-primary/5 text-primary' : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800'}">
+      `<button type="button" data-preset="${k}" class="pp-preset text-left px-3 py-2 rounded-lg border text-xs transition ${k === this.presetKey ? 'border-primary bg-primary/5 text-primaryText' : 'border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800'}">
         <span class="block font-semibold leading-tight">${p.label.split(' — ')[0]}</span>
         <span class="block text-gray-400">${p.size || 'set below'}</span>
       </button>`).join('');
@@ -195,7 +195,7 @@ const App = {
     this.presetKey = key;
     $$('.pp-preset').forEach((b) => {
       const a = b.dataset.preset === key;
-      b.classList.toggle('border-primary', a); b.classList.toggle('bg-primary/5', a); b.classList.toggle('text-primary', a);
+      b.classList.toggle('border-primary', a); b.classList.toggle('bg-primary/5', a); b.classList.toggle('text-primaryText', a);
       b.classList.toggle('border-gray-300', !a); b.classList.toggle('dark:border-gray-700', !a);
     });
     $('#pp-custom-row').classList.toggle('hidden', key !== 'custom');

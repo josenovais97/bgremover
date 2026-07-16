@@ -3,6 +3,7 @@ from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils import translation
 
+from remover.context_processors import TOOL_ACCENTS
 from remover.views import USE_CASES
 
 
@@ -362,3 +363,129 @@ class SeoEndpointTests(SimpleTestCase):
         self.assertIn("application/xml", response["Content-Type"])
         self.assertContains(response, "<urlset")
         self.assertContains(response, "<loc>")
+
+
+class AccentContrastTests(SimpleTestCase):
+    """Every per-tool accent must stay legible in both themes.
+
+    TOOL_ACCENTS is hand-edited, and a colour that looks fine on white can be
+    unreadable on the dark surface (and vice versa) — the failure the surface/text
+    token split exists to prevent. Rather than trust the table, recompute WCAG
+    contrast for all three roles so a bad shade fails here instead of shipping.
+    """
+
+    AA = 4.5
+    WHITE = (255, 255, 255)
+    # The dark glass surface (rgba(22,22,34,.74) over gray-950) that dark-mode
+    # accent text actually sits on — stricter than gray-950 itself.
+    DARK = (18, 18, 28)
+
+    @staticmethod
+    def _luminance(rgb):
+        def channel(c):
+            c /= 255
+            return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+        r, g, b = (channel(c) for c in rgb)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    @classmethod
+    def _ratio(cls, a, b):
+        la, lb = cls._luminance(a), cls._luminance(b)
+        hi, lo = max(la, lb), min(la, lb)
+        return (hi + 0.05) / (lo + 0.05)
+
+    @staticmethod
+    def _rgb(value):
+        return tuple(int(c) for c in value.split())
+
+    def test_accents_meet_aa_in_both_themes(self):
+        for tool, (surface, hover, text_dark) in TOOL_ACCENTS.items():
+            with self.subTest(tool=tool):
+                # Surface + hover carry white text, in both themes.
+                for role, value in (("surface", surface), ("hover", hover)):
+                    ratio = self._ratio(self._rgb(value), self.WHITE)
+                    self.assertGreaterEqual(
+                        ratio, self.AA,
+                        f"{tool} {role} ({value}) is {ratio:.2f}:1 against white text; "
+                        f"needs {self.AA}:1 — use a darker shade.",
+                    )
+                # text_dark is the accent as text on the dark surface.
+                ratio = self._ratio(self._rgb(text_dark), self.DARK)
+                self.assertGreaterEqual(
+                    ratio, self.AA,
+                    f"{tool} text_dark ({text_dark}) is {ratio:.2f}:1 on the dark "
+                    f"surface; needs {self.AA}:1 — use a lighter shade.",
+                )
+
+    def test_accent_table_is_well_formed(self):
+        for tool, value in TOOL_ACCENTS.items():
+            with self.subTest(tool=tool):
+                self.assertEqual(len(value), 3, f"{tool}: expected (surface, hover, text_dark)")
+                for part in value:
+                    self.assertEqual(len(self._rgb(part)), 3, f"{tool}: {part!r} is not 'R G B'")
+
+
+class AccentWiringTests(SimpleTestCase):
+    """The accent only reaches the page if the view actually emits the variables."""
+
+    def test_tool_page_emits_all_three_accent_vars(self):
+        response = self.client.get(reverse("remover:resize"))
+        surface, hover, text_dark = TOOL_ACCENTS["resize"]
+        self.assertContains(response, f"--color-primary: {surface}")
+        self.assertContains(response, f"--color-primary-hover: {hover}")
+        self.assertContains(response, f"--accent-text-dark: {text_dark}")
+
+    def test_theme_color_follows_the_tool_accent(self):
+        response = self.client.get(reverse("remover:resize"))
+        # resize = orange 700 (194 65 12) -> #c2410c, not the brand indigo.
+        self.assertContains(response, '<meta name="theme-color" content="#c2410c">', html=False)
+
+
+class IconSubsetTests(SimpleTestCase):
+    """Every `fa-` icon used must exist in the committed Font Awesome subset.
+
+    static/webfonts/* is subsetted to exactly the glyphs in fontawesome.css and has
+    no build script, so referencing any other icon renders a blank box with no error
+    anywhere — invisible until someone looks at that page. This catches it instead.
+    Adding a genuinely new icon means re-subsetting the woff2, not just adding CSS.
+    """
+
+    # Structural/utility classes that style an icon rather than name a glyph.
+    UTILITY = {
+        "fa-solid", "fa-regular", "fa-brands", "fa-spin", "fa-border",
+        "fa-rotate-by", "fa-flip-horizontal", "fa-fw", "fa-lg",
+    }
+    # Substrings of the webfont FILENAMES (fa-solid-900.woff2), not icon classes.
+    NOT_ICONS = {"fa-solid-900", "fa-regular-400", "fa-brands-400"}
+
+    def test_no_icon_outside_the_subset(self):
+        import re
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parent.parent
+        css = (root / "static/css/fontawesome.css").read_text()
+        available = set(re.findall(r"\.(fa-[a-z0-9-]+)::before", css))
+        self.assertGreater(len(available), 50, "subset CSS looks empty — wrong path?")
+
+        sources = [
+            p for d in ("templates", "static/js")
+            for p in (root / d).rglob("*")
+            if p.suffix in {".html", ".js"} and p.is_file()
+        ]
+        missing = {}
+        for path in sources:
+            # Lookbehind skips CSS custom properties (--fa-rotate-angle), which are
+            # settings for a utility class rather than glyph names.
+            for name in re.findall(r"(?<![-\w])fa-[a-z0-9-]+", path.read_text()):
+                if name in self.UTILITY or name in self.NOT_ICONS or name in available:
+                    continue
+                missing.setdefault(name, set()).add(str(path.relative_to(root)))
+
+        self.assertFalse(
+            missing,
+            "Icons used but absent from the Font Awesome subset (they render as blank "
+            "boxes). Either use a glyph already in static/css/fontawesome.css, or "
+            "re-subset the webfont to include these:\n"
+            + "\n".join(f"  {n} <- {', '.join(sorted(f))}" for n, f in sorted(missing.items())),
+        )

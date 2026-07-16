@@ -10,7 +10,7 @@
         <!-- Hero + dropzone -->
         <section class="space-y-8">
             <div class="max-w-3xl mx-auto text-center space-y-5 animate-fade-in-up">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
                     <i class="fa-solid fa-lock" aria-hidden="true"></i> {% t "Private & free — runs in your browser" %}
                 </span>
                 <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">
@@ -44,7 +44,7 @@
                         <input type="file" id="file-input" class="sr-only" accept="image/png,image/jpeg,image/webp" multiple>
 
                         <div class="flex flex-col items-center justify-center space-y-4 text-center">
-                            <div id="upload-icon" class="w-20 h-20 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                            <div id="upload-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                                 <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
                             </div>
                             <h2 class="text-2xl font-semibold">{% t "Drag & drop your images" %}</h2>
@@ -53,7 +53,7 @@
                                 <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select images" %}
                             </button>
                             <button id="try-sample" type="button" data-src="{% static 'img/demo1-before.webp' %}"
-                                    class="text-sm font-medium text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+                                    class="text-sm font-medium text-primaryText hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
                                 {% t "or try it with a sample photo" %} →
                             </button>
                             <div class="pt-4 text-sm text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
@@ -81,7 +81,7 @@
                             </div>
                             <!-- Divider + handle -->
                             <div id="demo-line" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
-                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg grid place-items-center text-primary">
+                                <div class="on-light-surface absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg grid place-items-center text-primaryText">
                                     <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
                                 </div>
                             </div>
@@ -110,21 +110,21 @@
             <h2 id="how-title" class="sr-only">How it works</h2>
             <ol class="grid gap-3 sm:grid-cols-3 text-sm">
                 <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
-                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="fa-solid fa-upload" aria-hidden="true"></i></span>
+                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-upload" aria-hidden="true"></i></span>
                     <span><b class="font-semibold">Add</b> an image — drag, browse or paste</span>
                 </li>
                 <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
-                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></span>
+                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></span>
                     <span><b class="font-semibold">AI removes</b> the background on your device</span>
                 </li>
                 <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
-                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="fa-solid fa-download" aria-hidden="true"></i></span>
+                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-download" aria-hidden="true"></i></span>
                     <span><b class="font-semibold">Download</b> a transparent PNG, full quality</span>
                 </li>
             </ol>
             <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
                 {% t "Coming from another tool?" %}
-                <a href="{% url 'remover:alternative' %}" class="text-primary font-medium hover:underline">{% t "See how we compare to remove.bg" %} →</a>
+                <a href="{% url 'remover:alternative' %}" class="text-primaryText font-medium hover:underline">{% t "See how we compare to remove.bg" %} →</a>
             </p>
         </section>
 
@@ -135,9 +135,9 @@
     <section id="workspace" class="hidden space-y-6" aria-label="Your results">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div id="stats-bar" class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-300">
-                <span><i class="fa-solid fa-images text-primary mr-1.5" aria-hidden="true"></i><b id="stat-count">0</b> processed</span>
-                <span><i class="fa-solid fa-clock text-primary mr-1.5" aria-hidden="true"></i>avg <b id="stat-avg">0.0</b>s</span>
-                <span><i class="fa-solid fa-database text-primary mr-1.5" aria-hidden="true"></i>saved <b id="stat-saved">0</b> images total</span>
+                <span><i class="fa-solid fa-images text-primaryText mr-1.5" aria-hidden="true"></i><b id="stat-count">0</b> processed</span>
+                <span><i class="fa-solid fa-clock text-primaryText mr-1.5" aria-hidden="true"></i>avg <b id="stat-avg">0.0</b>s</span>
+                <span><i class="fa-solid fa-database text-primaryText mr-1.5" aria-hidden="true"></i>saved <b id="stat-saved">0</b> images total</span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <button id="download-all-btn" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -158,7 +158,7 @@
     <section id="history-section" class="hidden max-w-5xl mx-auto space-y-4">
         <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold flex items-center gap-2">
-                <i class="fa-solid fa-clock-rotate-left text-primary" aria-hidden="true"></i>Recent this session
+                <i class="fa-solid fa-clock-rotate-left text-primaryText" aria-hidden="true"></i>Recent this session
             </h2>
             <button id="clear-history-btn" type="button" class="text-sm text-gray-500 hover:text-red-500 transition-colors">Clear history</button>
         </div>
@@ -176,7 +176,7 @@
                 <img class="original-img absolute inset-0 w-full h-full object-contain" alt="Original image" draggable="false" style="clip-path: inset(0 50% 0 0);">
                 <input type="range" min="0" max="100" value="50" class="compare-range absolute inset-0 w-full h-full opacity-0 z-20 cursor-ew-resize" aria-label="Compare original and result">
                 <div class="slider-line absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_6px_rgba(0,0,0,0.5)] z-10 -translate-x-1/2 pointer-events-none" style="left: 50%;">
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-lg text-primary">
+                    <div class="on-light-surface absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-lg text-primaryText">
                         <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
                     </div>
                 </div>
@@ -218,7 +218,7 @@
             <div class="error-overlay hidden absolute inset-0 glass backdrop-blur-md flex flex-col items-center justify-center gap-2 text-center px-6">
                 <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500" aria-hidden="true"></i>
                 <p class="error-msg text-sm font-medium text-red-600 dark:text-red-400">Something went wrong.</p>
-                <button type="button" class="retry-btn mt-1 text-sm text-primary hover:underline">Try again</button>
+                <button type="button" class="retry-btn mt-1 text-sm text-primaryText hover:underline">Try again</button>
             </div>
         </div>
 
@@ -325,6 +325,10 @@
                 <p class="filename text-sm font-semibold truncate text-gray-900 dark:text-gray-100" title="">image.png</p>
                 <p class="meta text-xs text-gray-500 dark:text-gray-400 mt-0.5"></p>
             </div>
+            <!-- Only the actions people came for stay on the surface: Refine, Crop,
+                 Style & export, and Download. Copy / view-toggle / hand-off / Remove
+                 are real but occasional, so they live in the overflow menu rather
+                 than competing with Download for attention. -->
             <div class="actions flex flex-wrap items-center gap-2">
                 <div class="flex items-center gap-1 mr-1">
                     <button type="button" class="undo-btn btn-ghost" aria-label="Undo last change" title="Undo" disabled>
@@ -343,27 +347,34 @@
                 <button type="button" class="options-btn btn-ghost" aria-label="Instagram formats, background, effects and export options">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i> Style &amp; export
                 </button>
-                <button type="button" class="toggle-view-btn btn-ghost" aria-label="Switch between slider and side-by-side view">
-                    <i class="fa-solid fa-table-columns" aria-hidden="true"></i> <span class="view-label">Side-by-side</span>
-                </button>
-                <button type="button" class="copy-btn btn-ghost" aria-label="Copy result to clipboard">
-                    <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy
-                </button>
-                <!-- Continue editing this cut-out in another tool, no re-upload (see handoff.js). -->
-                <div class="continue-wrap relative">
-                    <button type="button" class="continue-btn btn-ghost" aria-haspopup="true" aria-expanded="false" aria-label="Continue editing this result in another tool">
-                        <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Continue in <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
-                    </button>
-                    <div class="continue-menu hidden absolute left-0 bottom-full mb-2 w-44 flex flex-col gap-0.5 p-1.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-xl z-30" role="menu">
-                        <a data-tool href="{% url 'remover:crop' %}" role="menuitem" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i class="fa-solid fa-crop-simple w-4 text-center text-gray-400" aria-hidden="true"></i> Crop</a>
-                        <a data-tool href="{% url 'remover:sticker' %}" role="menuitem" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i class="fa-solid fa-note-sticky w-4 text-center text-gray-400" aria-hidden="true"></i> Sticker</a>
-                        <a data-tool href="{% url 'remover:instagram' %}" role="menuitem" class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"><i class="fa-brands fa-instagram w-4 text-center text-gray-400" aria-hidden="true"></i> Instagram</a>
-                    </div>
-                </div>
+
                 <div class="flex items-center gap-2 ml-auto">
-                    <button type="button" class="remove-btn btn-danger" aria-label="Remove this image">
-                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                    </button>
+                    <div class="more-wrap relative">
+                        <!-- Label + chevron rather than a bare "…": it matches the header's
+                             "All tools" menu, and no ellipsis glyph exists in the Font
+                             Awesome subset (static/css/fontawesome.css) — an out-of-subset
+                             icon renders as a blank box, so only pick glyphs listed there. -->
+                        <button type="button" class="more-btn btn-ghost" aria-haspopup="true" aria-expanded="false" aria-label="More actions">
+                            More <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+                        </button>
+                        <div class="more-menu hidden absolute right-0 bottom-full mb-2 w-56 flex-col gap-0.5 p-1.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-xl z-30" role="menu">
+                            <button type="button" class="copy-btn menu-item" role="menuitem">
+                                <i class="fa-regular fa-copy w-4 text-center text-gray-400" aria-hidden="true"></i> Copy result
+                            </button>
+                            <button type="button" class="toggle-view-btn menu-item" role="menuitem" aria-label="Switch between slider and side-by-side view">
+                                <i class="fa-solid fa-table-columns w-4 text-center text-gray-400" aria-hidden="true"></i> <span class="view-label">Side-by-side</span>
+                            </button>
+                            <!-- Continue editing this cut-out in another tool, no re-upload (see handoff.js). -->
+                            <p class="px-2.5 pt-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Continue in</p>
+                            <a data-tool href="{% url 'remover:crop' %}" role="menuitem" class="menu-item"><i class="fa-solid fa-crop-simple w-4 text-center text-gray-400" aria-hidden="true"></i> Crop</a>
+                            <a data-tool href="{% url 'remover:sticker' %}" role="menuitem" class="menu-item"><i class="fa-solid fa-note-sticky w-4 text-center text-gray-400" aria-hidden="true"></i> Sticker</a>
+                            <a data-tool href="{% url 'remover:instagram' %}" role="menuitem" class="menu-item"><i class="fa-brands fa-instagram w-4 text-center text-gray-400" aria-hidden="true"></i> Instagram</a>
+                            <div class="my-1 border-t border-gray-200/70 dark:border-white/10" role="separator"></div>
+                            <button type="button" class="remove-btn menu-item menu-item-danger" role="menuitem" aria-label="Remove this image">
+                                <i class="fa-solid fa-trash-can w-4 text-center" aria-hidden="true"></i> Remove
+                            </button>
+                        </div>
+                    </div>
                     <button type="button" class="download-btn btn-primary" aria-label="Download result">
                         <i class="fa-solid fa-download" aria-hidden="true"></i> Download <span class="download-label">PNG</span>
                     </button>
@@ -374,10 +385,10 @@
 </template>
 
 <!-- ========================= REFINE EDITOR ========================= -->
-<div id="editor-modal" class="hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Refine edges">
+<div id="editor-modal" class="on-dark-surface hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Refine edges">
     <!-- Header -->
     <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/10 text-white shrink-0">
-        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-brush text-primary" aria-hidden="true"></i> Refine edges</div>
+        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-brush text-primaryText" aria-hidden="true"></i> Refine edges</div>
         <div class="flex items-center gap-2">
             <button id="editor-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>
             <button id="editor-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
@@ -437,10 +448,10 @@
 </div>
 
 <!-- ============================ CROP DIALOG ============================ -->
-<div id="crop-modal" class="hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Crop image">
+<div id="crop-modal" class="on-dark-surface hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Crop image">
     <!-- Header -->
     <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/10 text-white shrink-0">
-        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-crop-simple text-primary" aria-hidden="true"></i> Crop</div>
+        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-crop-simple text-primaryText" aria-hidden="true"></i> Crop</div>
         <div class="flex items-center gap-2">
             <button id="crop-remove" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Remove crop</button>
             <button id="crop-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>

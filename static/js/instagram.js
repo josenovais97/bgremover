@@ -1166,7 +1166,7 @@ const App = {
     const btn = $('#ig-remove-bg');
     const original = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Removing…';
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i>Removing…';
     try {
       const { removeBackground } = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm');
       // Full 'isnet' when cross-origin isolated (threaded WASM); quantized

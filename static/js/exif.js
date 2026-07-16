@@ -178,7 +178,7 @@ const App = {
     } else {
       const notable = Object.keys(NOTABLE).filter((k) => meta[k] != null && meta[k] !== '')
         .map((k) => `<div class="flex justify-between gap-3 py-1 border-b border-gray-200/50 dark:border-gray-800/50 last:border-0"><span class="text-gray-500 dark:text-gray-400">${NOTABLE[k]}</span><span class="font-medium text-right truncate max-w-[60%]">${this.fmtKeyed(k, meta[k])}</span></div>`).join('');
-      summary.innerHTML = `<div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-database text-primary"></i> ${count} metadata field${count === 1 ? '' : 's'} found</div>${notable ? `<div class="mt-2">${notable}</div>` : ''}`;
+      summary.innerHTML = `<div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-database text-primaryText"></i> ${count} metadata field${count === 1 ? '' : 's'} found</div>${notable ? `<div class="mt-2">${notable}</div>` : ''}`;
     }
 
     // GPS

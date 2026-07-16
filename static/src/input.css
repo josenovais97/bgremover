@@ -8,13 +8,36 @@
    ========================================================================== */
 
 @layer base {
-  /* Per-tool accent. `primary`/`primaryHover` resolve to these RGB triples
-     (see tailwind.config.js). base.html overrides them per page from the view,
-     so each tool gets a signature colour without touching any template. */
+  /* Per-tool accent. `primary`/`primaryHover`/`primaryText` resolve to these RGB
+     triples (see tailwind.config.js). base.html sets them per page from the view,
+     so each tool gets a signature colour without touching any template.
+
+     Two families, because an accent used as a surface and the same accent used as
+     text have opposite contrast needs (see TOOL_ACCENTS in context_processors.py):
+
+       --color-primary / -hover  SURFACE. Carries white text, so it must stay dark
+                                 in both themes — it does NOT vary by theme.
+       --color-primary-text      TEXT on the page background. Inverts by theme:
+                                 the surface shade in light, a lighter shade in dark.
+
+     --accent-text-dark is supplied inline by base.html; the text token is derived
+     from it HERE rather than inline because an inline style can't be overridden by
+     a stylesheet rule, which is exactly what the `.dark` flip below needs to do. */
   :root {
-    --color-primary: 79 70 229;        /* indigo — brand default */
-    --color-primary-hover: 67 56 202;
+    --color-primary: 79 70 229;        /* indigo 600 — brand default */
+    --color-primary-hover: 67 56 202;  /* indigo 700 */
+    --accent-text-dark: 129 140 248;   /* indigo 400 */
   }
+  body { --color-primary-text: var(--color-primary); }
+  .dark body { --color-primary-text: var(--accent-text-dark); }
+
+  /* Escape hatches for surfaces that DON'T follow the theme: the editor/crop
+     modals are always dark, the compare-slider handle is always white. Set on the
+     surface itself, they re-point the text token for everything inside — so
+     `text-primaryText` stays readable there in both themes. These win over the
+     `body` rules by proximity (nearest ancestor), not specificity. */
+  .on-dark-surface { --color-primary-text: var(--accent-text-dark); }
+  .on-light-surface { --color-primary-text: var(--color-primary); }
   /* Display face for the big headlines; body stays Inter (loaded in base.html).
      Applying to h1 site-wide gives every tool a distinctive, non-templated hero
      without touching each template. */
@@ -76,12 +99,12 @@
   }
   .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 22px 44px -16px rgba(79,70,229,.30), 0 10px 20px -12px rgba(17,24,39,.14);
-    border-color: rgba(99,102,241,.45);
+    box-shadow: 0 22px 44px -16px rgb(var(--color-primary) / .30), 0 10px 20px -12px rgba(17,24,39,.14);
+    border-color: rgb(var(--color-primary) / .45);
   }
   .dark .card:hover {
-    box-shadow: 0 24px 50px -16px rgba(129,140,248,.38), 0 10px 20px -12px rgba(0,0,0,.55);
-    border-color: rgba(129,140,248,.5);
+    box-shadow: 0 24px 50px -16px rgb(var(--accent-text-dark) / .38), 0 10px 20px -12px rgba(0,0,0,.55);
+    border-color: rgb(var(--accent-text-dark) / .5);
   }
   /* A softer, layered default shadow than flat `shadow-lg`, opt-in per card. */
   .elevate { box-shadow: 0 1px 2px rgba(17,24,39,.04), 0 8px 24px -12px rgba(17,24,39,.18); }
@@ -97,14 +120,14 @@
            text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25
            transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/40
            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-           dark:focus-visible:ring-offset-gray-900;
+           dark:focus-visible:ring-offset-gray-950;
   }
   /* Accent action for the editing tools (Refine, Crop). */
   .btn-accent {
     @apply inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium
-           text-primary bg-primary/10 border border-primary/10 transition-all duration-200
+           text-primaryText bg-primary/10 border border-primary/10 transition-all duration-200
            hover:bg-primary/15 hover:border-primary/20 hover:-translate-y-0.5
-           dark:text-indigo-300 dark:bg-primary/20 dark:border-primary/20 dark:hover:bg-primary/30
+           dark:bg-primary/20 dark:border-primary/20 dark:hover:bg-primary/30
            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
   }
   /* Neutral secondary action (view toggle, copy, options). */
@@ -121,6 +144,19 @@
            text-gray-500 border border-transparent transition-all duration-200
            hover:text-red-600 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/20
            focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400;
+  }
+
+  /* Row in a dropdown menu (card overflow, "Continue in"). Works for <button>
+     and <a> alike, so a menu can mix actions and links without visual drift. */
+  .menu-item {
+    @apply flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-sm text-left font-normal
+           text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900
+           dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  }
+  /* Destructive row. Declared after .menu-item so its hover wins at equal specificity. */
+  .menu-item-danger {
+    @apply hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400;
   }
 
   /* Segmented control (Format). */
@@ -188,7 +224,7 @@
   .scrollbar-thin::-webkit-scrollbar { height: 6px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.35);
+    background: rgb(var(--color-primary) / 0.35);
     border-radius: 9999px;
   }
 }
@@ -238,7 +274,7 @@ input[type="range"]:not(.compare-range) {
 input[type="range"]:not(.compare-range)::-webkit-slider-runnable-track {
   height: 5px;
   border-radius: 9999px;
-  background: rgba(99, 102, 241, 0.2);
+  background: rgb(var(--color-primary) / 0.2);
 }
 input[type="range"]:not(.compare-range)::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -248,7 +284,7 @@ input[type="range"]:not(.compare-range)::-webkit-slider-thumb {
   margin-top: -5px;
   border-radius: 9999px;
   background: #fff;
-  border: 2px solid #4f46e5;
+  border: 2px solid rgb(var(--color-primary));
   box-shadow: 0 1px 4px rgba(17, 24, 39, 0.25);
   transition: transform 0.12s ease;
 }
@@ -257,18 +293,18 @@ input[type="range"]:not(.compare-range):active::-webkit-slider-thumb { transform
 input[type="range"]:not(.compare-range)::-moz-range-track {
   height: 5px;
   border-radius: 9999px;
-  background: rgba(99, 102, 241, 0.2);
+  background: rgb(var(--color-primary) / 0.2);
 }
 input[type="range"]:not(.compare-range)::-moz-range-thumb {
   width: 15px;
   height: 15px;
   border-radius: 9999px;
   background: #fff;
-  border: 2px solid #4f46e5;
+  border: 2px solid rgb(var(--color-primary));
   box-shadow: 0 1px 4px rgba(17, 24, 39, 0.25);
 }
-.dark input[type="range"]:not(.compare-range)::-webkit-slider-runnable-track { background: rgba(129, 140, 248, 0.28); }
-.dark input[type="range"]:not(.compare-range)::-moz-range-track { background: rgba(129, 140, 248, 0.28); }
+.dark input[type="range"]:not(.compare-range)::-webkit-slider-runnable-track { background: rgb(var(--accent-text-dark) / 0.28); }
+.dark input[type="range"]:not(.compare-range)::-moz-range-track { background: rgb(var(--accent-text-dark) / 0.28); }
 
 /* Rounded color-swatch input --------------------------------------------- */
 .color-chip {

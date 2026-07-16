@@ -24,8 +24,8 @@
         <div class="grid gap-3 sm:grid-cols-2">
             {% for item in tool_nav %}
             <a href="{{ item.url }}" class="glass rounded-xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex items-center gap-3 hover:border-primary/60 transition-colors group">
-                <span class="w-9 h-9 shrink-0 grid place-items-center rounded-lg bg-primary/10 text-primary"><i class="{{ item.icon }}" aria-hidden="true"></i></span>
-                <span class="font-medium group-hover:text-primary transition-colors">{{ item.label }}</span>
+                <span class="w-9 h-9 shrink-0 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="{{ item.icon }}" aria-hidden="true"></i></span>
+                <span class="font-medium group-hover:text-primaryText transition-colors">{{ item.label }}</span>
             </a>
             {% endfor %}
         </div>
@@ -33,12 +33,12 @@
 
     <section class="space-y-3">
         <h2 class="text-2xl font-bold">Privacy first</h2>
-        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Nothing you edit is uploaded or stored. Read the full details in our <a class="text-primary hover:underline" href="{% url 'remover:privacy' %}">Privacy Policy</a>.</p>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Nothing you edit is uploaded or stored. Read the full details in our <a class="text-primaryText hover:underline" href="{% url 'remover:privacy' %}">Privacy Policy</a>.</p>
     </section>
 
     <section class="space-y-3">
         <h2 class="text-2xl font-bold">Contact</h2>
-        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Questions, feedback or a bug to report? Email <a class="text-primary hover:underline" href="mailto:josenovais97@gmail.com">josenovais97@gmail.com</a> — we'd love to hear from you.</p>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Questions, feedback or a bug to report? Email <a class="text-primaryText hover:underline" href="mailto:josenovais97@gmail.com">josenovais97@gmail.com</a> — we'd love to hear from you.</p>
     </section>
 
     <section class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-6 text-center space-y-3">
