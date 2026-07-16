@@ -101,6 +101,30 @@ const App = {
 
     $('#ex-download').addEventListener('click', () => this.download());
     $('#ex-new').addEventListener('click', () => this.reset());
+
+    const sample = $('#ex-sample');
+    if (sample) sample.addEventListener('click', (e) => { e.stopPropagation(); this.loadSample(sample.dataset.src); });
+  },
+
+  /** Run the tool on the bundled sample photo — same code path as a real drop. */
+  async loadSample(src) {
+    try {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      await this.load(new File([blob], 'zebra-sample.jpg', { type: 'image/jpeg' }));
+    } catch {
+      Toast.show('Could not load the sample', 'error');
+    }
+  },
+
+  /** Photographers read these as f/1.85 and 1/1433s, not as raw decimals. */
+  fmtKeyed(key, v) {
+    if (typeof v === 'number') {
+      if (key === 'FNumber') return `f/${v.toFixed(2).replace(/\.?0+$/, '')}`;
+      if (key === 'ExposureTime') return v < 1 ? `1/${Math.round(1 / v)}s` : `${v}s`;
+      if (key === 'FocalLength') return `${+v.toFixed(2)} mm`;
+    }
+    return this.fmtValue(v);
   },
 
   fmtValue(v) {
@@ -136,7 +160,7 @@ const App = {
       summary.innerHTML = '<div class="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold"><i class="fa-solid fa-circle-check"></i> No metadata found</div><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">This photo is already clean — you can still re-save a copy below.</p>';
     } else {
       const notable = Object.keys(NOTABLE).filter((k) => meta[k] != null && meta[k] !== '')
-        .map((k) => `<div class="flex justify-between gap-3 py-1 border-b border-gray-200/50 dark:border-gray-800/50 last:border-0"><span class="text-gray-500 dark:text-gray-400">${NOTABLE[k]}</span><span class="font-medium text-right truncate max-w-[60%]">${this.fmtValue(meta[k])}</span></div>`).join('');
+        .map((k) => `<div class="flex justify-between gap-3 py-1 border-b border-gray-200/50 dark:border-gray-800/50 last:border-0"><span class="text-gray-500 dark:text-gray-400">${NOTABLE[k]}</span><span class="font-medium text-right truncate max-w-[60%]">${this.fmtKeyed(k, meta[k])}</span></div>`).join('');
       summary.innerHTML = `<div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-database text-primary"></i> ${count} metadata field${count === 1 ? '' : 's'} found</div>${notable ? `<div class="mt-2">${notable}</div>` : ''}`;
     }
 
