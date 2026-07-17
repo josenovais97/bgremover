@@ -101,7 +101,11 @@ TOOL_ACCENTS = {
     "passport": ("220 38 38", "185 28 28", "239 68 68", "248 113 113"),       # red 600/700/500/400
     "passport_country": ("220 38 38", "185 28 28", "239 68 68", "248 113 113"),
     "favicon": ("161 98 7", "133 77 14", "202 138 4", "234 179 8"),         # yellow 700/800/600/500
-    "qr": ("100 116 139", "71 85 105", "148 163 184", "203 213 225"),         # slate 500/600/400/300
+    # Slate is deliberate here (a QR code is ink on paper), but at 500/600 it was
+    # the only surface in this table lighter than 600 — the gradient headline read
+    # as greyed-out/disabled rather than as a signature colour. 600/700 keeps the
+    # neutral intent and matches the shade convention every other tool follows.
+    "qr": ("71 85 105", "51 65 85", "148 163 184", "203 213 225"),           # slate 600/700/400/300
     "redact": ("225 29 72", "190 18 60", "244 63 94", "251 113 133"),         # rose 600/700/500/400
     "exif": ("21 128 61", "22 101 52", "22 163 74", "34 197 94"),           # green 700/800/600/500
     "resize": ("194 65 12", "154 52 18", "234 88 12", "249 115 22"),         # orange 700/800/600/500

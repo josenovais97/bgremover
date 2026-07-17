@@ -41,14 +41,15 @@ with sync_playwright() as p:
     pg.goto("http://127.0.0.1:8877/", wait_until="domcontentloaded")
     pg.set_input_files("input[type=file]", "tests/fixtures/sample.png")
     for _ in range(90):
-        if pg.evaluate("()=>document.querySelector('.card')?.dataset.state==='done'"):
+        if pg.evaluate("()=>document.querySelector('#results-grid .card')?.dataset.state==='done'"):
             break
         time.sleep(1)
     pg.screenshot(path="/tmp/app.png")   # then Read the screenshot
 ```
 
-Key selectors: upload `input[type=file]`; card state `.card[data-state]`
-(`processing`|`done`|`error`); actions `.crop-btn` `.edit-btn` `.download-btn`;
+Key selectors: upload `input[type=file]`; card state `#results-grid .card[data-state]`
+(`processing`|`done`|`error`) — scope to the grid, since the homepage tool grid
+also uses `.card`; actions `.crop-btn` `.edit-btn` `.download-btn`;
 crop dialog `#crop-modal`, `.crop-source[data-source=original|cutout]`,
 `.crop-shape[data-crop=circle|square|rounded|4:5|16:9|9:16]`, `#crop-apply`.
 

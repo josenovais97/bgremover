@@ -1,22 +1,26 @@
 {% load static %}
 {% comment %}
-File-size comparison demo, for tools where the output looks IDENTICAL to the
-input and only the bytes change (convert, compress).
+Comparison demo for tools whose output looks IDENTICAL to the input, where the
+only thing that changes is a number — bytes (convert, compress) or pixel
+dimensions (resize).
 
-The drag-to-compare slider in demo.html is wrong for those: it reveals no visible
+The drag-to-compare slider in demo.html is wrong for these: it reveals no visible
 difference by design, so it reads as broken — or worse, as if the tool altered
-the picture. This shows the one thing that actually changed instead: the size.
+the picture. This shows the thing that actually changed instead.
 
 Params:
   image        - static path to the sample image (one image; there is no "after")
-  before_label - format/state of the source, e.g. "PNG"
-  before_size  - human size of the source, e.g. "2.1 MB"
-  after_label  - format/state of the result, e.g. "WEBP"
-  after_size   - human size of the result, e.g. "0.3 MB"
-  after_pct    - result size as a % of the source (bar width), e.g. 14
+  before_label - format/state of the source, e.g. "PNG" or "Original"
+  before_size  - the source's number, e.g. "2.1 MB" or "4000 × 3000"
+  after_label  - format/state of the result, e.g. "WEBP" or "Resized"
+  after_size   - the result's number, e.g. "0.3 MB" or "1200 × 900"
+  after_pct    - result as a % of the source (bar width), e.g. 14
   saving       - headline badge, e.g. "86% smaller"
   caption      - small helper line under the frame
   aspect       - Tailwind aspect class, defaults to "aspect-[4/3]"
+
+The numbers are illustrative of a typical job, not measured from `image` — keep
+them plausible, and keep after_pct consistent with the two values either side.
 {% endcomment %}
 <figure class="flex flex-col gap-3 w-full">
     <div class="relative w-full {{ aspect|default:'aspect-[4/3]' }} rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70">
@@ -33,14 +37,14 @@ Params:
                 <div class="flex items-center gap-3">
                     <span class="w-24 shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider text-white/70">{{ before_label }}</span>
                     <span class="grow h-2 rounded-full bg-white/70"></span>
-                    <span class="w-16 shrink-0 text-right text-xs font-semibold tabular-nums">{{ before_size }}</span>
+                    <span class="w-24 shrink-0 text-right text-xs font-semibold tabular-nums whitespace-nowrap">{{ before_size }}</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="w-24 shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider text-white/70">{{ after_label }}</span>
                     <span class="grow h-2 rounded-full bg-white/15 overflow-hidden">
                         <span class="block h-full rounded-full bg-primary" style="width: {{ after_pct }}%"></span>
                     </span>
-                    <span class="w-16 shrink-0 text-right text-xs font-semibold tabular-nums">{{ after_size }}</span>
+                    <span class="w-24 shrink-0 text-right text-xs font-semibold tabular-nums whitespace-nowrap">{{ after_size }}</span>
                 </div>
             </div>
         </div>
