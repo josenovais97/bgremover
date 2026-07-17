@@ -39,7 +39,7 @@
                 <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">Shrinks JPG, PNG &amp; WEBP · Choose a quality or a target file size</p>
             </div>
         </div>
-        {% include 'remover/partials/demo.html' with before='img/demo-compress-before.webp' after='img/demo-compress-after.webp' before_label='Original · 3.1 MB' after_label='Compressed · 268 KB' caption='Same quality, ~12× smaller — drag to compare' %}
+        {% include 'remover/partials/size_demo.html' with image='img/demo-compress-after.webp' before_label='Original' before_size='3.1 MB' after_label='Compressed' after_size='268 KB' after_pct=8 saving='~12× smaller' caption='Same quality, ~12× smaller — nothing uploaded' %}
         </div>
     </section>
 

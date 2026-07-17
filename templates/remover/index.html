@@ -95,13 +95,6 @@
                     </figure>
                 </div>
 
-                <!-- Trust badges -->
-                <div class="flex flex-wrap items-center justify-center gap-2.5 text-sm">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No watermark</span>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> No sign-up</span>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> 100% private</span>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 text-gray-600 dark:text-gray-300"><i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i> Unlimited use</span>
-                </div>
             </div>
         </section>
 
@@ -127,6 +120,8 @@
                 <a href="{% url 'remover:alternative' %}" class="text-primaryText font-medium hover:underline">{% t "See how we compare to remove.bg" %} →</a>
             </p>
         </section>
+
+        {% include 'remover/partials/tool_grid.html' with exclude='index' %}
 
         {% include 'remover/partials/faq.html' %}
     </div>

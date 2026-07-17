@@ -1,0 +1,43 @@
+{% load i18n_extras %}
+{% comment %}
+Every tool as a card in its own signature colour.
+
+Each card carries `accent_vars` (from the context processor) inline, which
+re-points the accent tokens for that subtree, plus `.tool-card`, which re-derives
+the text pair from them. Everything inside then uses the ordinary accent
+utilities — `bg-primary/10`, `text-primaryText` — and resolves to THAT tool's
+colour in both themes. Adding a tool to TOOL_NAV is enough to land it here.
+
+Params:
+  exclude - a url_name to leave out (the page you're already on).
+{% endcomment %}
+<section aria-labelledby="tools-title" class="space-y-8">
+    <div class="max-w-2xl mx-auto text-center space-y-3">
+        <h2 id="tools-title" class="text-3xl md:text-4xl font-extrabold tracking-tight">
+            {% t "One toolkit for every image job" %}
+        </h2>
+        <p class="text-gray-600 dark:text-gray-300">
+            {% t "Every tool runs the same way the background remover does — on your device, free, with nothing uploaded." %}
+        </p>
+    </div>
+
+    {% comment %}
+    Flex rather than grid so a trailing part-row centres instead of leaving an
+    orphan card hanging at the left edge — the count changes with TOOL_NAV, so no
+    column count divides it forever. Basis = one column minus its share of the gap.
+    {% endcomment %}
+    <ul role="list" class="flex flex-wrap justify-center gap-3 sm:gap-4">
+        {% for item in tool_nav %}{% if item.name != exclude %}
+        <li class="basis-[calc(50%-0.375rem)] sm:basis-[calc(33.333%-0.667rem)] lg:basis-[calc(25%-0.75rem)]">
+            <a href="{{ item.url }}" style="{{ item.accent_vars }}"
+               class="tool-card card glass group h-full flex flex-col gap-2 p-4 sm:p-5 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <span class="w-11 h-11 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText text-lg group-hover:scale-110 transition-transform duration-300">
+                    <i class="{{ item.icon }}" aria-hidden="true"></i>
+                </span>
+                <span class="font-semibold text-sm sm:text-base">{{ item.label }}</span>
+                <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-snug">{{ item.blurb }}</span>
+            </a>
+        </li>
+        {% endif %}{% endfor %}
+    </ul>
+</section>

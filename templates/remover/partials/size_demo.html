@@ -1,0 +1,51 @@
+{% load static %}
+{% comment %}
+File-size comparison demo, for tools where the output looks IDENTICAL to the
+input and only the bytes change (convert, compress).
+
+The drag-to-compare slider in demo.html is wrong for those: it reveals no visible
+difference by design, so it reads as broken — or worse, as if the tool altered
+the picture. This shows the one thing that actually changed instead: the size.
+
+Params:
+  image        - static path to the sample image (one image; there is no "after")
+  before_label - format/state of the source, e.g. "PNG"
+  before_size  - human size of the source, e.g. "2.1 MB"
+  after_label  - format/state of the result, e.g. "WEBP"
+  after_size   - human size of the result, e.g. "0.3 MB"
+  after_pct    - result size as a % of the source (bar width), e.g. 14
+  saving       - headline badge, e.g. "86% smaller"
+  caption      - small helper line under the frame
+  aspect       - Tailwind aspect class, defaults to "aspect-[4/3]"
+{% endcomment %}
+<figure class="flex flex-col gap-3 w-full">
+    <div class="relative w-full {{ aspect|default:'aspect-[4/3]' }} rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70">
+        <img src="{% static image %}" width="820" height="616" fetchpriority="high"
+             class="absolute inset-0 w-full h-full object-cover" alt="Sample image, unchanged by the conversion" draggable="false">
+
+        <span class="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary/90 text-white shadow-sm">
+            {{ saving }}
+        </span>
+
+        <!-- Scrim keeps the bars legible over an arbitrary photo. -->
+        <div class="absolute inset-x-0 bottom-0 p-4 pt-10 bg-gradient-to-t from-black/85 via-black/60 to-transparent">
+            <div class="space-y-2.5 text-white">
+                <div class="flex items-center gap-3">
+                    <span class="w-24 shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider text-white/70">{{ before_label }}</span>
+                    <span class="grow h-2 rounded-full bg-white/70"></span>
+                    <span class="w-16 shrink-0 text-right text-xs font-semibold tabular-nums">{{ before_size }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-24 shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider text-white/70">{{ after_label }}</span>
+                    <span class="grow h-2 rounded-full bg-white/15 overflow-hidden">
+                        <span class="block h-full rounded-full bg-primary" style="width: {{ after_pct }}%"></span>
+                    </span>
+                    <span class="w-16 shrink-0 text-right text-xs font-semibold tabular-nums">{{ after_size }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+        <i class="fa-solid fa-circle-check text-green-500 mr-1" aria-hidden="true"></i>{{ caption }}
+    </figcaption>
+</figure>

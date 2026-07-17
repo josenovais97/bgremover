@@ -12,26 +12,46 @@ from .views import USE_CASES
 # identical markup (no per-link drift in sizing/wrapping) and adding a tool is a
 # one-line change. `name` matches the URL name (used for the active state);
 # `group` keys into TOOL_GROUPS so the "All tools" mega-menu can categorise it.
+# `blurb` is the one-line description shown on the homepage tool grid (the nav
+# pill and mega-menu ignore it — they only have room for the label).
 # The list order is also the pill-row order (most-used first).
 TOOL_NAV = [
-    {"name": "index", "icon": "fa-solid fa-wand-magic-sparkles", "label": "Remove BG", "group": "edit"},
-    {"name": "convert", "icon": "fa-solid fa-arrow-right-arrow-left", "label": "Convert", "group": "optimize"},
-    {"name": "compress", "icon": "fa-solid fa-compress", "label": "Compress", "group": "optimize"},
-    {"name": "resize", "icon": "fa-solid fa-expand", "label": "Resize", "group": "optimize"},
-    {"name": "instagram", "icon": "fa-brands fa-instagram", "label": "Instagram", "group": "create"},
-    {"name": "crop", "icon": "fa-solid fa-crop-simple", "label": "Crop", "group": "edit"},
-    {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers", "group": "create"},
-    {"name": "text_behind", "icon": "fa-solid fa-font", "label": "Text Behind", "group": "create"},
-    {"name": "watermark", "icon": "fa-solid fa-stamp", "label": "Watermark", "group": "create"},
-    {"name": "gif", "icon": "fa-solid fa-images", "label": "GIF Maker", "group": "create"},
-    {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme", "group": "create"},
-    {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos"},
-    {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos"},
-    {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur", "group": "edit"},
-    {"name": "redact", "icon": "fa-solid fa-shield-halved", "label": "Redact", "group": "edit"},
-    {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon", "group": "optimize"},
-    {"name": "qr", "icon": "fa-solid fa-table-cells-large", "label": "QR Code", "group": "optimize"},
-    {"name": "exif", "icon": "fa-solid fa-database", "label": "EXIF", "group": "optimize"},
+    {"name": "index", "icon": "fa-solid fa-wand-magic-sparkles", "label": "Remove BG", "group": "edit",
+     "blurb": "Cut out any subject into a transparent PNG"},
+    {"name": "convert", "icon": "fa-solid fa-arrow-right-arrow-left", "label": "Convert", "group": "optimize",
+     "blurb": "Swap between PNG, JPG, WEBP and AVIF"},
+    {"name": "compress", "icon": "fa-solid fa-compress", "label": "Compress", "group": "optimize",
+     "blurb": "Shrink file size without visible quality loss"},
+    {"name": "resize", "icon": "fa-solid fa-expand", "label": "Resize", "group": "optimize",
+     "blurb": "Scale to exact pixel dimensions"},
+    {"name": "instagram", "icon": "fa-brands fa-instagram", "label": "Instagram", "group": "create",
+     "blurb": "Crop and fit for feed, story or reel"},
+    {"name": "crop", "icon": "fa-solid fa-crop-simple", "label": "Crop", "group": "edit",
+     "blurb": "Trim to a shape or a fixed ratio"},
+    {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers", "group": "create",
+     "blurb": "Add a die-cut outline for chat stickers"},
+    {"name": "text_behind", "icon": "fa-solid fa-font", "label": "Text Behind", "group": "create",
+     "blurb": "Tuck text behind your subject"},
+    {"name": "watermark", "icon": "fa-solid fa-stamp", "label": "Watermark", "group": "create",
+     "blurb": "Stamp text or a logo across an image"},
+    {"name": "gif", "icon": "fa-solid fa-images", "label": "GIF Maker", "group": "create",
+     "blurb": "Turn a set of frames into an animation"},
+    {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme", "group": "create",
+     "blurb": "Classic top and bottom caption text"},
+    {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos",
+     "blurb": "Official sizes for any country"},
+    {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos",
+     "blurb": "Clean white product shots that pass review"},
+    {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur", "group": "edit",
+     "blurb": "Portrait-mode depth on any photo"},
+    {"name": "redact", "icon": "fa-solid fa-shield-halved", "label": "Redact", "group": "edit",
+     "blurb": "Blur out faces, plates and private details"},
+    {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon", "group": "optimize",
+     "blurb": "Every icon size a site or app needs"},
+    {"name": "qr", "icon": "fa-solid fa-table-cells-large", "label": "QR Code", "group": "optimize",
+     "blurb": "Generate a scannable code from a link"},
+    {"name": "exif", "icon": "fa-solid fa-database", "label": "EXIF", "group": "optimize",
+     "blurb": "Strip GPS and camera data from photos"},
 ]
 
 # Categories for the "All tools" mega-menu, in display order. Each groups the
@@ -96,6 +116,22 @@ def _hex(rgb):
     return "#" + "".join(f"{int(c):02x}" for c in rgb.split())
 
 
+def _accent_vars(url_name):
+    """The four accent tokens for `url_name` as a CSS declaration string.
+
+    Same four values base.html sets on <body> for the current page, but for an
+    arbitrary tool — so a tool grid can render each card in that tool's own
+    signature colour. Pair with the `.tool-card` class, which re-derives the text
+    tokens from these (an inline style alone can't: the body rule that derives
+    them already resolved against the page accent).
+    """
+    surface, hover, text_dark, text_dark_alt = TOOL_ACCENTS.get(url_name, _DEFAULT_ACCENT)
+    return (
+        f"--color-primary: {surface}; --color-primary-hover: {hover}; "
+        f"--accent-text-dark: {text_dark}; --accent-text-dark-alt: {text_dark_alt}"
+    )
+
+
 def _alternate_urls(request):
     """Absolute English + Portuguese URLs for the current page (for hreflang)."""
     try:
@@ -122,8 +158,20 @@ def seo(request):
     )
     # Header tool switcher: resolve URL + translated label once, reused by both
     # the pill row and the grouped "All tools" mega-menu.
+    # `accent_vars` lets a card paint itself in its OWN tool's colour rather than
+    # the current page's: dropped into a style attribute, it re-points the four
+    # accent tokens for that subtree. The card must also carry `.tool-card`, which
+    # re-derives the text pair from them (see input.css) — the `body` rule that
+    # normally does that resolved against the page accent already, and an
+    # inherited computed value can't see these overrides.
     tool_nav = [
-        {**item, "label": tr(item["label"]), "url": reverse(f"remover:{item['name']}")}
+        {
+            **item,
+            "label": tr(item["label"]),
+            "blurb": tr(item["blurb"]),
+            "url": reverse(f"remover:{item['name']}"),
+            "accent_vars": _accent_vars(item["name"]),
+        }
         for item in TOOL_NAV
     ]
     tool_groups = [
