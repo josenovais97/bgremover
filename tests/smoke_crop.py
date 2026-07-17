@@ -75,7 +75,7 @@ def main():
         # Wait for background removal to finish (card leaves the processing state).
         done = False
         for _ in range(90):
-            if pg.evaluate("()=>document.querySelector('.card')?.dataset.state==='done'"):
+            if pg.evaluate("()=>document.querySelector('#results-grid .card')?.dataset.state==='done'"):
                 done = True
                 break
             time.sleep(1)

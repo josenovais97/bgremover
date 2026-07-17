@@ -219,6 +219,18 @@
   .opt-label {
     @apply block text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500;
   }
+
+  /* Results grid ---------------------------------------------------------- */
+  /* The multi-column result grids are sized for batches, but ONE image is the
+     common case — and a lone card in a 2- or 3-column grid strands the rest of
+     the row as dead space. When there's a single result, collapse to one centred
+     column capped at a readable width instead of letting it stretch.
+     `:has(> :only-child)` keeps this in CSS: the grids are filled by JS, so a
+     class toggle would mean every insert/remove path remembering to update it. */
+  .results-grid:has(> :only-child) {
+    grid-template-columns: minmax(0, 42rem);
+    justify-content: center;
+  }
 }
 
 @layer utilities {
@@ -232,23 +244,30 @@
   }
 
   /* Transparent checkerboard (shown behind cut-out images) --------------- */
+  /* The two colours are tokens so the variants below only re-point them —
+     restating the four gradients per variant is how they drift apart. */
   .checkerboard {
-    background-color: #fff;
+    --checker-bg: #fff;
+    --checker-sq: #e5e7eb;
+    background-color: var(--checker-bg);
     background-image:
-      linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
-      linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
-      linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+      linear-gradient(45deg, var(--checker-sq) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--checker-sq) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--checker-sq) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--checker-sq) 75%);
     background-size: 22px 22px;
     background-position: 0 0, 0 11px, 11px -11px, -11px 0;
   }
-  .dark .checkerboard {
-    background-color: #18181b;
-    background-image:
-      linear-gradient(45deg, #27272a 25%, transparent 25%),
-      linear-gradient(-45deg, #27272a 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #27272a 75%),
-      linear-gradient(-45deg, transparent 75%, #27272a 75%);
+  /* `.on-dark-surface` matters as much as `.dark` here: the refine/crop modals
+     are dark in BOTH themes, so keying only off `.dark` lit a bright white
+     checkerboard inside them on a light page — the same mismatch the
+     .on-*-surface hatches exist to fix, applied to the accent tokens but never
+     to this. Selector, not proximity: whichever ancestor matches wins, and both
+     land on the same element here. */
+  .dark .checkerboard,
+  .on-dark-surface .checkerboard {
+    --checker-bg: #18181b;
+    --checker-sq: #27272a;
   }
 
   .zoomable { cursor: zoom-in; }
