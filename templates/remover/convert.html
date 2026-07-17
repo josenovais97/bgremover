@@ -39,7 +39,7 @@
                 <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">Detects PNG, JPG, WEBP, GIF, BMP &amp; more · Converts to PNG, JPG, WEBP or AVIF</p>
             </div>
         </div>
-        {% include 'remover/partials/demo.html' with before='img/demo-convert-before.webp' after='img/demo-convert-after.webp' before_label='PNG · 2.1 MB' after_label='WEBP · 0.3 MB' caption='Same image, smaller & web-ready — no visible quality loss' %}
+        {% include 'remover/partials/size_demo.html' with image='img/demo-convert-after.webp' before_label='PNG' before_size='2.1 MB' after_label='WEBP' after_size='0.3 MB' after_pct=14 saving='86% smaller' caption='Same pixels, smaller & web-ready — no visible quality loss' %}
         </div>
     </section>
 

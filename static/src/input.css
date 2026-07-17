@@ -55,6 +55,20 @@
     --color-primary-text: var(--color-primary);
     --color-primary-text-alt: var(--color-primary-hover);
   }
+  /* A card painting itself in a DIFFERENT tool's accent than the page's (the
+     homepage tool grid). The inline style from `accent_vars` re-points the four
+     source tokens on the card; these rules re-derive the text pair from them,
+     which the `body` rules above can't do — they resolved against the page accent
+     and inherit as a computed value. Same shape as .on-*-surface, but theme-aware
+     rather than pinned, because the card follows the page background. */
+  .tool-card {
+    --color-primary-text: var(--color-primary);
+    --color-primary-text-alt: var(--color-primary-hover);
+  }
+  .dark .tool-card {
+    --color-primary-text: var(--accent-text-dark);
+    --color-primary-text-alt: var(--accent-text-dark-alt);
+  }
   /* Display face for the big headlines; body stays Inter (loaded in base.html).
      Applying to h1 site-wide gives every tool a distinctive, non-templated hero
      without touching each template. */
