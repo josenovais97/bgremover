@@ -45,6 +45,10 @@ const App = {
 
   init() {
     this.dropzone = $('#wm-dropzone');
+    // The hero section (dropzone + demo) is hidden once a photo loads. Resolved
+    // via closest('section') rather than dropzone.parentElement so it survives the
+    // dropzone being wrapped in a grid column alongside the demo.
+    this.hero = this.dropzone.closest('section');
     this.input = $('#wm-input');
     this.editor = $('#wm-editor');
     this.canvas = $('#wm-canvas');
@@ -111,7 +115,7 @@ const App = {
     this.canvas.width = this.img.naturalWidth;
     this.canvas.height = this.img.naturalHeight;
     this.render();
-    this.dropzone.parentElement.classList.add('hidden');
+    this.hero.classList.add('hidden');
     this.editor.classList.remove('hidden');
     $('#wm-done').textContent = `${this.img.naturalWidth} × ${this.img.naturalHeight} px — full resolution, exported as-is`;
   },
@@ -196,7 +200,7 @@ const App = {
 
   reset() {
     this.editor.classList.add('hidden');
-    this.dropzone.parentElement.classList.remove('hidden');
+    this.hero.classList.remove('hidden');
     if (this.url) { URL.revokeObjectURL(this.url); this.url = null; }
     this.img = null;
   },

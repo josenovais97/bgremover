@@ -41,6 +41,8 @@ const App = {
 
   init() {
     this.dropzone = $('#rs-dropzone');
+    // See watermark.js: closest('section') survives the demo-wrapper grid.
+    this.hero = this.dropzone.closest('section');
     this.input = $('#rs-input');
     this.editor = $('#rs-editor');
 
@@ -110,7 +112,7 @@ const App = {
     this.w = this.ow; this.h = this.oh;
     $('#rs-preview').src = this.url;
     this.syncInputs();
-    this.dropzone.parentElement.classList.add('hidden');
+    this.hero.classList.add('hidden');
     this.editor.classList.remove('hidden');
   },
 
@@ -135,7 +137,7 @@ const App = {
 
   reset() {
     this.editor.classList.add('hidden');
-    this.dropzone.parentElement.classList.remove('hidden');
+    this.hero.classList.remove('hidden');
     if (this.url) { URL.revokeObjectURL(this.url); this.url = null; }
     this.img = null;
   },
