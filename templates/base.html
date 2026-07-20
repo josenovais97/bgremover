@@ -177,6 +177,8 @@
 
     <main id="main" class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {% block content %}{% endblock %}
+        {% comment %}Contextual "related tools" cross-links. Pages with their own full tool grid (the home hub) override this block empty.{% endcomment %}
+        {% block related_tools %}{% include 'remover/partials/related_tools.html' %}{% endblock %}
     </main>
 
     <footer class="mt-auto border-t border-gray-200/60 dark:border-gray-800/60">

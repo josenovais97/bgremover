@@ -42,6 +42,10 @@ UI = {
     "Create & Share": "Criar e Partilhar",
     "Photos": "Fotos",
     "Skip to content": "Saltar para o conteúdo",
+    # Related-tools cross-link block (foot of every tool page)
+    "More free, private tools": "Mais ferramentas grátis e privadas",
+    "Same story everywhere — runs in your browser, nothing uploaded.":
+        "A mesma história em todo o lado — corre no seu navegador, sem nada carregado.",
     # Homepage tool grid — heading, intro, and one blurb per TOOL_NAV entry
     "One toolkit for every image job": "Um conjunto de ferramentas para cada tarefa",
     "Every tool runs the same way the background remover does — on your device, free, with nothing uploaded.":

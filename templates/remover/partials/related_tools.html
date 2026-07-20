@@ -1,0 +1,32 @@
+{% load i18n_extras %}
+{% comment %}
+A short "related tools" cross-link block auto-rendered at the foot of every page
+(via the related_tools block in base.html). Uses the same accent-card styling as
+tool_grid.html but only the handful of `related_tools` the context processor
+picked for THIS page (same group first, then nav order). Improves internal
+linking / topical clustering and pages-per-session. Renders nothing when the
+context has no related_tools (or when a page overrides the block, e.g. the home
+hub, which already shows the full grid).
+{% endcomment %}
+{% if related_tools %}
+<section aria-labelledby="related-title" class="mt-16 max-w-4xl mx-auto space-y-6">
+    <div class="text-center space-y-2">
+        <h2 id="related-title" class="text-2xl font-bold tracking-tight">{% t "More free, private tools" %}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{% t "Same story everywhere — runs in your browser, nothing uploaded." %}</p>
+    </div>
+    <ul role="list" class="flex flex-wrap justify-center gap-3 sm:gap-4">
+        {% for item in related_tools %}
+        <li class="basis-[calc(50%-0.375rem)] sm:basis-[calc(33.333%-0.667rem)] lg:basis-[calc(25%-0.75rem)]">
+            <a href="{{ item.url }}" style="{{ item.accent_vars }}"
+               class="tool-card card glass group h-full flex flex-col gap-2 p-4 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <span class="w-10 h-10 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText group-hover:scale-110 transition-transform duration-300">
+                    <i class="{{ item.icon }}" aria-hidden="true"></i>
+                </span>
+                <span class="font-semibold text-sm">{{ item.label }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 leading-snug">{{ item.blurb }}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
