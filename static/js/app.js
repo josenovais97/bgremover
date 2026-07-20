@@ -1340,6 +1340,14 @@ class Card {
     this.el.querySelector('.bg-blur-amt').addEventListener('input', rafThrottle(() => this.applyBlur()));
     this.el.querySelector('.bg-image-input').addEventListener('change', (e) => this.applyImageBg(e.target.files[0]));
 
+    // Preset photo backgrounds — drop a bundled image behind the cut-out. The
+    // `preset` slug is kept on the spec purely so the active thumbnail can be
+    // highlighted; paintBackground only reads `type` + `url`.
+    $$('.bg-preset', this.el).forEach((btn) =>
+      btn.addEventListener('click', () =>
+        this.setBackgroundSpec({ type: 'image', url: btn.dataset.bgFull, preset: btn.dataset.bgSlug })),
+    );
+
     // Output format — likewise remembered.
     $$('.format-btn', this.el).forEach((btn) =>
       btn.addEventListener('click', () => {
@@ -1640,6 +1648,13 @@ class Card {
       const active = bg && typeof bg === 'object' && b.dataset.style === bg.type;
       b.classList.toggle('bg-primary', active);
       b.classList.toggle('text-white', active);
+    });
+    // Preset photo-background thumbnail (highlight the active one).
+    const activePreset = bg && typeof bg === 'object' && bg.type === 'image' ? bg.preset : null;
+    $$('.bg-preset', this.el).forEach((b) => {
+      const active = !!activePreset && b.dataset.bgSlug === activePreset;
+      b.classList.toggle('ring-2', active);
+      b.classList.toggle('ring-primary', active);
     });
   }
 
