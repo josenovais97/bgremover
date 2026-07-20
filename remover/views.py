@@ -352,12 +352,391 @@ PRIVACY_PAGES = [
 
 PRIVACY_PAGES_BY_SLUG = {p["slug"]: p for p in PRIVACY_PAGES}
 
+# Compress intent-variants. Same in-browser compressor, but a page per search
+# intent (by format, by target size, by use case) — "different intent, mostly the
+# same functionality" is exactly what ranks. Each carries unique copy + FAQ so the
+# pages aren't thin duplicates. Shared chrome (CTA to /compress/, section titles,
+# featured tools) is injected by the compress_page view, so the data stays lean.
+COMPRESS_PAGES = [
+    # --- by format ---
+    {
+        "slug": "compress-png", "url_name": "compress_png", "nav": "Compress PNG",
+        "title": "Compress PNG — Free Lossless & Lossy PNG Compressor",
+        "description": "Compress PNG images to a smaller file size without visible quality loss, free and in your browser. Keeps transparency, no watermark, no upload.",
+        "h1": "Compress a PNG without losing quality",
+        "tagline": "Shrink PNG file size while keeping crisp edges and transparency — free, unlimited, and processed entirely on your device.",
+        "intro": [
+            "PNG is lossless, which keeps text and logos sharp but often makes files large. This compressor reduces a PNG's size by optimising its colours and encoding — so a screenshot, logo or graphic downloads and loads far faster while still looking clean.",
+            "Transparency is preserved, there's no watermark, and because everything runs in your browser your image is never uploaded. Drop in one PNG or a whole batch.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Big size savings", "text": "Cuts PNG weight substantially — ideal for logos, icons, screenshots and UI assets."},
+            {"icon": "fa-crop-simple", "title": "Keeps transparency", "text": "Alpha channels stay intact, so your PNG still drops cleanly onto any background."},
+            {"icon": "fa-shield-halved", "title": "Private & free", "text": "Runs on your device — nothing uploaded, no watermark, no per-image cost."},
+        ],
+        "faqs": [
+            {"q": "Will compressing a PNG lose quality?",
+             "a": "PNG compression here focuses on reducing colour data and re-encoding, which for most graphics, logos and screenshots is visually lossless. For photographs, converting to WEBP or JPG usually saves far more."},
+            {"q": "Does it keep transparency?",
+             "a": "Yes. The alpha channel is preserved, so a transparent PNG stays transparent after compression."},
+            {"q": "Is there a file limit or watermark?",
+             "a": "No limits and no watermark. It's free and unlimited, and your images never leave your browser."},
+        ],
+    },
+    {
+        "slug": "compress-jpeg", "url_name": "compress_jpeg", "nav": "Compress JPEG",
+        "title": "Compress JPEG — Free JPG Compressor, No Upload",
+        "description": "Compress JPEG/JPG photos to a smaller size in your browser, free. Adjust quality, shrink for web or email, no watermark, nothing uploaded.",
+        "h1": "Compress a JPEG to a smaller size",
+        "tagline": "Reduce JPG photo file size with a simple quality slider — free, unlimited, and processed on your device with nothing uploaded.",
+        "intro": [
+            "JPEG is the standard for photos, and a small drop in quality can shrink the file dramatically with no visible difference. This compressor lets you slide the quality — or set a target size — and exports a smaller JPG in seconds.",
+            "It's perfect for trimming camera photos before emailing them, uploading to a website, or attaching to a form. Nothing is uploaded, so even personal photos stay private.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Quality slider", "text": "Dial in exactly the balance you want, or set a target size and let it hit the number."},
+            {"icon": "fa-images", "title": "Batch photos", "text": "Compress a whole set of JPGs at once and download them together as a ZIP."},
+            {"icon": "fa-shield-halved", "title": "Nothing uploaded", "text": "Your photos are compressed in the browser — private, free, and watermark-free."},
+        ],
+        "faqs": [
+            {"q": "How much can I compress a JPEG?",
+             "a": "Often by 60–90% with little visible change. Photos with lots of smooth areas (skies, skin) compress the most. You control the trade-off with the quality slider."},
+            {"q": "What's the difference between JPEG and JPG?",
+             "a": "None — they're the same format, just two spellings of the file extension. This tool handles both."},
+            {"q": "Is it really free and private?",
+             "a": "Yes. It's free with no watermark, and the compression happens on your device, so nothing is uploaded."},
+        ],
+    },
+    {
+        "slug": "compress-webp", "url_name": "compress_webp", "nav": "Compress WEBP",
+        "title": "Compress WEBP — Free WebP Compressor in Your Browser",
+        "description": "Compress WEBP images or convert to WEBP for smaller files than PNG/JPG, free and private. Keeps transparency, no upload, no watermark.",
+        "h1": "Compress and optimise WEBP images",
+        "tagline": "Get smaller files than PNG or JPG with WEBP — compress or convert in your browser, free, with nothing uploaded.",
+        "intro": [
+            "WEBP produces noticeably smaller files than PNG or JPG at the same visual quality, and it supports transparency — which makes it ideal for fast-loading websites. This tool compresses existing WEBP images, and you can also convert PNG or JPG into WEBP to save even more.",
+            "Everything runs locally in your browser, so there's no upload, no watermark and no limit on how many images you optimise.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Smaller than PNG/JPG", "text": "WEBP typically saves 25–35% over JPG and far more over PNG at matching quality."},
+            {"icon": "fa-arrow-right-arrow-left", "title": "Convert too", "text": "Turn PNG or JPG into WEBP right here, or export back out to another format."},
+            {"icon": "fa-shield-halved", "title": "Private by design", "text": "On-device processing — your images are never uploaded and never watermarked."},
+        ],
+        "faqs": [
+            {"q": "Why use WEBP over JPG or PNG?",
+             "a": "WEBP gives smaller files at the same quality and supports transparency like PNG. Smaller images mean faster page loads and better Core Web Vitals."},
+            {"q": "Do all browsers support WEBP?",
+             "a": "Yes — every modern browser supports WEBP. It's safe to use across the web today."},
+            {"q": "Can I convert to WEBP as well as compress?",
+             "a": "Yes. You can compress an existing WEBP, or use the converter to turn a PNG/JPG into an optimised WEBP."},
+        ],
+    },
+    # --- by target size ---
+    {
+        "slug": "compress-image-under-1mb", "url_name": "compress_under_1mb", "nav": "Under 1MB",
+        "title": "Compress Image to Under 1MB — Free & Instant",
+        "description": "Compress any image to under 1MB in your browser, free. Set the target and it hits it automatically — no watermark, no upload, no sign-up.",
+        "h1": "Compress an image to under 1MB",
+        "tagline": "Set a 1MB target and the compressor hits it automatically — free, private, and processed entirely on your device.",
+        "intro": [
+            "Lots of forms, uploads and portals cap attachments at 1MB. Instead of guessing at a quality setting, set the target size to 1MB and this tool compresses your image to fit — while keeping it looking as good as possible at that budget.",
+            "It works on JPG, PNG and WEBP, handles batches, and never uploads your image, so it's safe for documents and personal photos alike.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Hits the target", "text": "Enter 1MB and it optimises quality to land just under the limit — no trial and error."},
+            {"icon": "fa-circle-check", "title": "Upload-ready", "text": "Great for job portals, government forms and sites that reject anything over 1MB."},
+            {"icon": "fa-shield-halved", "title": "Private & free", "text": "Runs on your device — nothing uploaded, no watermark, unlimited use."},
+        ],
+        "faqs": [
+            {"q": "How do I compress an image to exactly under 1MB?",
+             "a": "Open the compressor, choose the target-size option and enter 1MB. It automatically adjusts the quality to produce a file just under that size."},
+            {"q": "Which formats can I use?",
+             "a": "JPG, PNG and WEBP. For photos, JPG or WEBP usually reach a small target with the least visible quality loss."},
+            {"q": "Is my image uploaded?",
+             "a": "No. The whole process runs in your browser, so your image is never sent anywhere."},
+        ],
+    },
+    {
+        "slug": "compress-image-under-500kb", "url_name": "compress_under_500kb", "nav": "Under 500KB",
+        "title": "Compress Image to Under 500KB — Free Online Tool",
+        "description": "Reduce any image to under 500KB in your browser, free. Set the target size and it compresses automatically — no upload, no watermark.",
+        "h1": "Compress an image to under 500KB",
+        "tagline": "Set a 500KB target and hit it automatically without guessing at quality — free, private, and on-device.",
+        "intro": [
+            "Plenty of upload forms and websites want images under 500KB for faster loading. Rather than repeatedly re-exporting, set the target to 500KB and let the compressor find the right quality to fit — automatically.",
+            "It handles JPG, PNG and WEBP, works on batches, and processes everything in your browser, so nothing is uploaded.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Automatic quality", "text": "Enter 500KB and it tunes compression to land right under the cap."},
+            {"icon": "fa-images", "title": "Batch friendly", "text": "Apply the same target to a set of images and export them together."},
+            {"icon": "fa-shield-halved", "title": "Nothing uploaded", "text": "On-device compression — free, watermark-free and completely private."},
+        ],
+        "faqs": [
+            {"q": "How do I get an image under 500KB?",
+             "a": "Set the target-size option to 500KB in the compressor and it adjusts quality automatically to produce a file below that size."},
+            {"q": "Will it look bad at 500KB?",
+             "a": "Usually not. Most photos compress well below 500KB with little visible change; the tool preserves as much quality as the size budget allows."},
+            {"q": "Is it free?",
+             "a": "Yes — free and unlimited, with no watermark and nothing uploaded."},
+        ],
+    },
+    {
+        "slug": "compress-image-under-100kb", "url_name": "compress_under_100kb", "nav": "Under 100KB",
+        "title": "Compress Image to Under 100KB — Free, No Upload",
+        "description": "Compress an image to under 100KB in your browser, free. Ideal for thumbnails, avatars and strict upload limits — no watermark, nothing uploaded.",
+        "h1": "Compress an image to under 100KB",
+        "tagline": "Squeeze an image under a strict 100KB limit automatically — free, private, and processed on your device.",
+        "intro": [
+            "Some sites enforce a tight 100KB limit for avatars, thumbnails or ID uploads. Set the target to 100KB and the compressor works out the quality — and, if needed, you can resize the dimensions too for the smallest possible file.",
+            "It's all done in the browser with no upload, so it's safe even for photos of documents and IDs.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Meets strict limits", "text": "Reaches tight 100KB caps used by avatars, thumbnails and some ID portals."},
+            {"icon": "fa-expand", "title": "Resize to help", "text": "Pair with the resizer to shrink dimensions when compression alone isn't enough."},
+            {"icon": "fa-shield-halved", "title": "Private & free", "text": "Everything runs on your device — no upload, no watermark, no limits."},
+        ],
+        "faqs": [
+            {"q": "How can I get an image under 100KB?",
+             "a": "Set the target to 100KB in the compressor. For very small limits, also reduce the pixel dimensions with the resizer — smaller dimensions make hitting 100KB much easier."},
+            {"q": "Is 100KB enough for a clear image?",
+             "a": "For avatars, thumbnails and small photos, yes. For large detailed photos you may need to reduce the dimensions as well to stay under 100KB while looking sharp."},
+            {"q": "Does it upload my image?",
+             "a": "No — it runs entirely in your browser, so nothing is uploaded."},
+        ],
+    },
+    # --- by use case ---
+    {
+        "slug": "compress-image-for-email", "url_name": "compress_email", "nav": "For email",
+        "title": "Compress Image for Email — Free, Fits Attachment Limits",
+        "description": "Compress photos so they fit email attachment limits, free and in your browser. Shrink to under 1MB or 500KB, no watermark, nothing uploaded.",
+        "h1": "Compress an image for email",
+        "tagline": "Make photos small enough to email without hitting attachment limits — free, private, and processed on your device.",
+        "intro": [
+            "Camera photos are often several megabytes each, which quickly bumps into email attachment limits or makes messages slow to send and receive. Set a small target size — say 1MB or 500KB — and this tool compresses your photos so they attach and send easily.",
+            "You can compress a batch at once and download them together, all without uploading a thing, which keeps personal photos private.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Fits attachment limits", "text": "Target 1MB or 500KB so several photos fit comfortably in one email."},
+            {"icon": "fa-images", "title": "Send a batch", "text": "Compress a set of photos in one go and download them as a ZIP to attach."},
+            {"icon": "fa-shield-halved", "title": "Stays private", "text": "Compressed in your browser — your photos are never uploaded to a server."},
+        ],
+        "faqs": [
+            {"q": "What size should an email image be?",
+             "a": "Aim for under 1MB per image so a few fit within typical 20–25MB mailbox limits and send quickly. For lots of photos, target 500KB each."},
+            {"q": "Can I compress several photos for one email?",
+             "a": "Yes. Drop in a batch, apply one target size to all of them, and download them together to attach."},
+            {"q": "Is it free and private?",
+             "a": "Yes — free, no watermark, and nothing is uploaded; the photos are compressed on your device."},
+        ],
+    },
+    {
+        "slug": "compress-photo-for-web", "url_name": "compress_web", "nav": "For websites",
+        "title": "Compress Photo for Web — Faster Pages, Free & Private",
+        "description": "Compress and optimise photos for your website in your browser, free. Smaller files, faster load times and better Core Web Vitals — nothing uploaded.",
+        "h1": "Compress a photo for the web",
+        "tagline": "Optimise images for fast-loading pages — smaller files, better Core Web Vitals — free, and processed on your device.",
+        "intro": [
+            "Large images are the most common cause of slow web pages. Compressing your photos — or converting them to WEBP — cuts their file size dramatically, which speeds up load times, improves Core Web Vitals and helps SEO, all without a visible drop in quality.",
+            "This runs in your browser, so you can optimise a whole gallery for free without uploading anything or paying per image.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Faster load times", "text": "Smaller images render sooner and improve LCP — better UX and better rankings."},
+            {"icon": "fa-arrow-right-arrow-left", "title": "WEBP for the web", "text": "Convert to WEBP for the best size-to-quality ratio on modern sites."},
+            {"icon": "fa-shield-halved", "title": "Free & unlimited", "text": "Optimise a whole site's images on your device — no upload, no per-image fee."},
+        ],
+        "faqs": [
+            {"q": "What's the best format for web images?",
+             "a": "WEBP for most photos and graphics — it's smaller than JPG and PNG at the same quality and is supported by every modern browser. Use the converter to switch, then compress."},
+            {"q": "How much should I compress web images?",
+             "a": "Enough that they look clean but load fast — often 100–300KB for large photos. Balance the quality slider against the file size the tool shows."},
+            {"q": "Is anything uploaded?",
+             "a": "No. All optimisation happens in your browser, so your images stay on your device."},
+        ],
+    },
+    {
+        "slug": "compress-image-for-discord", "url_name": "compress_discord", "nav": "For Discord",
+        "title": "Compress Image for Discord — Beat the Upload Limit, Free",
+        "description": "Compress images to fit Discord's free upload limit in your browser, free. Shrink under 10MB (or 8MB) fast — no watermark, nothing uploaded.",
+        "h1": "Compress an image for Discord",
+        "tagline": "Get images under Discord's upload limit in seconds — free, private, and processed on your device.",
+        "intro": [
+            "Discord limits uploads on free accounts, so a high-resolution screenshot or photo can get rejected. Set a target size that fits your server's limit and this tool compresses the image to match — so it uploads first time.",
+            "It's handy for sharing screenshots, art and memes without a Nitro subscription, and since nothing is uploaded to us, your images stay private.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Beats the limit", "text": "Target a size under Discord's cap so screenshots and photos upload without Nitro."},
+            {"icon": "fa-images", "title": "Screenshots & art", "text": "Great for compressing PNG screenshots and high-res art down to a shareable size."},
+            {"icon": "fa-shield-halved", "title": "Private & free", "text": "On-device compression — nothing uploaded, no watermark, unlimited use."},
+        ],
+        "faqs": [
+            {"q": "What's Discord's upload limit?",
+             "a": "Free accounts have a per-file limit (commonly 10MB, sometimes lower on older servers). Set a target under that in the compressor and your image will fit."},
+            {"q": "How do I compress a screenshot for Discord?",
+             "a": "Drop the screenshot in, set a target size below your server's limit, and download the smaller version to upload."},
+            {"q": "Is it free?",
+             "a": "Yes — free and unlimited, with no watermark and nothing uploaded."},
+        ],
+    },
+]
+
+COMPRESS_PAGES_BY_SLUG = {p["slug"]: p for p in COMPRESS_PAGES}
+
+# "ClearBG vs <competitor>" comparison pages. People search these queries exactly,
+# and the privacy/free angle genuinely wins, so they convert well. Claims about
+# competitors are kept general and hedged to each service's public free tier (the
+# page also carries a "based on public free tier / not affiliated" disclaimer).
+# The existing /remove-bg-alternative/ (views.alternative) stays as the remove.bg
+# comparison; these four extend the set. Data-driven via views.comparison.
+COMPARISONS = [
+    {
+        "slug": "tinypng-alternative", "url_name": "cmp_tinypng", "nav": "vs TinyPNG",
+        "competitor": "TinyPNG", "cta_url_name": "compress", "cta_icon": "fa-compress",
+        "cta_label": "Compress an image free", "cta_note": "No account. Nothing uploaded.",
+        "title": "Free TinyPNG Alternative — Compress Images Without Uploading",
+        "description": "A free TinyPNG alternative that compresses PNG, JPG and WEBP in your browser — no uploads, no batch limits, no sign-up. See how ClearBG compares.",
+        "h1_lead": "The private", "h1_highlight": "TinyPNG alternative",
+        "tagline": "Compress PNG, JPG and WEBP just as easily — but in your browser, with no upload, no batch caps and no account.",
+        "intro": [
+            "TinyPNG is a well-known image compressor, but like most online tools it uploads your images to its servers to shrink them, and its free web tier limits how many images you can do at once. ClearBG compresses right in your browser instead — so your images never leave your device and there's no per-batch limit.",
+            "You also get more than compression: convert, resize, remove backgrounds, strip metadata and more, all free and all on-device.",
+        ],
+        "rows": [
+            {"feature": "Your images", "us": "Never uploaded — compressed in-browser", "them": "Uploaded to their servers"},
+            {"feature": "Price", "us": "Free & unlimited", "them": "Free tier with limits; paid for more"},
+            {"feature": "Batch limit", "us": "No per-batch cap", "them": "Limited images per batch on the free web tool"},
+            {"feature": "Formats", "us": "PNG, JPG, WEBP, AVIF", "them": "PNG, JPG, WEBP"},
+            {"feature": "Target a file size", "us": "Yes — set an exact KB/MB target", "them": "Automatic only"},
+            {"feature": "Other tools", "us": "12+ (background removal, convert, resize…)", "them": "Compression focused"},
+            {"feature": "Sign-up", "us": "Never", "them": "Not for web; API needs a key"},
+        ],
+        "why": [
+            {"icon": "fa-lock", "title": "Truly private", "text": "Images are compressed on your device and never uploaded — safe for client work and confidential files."},
+            {"icon": "fa-circle-check", "title": "No batch limits", "text": "Compress as many images as you like in one go, free, with no daily or per-batch cap."},
+            {"icon": "fa-layer-group", "title": "A whole toolkit", "text": "Convert, resize, remove backgrounds and strip metadata — all free and private, in one place."},
+        ],
+        "faqs": [
+            {"q": "Is ClearBG a free TinyPNG alternative?",
+             "a": "Yes. It compresses PNG, JPG and WEBP for free with no batch limits, and unlike TinyPNG it does it in your browser, so your images are never uploaded."},
+            {"q": "Does compression quality match TinyPNG?",
+             "a": "For most images the visible result is comparable, and ClearBG additionally lets you set an exact target size (e.g. under 500KB) rather than relying on automatic compression only."},
+            {"q": "Do I need an account?",
+             "a": "No. There's no sign-up and nothing to install — just open the compressor and drop an image."},
+        ],
+    },
+    {
+        "slug": "canva-alternative", "url_name": "cmp_canva", "nav": "vs Canva",
+        "competitor": "Canva", "cta_url_name": "index", "cta_icon": "fa-wand-magic-sparkles",
+        "cta_label": "Remove a background free", "cta_note": "No account. Nothing uploaded.",
+        "title": "Free Canva Alternative for Image Tools — No Account, Private",
+        "description": "Need Canva's background remover and image tools without a Pro subscription or account? ClearBG runs free in your browser with nothing uploaded. See the comparison.",
+        "h1_lead": "The free, no-account", "h1_highlight": "Canva alternative",
+        "tagline": "Remove backgrounds, resize, convert and compress without a Canva account or Pro subscription — all free and private in your browser.",
+        "intro": [
+            "Canva is a full design suite, but its background remover is a Pro (paid) feature, it requires an account, and your images are stored in its cloud. If you mainly need quick, private image tools, that's a lot of overhead.",
+            "ClearBG focuses on doing those image jobs instantly and privately: no login, no subscription, and nothing uploaded. It won't design a poster for you — but for cut-outs, resizing, converting and compressing, it's faster and free.",
+        ],
+        "rows": [
+            {"feature": "Background remover", "us": "Free & unlimited", "them": "Pro (paid) feature"},
+            {"feature": "Account", "us": "Not required", "them": "Required"},
+            {"feature": "Your images", "us": "Processed on your device", "them": "Stored in their cloud"},
+            {"feature": "Price", "us": "Free & unlimited", "them": "Free tier; Pro for many tools"},
+            {"feature": "Works offline", "us": "Yes (installable)", "them": "No"},
+            {"feature": "Best for", "us": "Fast, private image tasks", "them": "Full graphic design"},
+        ],
+        "why": [
+            {"icon": "fa-circle-check", "title": "No Pro needed", "text": "Background removal and every tool are free — no subscription, no credits, no watermark."},
+            {"icon": "fa-lock", "title": "No account, private", "text": "Nothing to sign up for and nothing uploaded — your images stay on your device."},
+            {"icon": "fa-globe", "title": "Works offline", "text": "Install it as an app and keep editing images with no connection."},
+        ],
+        "faqs": [
+            {"q": "Is ClearBG's background remover free like Canva's?",
+             "a": "ClearBG's is free and unlimited with no account. In Canva, the background remover is a Pro feature that requires a paid plan."},
+            {"q": "Can ClearBG replace Canva entirely?",
+             "a": "Not for full graphic design — Canva is a design suite. But for background removal, resizing, converting and compressing, ClearBG does those free, privately and often faster."},
+            {"q": "Do I need to sign in?",
+             "a": "No. There's no account and nothing is uploaded; everything runs in your browser."},
+        ],
+    },
+    {
+        "slug": "adobe-express-alternative", "url_name": "cmp_adobe", "nav": "vs Adobe Express",
+        "competitor": "Adobe Express", "cta_url_name": "index", "cta_icon": "fa-wand-magic-sparkles",
+        "cta_label": "Remove a background free", "cta_note": "No account. Nothing uploaded.",
+        "title": "Free Adobe Express Alternative — No Login, Private Image Tools",
+        "description": "A free Adobe Express alternative for background removal and image tools — no Adobe account, no upload, in your browser. Compare ClearBG vs Adobe Express.",
+        "h1_lead": "The no-login", "h1_highlight": "Adobe Express alternative",
+        "tagline": "Remove backgrounds and edit images without an Adobe account — free, private, and entirely in your browser.",
+        "intro": [
+            "Adobe Express offers background removal and quick edits, but it requires an Adobe account and processes your images in the cloud. For a fast, private cut-out you shouldn't need to log in or hand your photo to a server.",
+            "ClearBG does the common image jobs — remove background, convert, resize, compress — on your device, with no account and nothing uploaded.",
+        ],
+        "rows": [
+            {"feature": "Account", "us": "Not required", "them": "Adobe account required"},
+            {"feature": "Your images", "us": "Processed on your device", "them": "Uploaded to the cloud"},
+            {"feature": "Background remover", "us": "Free & unlimited", "them": "Free tier with limits"},
+            {"feature": "Works offline", "us": "Yes (installable)", "them": "No"},
+            {"feature": "Sign-up / login", "us": "Never", "them": "Needed to use"},
+            {"feature": "Best for", "us": "Quick, private image tasks", "them": "Templated content design"},
+        ],
+        "why": [
+            {"icon": "fa-lock", "title": "No login, private", "text": "No Adobe account and no upload — your images never leave your device."},
+            {"icon": "fa-circle-check", "title": "Free & unlimited", "text": "Remove backgrounds and edit as much as you want with no watermark or credits."},
+            {"icon": "fa-globe", "title": "Offline capable", "text": "Install ClearBG and it keeps working with no internet connection."},
+        ],
+        "faqs": [
+            {"q": "Can I remove backgrounds without an Adobe account?",
+             "a": "Yes — with ClearBG there's no account at all. The AI runs in your browser, so you can remove a background instantly and privately."},
+            {"q": "Is ClearBG really free?",
+             "a": "Yes, free and unlimited with no watermark. There are no paid tiers gating the core image tools."},
+            {"q": "Are my images uploaded like on Adobe Express?",
+             "a": "No. Everything is processed on your device, so nothing is uploaded to a server."},
+        ],
+    },
+    {
+        "slug": "photoroom-alternative", "url_name": "cmp_photoroom", "nav": "vs Photoroom",
+        "competitor": "Photoroom", "cta_url_name": "index", "cta_icon": "fa-wand-magic-sparkles",
+        "cta_label": "Remove a background free", "cta_note": "No account. Nothing uploaded.",
+        "title": "Free Photoroom Alternative — Full-Res Cut-Outs, No Upload",
+        "description": "A free Photoroom alternative that removes backgrounds at full resolution in your browser — no account, no upload, no Pro paywall. Compare ClearBG vs Photoroom.",
+        "h1_lead": "The private", "h1_highlight": "Photoroom alternative",
+        "tagline": "Remove backgrounds and make clean product shots at full resolution — free, on your device, with no Pro subscription.",
+        "intro": [
+            "Photoroom is a popular background remover and product-photo app, but it uploads your images, and full-resolution exports, batch and many templates sit behind its Pro plan. ClearBG removes backgrounds at full resolution for free, and does it in your browser so nothing is uploaded.",
+            "It includes an eCommerce mode for clean white product shots, plus convert, resize and compress — a private toolkit rather than a subscription app.",
+        ],
+        "rows": [
+            {"feature": "Your images", "us": "Never uploaded — processed on device", "them": "Uploaded to their servers"},
+            {"feature": "Full-resolution export", "us": "Free", "them": "Often requires Pro"},
+            {"feature": "Price", "us": "Free & unlimited", "them": "Free tier; Pro for full use"},
+            {"feature": "Account", "us": "Not required", "them": "Account required"},
+            {"feature": "Product / white-background mode", "us": "Free (eCommerce presets)", "them": "Templates, many paid"},
+            {"feature": "Works offline", "us": "Yes (installable)", "them": "No"},
+        ],
+        "why": [
+            {"icon": "fa-lock", "title": "Truly private", "text": "Cut-outs are computed on your device — ideal for product shots and client images you can't upload."},
+            {"icon": "fa-circle-check", "title": "Full-res, free", "text": "Export full-resolution transparent PNGs with no watermark and no Pro paywall."},
+            {"icon": "fa-layer-group", "title": "More than removal", "text": "eCommerce white-background presets, convert, resize and compress — all included free."},
+        ],
+        "faqs": [
+            {"q": "Is ClearBG a free Photoroom alternative?",
+             "a": "Yes. It removes backgrounds at full resolution for free, with no account, and runs in your browser so your images aren't uploaded."},
+            {"q": "Can I make white-background product photos?",
+             "a": "Yes — the eCommerce mode centres your product on pure white at marketplace sizes (Amazon, Etsy, Shopify), free and private."},
+            {"q": "Do I have to pay for full-resolution downloads?",
+             "a": "No. Full-resolution, watermark-free exports are free in ClearBG."},
+        ],
+    },
+]
+
+COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
+
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
 TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
-LANDING_PATHS = ["/remove-bg-alternative/"] + PRIVACY_PATHS
+COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
+COMPARISON_PATHS = [f"/{p['slug']}/" for p in COMPARISONS]
+LANDING_PATHS = ["/remove-bg-alternative/"] + PRIVACY_PATHS + COMPRESS_LANDING_PATHS + COMPARISON_PATHS
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
     + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
@@ -406,10 +785,38 @@ def privacy_page(request, slug):
         {"nav": p["nav"], "url": reverse(f"remover:{p['url_name']}")}
         for p in PRIVACY_PAGES if p["slug"] != slug
     ]
-    return render(request, "remover/privacy_landing.html", {
-        "page": page,
+    return render(request, "remover/landing.html", {
+        "page": {**page, "benefits_title": "Why it stays private", "siblings_title": "More on privacy"},
         "siblings": siblings,
         "cta_url": reverse(f"remover:{page['cta']['url_name']}"),
+        "faqs": page["faqs"],
+        "faq_jsonld": faq_jsonld(page["faqs"]),
+    })
+
+
+@require_GET
+def compress_page(request, slug):
+    """Render a compress intent-variant landing page (by format / size / use case)."""
+    page = COMPRESS_PAGES_BY_SLUG.get(slug)
+    if page is None:
+        raise Http404("Unknown page")
+    siblings = [
+        {"nav": p["nav"], "url": reverse(f"remover:{p['url_name']}")}
+        for p in COMPRESS_PAGES if p["slug"] != slug
+    ]
+    return render(request, "remover/landing.html", {
+        "page": {**page,
+                 "benefits_title": "Why compress with ClearBG",
+                 "siblings_title": "More ways to compress",
+                 "tools_title": "Related free tools",
+                 "tools_subtitle": "Convert, resize or strip metadata — all on your device.",
+                 "tools": ["convert", "resize", "exif", "index"],
+                 "cta": {"label": "Compress an image now"},
+                 "cta_icon": "fa-compress",
+                 "cta_title": "Compress your images — free and private",
+                 "cta_text": "No upload, no watermark, no sign-up — everything runs in your browser."},
+        "siblings": siblings,
+        "cta_url": reverse("remover:compress"),
         "faqs": page["faqs"],
         "faq_jsonld": faq_jsonld(page["faqs"]),
     })
@@ -583,6 +990,27 @@ def alternative(request):
         "rows": rows,
         "faqs": ALTERNATIVE_FAQS,
         "faq_jsonld": faq_jsonld(ALTERNATIVE_FAQS),
+    })
+
+
+@require_GET
+def comparison(request, slug):
+    """Render a 'ClearBG vs <competitor>' comparison landing page."""
+    page = COMPARISONS_BY_SLUG.get(slug)
+    if page is None:
+        raise Http404("Unknown comparison")
+    siblings = [
+        {"nav": p["nav"], "url": reverse(f"remover:{p['url_name']}")}
+        for p in COMPARISONS if p["slug"] != slug
+    ]
+    # Link the remove.bg comparison in too, so all five cross-reference.
+    siblings.append({"nav": "vs remove.bg", "url": reverse("remover:alternative")})
+    return render(request, "remover/comparison.html", {
+        "page": page,
+        "siblings": siblings,
+        "cta_url": reverse(f"remover:{page['cta_url_name']}"),
+        "faqs": page["faqs"],
+        "faq_jsonld": faq_jsonld(page["faqs"]),
     })
 
 
