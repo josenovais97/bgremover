@@ -3,6 +3,7 @@ from django.urls import path
 from django.views.generic.base import RedirectView
 
 from . import views
+from .views import COMPARISONS, COMPRESS_PAGES
 
 app_name = "remover"
 
@@ -40,6 +41,17 @@ urlpatterns = [
     path("private-image-tools/", views.privacy_page, {"slug": "private-image-tools"}, name="priv_hub"),
     path("remove-background-without-uploading/", views.privacy_page, {"slug": "remove-background-without-uploading"}, name="priv_no_upload"),
     path("offline-image-editor/", views.privacy_page, {"slug": "offline-image-editor"}, name="priv_offline"),
+    # Compress intent-variants (see COMPRESS_PAGES) — keyword-rich top-level URLs,
+    # generated from the data so a new variant is a one-line data addition.
+    *[
+        path(f"{p['slug']}/", views.compress_page, {"slug": p["slug"]}, name=p["url_name"])
+        for p in COMPRESS_PAGES
+    ],
+    # Comparison pages (see COMPARISONS), generated from the data.
+    *[
+        path(f"{p['slug']}/", views.comparison, {"slug": p["slug"]}, name=p["url_name"])
+        for p in COMPARISONS
+    ],
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
     path("about/", views.about, name="about"),
     path("privacy/", views.privacy, name="privacy"),
