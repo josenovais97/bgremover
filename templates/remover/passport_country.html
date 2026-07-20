@@ -11,8 +11,8 @@
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Passport Photo Maker", "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'remover:passport' %}" },
-    { "@type": "ListItem", "position": 2, "name": "{{ country.name }}", "item": "{{ request.build_absolute_uri }}" }
+    { "@type": "ListItem", "position": 1, "name": "Passport Photo Maker", "item": "{{ site_url }}{% url 'remover:passport' %}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ country.name }}", "item": "{{ canonical_url }}" }
   ]
 }
 </script>

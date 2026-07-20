@@ -136,6 +136,17 @@ def _accent_vars(url_name):
     )
 
 
+def _canonical_url(request):
+    """Fixed canonical URL for the current page: SITE_URL + path, no query string.
+
+    Built from SITE_URL (not the request host) so every variant a crawler might
+    reach — www/apex, http/https, ?utm=… — declares the same canonical, letting
+    Google consolidate signals onto one URL. `request.path` already excludes the
+    query string and keeps any language prefix (e.g. /pt/…), which is correct.
+    """
+    return settings.SITE_URL.rstrip("/") + request.path
+
+
 def _alternate_urls(request):
     """Absolute English + Portuguese URLs for the current page (for hreflang)."""
     try:
@@ -157,6 +168,7 @@ def seo(request):
     url_name = match.url_name if match is not None else None
     ads_allowed = url_name == "use_case" and url_name not in ISOLATED_VIEWS
     alternates = _alternate_urls(request)
+    canonical_url = _canonical_url(request)
     accent, accent_hover, accent_text_dark, accent_text_dark_alt = TOOL_ACCENTS.get(
         url_name, _DEFAULT_ACCENT
     )
@@ -204,4 +216,7 @@ def seo(request):
         "LANGUAGE_CODE": get_language() or "en",
         "alt_en": alternates.get("en"),
         "alt_pt": alternates.get("pt"),
+        # Canonical URL built from SITE_URL (host/query-stable) for <link rel=canonical> + og:url.
+        "canonical_url": canonical_url,
+        "site_url": settings.SITE_URL.rstrip("/"),
     }

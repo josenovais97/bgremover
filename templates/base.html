@@ -11,7 +11,7 @@
     {% block seo %}
     <title>{% block title %}Free AI Background Remover — High Quality, No Watermark{% endblock %}</title>
     <meta name="description" content="{% block description %}Remove image backgrounds instantly and 100% free. AI runs in your browser — no uploads, no watermarks, no quality loss. Export transparent PNGs in full resolution.{% endblock %}">
-    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    <link rel="canonical" href="{{ canonical_url }}">
     <meta name="robots" content="index, follow">
     {% if alt_en and alt_pt %}
     <link rel="alternate" hreflang="en" href="{{ alt_en }}">
@@ -24,7 +24,7 @@
     <meta property="og:site_name" content="ClearBG">
     <meta property="og:title" content="{% block og_title %}Free AI Background Remover — No Watermark{% endblock %}">
     <meta property="og:description" content="Remove image backgrounds instantly and 100% free. Everything runs privately in your browser.">
-    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:url" content="{{ canonical_url }}">
     <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-image.png' %}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
