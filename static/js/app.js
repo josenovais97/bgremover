@@ -2044,6 +2044,19 @@ const App = {
       this.dropzone.addEventListener(evt, () => ModelStatus.warm(), { once: true, passive: true }),
     );
 
+    // Also warm proactively once the page goes idle, so a visitor who uploads
+    // immediately (without hovering first) still skips the first-run wait. The
+    // model is ~40 MB, so skip it when the connection looks slow or data-saver
+    // is on — warm() is idempotent, so the intent listeners above still cover
+    // those users on demand.
+    const conn = navigator.connection;
+    const stingy = conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ''));
+    if (!stingy) {
+      const warmSoon = () => ModelStatus.warm();
+      if ('requestIdleCallback' in window) requestIdleCallback(warmSoon, { timeout: 4000 });
+      else setTimeout(warmSoon, 2500);
+    }
+
     const icon = $('#upload-icon');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((evt) =>
       this.dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }),

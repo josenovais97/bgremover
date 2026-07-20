@@ -33,6 +33,13 @@
                         </span>
                     </span>
                 </div>
+                <div class="animate-fade-in-up">
+                    <a href="https://www.producthunt.com/products/clearbg-2/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-clearbg&#0045;2" target="_blank" rel="noopener noreferrer"
+                       class="inline-block rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                       aria-label="Review ClearBG on Product Hunt (opens in a new tab)">
+                        <img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1265851&theme=light" alt="ClearBG on Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" loading="lazy" />
+                    </a>
+                </div>
             </div>
 
             <div class="max-w-5xl mx-auto space-y-6">
@@ -53,8 +60,8 @@
                                 <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select images" %}
                             </button>
                             <button id="try-sample" type="button" data-src="{% static 'img/demo1-before.webp' %}"
-                                    class="text-sm font-medium text-primaryText hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
-                                {% t "or try it with a sample photo" %} →
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 bg-white/60 dark:bg-gray-900/40 hover:border-primary hover:text-primaryText hover:-translate-y-0.5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {% t "No photo? Try a sample" %}
                             </button>
                             <div class="pt-4 text-sm text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
                                 <p>{% t "Supports JPG, PNG & WEBP · Full resolution preserved" %}</p>
