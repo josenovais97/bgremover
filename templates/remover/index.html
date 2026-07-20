@@ -548,6 +548,9 @@
 </button>
 {% endblock %}
 
+{# The home page already renders the full tool grid, so suppress the auto related-tools block. #}
+{% block related_tools %}{% endblock %}
+
 {% block extra_js %}
 <script type="module" src="{% static 'js/app.js' %}"></script>
 <script src="{% static 'js/landing.js' %}" defer></script>

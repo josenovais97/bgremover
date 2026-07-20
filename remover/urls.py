@@ -35,6 +35,11 @@ urlpatterns = [
     path("watermark-image/", views.watermark, name="watermark"),
     path("gif-maker/", views.gif, name="gif"),
     path("remove-bg-alternative/", views.alternative, name="alternative"),
+    # Privacy-angle landing pages (see PRIVACY_PAGES). Explicit routes keep the
+    # keyword-rich top-level URLs; each maps to the shared privacy_page view.
+    path("private-image-tools/", views.privacy_page, {"slug": "private-image-tools"}, name="priv_hub"),
+    path("remove-background-without-uploading/", views.privacy_page, {"slug": "remove-background-without-uploading"}, name="priv_no_upload"),
+    path("offline-image-editor/", views.privacy_page, {"slug": "offline-image-editor"}, name="priv_offline"),
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
     path("about/", views.about, name="about"),
     path("privacy/", views.privacy, name="privacy"),

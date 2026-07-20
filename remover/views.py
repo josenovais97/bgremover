@@ -251,11 +251,113 @@ USE_CASES = [
 
 USE_CASES_BY_SLUG = {case["slug"]: case for case in USE_CASES}
 
+# Privacy-angle landing pages. ClearBG's one structural differentiator is that
+# every tool runs on-device — no competitor that uploads can claim it — so these
+# pages target that low-competition intent ("without uploading", "offline",
+# "private"). Each is a hub-quality page: real copy, benefits, a curated set of
+# featured tools (by TOOL_NAV name) and its own FAQ. `url_name` ties the page to
+# its route so siblings can cross-link. Copy lives here beside USE_CASES.
+PRIVACY_PAGES = [
+    {
+        "slug": "private-image-tools",
+        "url_name": "priv_hub",
+        "nav": "Private image tools",
+        "title": "Private Image Tools — Edit Photos Without Uploading | ClearBG",
+        "description": "A full toolkit of image tools that run entirely in your browser — remove backgrounds, compress, convert, resize, redact and strip metadata without uploading a single photo. Free, no account, no tracking.",
+        "h1": "Image tools that never upload your photos",
+        "tagline": "Every tool here runs on your device. Your photos are processed in the browser and never sent to a server — no account, no cloud, no tracking.",
+        "intro": [
+            "Most \"free\" online image tools upload your photo to their servers to do the work. That means a private document, a customer's product shot or a picture of your family passes through — and is often stored on — someone else's computer. ClearBG is built the opposite way: the processing runs inside your own browser, so the image never leaves your device.",
+            "That single design choice is what makes ClearBG genuinely private. There is nothing to sign up for, no image is transmitted, and there is no server-side copy to leak, cache or train on. You can use every tool below on sensitive images — IDs, bank statements, medical photos, unreleased designs — with none of the usual risk.",
+        ],
+        "benefits": [
+            {"icon": "fa-shield-halved", "title": "Private by design", "text": "The AI and every edit run locally. Your photos are never uploaded, stored or seen by anyone — not even us."},
+            {"icon": "fa-lock", "title": "Nothing to upload", "text": "No account, no cloud, no API keys. Drop an image in and it's processed on the spot, in the page."},
+            {"icon": "fa-database", "title": "No data kept", "text": "Because nothing reaches a server, there's no history, no tracking pixel on the tools, and nothing to delete later."},
+        ],
+        "tools": ["index", "compress", "convert", "resize", "redact", "exif"],
+        "faqs": [
+            {"q": "Are my images really not uploaded?",
+             "a": "Correct. The tools use your browser's own canvas and, for background removal, an AI model that runs on your device. The image data stays in the page — it is never sent to ClearBG or any third party."},
+            {"q": "How can it be free if nothing is uploaded?",
+             "a": "There are no servers doing the heavy lifting, so there's almost nothing to pay for. The tools are free and unlimited, with no watermark and no per-image cost."},
+            {"q": "Is this safe for sensitive documents?",
+             "a": "Yes — that's the main reason to use it. Because the file never leaves your device, redacting an ID, stripping GPS data from a photo or cleaning up a bank statement is far safer than on a tool that uploads."},
+            {"q": "Do I need to install anything?",
+             "a": "No. It runs in any modern browser. You can optionally install it as an app (PWA) so it opens in its own window and keeps working offline."},
+        ],
+        "cta": {"url_name": "index", "label": "Try the background remover"},
+    },
+    {
+        "slug": "remove-background-without-uploading",
+        "url_name": "priv_no_upload",
+        "nav": "Remove background without uploading",
+        "title": "Remove Background Without Uploading — 100% Private & Free",
+        "description": "Remove an image background without uploading your photo. The AI runs entirely in your browser, so nothing is sent to a server. Free, unlimited, no watermark, no sign-up.",
+        "h1": "Remove a background without uploading your photo",
+        "tagline": "The background-removal AI runs inside your browser. Your photo is never uploaded, so even sensitive images stay completely private.",
+        "intro": [
+            "Almost every background remover works by uploading your image to a server, removing the background there, and sending the result back. ClearBG doesn't. The AI model downloads to your browser once, then does the cut-out on your own device — your photo never travels across the internet.",
+            "That makes it the right tool for anything you wouldn't want on someone else's server: a passport photo, a picture of your kids, an unreleased product, a scanned signature. You still get a clean, full-resolution transparent PNG — just without the privacy trade-off.",
+        ],
+        "benefits": [
+            {"icon": "fa-shield-halved", "title": "On-device AI", "text": "The cut-out is computed in your browser. No upload step exists, so there's no server copy of your photo."},
+            {"icon": "fa-download", "title": "Full-resolution output", "text": "Export a lossless transparent PNG (or JPG/WEBP) at the original size — no downscaling, no watermark."},
+            {"icon": "fa-circle-check", "title": "Free & unlimited", "text": "No credits, no account, no per-image fee. Remove as many backgrounds as you like."},
+        ],
+        "tools": ["index", "ecommerce", "blur", "redact"],
+        "faqs": [
+            {"q": "How does it remove the background without uploading?",
+             "a": "The first time you use it, a small AI segmentation model loads into your browser. After that, every cut-out is computed locally on your device — the image itself is never transmitted."},
+            {"q": "Is the quality as good as tools that upload?",
+             "a": "Yes. It handles hair and soft edges well and includes a refine brush to tidy edges. Exports are full-resolution and never watermarked."},
+            {"q": "Does it work on my phone?",
+             "a": "Yes, in any modern mobile browser. The image is still processed on the device — nothing is uploaded from your phone either."},
+            {"q": "Can I process several images privately?",
+             "a": "Yes. You can batch a set of photos and download them together as a ZIP, all without a single upload."},
+        ],
+        "cta": {"url_name": "index", "label": "Remove a background privately"},
+    },
+    {
+        "slug": "offline-image-editor",
+        "url_name": "priv_offline",
+        "nav": "Offline image editor",
+        "title": "Offline Image Editor — Edit Photos in Your Browser, No Internet",
+        "description": "Compress, convert, resize, crop and remove image backgrounds offline, right in your browser. Install ClearBG as an app and keep editing with no connection — nothing is ever uploaded.",
+        "h1": "An image editor that works offline",
+        "tagline": "Because the tools run on your device, they keep working with no connection. Install ClearBG once and edit images offline — privately, with nothing uploaded.",
+        "intro": [
+            "ClearBG is a browser-based toolkit that does all of its work locally, so it doesn't need a live connection to function. Install it as an app (it's a PWA) and the interface is cached on your device — you can then compress, convert, resize, crop or redact images with the internet switched off entirely.",
+            "It's genuinely useful on a plane, on patchy hotel Wi-Fi, or any time you'd rather not send a photo over the network. Everything happens on-device, which is also why it stays private: no connection means there's nowhere for your images to go.",
+        ],
+        "benefits": [
+            {"icon": "fa-globe", "title": "Works with no connection", "text": "Once loaded, the tools run entirely on your device — no live server call to compress, convert, resize or crop."},
+            {"icon": "fa-lock", "title": "Installable app", "text": "Add ClearBG to your home screen or desktop and it opens in its own window, cached for offline use."},
+            {"icon": "fa-shield-halved", "title": "Private, always", "text": "Offline by nature means private by nature — your images never leave the device they're on."},
+        ],
+        "tools": ["compress", "convert", "resize", "crop", "index"],
+        "faqs": [
+            {"q": "How do I use it offline?",
+             "a": "Open ClearBG once online, then install it from your browser's menu (\"Install app\" / \"Add to Home Screen\"). The app shell is cached, so it opens and runs the client-side tools even with no connection."},
+            {"q": "Do all the tools work offline?",
+             "a": "The canvas-based tools — compress, convert, resize, crop, EXIF removal and more — work fully offline once loaded. Background removal needs its AI model downloaded once; after that first download it works offline too."},
+            {"q": "Is anything uploaded when I'm back online?",
+             "a": "No. Nothing is queued to upload and nothing syncs to a server, online or off. The images only ever exist on your device."},
+            {"q": "Is it really free?",
+             "a": "Yes — free and unlimited, no account and no watermark, online or offline."},
+        ],
+        "cta": {"url_name": "index", "label": "Open the toolkit"},
+    },
+]
+
+PRIVACY_PAGES_BY_SLUG = {p["slug"]: p for p in PRIVACY_PAGES}
+
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
 TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
-LANDING_PATHS = ["/remove-bg-alternative/"]
+PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
+LANDING_PATHS = ["/remove-bg-alternative/"] + PRIVACY_PATHS
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
     + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
@@ -292,6 +394,25 @@ def use_case(request, slug):
     if case is None:
         raise Http404("Unknown use case")
     return render(request, "remover/use_case.html", {"case": localize_use_case(case)})
+
+
+@require_GET
+def privacy_page(request, slug):
+    """Render a privacy-angle landing page (hub + 'without uploading' + offline)."""
+    page = PRIVACY_PAGES_BY_SLUG.get(slug)
+    if page is None:
+        raise Http404("Unknown page")
+    siblings = [
+        {"nav": p["nav"], "url": reverse(f"remover:{p['url_name']}")}
+        for p in PRIVACY_PAGES if p["slug"] != slug
+    ]
+    return render(request, "remover/privacy_landing.html", {
+        "page": page,
+        "siblings": siblings,
+        "cta_url": reverse(f"remover:{page['cta']['url_name']}"),
+        "faqs": page["faqs"],
+        "faq_jsonld": faq_jsonld(page["faqs"]),
+    })
 
 
 @require_GET

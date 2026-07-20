@@ -136,6 +136,26 @@ def _accent_vars(url_name):
     )
 
 
+def _related_tools(tool_nav, url_name, limit=4):
+    """Up to `limit` other tools to cross-link from the current page.
+
+    Same-group tools come first (most topically related), then the rest in nav
+    order — so every page gets a full row of relevant internal links. Pages with
+    no matching tool (landing/legal pages) lead with the flagship remover. Built
+    from the already-resolved `tool_nav` so URLs/labels aren't recomputed.
+    """
+    by_name = {t["name"]: t for t in tool_nav}
+    current = by_name.get(url_name)
+    if current is not None:
+        group = current["group"]
+        same = [t for t in tool_nav if t["group"] == group and t["name"] != url_name]
+        rest = [t for t in tool_nav if t["group"] != group and t["name"] != url_name]
+        ordered = same + rest
+    else:
+        ordered = [by_name["index"]] + [t for t in tool_nav if t["name"] != "index"]
+    return ordered[:limit]
+
+
 def _canonical_url(request):
     """Fixed canonical URL for the current page: SITE_URL + path, no query string.
 
@@ -219,4 +239,6 @@ def seo(request):
         # Canonical URL built from SITE_URL (host/query-stable) for <link rel=canonical> + og:url.
         "canonical_url": canonical_url,
         "site_url": settings.SITE_URL.rstrip("/"),
+        # Contextual internal linking: a few related tools for the current page.
+        "related_tools": _related_tools(tool_nav, url_name),
     }
