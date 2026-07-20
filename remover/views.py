@@ -45,6 +45,29 @@ CONVERT_FORMATS = [
     {"mime": "image/avif", "label": "AVIF", "ext": "avif", "lossy": True, "desc": "Next-gen, smallest files (Chromium)"},
 ]
 
+# Preset photo backgrounds a user can drop behind their cut-out (beyond solid
+# colours / gradients / blur). Optimised WEBP live in static/img/backgrounds/ as
+# bg-<slug>.webp (full, ≤1920px) + thumb-<slug>.webp (picker thumbnail). Ordered
+# studio/neutral first (best for portraits & products), then colourful, then
+# scenes. Adding one is a slug+label line here plus the two WEBP files.
+_BACKGROUND_SLUGS = [
+    ("soft-white", "Soft white"), ("linen", "Linen"), ("concrete", "Concrete"),
+    ("charcoal", "Charcoal"), ("white-brick", "White brick"), ("blue-brick", "Blue brick"),
+    ("wood", "Wood"), ("office", "Office"),
+    ("sky-wash", "Sky wash"), ("mint-bokeh", "Mint bokeh"), ("pink-cloud", "Pink cloud"),
+    ("blue-gradient", "Blue gradient"), ("confetti", "Confetti"), ("nebula", "Nebula"),
+    ("night-sky", "Night sky"), ("deep-teal", "Deep teal"), ("floral", "Floral"),
+]
+BACKGROUNDS = [
+    {
+        "slug": slug,
+        "label": label,
+        "full": f"img/backgrounds/bg-{slug}.webp",
+        "thumb": f"img/backgrounds/thumb-{slug}.webp",
+    }
+    for slug, label in _BACKGROUND_SLUGS
+]
+
 # Instagram output formats: each sets a crop aspect and the exact pixel size
 # Instagram recommends, so exports fill the frame and upload without recompression.
 IG_FORMATS = [
@@ -763,6 +786,7 @@ def index(request):
     return render(request, "remover/index.html", {
         "faqs": INDEX_FAQS,
         "faq_jsonld": faq_jsonld(INDEX_FAQS),
+        "backgrounds": BACKGROUNDS,
     })
 
 
