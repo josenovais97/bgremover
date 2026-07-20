@@ -225,7 +225,15 @@
         </div>
 
         <!-- Options panel (background + format) -->
-        <div class="options-panel hidden mx-3 sm:mx-4 mb-1 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/70 dark:border-white/10 p-4 sm:p-5 space-y-5">
+        <div class="options-panel hidden mx-3 sm:mx-4 mb-1 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/70 dark:border-white/10 p-4 sm:p-5 space-y-4">
+            <!-- Tabbed sections keep this dense panel scannable (esp. on mobile). -->
+            <div class="opt-tabs seg" role="tablist" aria-label="Style options">
+                <button type="button" class="opt-tab seg-btn bg-primary text-white" data-tab="background">Background</button>
+                <button type="button" class="opt-tab seg-btn" data-tab="size">Size &amp; format</button>
+                <button type="button" class="opt-tab seg-btn" data-tab="effects">Effects</button>
+            </div>
+
+            <div class="opt-tabpanel space-y-5" data-tabpanel="background">
             <!-- Background color -->
             <div class="space-y-2.5">
                 <span class="opt-label">Background</span>
@@ -269,19 +277,26 @@
                 </div>
             </div>
 
-            <!-- Preset photo backgrounds -->
-            <div class="space-y-2.5">
+            <!-- Preset photo backgrounds (grouped by category) -->
+            <div class="space-y-3">
                 <span class="opt-label">Photo backgrounds</span>
-                <div class="grid grid-cols-6 sm:grid-cols-7 gap-2">
-                    {% for b in backgrounds %}
-                    <button type="button" class="bg-preset relative aspect-square rounded-lg overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 hover:ring-2 hover:ring-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition"
-                            data-bg-slug="{{ b.slug }}" data-bg-full="{% static b.full %}" title="{{ b.label }}" aria-label="{{ b.label }} background">
-                        <img src="{% static b.thumb %}" alt="{{ b.label }}" width="48" height="48" loading="lazy" class="w-full h-full object-cover">
-                    </button>
-                    {% endfor %}
+                {% for g in background_groups %}
+                <div class="space-y-1.5">
+                    <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{{ g.label }}</span>
+                    <div class="grid grid-cols-6 sm:grid-cols-7 gap-2">
+                        {% for b in g.items %}
+                        <button type="button" class="bg-preset relative aspect-square rounded-lg overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 ring-offset-1 ring-offset-white dark:ring-offset-gray-900 hover:ring-2 hover:ring-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition"
+                                data-bg-slug="{{ b.slug }}" data-bg-full="{% static b.full %}" title="{{ b.label }}" aria-label="{{ b.label }} background">
+                            <img src="{% static b.thumb %}" alt="{{ b.label }}" width="48" height="48" loading="lazy" class="w-full h-full object-cover">
+                        </button>
+                        {% endfor %}
+                    </div>
                 </div>
+                {% endfor %}
             </div>
+            </div><!-- /background tabpanel -->
 
+            <div class="opt-tabpanel space-y-5 hidden" data-tabpanel="size">
             <!-- Format + export size -->
             <div class="grid sm:grid-cols-2 gap-5">
                 <div class="space-y-2.5">
@@ -307,8 +322,11 @@
                 </div>
             </div>
 
+            </div><!-- /size tabpanel -->
+
+            <div class="opt-tabpanel space-y-5 hidden" data-tabpanel="effects">
             <!-- Sticker effects -->
-            <div class="space-y-2.5 pt-4 border-t border-gray-200/70 dark:border-white/10">
+            <div class="space-y-2.5">
                 <span class="opt-label">Sticker effects</span>
                 <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs font-medium text-gray-600 dark:text-gray-300">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
@@ -325,6 +343,8 @@
                     </label>
                 </div>
             </div>
+
+            </div><!-- /effects tabpanel -->
 
             <!-- Copy this card's background/format/size/sticker to every image. Shown only with 2+ cards. -->
             <div class="apply-all-wrap pt-4 border-t border-gray-200/70 dark:border-white/10 hidden">

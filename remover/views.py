@@ -50,22 +50,34 @@ CONVERT_FORMATS = [
 # bg-<slug>.webp (full, ≤1920px) + thumb-<slug>.webp (picker thumbnail). Ordered
 # studio/neutral first (best for portraits & products), then colourful, then
 # scenes. Adding one is a slug+label line here plus the two WEBP files.
+# (slug, label, category). Category groups them in the picker so 17+ thumbnails
+# read as a curated set rather than a wall. Order within = display order.
 _BACKGROUND_SLUGS = [
-    ("soft-white", "Soft white"), ("linen", "Linen"), ("concrete", "Concrete"),
-    ("charcoal", "Charcoal"), ("white-brick", "White brick"), ("blue-brick", "Blue brick"),
-    ("wood", "Wood"), ("office", "Office"),
-    ("sky-wash", "Sky wash"), ("mint-bokeh", "Mint bokeh"), ("pink-cloud", "Pink cloud"),
-    ("blue-gradient", "Blue gradient"), ("confetti", "Confetti"), ("nebula", "Nebula"),
-    ("night-sky", "Night sky"), ("deep-teal", "Deep teal"), ("floral", "Floral"),
+    ("soft-white", "Soft white", "Studio"), ("linen", "Linen", "Studio"),
+    ("concrete", "Concrete", "Studio"), ("charcoal", "Charcoal", "Studio"),
+    ("white-brick", "White brick", "Studio"), ("blue-brick", "Blue brick", "Studio"),
+    ("wood", "Wood", "Studio"),
+    ("sky-wash", "Sky wash", "Colorful"), ("mint-bokeh", "Mint bokeh", "Colorful"),
+    ("pink-cloud", "Pink cloud", "Colorful"), ("blue-gradient", "Blue gradient", "Colorful"),
+    ("confetti", "Confetti", "Colorful"), ("nebula", "Nebula", "Colorful"),
+    ("night-sky", "Night sky", "Colorful"),
+    ("office", "Office", "Scenes"), ("deep-teal", "Deep teal", "Scenes"),
+    ("floral", "Floral", "Scenes"),
 ]
 BACKGROUNDS = [
     {
         "slug": slug,
         "label": label,
+        "cat": cat,
         "full": f"img/backgrounds/bg-{slug}.webp",
         "thumb": f"img/backgrounds/thumb-{slug}.webp",
     }
-    for slug, label in _BACKGROUND_SLUGS
+    for slug, label, cat in _BACKGROUND_SLUGS
+]
+_BG_CATEGORY_ORDER = ["Studio", "Colorful", "Scenes"]
+BACKGROUND_GROUPS = [
+    {"label": cat, "items": [b for b in BACKGROUNDS if b["cat"] == cat]}
+    for cat in _BG_CATEGORY_ORDER
 ]
 
 # Instagram output formats: each sets a crop aspect and the exact pixel size
@@ -786,7 +798,7 @@ def index(request):
     return render(request, "remover/index.html", {
         "faqs": INDEX_FAQS,
         "faq_jsonld": faq_jsonld(INDEX_FAQS),
-        "backgrounds": BACKGROUNDS,
+        "background_groups": BACKGROUND_GROUPS,
     })
 
 

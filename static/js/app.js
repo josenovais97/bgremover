@@ -1266,6 +1266,21 @@ class Card {
       this.el.querySelector('.options-panel').classList.toggle('hidden'),
     );
 
+    // Options-panel tabs (Background / Size & format / Effects) — one group of
+    // controls visible at a time so the dense panel stays scannable.
+    const tabs = $$('.opt-tab', this.el);
+    const panels = $$('.opt-tabpanel', this.el);
+    tabs.forEach((tab) =>
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => {
+          const active = t === tab;
+          t.classList.toggle('bg-primary', active);
+          t.classList.toggle('text-white', active);
+        });
+        panels.forEach((pn) => pn.classList.toggle('hidden', pn.dataset.tabpanel !== tab.dataset.tab));
+      }),
+    );
+
     // Overflow menu: copy, view toggle, "Continue in <tool>", remove. Those
     // actions stay reachable without crowding the card's primary row.
     const moreBtn = this.el.querySelector('.more-btn');
@@ -1439,6 +1454,7 @@ class Card {
       this.el.classList.add('just-done');
       window.setTimeout(() => this.el.classList.remove('just-done'), 1400);
       this.refreshPreview(); // apply any remembered background now the image exists
+      this.revealFlourish();  // wipe-reveal + surface the styling options (once)
       Stats.record(performance.now() - started);
       ModelStatus.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI model ready', 'bg-green-500/10 text-green-600 dark:text-green-400');
       this.saveToHistory();
@@ -1449,6 +1465,43 @@ class Card {
       this.el.querySelector('.error-msg').textContent = detail.slice(0, 180);
       this.setState('error');
       Toast.show(`Failed: ${detail}`.slice(0, 140), 'error');
+    }
+  }
+
+  /** First-cut-out flourish: sweep the compare slider so the background visibly
+   *  wipes away to the cut-out, and reveal the (hidden) styling panel once per
+   *  session so people discover backgrounds/effects. */
+  revealFlourish() {
+    if (!this._swept) {
+      this._swept = true;
+      const range = this.el.querySelector('.compare-range');
+      const orig = this.el.querySelector('.original-img');
+      const line = this.el.querySelector('.slider-line');
+      const apply = (v) => {
+        orig.style.clipPath = `inset(0 ${100 - v}% 0 0)`;
+        line.style.left = `${v}%`;
+        range.value = v;
+      };
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) {
+        apply(50);
+      } else {
+        const start = performance.now();
+        const dur = 750;
+        const step = (now) => {
+          const p = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+          apply(100 + (50 - 100) * eased); // 100 (all original) → 50 (split)
+          if (p < 1) requestAnimationFrame(step);
+        };
+        apply(100);
+        requestAnimationFrame(step);
+      }
+    }
+    // Surface the styling panel on the very first cut-out of the session.
+    if (!App.optionsRevealed) {
+      App.optionsRevealed = true;
+      this.el.querySelector('.options-panel')?.classList.remove('hidden');
     }
   }
 
@@ -2000,6 +2053,7 @@ function makeThumbnail(url, size = 160) {
 /* --------------------------------------------------------------------- app */
 const App = {
   cards: [],
+  optionsRevealed: false, // styling panel auto-opened on the first cut-out of the session
 
   init() {
     this.dropzone = $('#dropzone');
