@@ -6,7 +6,9 @@
  * photo is never uploaded, which is the whole point for sensitive images.
  *
  * Regions are stored in image-pixel coordinates so the effect exports at full
- * resolution regardless of the on-screen preview size. Self-contained.
+ * resolution regardless of the on-screen preview size. A region is either a
+ * rectangle ({type:'rect', x,y,w,h}) dragged as a box, or a freehand polygon
+ * ({type:'path', points:[{x,y}…]}) traced with the lasso. Self-contained.
  */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -41,9 +43,12 @@ const Toast = {
 
 const App = {
   original: null,
-  regions: [],       // committed boxes, in image-pixel coords {x,y,w,h}
-  pending: null,     // box currently being dragged
-  mode: 'blur',      // 'blur' | 'pixelate' | 'black' (applies to all boxes)
+  regions: [],       // committed regions (rect or path), in image-pixel coords
+  pending: null,     // region currently being drawn
+  drawing: false,    // true while a pointer drag is in progress
+  drawStart: null,   // rect-mode: the anchor corner
+  shape: 'box',      // 'box' (drag a rectangle) | 'lasso' (trace a freehand shape)
+  mode: 'blur',      // 'blur' | 'pixelate' | 'black' (applies to all regions)
   strength: 50,
 
   init() {
@@ -51,6 +56,7 @@ const App = {
     this.input = $('#rd-input');
     this.editor = $('#rd-editor');
     this.canvas = $('#rd-canvas');
+    this.hint = $('#rd-hint');
 
     const open = () => this.input.click();
     $('#rd-browse').addEventListener('click', (e) => { e.stopPropagation(); open(); });
@@ -69,6 +75,13 @@ const App = {
       if (f) this.load(f.getAsFile());
     });
 
+    $$('.rd-shape').forEach((b) => b.addEventListener('click', () => {
+      this.shape = b.dataset.shape;
+      $$('.rd-shape').forEach((x) => { const a = x === b; x.classList.toggle('ring-2', a); x.classList.toggle('ring-primary', a); });
+      if (this.hint) this.hint.textContent = this.shape === 'lasso'
+        ? 'Trace around each area you want to hide'
+        : 'Drag over each area you want to hide';
+    }));
     $$('.rd-mode').forEach((b) => b.addEventListener('click', () => {
       this.mode = b.dataset.mode;
       $$('.rd-mode').forEach((x) => { const a = x === b; x.classList.toggle('ring-2', a); x.classList.toggle('ring-primary', a); });
@@ -82,29 +95,82 @@ const App = {
     $('#rd-download-jpg').addEventListener('click', () => this.export('image/jpeg'));
     $('#rd-new').addEventListener('click', () => this.reset());
 
-    // Draw a box by dragging on the canvas.
+    // Draw a region on the canvas: a dragged box, or a traced freehand shape.
     this.canvas.addEventListener('pointerdown', (e) => {
       if (!this.original) return;
       this.canvas.setPointerCapture?.(e.pointerId);
       const p = this.toImage(e);
-      this.drawStart = p;
-      this.pending = { x: p.x, y: p.y, w: 0, h: 0 };
+      this.drawing = true;
+      if (this.shape === 'lasso') {
+        this.pending = { type: 'path', points: [p] };
+      } else {
+        this.drawStart = p;
+        this.pending = { type: 'rect', x: p.x, y: p.y, w: 0, h: 0 };
+      }
     });
     this.canvas.addEventListener('pointermove', (e) => {
-      if (!this.drawStart) return;
+      if (!this.drawing) return;
       const p = this.toImage(e);
-      this.pending = this.rect(this.drawStart, p);
+      if (this.pending.type === 'path') {
+        // Skip near-duplicate points so the polygon stays light on long traces.
+        const last = this.pending.points[this.pending.points.length - 1];
+        if (Math.hypot(p.x - last.x, p.y - last.y) > 2) this.pending.points.push(p);
+      } else {
+        this.pending = { type: 'rect', ...this.rect(this.drawStart, p) };
+      }
       this.render();
     });
     ['pointerup', 'pointercancel'].forEach((ev) => this.canvas.addEventListener(ev, () => {
-      if (this.drawStart && this.pending && this.pending.w > 4 && this.pending.h > 4) {
-        this.regions.push(this.pending);
+      if (this.drawing && this.pending) {
+        const bb = this.bbox(this.pending);
+        const enough = this.pending.type === 'path' ? this.pending.points.length > 2 : true;
+        if (enough && bb.w > 4 && bb.h > 4) this.regions.push(this.pending);
       }
+      this.drawing = false;
       this.drawStart = null;
       this.pending = null;
       this.updateButtons();
       this.render();
     }));
+  },
+
+  // Bounding box (image-pixel coords) of a rect or path region.
+  bbox(region) {
+    if (region.type === 'path') {
+      const xs = region.points.map((p) => p.x), ys = region.points.map((p) => p.y);
+      const x = Math.min(...xs), y = Math.min(...ys);
+      return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y };
+    }
+    return { x: region.x, y: region.y, w: region.w, h: region.h };
+  },
+
+  // Set the current clip path to a region (rectangle or closed polygon).
+  clipTo(ctx, region) {
+    ctx.beginPath();
+    if (region.type === 'path') {
+      const p = region.points;
+      ctx.moveTo(p[0].x, p[0].y);
+      for (let i = 1; i < p.length; i++) ctx.lineTo(p[i].x, p[i].y);
+      ctx.closePath();
+    } else {
+      ctx.rect(region.x, region.y, region.w, region.h);
+    }
+    ctx.clip();
+  },
+
+  // Trace a region's outline (does not fill); `close` shuts a polygon.
+  outline(ctx, region, close) {
+    ctx.beginPath();
+    if (region.type === 'path') {
+      const p = region.points;
+      if (!p.length) return;
+      ctx.moveTo(p[0].x, p[0].y);
+      for (let i = 1; i < p.length; i++) ctx.lineTo(p[i].x, p[i].y);
+      if (close) ctx.closePath();
+      ctx.stroke();
+    } else {
+      ctx.strokeRect(region.x, region.y, region.w, region.h);
+    }
   },
 
   // Pointer → image-pixel coordinates (the canvas is the image's native size).
@@ -126,9 +192,14 @@ const App = {
     $('#rd-download').disabled = $('#rd-download-jpg').disabled = !this.original;
   },
 
-  applyRegion(ctx, w, h, box) {
-    const { x, y, w: bw, h: bh } = box;
+  // Apply the current effect inside one region. The effect is painted over the
+  // region's bounding box but clipped to its exact shape, so rectangles and
+  // freehand polygons are handled the same way.
+  applyRegion(ctx, w, h, region) {
+    const { x, y, w: bw, h: bh } = this.bbox(region);
     if (bw < 1 || bh < 1) return;
+    ctx.save();
+    this.clipTo(ctx, region);
     if (this.mode === 'black') {
       ctx.fillStyle = '#000';
       ctx.fillRect(x, y, bw, bh);
@@ -144,12 +215,10 @@ const App = {
       ctx.imageSmoothingEnabled = true;
     } else { // blur
       const radius = Math.max(2, (this.strength / 100) * Math.max(w, h) * 0.04);
-      ctx.save();
-      ctx.beginPath(); ctx.rect(x, y, bw, bh); ctx.clip();
       ctx.filter = `blur(${radius}px)`;
       ctx.drawImage(this.original, 0, 0, w, h);
-      ctx.restore();
     }
+    ctx.restore();
   },
 
   paint(canvas, outlines) {
@@ -163,14 +232,13 @@ const App = {
     if (outlines) {
       const line = Math.max(1, Math.round(Math.max(w, h) * 0.0025));
       ctx.lineWidth = line;
-      for (const box of this.regions) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-        ctx.strokeRect(box.x, box.y, box.w, box.h);
-      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      for (const region of this.regions) this.outline(ctx, region, true);
       if (this.pending) {
         ctx.setLineDash([line * 3, line * 3]);
         ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-        ctx.strokeRect(this.pending.x, this.pending.y, this.pending.w, this.pending.h);
+        // Leave an in-progress lasso open so the trailing edge follows the cursor.
+        this.outline(ctx, this.pending, this.pending.type !== 'path');
         ctx.setLineDash([]);
       }
     }
