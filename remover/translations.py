@@ -36,6 +36,7 @@ UI = {
     "More": "Mais",
     "nothing uploaded": "nada carregado",
     "or try it with a sample photo": "ou experimente com uma foto de exemplo",
+    "No photo? Try a sample": "Sem foto? Experimente um exemplo",
     "All tools": "Todas as ferramentas",
     "Remove & Edit": "Remover e Editar",
     "Convert & Optimize": "Converter e Otimizar",
