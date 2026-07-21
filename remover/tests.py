@@ -3,8 +3,8 @@ from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils import translation
 
-from remover.context_processors import TOOL_ACCENTS
-from remover.views import USE_CASES
+from remover.context_processors import TOOL_ACCENTS, TOOL_NAV
+from remover.views import SHELL_ASSETS, SHELL_PAGES, TOOL_PATHS, USE_CASES
 
 
 class PageTests(SimpleTestCase):
@@ -324,6 +324,129 @@ class PWATests(SimpleTestCase):
         self.assertContains(response, 'rel="manifest"')
         self.assertContains(response, "apple-touch-icon")
 
+    def test_service_worker_precaches_every_tool_page(self):
+        # The shell used to be hand-written and fell nine tools behind, while
+        # /offline-image-editor/ advertised those tools as working offline.
+        sw = self.client.get(reverse("remover:sw")).content.decode()
+        for path in TOOL_PATHS:
+            with self.subTest(path=path):
+                self.assertIn(f"'{path}'", sw)
+
+    def test_service_worker_precaches_every_tool_script(self):
+        sw = self.client.get(reverse("remover:sw")).content.decode()
+        for asset in SHELL_ASSETS:
+            with self.subTest(asset=asset):
+                self.assertIn(asset, sw)
+
+    def test_shell_pages_track_the_tool_list(self):
+        self.assertEqual(SHELL_PAGES, ["/"] + TOOL_PATHS)
+
+    def test_manifest_has_a_dedicated_maskable_icon(self):
+        # "any maskable" on every icon is the documented anti-pattern: the same
+        # art is then used both full-bleed and safe-zone-cropped.
+        manifest = self.client.get(reverse("remover:manifest")).content.decode()
+        self.assertIn('"purpose": "maskable"', manifest)
+        self.assertNotIn('"any maskable"', manifest)
+
+    def test_manifest_has_shortcuts(self):
+        manifest = self.client.get(reverse("remover:manifest")).content.decode()
+        self.assertIn('"shortcuts"', manifest)
+
+
+class AssetHostingTests(SimpleTestCase):
+    """Fonts and icons are self-hosted; only the canvas display fonts are remote."""
+
+    def test_ui_font_is_self_hosted(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertContains(response, "css/inter.css")
+        # No render-blocking Google Fonts request on a page that only uses Inter.
+        self.assertNotContains(response, "fonts.googleapis.com/css2")
+
+    def test_pages_that_paint_display_fonts_still_load_them(self):
+        # The meme/sticker/text-behind/Instagram canvases genuinely need Anton &
+        # friends, so those pages keep the request — with a preconnect.
+        response = self.client.get(reverse("remover:meme"))
+        self.assertContains(response, "fonts.googleapis.com/css2")
+        self.assertContains(response, 'rel="preconnect" href="https://fonts.googleapis.com"')
+
+    def test_absolute_urls_use_site_url_not_the_request_host(self):
+        # A www/apex or http/https variant must not advertise a different image
+        # or identity than the canonical it points at.
+        response = self.client.get(reverse("remover:index"), HTTP_HOST="localhost")
+        body = response.content.decode()
+        self.assertIn('<meta property="og:image" content="http://localhost:8000/static/img/og-image.png">', body)
+        self.assertNotIn('content="http://localhost/static/img/og-image.png"', body)
+
+
+class EveryToolTests(SimpleTestCase):
+    """One pass over TOOL_NAV so no tool ships without basic coverage.
+
+    Most tools had none: they were verified by hand, so a broken template, a
+    missing script tag or a tool dropped from the sitemap could reach production
+    unnoticed. This walks the single list that already defines the toolkit, so a
+    new tool is covered the moment it appears in the nav.
+    """
+
+    def test_every_tool_page_renders(self):
+        for item in TOOL_NAV:
+            with self.subTest(tool=item["name"]):
+                response = self.client.get(reverse(f"remover:{item['name']}"))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "<h1")
+
+    def test_every_tool_loads_its_script(self):
+        # A tool page that renders but never loads its module is an inert page —
+        # exactly the failure that looks fine in a screenshot.
+        for item in TOOL_NAV:
+            with self.subTest(tool=item["name"]):
+                response = self.client.get(reverse(f"remover:{item['name']}"))
+                self.assertRegex(
+                    response.content.decode(),
+                    r'<script[^>]+src="[^"]*/static/js/[^"]+\.js"',
+                    f"{item['name']} renders but loads no tool script",
+                )
+
+    def test_every_tool_is_in_the_sitemap(self):
+        response = self.client.get(reverse("remover:sitemap")).content.decode()
+        for item in TOOL_NAV:
+            with self.subTest(tool=item["name"]):
+                self.assertIn(reverse(f"remover:{item['name']}"), response)
+
+    def test_every_tool_has_an_accent(self):
+        for item in TOOL_NAV:
+            with self.subTest(tool=item["name"]):
+                self.assertIn(
+                    item["name"], TOOL_ACCENTS,
+                    f"{item['name']} has no entry in TOOL_ACCENTS and would fall back to indigo",
+                )
+
+    def test_tool_grid_links_every_tool(self):
+        response = self.client.get(reverse("remover:index")).content.decode()
+        for item in TOOL_NAV:
+            if item["name"] == "index":
+                continue
+            with self.subTest(tool=item["name"]):
+                self.assertIn(reverse(f"remover:{item['name']}"), response)
+
+
+class BatchToolTests(SimpleTestCase):
+    """Tools whose settings are image-independent accept a batch."""
+
+    BATCH_TOOLS = ["resize", "watermark", "exif", "pdf"]
+
+    def test_file_inputs_accept_multiple(self):
+        for name in self.BATCH_TOOLS:
+            with self.subTest(tool=name):
+                response = self.client.get(reverse(f"remover:{name}"))
+                self.assertContains(response, "multiple")
+
+    def test_batch_bar_present(self):
+        # pdf has its own page list rather than the shared bar.
+        for name in ["resize", "watermark", "exif"]:
+            with self.subTest(tool=name):
+                response = self.client.get(reverse(f"remover:{name}"))
+                self.assertContains(response, "data-batch-zip")
+
 
 class HealthCheckTests(SimpleTestCase):
     def test_healthz(self):
@@ -336,6 +459,21 @@ class SitemapContentTests(SimpleTestCase):
     def test_sitemap_lists_convert(self):
         response = self.client.get(reverse("remover:sitemap"))
         self.assertContains(response, "/convert/")
+
+    def test_sitemap_lists_the_portuguese_site(self):
+        # The /pt/ pages were absent entirely, so they were only reachable via
+        # footer links — the sitemap claimed the site was English-only.
+        response = self.client.get(reverse("remover:sitemap")).content.decode()
+        self.assertIn("/pt/convert/</loc>", response)
+        self.assertIn("/pt/</loc>", response)
+
+    def test_sitemap_declares_hreflang_alternates(self):
+        response = self.client.get(reverse("remover:sitemap")).content.decode()
+        self.assertIn('xmlns:xhtml="http://www.w3.org/1999/xhtml"', response)
+        self.assertIn('hreflang="pt"', response)
+        self.assertIn('hreflang="x-default"', response)
+        # Both language entries must carry the full alternate set.
+        self.assertEqual(response.count('hreflang="en"'), response.count("<url>"))
 
 
 class SiteVerificationTests(SimpleTestCase):

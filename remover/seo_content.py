@@ -161,6 +161,21 @@ GIF_FAQS = [
      "a": "No. Frames are fitted onto a canvas of the size you pick, so mixed dimensions and orientations work fine."},
 ]
 
+PDF_FAQS = [
+    {"q": "Is this image-to-PDF converter free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark. Combine as many photos or scans as you like into one PDF."},
+    {"q": "Are my images uploaded to make the PDF?",
+     "a": "No. The PDF is built entirely in your browser, so your images never leave your device. That matters for the documents people usually convert — IDs, contracts, receipts and payslips."},
+    {"q": "Can I combine several images into one PDF?",
+     "a": "Yes. Add a batch of images, reorder them, and they become one multi-page PDF in that order — one image per page."},
+    {"q": "What page size does it use?",
+     "a": "Choose A4, US Letter, or a page that matches each image exactly. With A4 or Letter, each image is centred and scaled to fit inside the margin you set, keeping its aspect ratio."},
+    {"q": "Does converting to PDF reduce the quality?",
+     "a": "JPEG images are embedded as-is, with no re-encoding, so there's no extra quality loss. PNG images are embedded losslessly."},
+    {"q": "Can I convert a scanned document to PDF?",
+     "a": "Yes — photograph or scan each page, add them in order, and export a single PDF. Because nothing is uploaded, it's safe for sensitive paperwork."},
+]
+
 ALTERNATIVE_FAQS = [
     {"q": "Is ClearBG really a free remove.bg alternative?",
      "a": "Yes — background removal is free and unlimited with no credits, no sign-up and no watermark. You export full-resolution transparent PNGs at no cost."},

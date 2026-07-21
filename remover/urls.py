@@ -35,6 +35,7 @@ urlpatterns = [
     path("resize-image/", views.resize, name="resize"),
     path("watermark-image/", views.watermark, name="watermark"),
     path("gif-maker/", views.gif, name="gif"),
+    path("image-to-pdf/", views.image_to_pdf, name="pdf"),
     path("remove-bg-alternative/", views.alternative, name="alternative"),
     # Privacy-angle landing pages (see PRIVACY_PAGES). Explicit routes keep the
     # keyword-rich top-level URLs; each maps to the shared privacy_page view.

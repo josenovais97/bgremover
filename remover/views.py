@@ -7,6 +7,7 @@ render the single-page app and the SEO helper endpoints (robots.txt, sitemap).
 import json
 import logging
 import urllib.request
+from pathlib import Path
 
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
@@ -24,6 +25,7 @@ from .seo_content import (
     EXIF_FAQS,
     INDEX_FAQS,
     PASSPORT_FAQS,
+    PDF_FAQS,
     QR_FAQS,
     REDACT_FAQS,
     RESIZE_FAQS,
@@ -766,7 +768,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/image-to-pdf/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
@@ -778,6 +780,32 @@ SITEMAP_PATHS = (
     + [f"/passport-photo/{c['slug']}/" for c in COUNTRIES]
     + LANDING_PATHS
     + INFO_PATHS
+)
+
+
+# --- PWA app shell ----------------------------------------------------------
+# What the service worker precaches so the tools work offline. Both lists are
+# DERIVED, not hand-written: a hand-maintained shell silently drifted behind the
+# tool list (nine tool pages and their JS were missing while /offline-image-editor/
+# advertised them as working offline).
+SHELL_PAGES = ["/"] + TOOL_PATHS
+
+# Every tool module, found on disk — adding static/js/<tool>.js is enough.
+_JS_DIR = Path(__file__).resolve().parent.parent / "static" / "js"
+SHELL_ASSETS = (
+    [f"js/{p.name}" for p in sorted(_JS_DIR.glob("*.js"))]
+    + [
+        "css/tailwind.css",
+        "css/fontawesome.css",
+        "css/inter.css",
+        "webfonts/fa-solid-900.woff2",
+        "webfonts/fa-regular-400.woff2",
+        "webfonts/fa-brands-400.woff2",
+        "webfonts/inter/inter-latin.woff2",
+        "img/favicon.svg",
+        "img/icon-192.png",
+        "img/icon-512.png",
+    ]
 )
 
 
@@ -1000,6 +1028,15 @@ def resize(request):
 
 
 @require_GET
+def image_to_pdf(request):
+    """Render the client-side image → PDF builder."""
+    return render(request, "remover/pdf.html", {
+        "faqs": PDF_FAQS,
+        "faq_jsonld": faq_jsonld(PDF_FAQS),
+    })
+
+
+@require_GET
 def exif(request):
     """Render the client-side EXIF / metadata viewer & remover."""
     return render(request, "remover/exif.html", {
@@ -1090,6 +1127,7 @@ STATS_EVENTS = {"processed", "downloaded"}
 STATS_TOOLS = {
     "home", "blur", "portrait", "ecommerce", "sticker", "passport",
     "instagram", "crop", "convert", "compress", "meme", "favicon",
+    "redact", "exif", "resize", "watermark", "gif", "qr", "text_behind", "pdf",
 }
 
 
@@ -1178,7 +1216,12 @@ def healthz(request):
 @require_GET
 def service_worker(request):
     """Serve the PWA service worker from the site root so its scope is '/'."""
-    response = render(request, "sw.js", content_type="application/javascript")
+    response = render(
+        request,
+        "sw.js",
+        {"shell_pages": SHELL_PAGES, "shell_assets": SHELL_ASSETS},
+        content_type="application/javascript",
+    )
     response["Service-Worker-Allowed"] = "/"
     response["Cache-Control"] = "no-cache"
     return response
@@ -1216,15 +1259,30 @@ def yandex_verify(request):
 @require_GET
 @cache_control(max_age=3600)
 def sitemap_xml(request):
-    """Serve an XML sitemap for the static routes, with per-URL priority."""
+    """Serve an XML sitemap for the static routes, with per-URL priority.
+
+    Each path is listed once per language — English at the root, Portuguese under
+    ``/pt/`` — and every entry carries the full hreflang alternate set. The
+    Portuguese site was previously absent from the sitemap entirely, so it was
+    only discoverable through footer links.
+    """
     from datetime import date
 
     site_url = settings.SITE_URL.rstrip("/")
     lastmod = date.today().isoformat()
-    urls = [
-        {"loc": f"{site_url}{path}", "priority": _sitemap_priority(path), "lastmod": lastmod}
-        for path in SITEMAP_PATHS
-    ]
+    urls = []
+    for path in SITEMAP_PATHS:
+        alt_en = f"{site_url}{path}"
+        alt_pt = f"{site_url}/pt{path}"
+        priority = _sitemap_priority(path)
+        for loc in (alt_en, alt_pt):
+            urls.append({
+                "loc": loc,
+                "alt_en": alt_en,
+                "alt_pt": alt_pt,
+                "priority": priority,
+                "lastmod": lastmod,
+            })
     return render(
         request,
         "seo/sitemap.xml",

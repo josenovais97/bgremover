@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{% comment %}Every page exists in English (at the root) and Portuguese (under /pt/), so each
+one is listed once per language, and each entry declares the full set of xhtml:link
+alternates. Google requires the alternates on BOTH entries — a page that only names its
+siblings from one side is treated as unlinked.{% endcomment %}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 {% for url in urls %}  <url>
     <loc>{{ url.loc }}</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="{{ url.alt_en }}"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="{{ url.alt_pt }}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="{{ url.alt_en }}"/>
     <lastmod>{{ url.lastmod }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>{{ url.priority }}</priority>

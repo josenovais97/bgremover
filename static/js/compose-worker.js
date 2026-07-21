@@ -134,6 +134,35 @@ function cropGeometry(iw, ih, crop) {
 }
 
 // Mirror of Card.compose()'s drawing pipeline (post-decode), on OffscreenCanvas.
+/**
+ * Crop a canvas down to the bounding box of its non-transparent pixels.
+ *
+ * Returns the original canvas when there is nothing to trim (or when the image
+ * is fully transparent, where a bounding box is meaningless). The alpha
+ * threshold ignores the near-zero fringe the segmentation model leaves around a
+ * subject, which would otherwise make "trim" a no-op on most cut-outs.
+ */
+function trimTransparent(canvas) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const { data } = canvas.getContext('2d').getImageData(0, 0, w, h);
+  let top = h; let left = w; let right = -1; let bottom = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3] <= 8) continue;
+      if (y < top) top = y;
+      if (y > bottom) bottom = y;
+      if (x < left) left = x;
+      if (x > right) right = x;
+    }
+  }
+  if (right < left || bottom < top) return canvas;              // nothing opaque
+  if (left === 0 && top === 0 && right === w - 1 && bottom === h - 1) return canvas;
+  const out = mk(right - left + 1, bottom - top + 1);
+  out.getContext('2d').drawImage(canvas, -left, -top);
+  return out;
+}
+
 function composeCanvas(p) {
   const { format, bg, crop, sticker, resize, maxDim } = p;
   const img = crop ? orientSource(p.src, crop.rot, crop.flipH, crop.flipV) : p.src;
@@ -142,15 +171,23 @@ function composeCanvas(p) {
   const geo = crop ? cropGeometry(iw, ih, crop) : { sx: 0, sy: 0, sw: iw, sh: ih, outW: iw, outH: ih };
   const shape = crop ? crop.shape : 'rect';
   const scale = maxDim ? Math.min(1, maxDim / Math.max(geo.outW, geo.outH)) : 1;
-  const CW = Math.max(1, Math.round(geo.outW * scale));
-  const CH = Math.max(1, Math.round(geo.outH * scale));
+  let CW = Math.max(1, Math.round(geo.outW * scale));
+  let CH = Math.max(1, Math.round(geo.outH * scale));
 
-  const content = mk(CW, CH);
+  let content = mk(CW, CH);
   const cc = content.getContext('2d');
   cc.save();
   applyShapeClip(cc, shape, CW, CH);
   cc.drawImage(img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, CW, CH);
   cc.restore();
+
+  // Trim runs on the bare cut-out, before any background/outline/padding, so
+  // everything downstream hugs the subject instead of the original frame.
+  if (p.trim) {
+    content = trimTransparent(content);
+    CW = content.width;
+    CH = content.height;
+  }
 
   let sprite = content;
   if (bg) {

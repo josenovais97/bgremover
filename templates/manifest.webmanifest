@@ -1,7 +1,7 @@
 {% load static %}{
-  "name": "ClearBG — Free Background Remover & Image Converter",
+  "name": "ClearBG — Free Background Remover & Image Toolkit",
   "short_name": "ClearBG",
-  "description": "Remove image backgrounds and convert formats for free, privately, in your browser.",
+  "description": "Remove image backgrounds, convert, compress and resize photos for free — privately, in your browser.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,7 +9,14 @@
   "theme_color": "#4F46E5",
   "categories": ["photo", "graphics", "utilities"],
   "icons": [
-    { "src": "{% static 'img/icon-192.png' %}", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "{% static 'img/icon-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "{% static 'img/icon-192.png' %}", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'img/icon-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "{% static 'img/icon-maskable-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Remove background", "short_name": "Remove BG", "url": "/" },
+    { "name": "Compress an image", "short_name": "Compress", "url": "{% url 'remover:compress' %}" },
+    { "name": "Convert an image", "short_name": "Convert", "url": "{% url 'remover:convert' %}" },
+    { "name": "Resize an image", "short_name": "Resize", "url": "{% url 'remover:resize' %}" }
   ]
 }

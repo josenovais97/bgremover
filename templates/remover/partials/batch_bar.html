@@ -1,0 +1,18 @@
+{% load i18n_extras %}{% comment %}
+Batch bar for the single-image tools whose settings are image-independent
+(resize, watermark, EXIF): the first file stays the one you see and adjust, and
+the same settings are applied to the rest on export.
+
+Hidden until a second file is queued, so the single-image flow is untouched.
+Requires: window.CBG (kit.js) and a tool that wires [data-batch-zip].
+{% endcomment %}
+<div data-batch class="hidden glass rounded-2xl border border-primary/40 bg-primary/5 p-4 space-y-3 text-xs">
+    <p class="flex items-center gap-2 font-medium text-gray-700 dark:text-gray-200">
+        <i class="fa-solid fa-layer-group text-primaryText" aria-hidden="true"></i>
+        <span><b data-batch-count>0</b> {% t "images queued" %}</span>
+    </p>
+    <p class="text-gray-500 dark:text-gray-400 leading-snug">{{ note }}</p>
+    <button type="button" data-batch-zip class="w-full px-4 py-2.5 rounded-xl text-white font-semibold shadow bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60">
+        <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i><span data-batch-label>{% t "Download all (ZIP)" %}</span>
+    </button>
+</div>
