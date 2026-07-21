@@ -174,6 +174,41 @@ function containInto(src, tw, th, format) {
   return t;
 }
 
+/**
+ * Crop a canvas down to the bounding box of its non-transparent pixels.
+ *
+ * Returns the original canvas when there is nothing to trim (or when it is fully
+ * transparent, where a bounding box is meaningless). The alpha threshold ignores
+ * the near-zero fringe the segmentation model leaves around a subject, which
+ * would otherwise make "trim" a no-op on most cut-outs.
+ *
+ * Mirrored in compose-worker.js — the worker can't import from here (Django's
+ * static storage doesn't rewrite ES-module paths), so the two stay in step by
+ * hand, exactly like cropGeometry() and applyShapeClip().
+ */
+function trimTransparent(canvas) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const { data } = canvas.getContext('2d').getImageData(0, 0, w, h);
+  let top = h; let left = w; let right = -1; let bottom = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3] <= 8) continue;
+      if (y < top) top = y;
+      if (y > bottom) bottom = y;
+      if (x < left) left = x;
+      if (x > right) right = x;
+    }
+  }
+  if (right < left || bottom < top) return canvas;              // nothing opaque
+  if (left === 0 && top === 0 && right === w - 1 && bottom === h - 1) return canvas;
+  const out = document.createElement('canvas');
+  out.width = right - left + 1;
+  out.height = bottom - top + 1;
+  out.getContext('2d').drawImage(canvas, -left, -top);
+  return out;
+}
+
 /** Return a copy of a canvas recoloured to a solid tint, keeping its alpha. */
 function tintCanvas(src, color) {
   const c = document.createElement('canvas');
@@ -1196,7 +1231,7 @@ const ComposeWorker = {
     return w;
   },
 
-  async run(card, { format, bg, crop, sticker, resize }) {
+  async run(card, { format, bg, crop, sticker, resize, trim }) {
     const srcBlob = crop && crop.source === 'original' ? card.file : card.processedBlob;
     if (!srcBlob) throw new Error('no source to compose');
     const src = await createImageBitmap(srcBlob);
@@ -1210,7 +1245,7 @@ const ComposeWorker = {
     const worker = this.ensure();
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
-      worker.postMessage({ id, format, quality, bg, crop, sticker, resize, maxDim: 0, src, blur, image }, transfer);
+      worker.postMessage({ id, format, quality, bg, crop, sticker, resize, trim, maxDim: 0, src, blur, image }, transfer);
     });
   },
 };
@@ -1228,6 +1263,7 @@ class Card {
     this.bg = null; // null = transparent
     this.format = 'image/png';
     this.cropState = null; // null = no crop; else { key, aspect, shape, z, u, v, source }
+    this.trim = false; // crop the export down to the subject's alpha bounding box
     this.sticker = null; // null = no effects; else { pad, outline, outlineW, outlineColor, shadow }
     this.exportSize = null; // null = keep composed size; else { w, h, label }
     this.previewUrl = null; // object URL for the composed (cropped) preview, if any
@@ -1363,6 +1399,13 @@ class Card {
         this.setBackgroundSpec({ type: 'image', url: btn.dataset.bgFull, preset: btn.dataset.bgSlug })),
     );
 
+    // Quick presets — the four backgrounds most people want, above the dense
+    // controls. Each just drives the same setter the detailed control does, so
+    // there is no second source of truth for what a background is.
+    $$('.bg-quick', this.el).forEach((btn) =>
+      btn.addEventListener('click', () => this.applyQuickPreset(btn.dataset.quick)),
+    );
+
     // Output format — likewise remembered.
     $$('.format-btn', this.el).forEach((btn) =>
       btn.addEventListener('click', () => {
@@ -1390,6 +1433,11 @@ class Card {
     $$('.fx-outline, .fx-shadow, .fx-outline-c', this.el).forEach((c) =>
       c.addEventListener('change', () => this.setSticker()),
     );
+    this.el.querySelector('.fx-trim').addEventListener('change', (e) => {
+      this.trim = e.target.checked;
+      this.refreshPreview();
+      this.recordHistory();
+    });
     const onSticker = rafThrottle(() => this.setSticker());
     $$('.fx-pad, .fx-outline-w', this.el).forEach((c) =>
       c.addEventListener('input', onSticker),
@@ -1569,6 +1617,8 @@ class Card {
       this.el.querySelector('.fx-outline-w').value = st.outlineW;
       this.setColorInput('.fx-outline-c', st.outlineColor);
     }
+    this.el.querySelector('.fx-trim').checked = !!src.trim;
+    this.trim = !!src.trim;
     this.setSticker();
   }
 
@@ -1585,6 +1635,7 @@ class Card {
       cropState: clone(this.cropState),
       sticker: clone(this.sticker),
       exportSize: clone(this.exportSize),
+      trim: this.trim,
       format: this.format,
     };
   }
@@ -1674,6 +1725,21 @@ class Card {
     this.setBackgroundSpec({ type: 'blur', amount: parseFloat(this.el.querySelector('.bg-blur-amt').value) });
   }
 
+  /** One-tap background preset: 'transparent' | 'white' | 'studio' | 'blur'. */
+  applyQuickPreset(key) {
+    if (key === 'transparent' || key === 'white') {
+      const value = key === 'white' ? '#ffffff' : 'transparent';
+      this.setBackground(value);
+      Prefs.set('bg', value);
+      return;
+    }
+    if (key === 'blur') { this.applyBlur(); return; }
+    // 'studio' maps to the bundled soft-white backdrop — the same button the
+    // preset grid renders, so the thumbnail and the quick preset stay in sync.
+    const btn = this.el.querySelector('.bg-preset[data-bg-slug="soft-white"]');
+    if (btn) this.setBackgroundSpec({ type: 'image', url: btn.dataset.bgFull, preset: btn.dataset.bgSlug });
+  }
+
   applyImageBg(file) {
     if (!file) return;
     if (this._bgImageUrl) URL.revokeObjectURL(this._bgImageUrl);
@@ -1709,6 +1775,14 @@ class Card {
       b.classList.toggle('ring-2', active);
       b.classList.toggle('ring-primary', active);
     });
+    // Quick presets mirror whichever detailed control they map to, so choosing a
+    // background any other way still lights the matching quick button.
+    const quickKey = bg === null ? 'transparent'
+      : bg === '#ffffff' ? 'white'
+      : activePreset === 'soft-white' ? 'studio'
+      : bg && typeof bg === 'object' && bg.type === 'blur' ? 'blur'
+      : null;
+    $$('.bg-quick', this.el).forEach((b) => b.toggleAttribute('data-active', b.dataset.quick === quickKey));
   }
 
   /** Choose an export size ({w,h,label}) or null to keep the composed size. */
@@ -1812,7 +1886,9 @@ class Card {
       this.previewUrl = null;
     }
 
-    if (!this.cropState && !this.sticker && cssBg) {
+    // `trim` changes the composed bounds, so it always needs a real composite —
+    // a CSS background behind the untrimmed PNG would show the old margins.
+    if (!this.cropState && !this.sticker && !this.trim && cssBg) {
       processed.src = this.processedUrl;
       processedSplit.src = this.processedUrl;
       for (const surface of surfaces) this.paintSurface(surface);
@@ -1865,7 +1941,7 @@ class Card {
    *  photo) never runs on every colour/slider change; downloads omit it. */
   async compose(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker, resize = this.exportSize, maxDim = 0) {
     // Fast path: unmodified, uncropped, un-styled transparent PNG keeps the bytes.
-    if (!bg && format === 'image/png' && !crop && !sticker && !resize) return this.processedBlob;
+    if (!bg && format === 'image/png' && !crop && !sticker && !resize && !this.trim) return this.processedBlob;
 
     // A crop can target the original image (background intact) or the cut-out.
     const srcUrl = crop && crop.source === 'original' ? this.originalUrl : this.processedUrl;
@@ -1883,11 +1959,11 @@ class Card {
     // Downscale the working canvas for previews (sticker metrics are fractions of
     // the shorter side, so they scale with it automatically and stay accurate).
     const scale = maxDim ? Math.min(1, maxDim / Math.max(geo.outW, geo.outH)) : 1;
-    const CW = Math.max(1, Math.round(geo.outW * scale));
-    const CH = Math.max(1, Math.round(geo.outH * scale));
+    let CW = Math.max(1, Math.round(geo.outW * scale));
+    let CH = Math.max(1, Math.round(geo.outH * scale));
 
     // 1. Content sprite: the cropped, shape-masked subject.
-    const content = document.createElement('canvas');
+    let content = document.createElement('canvas');
     content.width = CW;
     content.height = CH;
     const cc = content.getContext('2d');
@@ -1895,6 +1971,14 @@ class Card {
     applyShapeClip(cc, shape, CW, CH);
     cc.drawImage(img, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, CW, CH);
     cc.restore();
+
+    // 1b. Optional trim to the subject's alpha bounding box — before any
+    //     background/outline/padding, so those hug the subject, not the frame.
+    if (this.trim) {
+      content = trimTransparent(content);
+      CW = content.width;
+      CH = content.height;
+    }
 
     // 2. Sprite = the subject, or the subject over its background (painted within
     //    the shape). Sticker outline/shadow trace the sprite's alpha, so a filled
@@ -1967,9 +2051,9 @@ class Card {
    *  downloads/copy so large exports don't freeze the tab. */
   async exportBlob(format = this.format, bg = this.bg, crop = this.cropState, sticker = this.sticker, resize = this.exportSize) {
     // Fast path mirrors compose(): an untouched transparent PNG keeps its bytes.
-    if (!bg && format === 'image/png' && !crop && !sticker && !resize) return this.processedBlob;
+    if (!bg && format === 'image/png' && !crop && !sticker && !resize && !this.trim) return this.processedBlob;
     if (ComposeWorker.available()) {
-      try { return await ComposeWorker.run(this, { format, bg, crop, sticker, resize }); }
+      try { return await ComposeWorker.run(this, { format, bg, crop, sticker, resize, trim: this.trim }); }
       catch (err) { console.warn('[bg-remover] worker export failed, using main thread:', err); }
     }
     return this.compose(format, bg, crop, sticker, resize, 0);

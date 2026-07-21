@@ -6,31 +6,16 @@
  * JPEGs are cleaned losslessly — we drop the APPn/COM marker segments and keep
  * the compressed image data byte-for-byte, so there's zero quality loss.
  * Nothing is uploaded.
+ *
+ * Batch: stripping metadata needs no per-photo decisions, so extra files are
+ * queued and cleaned together into a ZIP. Only the first one is inspected on
+ * screen — the rest are cleaned with the same lossless path.
+ *
+ * Shared helpers come from window.CBG (static/js/kit.js).
  */
 import exifr from 'https://cdn.jsdelivr.net/npm/exifr@7.1.3/+esm';
 
-const $ = (s, r = document) => r.querySelector(s);
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
-
-const humanSize = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1048576).toFixed(1)} MB`);
+const { $, Toast, loadImage, dropzone, zipDownload, baseName } = window.CBG;
 
 // Losslessly strip a JPEG's metadata: keep every marker segment except the
 // APPn (0xE0–0xEF, where EXIF/JFIF/XMP live) and COM (0xFE) blocks, and copy
@@ -60,10 +45,6 @@ function stripJpeg(buffer) {
   return out;
 }
 
-const loadImage = (src) => new Promise((resolve, reject) => {
-  const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src;
-});
-
 // EXIF Orientation says how a viewer must ROTATE the stored pixels, not whether
 // the photo is landscape or portrait — the spec's own label for value 1 is
 // "Horizontal (normal)", which reads as a shape claim and confuses everyone.
@@ -88,10 +69,13 @@ const NOTABLE = {
   Orientation: 'Orientation', Artist: 'Author', Copyright: 'Copyright',
 };
 
+const { humanSize } = window.CBG;
+
 const App = {
   file: null,
   buffer: null,
   meta: null,
+  queue: [],      // extra files cleaned with the same (lossless) path
 
   init() {
     this.dropzone = $('#ex-dropzone');
@@ -99,26 +83,18 @@ const App = {
     this.hero = this.dropzone.closest('section');
     this.input = $('#ex-input');
     this.editor = $('#ex-editor');
+    this.batch = $('[data-batch]');
 
-    const open = () => this.input.click();
-    $('#ex-browse').addEventListener('click', (e) => { e.stopPropagation(); open(); });
-    this.dropzone.addEventListener('click', open);
-    this.dropzone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-    this.input.addEventListener('change', (e) => this.load(e.target.files[0]));
-
-    const icon = $('#ex-icon');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((evt) =>
-      this.dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }));
-    ['dragenter', 'dragover'].forEach((evt) => this.dropzone.addEventListener(evt, () => { this.dropzone.classList.add('border-primary', 'bg-primary/5'); icon.classList.add('scale-110'); }));
-    ['dragleave', 'drop'].forEach((evt) => this.dropzone.addEventListener(evt, () => { this.dropzone.classList.remove('border-primary', 'bg-primary/5'); icon.classList.remove('scale-110'); }));
-    this.dropzone.addEventListener('drop', (e) => this.load(e.dataTransfer.files[0]));
-    document.addEventListener('paste', (e) => {
-      const f = [...(e.clipboardData?.items || [])].find((i) => i.kind === 'file');
-      if (f) this.load(f.getAsFile());
+    dropzone(this.dropzone, {
+      input: this.input,
+      icon: $('#ex-icon'),
+      browse: $('#ex-browse'),
+      onFiles: (files) => this.load(files),
     });
 
     $('#ex-download').addEventListener('click', () => this.download());
     $('#ex-new').addEventListener('click', () => this.reset());
+    $('[data-batch-zip]').addEventListener('click', () => this.downloadAll());
 
     const sample = $('#ex-sample');
     if (sample) sample.addEventListener('click', (e) => { e.stopPropagation(); this.loadSample(sample.dataset.src); });
@@ -129,7 +105,7 @@ const App = {
     try {
       const res = await fetch(src);
       const blob = await res.blob();
-      await this.load(new File([blob], 'zebra-sample.jpg', { type: 'image/jpeg' }));
+      await this.load([new File([blob], 'zebra-sample.jpg', { type: 'image/jpeg' })]);
     } catch {
       Toast.show('Could not load the sample', 'error');
     }
@@ -153,18 +129,25 @@ const App = {
     return String(v).slice(0, 120);
   },
 
-  async load(file) {
-    this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
-    this.file = file;
-    this.buffer = await file.arrayBuffer();
+  async load(files) {
+    const [first, ...rest] = files;
+    this.file = first;
+    this.queue = rest;
+    this.buffer = await first.arrayBuffer();
     if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
-    this.previewUrl = URL.createObjectURL(file);
+    this.previewUrl = URL.createObjectURL(first);
     $('#ex-preview').src = this.previewUrl;
-    try { this.meta = await exifr.parse(file, true); } catch { this.meta = null; }
+    try { this.meta = await exifr.parse(first, true); } catch { this.meta = null; }
     this.render();
     this.hero.classList.add('hidden');
     this.editor.classList.remove('hidden');
+    this.syncBatch();
+  },
+
+  syncBatch() {
+    const n = this.queue.length + 1;
+    this.batch.classList.toggle('hidden', n < 2);
+    this.batch.querySelector('[data-batch-count]').textContent = n;
   },
 
   render() {
@@ -202,33 +185,58 @@ const App = {
     }
   },
 
-  async cleanBlob() {
+  /** Strip metadata from `file` and return {blob, ext} — lossless for JPEG. */
+  async cleanBlob(file = this.file, buffer = this.buffer, previewUrl = this.previewUrl) {
+    if (!buffer) buffer = await file.arrayBuffer();
     // Lossless path for JPEG; re-encode via canvas otherwise (PNG stays lossless).
-    const isJpeg = this.file.type === 'image/jpeg' || new DataView(this.buffer).getUint16(0) === 0xFFD8;
+    const isJpeg = file.type === 'image/jpeg' || new DataView(buffer).getUint16(0) === 0xFFD8;
     if (isJpeg) {
-      const bytes = stripJpeg(this.buffer);
+      const bytes = stripJpeg(buffer);
       if (bytes) return { blob: new Blob([bytes], { type: 'image/jpeg' }), ext: 'jpg' };
     }
-    const img = await loadImage(this.previewUrl);
-    const c = document.createElement('canvas');
-    c.width = img.naturalWidth; c.height = img.naturalHeight;
-    c.getContext('2d').drawImage(img, 0, 0);
-    const type = this.file.type === 'image/webp' ? 'image/webp' : 'image/png';
-    const ext = type === 'image/webp' ? 'webp' : 'png';
-    const blob = await new Promise((res) => c.toBlob(res, type, 0.95));
-    return { blob, ext };
+    const url = previewUrl || URL.createObjectURL(file);
+    try {
+      const img = await loadImage(url);
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      const type = file.type === 'image/webp' ? 'image/webp' : 'image/png';
+      const ext = type === 'image/webp' ? 'webp' : 'png';
+      const blob = await new Promise((res) => c.toBlob(res, type, 0.95));
+      return { blob, ext };
+    } finally {
+      if (url !== previewUrl) URL.revokeObjectURL(url);
+    }
   },
 
   async download() {
     if (!this.file) return;
     const { blob, ext } = await this.cleanBlob();
     if (!blob) { Toast.show('Export failed', 'error'); return; }
-    const base = this.file.name.replace(/\.[^.]+$/, '');
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `${base}-clean.${ext}`;
-    document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
+    window.CBG.download(blob, `${baseName(this.file.name)}-clean.${ext}`);
     $('#ex-filemeta').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Clean copy saved · ${humanSize(blob.size)} · no metadata`;
+  },
+
+  async downloadAll() {
+    const btn = $('[data-batch-zip]');
+    const label = btn.querySelector('[data-batch-label]');
+    const original = label.textContent;
+    btn.disabled = true;
+    label.textContent = 'Cleaning…';
+    try {
+      const first = await this.cleanBlob();
+      const entries = [{ name: `${baseName(this.file.name)}-clean.${first.ext}`, blob: first.blob }];
+      for (const f of this.queue) {
+        const { blob, ext } = await this.cleanBlob(f, null, null);
+        if (blob) entries.push({ name: `${baseName(f.name)}-clean.${ext}`, blob });
+      }
+      await zipDownload(entries, 'clearbg-metadata-removed.zip');
+    } catch {
+      Toast.show('Could not build the ZIP', 'error');
+    } finally {
+      btn.disabled = false;
+      label.textContent = original;
+    }
   },
 
   reset() {
@@ -236,6 +244,8 @@ const App = {
     this.hero.classList.remove('hidden');
     if (this.previewUrl) { URL.revokeObjectURL(this.previewUrl); this.previewUrl = null; }
     this.file = this.buffer = this.meta = null;
+    this.queue = [];
+    this.syncBatch();
   },
 };
 

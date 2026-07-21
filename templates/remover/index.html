@@ -33,13 +33,8 @@
                         </span>
                     </span>
                 </div>
-                <div class="animate-fade-in-up">
-                    <a href="https://www.producthunt.com/products/clearbg-2/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-clearbg&#0045;2" target="_blank" rel="noopener noreferrer"
-                       class="inline-block rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                       aria-label="Review ClearBG on Product Hunt (opens in a new tab)">
-                        <img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1265851&theme=light" alt="ClearBG on Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" loading="lazy" />
-                    </a>
-                </div>
+                {# The Product Hunt badge lives in the footer only — a second copy here sat
+                   directly under the primary CTA and competed with it for the first click. #}
             </div>
 
             <div class="max-w-5xl mx-auto space-y-6">
@@ -105,21 +100,26 @@
             </div>
         </section>
 
+        {% comment %}The tool grid sits directly under the hero: this page is the entry point
+        to an 18-tool kit, and burying the grid below the explainer made the kit invisible to
+        anyone who didn't scroll past it.{% endcomment %}
+        {% include 'remover/partials/tool_grid.html' with exclude='index' %}
+
         <!-- How it works (compact) -->
         <section aria-labelledby="how-title" class="max-w-4xl mx-auto">
-            <h2 id="how-title" class="sr-only">How it works</h2>
+            <h2 id="how-title" class="sr-only">{% t "How it works" %}</h2>
             <ol class="grid gap-3 sm:grid-cols-3 text-sm">
                 <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
                     <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-upload" aria-hidden="true"></i></span>
-                    <span><b class="font-semibold">Add</b> an image — drag, browse or paste</span>
+                    <span><b class="font-semibold">{% t "Add" %}</b> {% t "an image — drag, browse or paste" %}</span>
                 </li>
                 <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
                     <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></span>
-                    <span><b class="font-semibold">AI removes</b> the background on your device</span>
+                    <span><b class="font-semibold">{% t "AI removes" %}</b> {% t "the background on your device" %}</span>
                 </li>
                 <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
                     <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-download" aria-hidden="true"></i></span>
-                    <span><b class="font-semibold">Download</b> a transparent PNG, full quality</span>
+                    <span><b class="font-semibold">{% t "Download" %}</b> {% t "a transparent PNG, full quality" %}</span>
                 </li>
             </ol>
             <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
@@ -128,28 +128,26 @@
             </p>
         </section>
 
-        {% include 'remover/partials/tool_grid.html' with exclude='index' %}
-
         {% include 'remover/partials/faq.html' %}
     </div>
 
     <!-- ========================= WORKSPACE ========================= -->
-    <section id="workspace" class="hidden space-y-6" aria-label="Your results">
+    <section id="workspace" class="hidden space-y-6" aria-label="{% t 'Your results' %}">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div id="stats-bar" class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 dark:text-gray-300">
-                <span><i class="fa-solid fa-images text-primaryText mr-1.5" aria-hidden="true"></i><b id="stat-count">0</b> processed</span>
-                <span><i class="fa-solid fa-clock text-primaryText mr-1.5" aria-hidden="true"></i>avg <b id="stat-avg">0.0</b>s</span>
-                <span><i class="fa-solid fa-database text-primaryText mr-1.5" aria-hidden="true"></i>saved <b id="stat-saved">0</b> images total</span>
+                <span><i class="fa-solid fa-images text-primaryText mr-1.5" aria-hidden="true"></i><b id="stat-count">0</b> {% t "processed" %}</span>
+                <span><i class="fa-solid fa-clock text-primaryText mr-1.5" aria-hidden="true"></i>{% t "avg" %} <b id="stat-avg">0.0</b>s</span>
+                <span><i class="fa-solid fa-database text-primaryText mr-1.5" aria-hidden="true"></i>{% t "saved" %} <b id="stat-saved">0</b> {% t "images total" %}</span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <button id="download-all-btn" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>Download all (ZIP)
+                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>{% t "Download all (ZIP)" %}
                 </button>
                 <button id="add-more-btn" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>Add more
+                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>{% t "Add more" %}
                 </button>
                 <button id="clear-all-btn" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>Clear
+                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>{% t "Clear" %}
                 </button>
             </div>
         </div>
@@ -160,9 +158,9 @@
     <section id="history-section" class="hidden max-w-5xl mx-auto space-y-4">
         <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold flex items-center gap-2">
-                <i class="fa-solid fa-clock-rotate-left text-primaryText" aria-hidden="true"></i>Recent this session
+                <i class="fa-solid fa-clock-rotate-left text-primaryText" aria-hidden="true"></i>{% t "Recent this session" %}
             </h2>
-            <button id="clear-history-btn" type="button" class="text-sm text-gray-500 hover:text-red-500 transition-colors">Clear history</button>
+            <button id="clear-history-btn" type="button" class="text-sm text-gray-500 hover:text-red-500 transition-colors">{% t "Clear history" %}</button>
         </div>
         <div id="history-strip" class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin"></div>
     </section>
@@ -182,18 +180,18 @@
                         <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
                     </div>
                 </div>
-                <span class="absolute top-2 left-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">Before</span>
-                <span class="absolute top-2 right-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">After</span>
+                <span class="absolute top-2 left-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">{% t "Before" %}</span>
+                <span class="absolute top-2 right-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">{% t "After" %}</span>
             </div>
             <!-- Side-by-side view -->
             <div class="view-split hidden absolute inset-0 grid grid-cols-2">
                 <div class="relative border-r border-white/40">
                     <img class="original-img-split w-full h-full object-contain" alt="Original image" draggable="false">
-                    <span class="absolute top-2 left-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 text-white">Original</span>
+                    <span class="absolute top-2 left-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-black/60 text-white">{% t "Original" %}</span>
                 </div>
                 <div class="split-bg relative checkerboard">
                     <img class="processed-img-split w-full h-full object-contain zoomable" alt="Result" draggable="false">
-                    <span class="absolute top-2 right-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/90 text-white">Result</span>
+                    <span class="absolute top-2 right-2 text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/90 text-white">{% t "Result" %}</span>
                 </div>
             </div>
 
@@ -203,7 +201,7 @@
                     <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
                     <div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 </div>
-                <p class="progress-label text-sm font-medium">Removing background…</p>
+                <p class="progress-label text-sm font-medium">{% t "Removing background…" %}</p>
                 <div class="w-40 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div class="progress-bar h-full bg-primary transition-all duration-200" style="width: 0%"></div>
                 </div>
@@ -219,8 +217,8 @@
             <!-- Error overlay -->
             <div class="error-overlay hidden absolute inset-0 glass backdrop-blur-md flex flex-col items-center justify-center gap-2 text-center px-6">
                 <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500" aria-hidden="true"></i>
-                <p class="error-msg text-sm font-medium text-red-600 dark:text-red-400">Something went wrong.</p>
-                <button type="button" class="retry-btn mt-1 text-sm text-primaryText hover:underline">Try again</button>
+                <p class="error-msg text-sm font-medium text-red-600 dark:text-red-400">{% t "Something went wrong." %}</p>
+                <button type="button" class="retry-btn mt-1 text-sm text-primaryText hover:underline">{% t "Try again" %}</button>
             </div>
         </div>
 
@@ -228,15 +226,35 @@
         <div class="options-panel hidden mx-3 sm:mx-4 mb-1 rounded-2xl bg-gray-50/70 dark:bg-white/[0.03] border border-gray-200/70 dark:border-white/10 p-4 sm:p-5 space-y-4">
             <!-- Tabbed sections keep this dense panel scannable (esp. on mobile). -->
             <div class="opt-tabs seg" role="tablist" aria-label="Style options">
-                <button type="button" class="opt-tab seg-btn bg-primary text-white" data-tab="background">Background</button>
-                <button type="button" class="opt-tab seg-btn" data-tab="size">Size &amp; format</button>
-                <button type="button" class="opt-tab seg-btn" data-tab="effects">Effects</button>
+                <button type="button" class="opt-tab seg-btn bg-primary text-white" data-tab="background">{% t "Background" %}</button>
+                <button type="button" class="opt-tab seg-btn" data-tab="size">{% t "Size & format" %}</button>
+                <button type="button" class="opt-tab seg-btn" data-tab="effects">{% t "Effects" %}</button>
             </div>
 
             <div class="opt-tabpanel space-y-5" data-tabpanel="background">
+            <!-- Quick presets. The four backgrounds people actually want, one tap away,
+                 so the common case never requires reading the dense controls below. -->
+            <div class="space-y-2.5">
+                <span class="opt-label">{% t "Quick presets" %}</span>
+                <div class="grid grid-cols-4 gap-2">
+                    <button type="button" class="bg-quick quick-btn" data-quick="transparent">
+                        <span class="quick-chip checkerboard" aria-hidden="true"></span>{% t "Transparent" %}
+                    </button>
+                    <button type="button" class="bg-quick quick-btn" data-quick="white">
+                        <span class="quick-chip bg-white ring-1 ring-gray-300" aria-hidden="true"></span>{% t "White" %}
+                    </button>
+                    <button type="button" class="bg-quick quick-btn" data-quick="studio">
+                        <span class="quick-chip bg-gradient-to-br from-gray-100 to-gray-300" aria-hidden="true"></span>{% t "Studio" %}
+                    </button>
+                    <button type="button" class="bg-quick quick-btn" data-quick="blur">
+                        <span class="quick-chip bg-gradient-to-br from-sky-200 to-indigo-300 blur-[1px]" aria-hidden="true"></span>{% t "Blur photo" %}
+                    </button>
+                </div>
+            </div>
+
             <!-- Background color -->
             <div class="space-y-2.5">
-                <span class="opt-label">Background</span>
+                <span class="opt-label">{% t "Background" %}</span>
                 <div class="flex items-center gap-2.5 flex-wrap">
                     <button type="button" data-bg="transparent" class="swatch w-7 h-7 rounded-full checkerboard shadow-sm ring-offset-white dark:ring-offset-gray-900 ring-2 ring-primary ring-offset-1" aria-label="Transparent background" title="Transparent"></button>
                     <button type="button" data-bg="#ffffff" class="swatch w-7 h-7 rounded-full bg-white shadow-sm ring-1 ring-gray-300 ring-offset-white dark:ring-offset-gray-900" aria-label="White background" title="White"></button>
@@ -254,10 +272,10 @@
                  Each style sits on its own row with its controls attached, so it
                  reads as one unit instead of a wrapped jumble of chips + sliders. -->
             <div class="space-y-2.5">
-                <span class="opt-label">Fill style</span>
+                <span class="opt-label">{% t "Fill style" %}</span>
                 <div class="space-y-1.5">
                     <div class="flex items-center gap-2 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/70 dark:border-white/10 p-1.5">
-                        <button type="button" class="bg-style chip bg-grad-btn" data-style="gradient"><i class="fa-solid fa-swatchbook" aria-hidden="true"></i>Gradient</button>
+                        <button type="button" class="bg-style chip bg-grad-btn" data-style="gradient"><i class="fa-solid fa-swatchbook" aria-hidden="true"></i>{% t "Gradient" %}</button>
                         <div class="flex items-center gap-1.5 ml-auto">
                             <input type="color" value="#4F46E5" class="bg-grad-a color-chip" aria-label="Gradient color 1" title="Gradient color 1">
                             <input type="color" value="#EC4899" class="bg-grad-b color-chip" aria-label="Gradient color 2" title="Gradient color 2">
@@ -265,21 +283,21 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/70 dark:border-white/10 p-1.5">
-                        <button type="button" class="bg-style chip bg-blur-btn" data-style="blur"><i class="fa-solid fa-droplet" aria-hidden="true"></i>Blur photo</button>
+                        <button type="button" class="bg-style chip bg-blur-btn" data-style="blur"><i class="fa-solid fa-droplet" aria-hidden="true"></i>{% t "Blur photo" %}</button>
                         <input type="range" class="bg-blur-amt slider w-24 ml-auto" min="0.01" max="0.12" step="0.01" value="0.05" aria-label="Blur amount" title="Blur amount">
                     </div>
                     <div class="flex items-center gap-2 rounded-xl bg-white/60 dark:bg-white/[0.04] border border-gray-200/70 dark:border-white/10 p-1.5">
-                        <label class="bg-style chip bg-image-btn cursor-pointer" data-style="image"><i class="fa-solid fa-image" aria-hidden="true"></i>Image
+                        <label class="bg-style chip bg-image-btn cursor-pointer" data-style="image"><i class="fa-solid fa-image" aria-hidden="true"></i>{% t "Image" %}
                             <input type="file" accept="image/*" class="bg-image-input hidden" aria-label="Upload background image">
                         </label>
-                        <span class="ml-auto text-[11px] text-gray-400 dark:text-gray-500 pr-1">Use your own photo</span>
+                        <span class="ml-auto text-[11px] text-gray-400 dark:text-gray-500 pr-1">{% t "Use your own photo" %}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Preset photo backgrounds (grouped by category) -->
             <div class="space-y-3">
-                <span class="opt-label">Photo backgrounds</span>
+                <span class="opt-label">{% t "Photo backgrounds" %}</span>
                 {% for g in background_groups %}
                 <div class="space-y-1.5">
                     <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{{ g.label }}</span>
@@ -300,7 +318,7 @@
             <!-- Format + export size -->
             <div class="grid sm:grid-cols-2 gap-5">
                 <div class="space-y-2.5">
-                    <span class="opt-label">Format</span>
+                    <span class="opt-label">{% t "Format" %}</span>
                     <div class="format-group seg">
                         <button type="button" data-format="image/png" class="format-btn seg-btn bg-primary text-white">PNG</button>
                         <button type="button" data-format="image/jpeg" class="format-btn seg-btn">JPG</button>
@@ -308,11 +326,11 @@
                     </div>
                 </div>
                 <div class="space-y-2.5">
-                    <span class="opt-label">Export size</span>
+                    <span class="opt-label">{% t "Export size" %}</span>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <button type="button" data-size="original" class="size-btn chip bg-primary text-white">Original</button>
-                        <button type="button" data-size="512x512" data-w="512" data-h="512" class="size-btn chip">Profile 512²</button>
-                        <button type="button" data-size="1080x1920" data-w="1080" data-h="1920" class="size-btn chip">Story 1080×1920</button>
+                        <button type="button" data-size="original" class="size-btn chip bg-primary text-white">{% t "Original" %}</button>
+                        <button type="button" data-size="512x512" data-w="512" data-h="512" class="size-btn chip">{% t "Profile" %} 512²</button>
+                        <button type="button" data-size="1080x1920" data-w="1080" data-h="1920" class="size-btn chip">{% t "Story" %} 1080×1920</button>
                         <span class="inline-flex items-center gap-1">
                             <input type="number" min="1" placeholder="W" class="size-custom-w num-input" aria-label="Custom export width">
                             <span class="text-gray-400 text-xs">×</span>
@@ -327,19 +345,22 @@
             <div class="opt-tabpanel space-y-5 hidden" data-tabpanel="effects">
             <!-- Sticker effects -->
             <div class="space-y-2.5">
-                <span class="opt-label">Sticker effects</span>
+                <span class="opt-label">{% t "Sticker effects" %}</span>
                 <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs font-medium text-gray-600 dark:text-gray-300">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" class="fx-outline accent-primary w-4 h-4 rounded"> Outline
+                        <input type="checkbox" class="fx-outline accent-primary w-4 h-4 rounded"> {% t "Outline" %}
                         <input type="color" value="#ffffff" class="fx-outline-c color-chip" aria-label="Outline color">
                         <input type="range" class="fx-outline-w slider w-16" min="0.02" max="0.14" step="0.01" value="0.05" aria-label="Outline width">
                     </label>
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" class="fx-shadow accent-primary w-4 h-4 rounded"> Drop shadow
+                        <input type="checkbox" class="fx-shadow accent-primary w-4 h-4 rounded"> {% t "Drop shadow" %}
                     </label>
                     <label class="inline-flex items-center gap-2">
-                        <span>Padding</span>
+                        <span>{% t "Padding" %}</span>
                         <input type="range" class="fx-pad slider w-24" min="0" max="0.25" step="0.01" value="0" aria-label="Padding">
+                    </label>
+                    <label class="inline-flex items-center gap-2 cursor-pointer" title="{% t 'Crop the export down to the subject, removing empty transparent margins' %}">
+                        <input type="checkbox" class="fx-trim accent-primary w-4 h-4 rounded"> {% t "Trim transparent edges" %}
                     </label>
                 </div>
             </div>
@@ -349,7 +370,7 @@
             <!-- Copy this card's background/format/size/sticker to every image. Shown only with 2+ cards. -->
             <div class="apply-all-wrap pt-4 border-t border-gray-200/70 dark:border-white/10 hidden">
                 <button type="button" class="apply-all-btn chip" aria-label="Apply this card's background, format, size and sticker options to all images">
-                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Apply these options to all images
+                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i> {% t "Apply these options to all images" %}
                 </button>
             </div>
         </div>
@@ -374,13 +395,13 @@
                     </button>
                 </div>
                 <button type="button" class="edit-btn btn-accent" aria-label="Refine edges — erase or restore">
-                    <i class="fa-solid fa-brush" aria-hidden="true"></i> Refine
+                    <i class="fa-solid fa-brush" aria-hidden="true"></i> {% t "Refine" %}
                 </button>
                 <button type="button" class="crop-btn btn-accent" aria-label="Crop to a shape — circle, square and more">
-                    <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Crop
+                    <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> {% t "Crop" %}
                 </button>
                 <button type="button" class="options-btn btn-ghost" aria-label="Instagram formats, background, effects and export options">
-                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> Style &amp; export
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i> {% t "Style & export" %}
                 </button>
 
                 <div class="flex items-center gap-2 ml-auto">
@@ -390,28 +411,28 @@
                              Awesome subset (static/css/fontawesome.css) — an out-of-subset
                              icon renders as a blank box, so only pick glyphs listed there. -->
                         <button type="button" class="more-btn btn-ghost" aria-haspopup="true" aria-expanded="false" aria-label="More actions">
-                            More <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+                            {% t "More" %} <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
                         </button>
                         <div class="more-menu hidden absolute right-0 bottom-full mb-2 w-56 flex-col gap-0.5 p-1.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-xl z-30" role="menu">
                             <button type="button" class="copy-btn menu-item" role="menuitem">
-                                <i class="fa-regular fa-copy w-4 text-center text-gray-400" aria-hidden="true"></i> Copy result
+                                <i class="fa-regular fa-copy w-4 text-center text-gray-400" aria-hidden="true"></i> {% t "Copy result" %}
                             </button>
                             <button type="button" class="toggle-view-btn menu-item" role="menuitem" aria-label="Switch between slider and side-by-side view">
-                                <i class="fa-solid fa-table-columns w-4 text-center text-gray-400" aria-hidden="true"></i> <span class="view-label">Side-by-side</span>
+                                <i class="fa-solid fa-table-columns w-4 text-center text-gray-400" aria-hidden="true"></i> <span class="view-label">{% t "Side-by-side" %}</span>
                             </button>
                             <!-- Continue editing this cut-out in another tool, no re-upload (see handoff.js). -->
-                            <p class="px-2.5 pt-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Continue in</p>
-                            <a data-tool href="{% url 'remover:crop' %}" role="menuitem" class="menu-item"><i class="fa-solid fa-crop-simple w-4 text-center text-gray-400" aria-hidden="true"></i> Crop</a>
-                            <a data-tool href="{% url 'remover:sticker' %}" role="menuitem" class="menu-item"><i class="fa-solid fa-note-sticky w-4 text-center text-gray-400" aria-hidden="true"></i> Sticker</a>
-                            <a data-tool href="{% url 'remover:instagram' %}" role="menuitem" class="menu-item"><i class="fa-brands fa-instagram w-4 text-center text-gray-400" aria-hidden="true"></i> Instagram</a>
+                            <p class="px-2.5 pt-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "Continue in" %}</p>
+                            <a data-tool href="{% url 'remover:crop' %}" role="menuitem" class="menu-item"><i class="fa-solid fa-crop-simple w-4 text-center text-gray-400" aria-hidden="true"></i> {% t "Crop" %}</a>
+                            <a data-tool href="{% url 'remover:sticker' %}" role="menuitem" class="menu-item"><i class="fa-solid fa-note-sticky w-4 text-center text-gray-400" aria-hidden="true"></i> {% t "Sticker" %}</a>
+                            <a data-tool href="{% url 'remover:instagram' %}" role="menuitem" class="menu-item"><i class="fa-brands fa-instagram w-4 text-center text-gray-400" aria-hidden="true"></i> {% t "Instagram" %}</a>
                             <div class="my-1 border-t border-gray-200/70 dark:border-white/10" role="separator"></div>
                             <button type="button" class="remove-btn menu-item menu-item-danger" role="menuitem" aria-label="Remove this image">
-                                <i class="fa-solid fa-trash-can w-4 text-center" aria-hidden="true"></i> Remove
+                                <i class="fa-solid fa-trash-can w-4 text-center" aria-hidden="true"></i> {% t "Remove" %}
                             </button>
                         </div>
                     </div>
                     <button type="button" class="download-btn btn-primary" aria-label="Download result">
-                        <i class="fa-solid fa-download" aria-hidden="true"></i> Download <span class="download-label">PNG</span>
+                        <i class="fa-solid fa-download" aria-hidden="true"></i> {% t "Download" %} <span class="download-label">PNG</span>
                     </button>
                 </div>
             </div>
@@ -420,14 +441,14 @@
 </template>
 
 <!-- ========================= REFINE EDITOR ========================= -->
-<div id="editor-modal" class="on-dark-surface hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Refine edges">
+<div id="editor-modal" class="on-dark-surface hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="{% t 'Refine edges' %}">
     <!-- Header -->
     <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/10 text-white shrink-0">
-        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-brush text-primaryText" aria-hidden="true"></i> Refine edges</div>
+        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-brush text-primaryText" aria-hidden="true"></i> {% t "Refine edges" %}</div>
         <div class="flex items-center gap-2">
-            <button id="editor-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>
+            <button id="editor-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{% t "Cancel" %}</button>
             <button id="editor-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>Apply
+                <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>{% t "Apply" %}
             </button>
         </div>
     </div>
@@ -436,23 +457,23 @@
         <!-- Toolbar -->
         <div class="order-2 lg:order-1 flex lg:flex-col flex-wrap items-center lg:items-stretch gap-5 p-4 bg-gray-900/70 text-white lg:w-64 shrink-0 overflow-auto">
             <div class="space-y-2">
-                <span class="text-xs uppercase tracking-wide text-gray-400">Tool</span>
+                <span class="text-xs uppercase tracking-wide text-gray-400">{% t "Tool" %}</span>
                 <div class="editor-tools grid grid-cols-3 rounded-lg overflow-hidden border border-white/20 text-sm">
-                    <button data-tool="restore" type="button" class="tool-btn px-2 py-2 bg-primary text-white"><i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>Restore</button>
-                    <button data-tool="erase" type="button" class="tool-btn px-2 py-2 hover:bg-white/10 border-x border-white/20"><i class="fa-solid fa-eraser mr-1" aria-hidden="true"></i>Erase</button>
-                    <button data-tool="move" type="button" class="tool-btn px-2 py-2 hover:bg-white/10"><i class="fa-solid fa-up-down-left-right mr-1" aria-hidden="true"></i>Move</button>
+                    <button data-tool="restore" type="button" class="tool-btn px-2 py-2 bg-primary text-white"><i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>{% t "Restore" %}</button>
+                    <button data-tool="erase" type="button" class="tool-btn px-2 py-2 hover:bg-white/10 border-x border-white/20"><i class="fa-solid fa-eraser mr-1" aria-hidden="true"></i>{% t "Erase" %}</button>
+                    <button data-tool="move" type="button" class="tool-btn px-2 py-2 hover:bg-white/10"><i class="fa-solid fa-up-down-left-right mr-1" aria-hidden="true"></i>{% t "Move" %}</button>
                 </div>
             </div>
             <div class="space-y-2 grow lg:grow-0">
-                <label for="brush-size" class="text-xs uppercase tracking-wide text-gray-400">Brush size</label>
+                <label for="brush-size" class="text-xs uppercase tracking-wide text-gray-400">{% t "Brush size" %}</label>
                 <input id="brush-size" type="range" min="10" max="200" value="45" class="w-full accent-primary">
             </div>
             <div class="space-y-2">
-                <label for="editor-smooth" class="text-xs uppercase tracking-wide text-gray-400">Smooth edges</label>
+                <label for="editor-smooth" class="text-xs uppercase tracking-wide text-gray-400">{% t "Smooth edges" %}</label>
                 <input id="editor-smooth" type="range" min="0" max="6" step="0.5" value="0" class="w-full accent-primary">
             </div>
             <div class="space-y-2">
-                <span class="text-xs uppercase tracking-wide text-gray-400">Zoom</span>
+                <span class="text-xs uppercase tracking-wide text-gray-400">{% t "Zoom" %}</span>
                 <div class="flex items-center gap-1">
                     <button id="editor-zoom-out" type="button" class="tip w-9 h-9 grid place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors" data-tooltip="Zoom out" aria-label="Zoom out"><i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i></button>
                     <span id="editor-zoom-level" class="text-sm tabular-nums w-14 text-center">100%</span>
@@ -461,13 +482,13 @@
                 </div>
             </div>
             <div class="flex lg:flex-col gap-2 w-full">
-                <button id="editor-undo" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>Undo</button>
-                <button id="editor-reset" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrows-rotate mr-1.5" aria-hidden="true"></i>Reset</button>
+                <button id="editor-undo" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "Undo" %}</button>
+                <button id="editor-reset" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrows-rotate mr-1.5" aria-hidden="true"></i>{% t "Reset" %}</button>
             </div>
             <p class="hidden lg:block text-xs text-gray-400 leading-relaxed">
-                <b class="text-gray-200">Restore</b> paints back the original; <b class="text-gray-200">Erase</b> wipes leftover background.
-                Scroll to zoom, or use the <b class="text-gray-200">Move</b> tool / hold <kbd class="px-1 rounded bg-white/10">Space</kbd> to pan.
-                Shortcuts: <kbd class="px-1 rounded bg-white/10">R</kbd>/<kbd class="px-1 rounded bg-white/10">E</kbd>/<kbd class="px-1 rounded bg-white/10">M</kbd>, <kbd class="px-1 rounded bg-white/10">[</kbd> <kbd class="px-1 rounded bg-white/10">]</kbd> size.
+                <b class="text-gray-200">{% t "Restore" %}</b> {% t "paints back the original;" %} <b class="text-gray-200">{% t "Erase" %}</b> {% t "wipes leftover background." %}
+                {% t "Scroll to zoom, or use the" %} <b class="text-gray-200">{% t "Move" %}</b> {% t "tool / hold" %} <kbd class="px-1 rounded bg-white/10">Space</kbd> {% t "to pan." %}
+                {% t "Shortcuts:" %} <kbd class="px-1 rounded bg-white/10">R</kbd>/<kbd class="px-1 rounded bg-white/10">E</kbd>/<kbd class="px-1 rounded bg-white/10">M</kbd>, <kbd class="px-1 rounded bg-white/10">[</kbd> <kbd class="px-1 rounded bg-white/10">]</kbd> {% t "size." %}
             </p>
         </div>
 
@@ -483,15 +504,15 @@
 </div>
 
 <!-- ============================ CROP DIALOG ============================ -->
-<div id="crop-modal" class="on-dark-surface hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="Crop image">
+<div id="crop-modal" class="on-dark-surface hidden fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-sm flex-col" role="dialog" aria-modal="true" aria-label="{% t 'Crop image' %}">
     <!-- Header -->
     <div class="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/10 text-white shrink-0">
-        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-crop-simple text-primaryText" aria-hidden="true"></i> Crop</div>
+        <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-crop-simple text-primaryText" aria-hidden="true"></i> {% t "Crop" %}</div>
         <div class="flex items-center gap-2">
-            <button id="crop-remove" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Remove crop</button>
-            <button id="crop-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Cancel</button>
+            <button id="crop-remove" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{% t "Remove crop" %}</button>
+            <button id="crop-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{% t "Cancel" %}</button>
             <button id="crop-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>Apply
+                <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>{% t "Apply" %}
             </button>
         </div>
     </div>
@@ -500,23 +521,23 @@
         <!-- Toolbar -->
         <div class="order-2 lg:order-1 flex lg:flex-col flex-wrap items-center lg:items-stretch gap-5 p-4 bg-gray-900/70 text-white lg:w-64 shrink-0 overflow-auto">
             <div class="space-y-2 w-full">
-                <span class="text-xs uppercase tracking-wide text-gray-400">Source</span>
+                <span class="text-xs uppercase tracking-wide text-gray-400">{% t "Source" %}</span>
                 <div class="grid grid-cols-2 gap-2 text-sm">
-                    <button data-source="original" type="button" class="crop-source px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-regular fa-image mr-1" aria-hidden="true"></i>Original</button>
-                    <button data-source="cutout" type="button" class="crop-source px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-scissors mr-1" aria-hidden="true"></i>Cut-out</button>
+                    <button data-source="original" type="button" class="crop-source px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-regular fa-image mr-1" aria-hidden="true"></i>{% t "Original" %}</button>
+                    <button data-source="cutout" type="button" class="crop-source px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-scissors mr-1" aria-hidden="true"></i>{% t "Cut-out" %}</button>
                 </div>
-                <p class="text-[11px] text-gray-500 leading-snug"><b class="text-gray-300">Original</b> keeps the background. <b class="text-gray-300">Cut-out</b> uses the removed-background result.</p>
+                <p class="text-[11px] text-gray-500 leading-snug"><b class="text-gray-300">{% t "Original" %}</b> {% t "keeps the background." %} <b class="text-gray-300">{% t "Cut-out" %}</b> {% t "uses the removed-background result." %}</p>
             </div>
             <div class="space-y-2 w-full">
-                <span class="text-xs uppercase tracking-wide text-gray-400">Shape</span>
+                <span class="text-xs uppercase tracking-wide text-gray-400">{% t "Shape" %}</span>
                 <div class="grid grid-cols-3 gap-2 text-sm">
-                    <button data-crop="circle" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-circle mr-1" aria-hidden="true"></i>Circle</button>
-                    <button data-crop="square" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-square mr-1" aria-hidden="true"></i>Square</button>
-                    <button data-crop="rounded" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-regular fa-square mr-1" aria-hidden="true"></i>Round</button>
+                    <button data-crop="circle" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-circle mr-1" aria-hidden="true"></i>{% t "Circle" %}</button>
+                    <button data-crop="square" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-square mr-1" aria-hidden="true"></i>{% t "Square" %}</button>
+                    <button data-crop="rounded" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-regular fa-square mr-1" aria-hidden="true"></i>{% t "Round" %}</button>
                     <button data-crop="4:5" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10">4 : 5</button>
                     <button data-crop="16:9" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10">16 : 9</button>
                     <button data-crop="9:16" type="button" class="crop-shape px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10">9 : 16</button>
-                    <button data-crop="custom" type="button" class="crop-shape col-span-3 px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-crop mr-1" aria-hidden="true"></i>Custom ratio</button>
+                    <button data-crop="custom" type="button" class="crop-shape col-span-3 px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10"><i class="fa-solid fa-crop mr-1" aria-hidden="true"></i>{% t "Custom ratio" %}</button>
                 </div>
                 <div class="flex items-center gap-2 text-sm">
                     <input id="crop-custom-w" type="number" min="1" step="1" placeholder="W" class="w-full px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Custom width ratio">
@@ -525,20 +546,20 @@
                 </div>
             </div>
             <div class="space-y-2 w-full">
-                <span class="text-xs uppercase tracking-wide text-gray-400">Orientation</span>
+                <span class="text-xs uppercase tracking-wide text-gray-400">{% t "Orientation" %}</span>
                 <div class="grid grid-cols-3 gap-2 text-sm">
-                    <button id="crop-rotate" type="button" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Rotate 90°"><i class="fa-solid fa-arrow-rotate-left inline-block -scale-x-100 mr-1" aria-hidden="true"></i>Rotate</button>
-                    <button id="crop-flip-h" type="button" aria-pressed="false" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Flip horizontal"><i class="fa-solid fa-arrows-left-right mr-1" aria-hidden="true"></i>Flip</button>
-                    <button id="crop-flip-v" type="button" aria-pressed="false" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Flip vertical"><i class="fa-solid fa-arrows-up-down mr-1" aria-hidden="true"></i>Flip</button>
+                    <button id="crop-rotate" type="button" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Rotate 90°"><i class="fa-solid fa-arrow-rotate-left inline-block -scale-x-100 mr-1" aria-hidden="true"></i>{% t "Rotate" %}</button>
+                    <button id="crop-flip-h" type="button" aria-pressed="false" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Flip horizontal"><i class="fa-solid fa-arrows-left-right mr-1" aria-hidden="true"></i>{% t "Flip" %}</button>
+                    <button id="crop-flip-v" type="button" aria-pressed="false" class="px-2 py-2 rounded-lg border border-white/20 hover:bg-white/10" title="Flip vertical"><i class="fa-solid fa-arrows-up-down mr-1" aria-hidden="true"></i>{% t "Flip" %}</button>
                 </div>
             </div>
             <div class="space-y-2 w-full">
-                <label for="crop-zoom" class="text-xs uppercase tracking-wide text-gray-400">Zoom</label>
+                <label for="crop-zoom" class="text-xs uppercase tracking-wide text-gray-400">{% t "Zoom" %}</label>
                 <input id="crop-zoom" type="range" min="1" max="5" step="0.01" value="1" class="w-full accent-primary">
             </div>
             <p class="hidden lg:block text-xs text-gray-400 leading-relaxed">
-                Pick a shape or a <b class="text-gray-200">custom ratio</b>, then <b class="text-gray-200">drag</b> to
-                reposition and <b class="text-gray-200">scroll</b> to zoom. Rotate and flip from the buttons above.
+                {% t "Pick a shape or a" %} <b class="text-gray-200">{% t "custom ratio" %}</b>, {% t "then" %} <b class="text-gray-200">{% t "drag" %}</b>
+                {% t "to reposition and" %} <b class="text-gray-200">{% t "scroll" %}</b> {% t "to zoom. Rotate and flip from the buttons above." %}
             </p>
         </div>
 
@@ -568,15 +589,15 @@
 <div id="shortcuts-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
     <div class="glass w-full max-w-md rounded-2xl shadow-2xl border border-gray-200/70 dark:border-gray-800/70 p-6 space-y-4">
         <div class="flex items-center justify-between">
-            <h2 id="shortcuts-title" class="text-lg font-semibold">Keyboard shortcuts</h2>
+            <h2 id="shortcuts-title" class="text-lg font-semibold">{% t "Keyboard shortcuts" %}</h2>
             <button id="shortcuts-close" type="button" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
         <ul class="space-y-2 text-sm">
-            <li class="flex justify-between"><span>Paste image from clipboard</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Ctrl+V</kbd></li>
-            <li class="flex justify-between"><span>Open file picker</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">O</kbd></li>
-            <li class="flex justify-between"><span>Download all as ZIP</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Ctrl+S</kbd></li>
-            <li class="flex justify-between"><span>Toggle dark mode</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">D</kbd></li>
-            <li class="flex justify-between"><span>Close dialogs</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Esc</kbd></li>
+            <li class="flex justify-between"><span>{% t "Paste image from clipboard" %}</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Ctrl+V</kbd></li>
+            <li class="flex justify-between"><span>{% t "Open file picker" %}</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">O</kbd></li>
+            <li class="flex justify-between"><span>{% t "Download all as ZIP" %}</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Ctrl+S</kbd></li>
+            <li class="flex justify-between"><span>{% t "Toggle dark mode" %}</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">D</kbd></li>
+            <li class="flex justify-between"><span>{% t "Close dialogs" %}</span><kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 font-mono">Esc</kbd></li>
         </ul>
     </div>
 </div>
@@ -584,7 +605,7 @@
 <!-- Sticky CTA — fades in once the dropzone scrolls out of view (landing only) -->
 <button id="sticky-cta" type="button" aria-label="Remove a background — jump to upload"
         class="fixed bottom-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-40 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-semibold shadow-xl shadow-primary/40 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Remove a background
+    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {% t "Remove a background" %}
 </button>
 {% endblock %}
 

@@ -5,32 +5,16 @@
  * on top: either a single mark anchored to one of nine positions, or a tiled
  * pattern repeated across the whole image (harder to crop out). Nothing is
  * uploaded.
+ *
+ * Batch: every setting here is relative (size is a % of the shorter side, the
+ * position is an anchor), so the same watermark applies cleanly to any number of
+ * photos at any size. Extra files are queued and exported together as a ZIP.
+ *
+ * Shared helpers come from window.CBG (static/js/kit.js).
  */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const { $, $$, Toast, loadImage, dropzone, zipDownload, remember, baseName } = window.CBG;
 
-const loadImage = (src) => new Promise((resolve, reject) => {
-  const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src;
-});
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
+const prefs = remember('watermark');
 
 const App = {
   img: null,
@@ -42,6 +26,7 @@ const App = {
   rotate: 0,
   color: '#ffffff',
   shadow: true,
+  queue: [],      // extra files exported with the same watermark
 
   init() {
     this.dropzone = $('#wm-dropzone');
@@ -52,25 +37,16 @@ const App = {
     this.input = $('#wm-input');
     this.editor = $('#wm-editor');
     this.canvas = $('#wm-canvas');
+    this.batch = $('[data-batch]');
 
-    const open = () => this.input.click();
-    $('#wm-browse').addEventListener('click', (e) => { e.stopPropagation(); open(); });
-    this.dropzone.addEventListener('click', open);
-    this.dropzone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-    this.input.addEventListener('change', (e) => this.load(e.target.files[0]));
-
-    const icon = $('#wm-icon');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((evt) =>
-      this.dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }));
-    ['dragenter', 'dragover'].forEach((evt) => this.dropzone.addEventListener(evt, () => { this.dropzone.classList.add('border-primary', 'bg-primary/5'); icon.classList.add('scale-110'); }));
-    ['dragleave', 'drop'].forEach((evt) => this.dropzone.addEventListener(evt, () => { this.dropzone.classList.remove('border-primary', 'bg-primary/5'); icon.classList.remove('scale-110'); }));
-    this.dropzone.addEventListener('drop', (e) => this.load(e.dataTransfer.files[0]));
-    document.addEventListener('paste', (e) => {
-      const f = [...(e.clipboardData?.items || [])].find((i) => i.kind === 'file');
-      if (f) this.load(f.getAsFile());
+    dropzone(this.dropzone, {
+      input: this.input,
+      icon: $('#wm-icon'),
+      browse: $('#wm-browse'),
+      onFiles: (files) => this.load(files),
     });
 
-    $('#wm-text').addEventListener('input', (e) => { this.text = e.target.value; this.render(); });
+    $('#wm-text').addEventListener('input', (e) => { this.text = e.target.value; this.render(); prefs.set({ text: this.text }); });
 
     $$('.wm-mode').forEach((b) => b.addEventListener('click', () => {
       this.mode = b.dataset.mode;
@@ -103,14 +79,19 @@ const App = {
 
     $('#wm-download').addEventListener('click', () => this.download());
     $('#wm-new').addEventListener('click', () => this.reset());
+    $('[data-batch-zip]').addEventListener('click', () => this.downloadAll());
+
+    // The mark itself is a preference — retyping it for every photo is busywork.
+    const saved = prefs.get();
+    if (saved.text) { this.text = saved.text; $('#wm-text').value = saved.text; }
   },
 
-  async load(file) {
-    this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
-    this.file = file;
+  async load(files) {
+    const [first, ...rest] = files;
+    this.file = first;
+    this.queue = rest;
     if (this.url) URL.revokeObjectURL(this.url);
-    this.url = URL.createObjectURL(file);
+    this.url = URL.createObjectURL(first);
     try { this.img = await loadImage(this.url); } catch { Toast.show('Could not read that image', 'error'); return; }
     this.canvas.width = this.img.naturalWidth;
     this.canvas.height = this.img.naturalHeight;
@@ -118,6 +99,13 @@ const App = {
     this.hero.classList.add('hidden');
     this.editor.classList.remove('hidden');
     $('#wm-done').textContent = `${this.img.naturalWidth} × ${this.img.naturalHeight} px — full resolution, exported as-is`;
+    this.syncBatch();
+  },
+
+  syncBatch() {
+    const n = this.queue.length + 1;
+    this.batch.classList.toggle('hidden', n < 2);
+    this.batch.querySelector('[data-batch-count]').textContent = n;
   },
 
   /** Apply the shared text style to a context sized for `this.canvas`. */
@@ -136,12 +124,12 @@ const App = {
     }
   },
 
-  render() {
-    if (!this.img) return;
-    const { width: w, height: h } = this.canvas;
-    const ctx = this.canvas.getContext('2d');
+  render(canvas = this.canvas, img = this.img) {
+    if (!img) return;
+    const { width: w, height: h } = canvas;
+    const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(this.img, 0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
 
     const text = this.text.trim();
     if (!text) return;
@@ -184,18 +172,53 @@ const App = {
     ctx.restore();
   },
 
+  /** Watermark one file at full resolution and return {name, blob}. */
+  async stamp(file, canvas = null, img = null) {
+    const own = !canvas;
+    let url = null;
+    try {
+      if (own) {
+        url = URL.createObjectURL(file);
+        img = await loadImage(url);
+        canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        this.render(canvas, img);
+      }
+      const jpg = file.type === 'image/jpeg';
+      const type = jpg ? 'image/jpeg' : 'image/png';
+      const blob = await new Promise((res) => canvas.toBlob(res, type, 0.95));
+      return blob ? { name: `${baseName(file.name)}-watermarked.${jpg ? 'jpg' : 'png'}`, blob } : null;
+    } finally {
+      if (url) URL.revokeObjectURL(url);
+    }
+  },
+
   async download() {
     if (!this.img) return;
-    const jpg = this.file.type === 'image/jpeg';
-    const type = jpg ? 'image/jpeg' : 'image/png';
-    const blob = await new Promise((res) => this.canvas.toBlob(res, type, 0.95));
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
-    const base = this.file.name.replace(/\.[^.]+$/, '');
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `${base}-watermarked.${jpg ? 'jpg' : 'png'}`;
-    document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
-    $('#wm-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${this.canvas.width} × ${this.canvas.height}px · ${Math.round(blob.size / 1024)} KB`;
+    // The visible canvas is already the full-resolution result — reuse it.
+    const out = await this.stamp(this.file, this.canvas, this.img);
+    if (!out) { Toast.show('Export failed', 'error'); return; }
+    window.CBG.download(out.blob, out.name);
+    $('#wm-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${this.canvas.width} × ${this.canvas.height}px · ${Math.round(out.blob.size / 1024)} KB`;
+  },
+
+  async downloadAll() {
+    const btn = $('[data-batch-zip]');
+    const label = btn.querySelector('[data-batch-label]');
+    const original = label.textContent;
+    btn.disabled = true;
+    label.textContent = 'Watermarking…';
+    try {
+      const entries = [await this.stamp(this.file, this.canvas, this.img)];
+      for (const f of this.queue) entries.push(await this.stamp(f));
+      await zipDownload(entries.filter(Boolean), 'clearbg-watermarked.zip');
+    } catch {
+      Toast.show('Could not build the ZIP', 'error');
+    } finally {
+      btn.disabled = false;
+      label.textContent = original;
+    }
   },
 
   reset() {
@@ -203,6 +226,8 @@ const App = {
     this.hero.classList.remove('hidden');
     if (this.url) { URL.revokeObjectURL(this.url); this.url = null; }
     this.img = null;
+    this.queue = [];
+    this.syncBatch();
   },
 };
 

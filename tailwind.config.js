@@ -13,9 +13,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // Inter is self-hosted (static/css/inter.css). There is deliberately no
+      // second `display` family: one was configured and loaded from Google Fonts
+      // for months without a single template ever using it.
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['"Bricolage Grotesque"', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Resolve to CSS variables so each page can set its own accent (the

@@ -208,6 +208,23 @@
            dark:text-gray-300 dark:bg-gray-800/70 dark:border-gray-700/60 dark:hover:bg-gray-700/70 dark:hover:text-gray-100;
   }
 
+  /* One-tap background preset (the four common cases, above the dense controls).
+     Wider hit area than `.chip` and stacks a colour swatch over its label, so the
+     row reads as "pick a look" rather than as more settings. */
+  .quick-btn {
+    @apply flex flex-col items-center gap-1.5 px-2 py-2.5 rounded-xl text-[11px] font-medium text-gray-600
+           bg-white/60 border border-gray-200/70 transition-all
+           hover:border-primary hover:text-gray-900 hover:-translate-y-0.5
+           dark:text-gray-300 dark:bg-white/[0.04] dark:border-white/10 dark:hover:text-gray-100
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  }
+  .quick-btn[data-active] {
+    @apply border-primary ring-2 ring-primary text-primaryText;
+  }
+  .quick-chip {
+    @apply block w-8 h-8 rounded-lg shadow-sm;
+  }
+
   /* Compact numeric input. */
   .num-input {
     @apply w-16 px-2 py-1.5 rounded-lg text-xs text-center bg-white/70 border border-gray-200

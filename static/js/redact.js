@@ -89,6 +89,15 @@ const App = {
       this.render();
     }));
     $('#rd-strength').addEventListener('input', (e) => { this.strength = +e.target.value; this.render(); });
+    // Auto-detect faces via the browser's own Shape Detection API. It is not
+    // universally implemented, so the button is only revealed where it exists —
+    // no model download, no fallback that quietly does nothing.
+    const auto = $('#rd-auto');
+    if (auto && 'FaceDetector' in window) {
+      auto.classList.remove('hidden');
+      auto.addEventListener('click', () => this.detectFaces());
+    }
+
     $('#rd-undo').addEventListener('click', () => { this.regions.pop(); this.updateButtons(); this.render(); });
     $('#rd-clear').addEventListener('click', () => { this.regions = []; this.updateButtons(); this.render(); });
     $('#rd-download').addEventListener('click', () => this.export('image/png'));
@@ -183,6 +192,43 @@ const App = {
 
   rect(a, b) {
     return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) };
+  },
+
+  /**
+   * Add a region over every face the browser can find.
+   *
+   * Uses the on-device FaceDetector (Shape Detection API) — like everything else
+   * here it runs locally, so an image with faces in it is still never uploaded.
+   * Boxes are padded outwards because the detector returns a tight crop that
+   * leaves hair and chin visible, which is not what "hide this face" means.
+   */
+  async detectFaces() {
+    if (!this.original) return;
+    const btn = $('#rd-auto');
+    btn.disabled = true;
+    try {
+      const detector = new window.FaceDetector({ fastMode: false });
+      const faces = await detector.detect(this.original);
+      if (!faces.length) { Toast.show('No faces found — draw over them by hand', 'error'); return; }
+      for (const { boundingBox: b } of faces) {
+        const padX = b.width * 0.18;
+        const padY = b.height * 0.22;
+        this.regions.push({
+          type: 'rect',
+          x: Math.max(0, b.x - padX),
+          y: Math.max(0, b.y - padY),
+          w: Math.min(this.original.width, b.width + padX * 2),
+          h: Math.min(this.original.height, b.height + padY * 2),
+        });
+      }
+      this.updateButtons();
+      this.render();
+      Toast.show(`${faces.length} face${faces.length === 1 ? '' : 's'} hidden — adjust or add more by hand`);
+    } catch {
+      Toast.show('Face detection is not available in this browser', 'error');
+    } finally {
+      btn.disabled = false;
+    }
   },
 
   updateButtons() {

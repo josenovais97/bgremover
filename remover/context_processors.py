@@ -52,6 +52,8 @@ TOOL_NAV = [
      "blurb": "Generate a scannable code from a link"},
     {"name": "exif", "icon": "fa-solid fa-database", "label": "EXIF", "group": "optimize",
      "blurb": "Strip GPS and camera data from photos"},
+    {"name": "pdf", "icon": "fa-solid fa-file-arrow-down", "label": "Image to PDF", "group": "optimize",
+     "blurb": "Combine photos or scans into one PDF"},
 ]
 
 # Categories for the "All tools" mega-menu, in display order. Each groups the
@@ -111,6 +113,10 @@ TOOL_ACCENTS = {
     "resize": ("194 65 12", "154 52 18", "234 88 12", "249 115 22"),         # orange 700/800/600/500
     "watermark": ("77 124 15", "63 98 18", "101 163 13", "132 204 22"),      # lime 700/800/600/500
     "gif": ("147 51 234", "126 34 206", "168 85 247", "192 132 252"),         # purple 600/700/500/400
+    # Warm neutral for the same reason QR is cool neutral: a PDF is ink on paper,
+    # not a colour. Kept a shade apart from QR's slate so the two read as
+    # different tools rather than the same grey.
+    "pdf": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),           # stone 600/700/400/300
 }
 _DEFAULT_ACCENT = TOOL_ACCENTS["index"]
 

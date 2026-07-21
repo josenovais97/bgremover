@@ -25,14 +25,17 @@
     <meta property="og:title" content="{% block og_title %}Free AI Background Remover — No Watermark{% endblock %}">
     <meta property="og:description" content="Remove image backgrounds instantly and 100% free. Everything runs privately in your browser.">
     <meta property="og:url" content="{{ canonical_url }}">
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-image.png' %}">
+    {% comment %}Absolute URLs are built from SITE_URL (like the canonical), NOT the request
+    host — otherwise a www/apex or http/https variant advertises a different image and
+    identity than the canonical it points at.{% endcomment %}
+    <meta property="og:image" content="{{ site_url }}{% static 'img/og-image.png' %}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Free AI Background Remover — No Watermark">
     <meta name="twitter:description" content="Remove backgrounds instantly, privately, and for free. AI runs in your browser.">
-    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-image.png' %}">
+    <meta name="twitter:image" content="{{ site_url }}{% static 'img/og-image.png' %}">
 
     <script type="application/ld+json">
     {
@@ -58,7 +61,7 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "ClearBG",
-      "url": "{{ request.scheme }}://{{ request.get_host }}/"
+      "url": "{{ site_url }}/"
     }
     </script>
     <script type="application/ld+json">
@@ -66,8 +69,8 @@
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "ClearBG",
-      "url": "{{ request.scheme }}://{{ request.get_host }}/",
-      "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'img/favicon-96.png' %}",
+      "url": "{{ site_url }}/",
+      "logo": "{{ site_url }}{% static 'img/favicon-96.png' %}",
       "description": "Free, privacy-first image tools that run entirely in your browser — background removal, image conversion, passport photos and more."
     }
     </script>
@@ -90,13 +93,13 @@
     <link rel="icon" href="{% static 'img/favicon-32.png' %}" sizes="32x32" type="image/png">
     <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% url 'remover:manifest' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
-    <!-- Self-hosted Font Awesome subset (only the icons this site uses) — same-origin,
-         ~16KB total vs ~300KB from the CDN, no render-blocking third-party request. -->
+    <!-- Self-hosted Inter + Font Awesome subset (only the icons this site uses) —
+         same-origin, so there is no render-blocking third-party stylesheet and no
+         extra DNS/TLS handshake to fonts.googleapis.com / fonts.gstatic.com. -->
+    <link rel="preload" href="{% static 'webfonts/inter/inter-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{% static 'webfonts/fa-solid-900.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'css/inter.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 
@@ -200,9 +203,18 @@
                            aria-label="Buy me a coffee (opens in a new tab)">
                             <i class="fa-solid fa-mug-hot" aria-hidden="true"></i> {% t "Buy me a coffee" %}
                         </a>
+                        {% comment %}Product Hunt ships one badge image per theme, baked in as a
+                        query param — a single light badge glows on the dark site. Both are
+                        rendered and the theme class picks one, so it flips with the toggle
+                        without JS. This is the site's ONLY Product Hunt badge: the homepage
+                        hero used to carry a second copy directly under the primary CTA.{% endcomment %}
                         <a href="https://www.producthunt.com/products/clearbg-2/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-clearbg&#0045;2" target="_blank" rel="noopener noreferrer"
-                           aria-label="Review ClearBG on Product Hunt (opens in a new tab)">
+                           class="dark:hidden" aria-label="Review ClearBG on Product Hunt (opens in a new tab)">
                             <img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1265851&theme=light" alt="ClearBG - A&#0032;free&#0032;image&#0032;toolkit&#0032;that&#0032;runs&#0032;100&#0037;&#0032;in&#0032;your&#0032;browser | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" loading="lazy" />
+                        </a>
+                        <a href="https://www.producthunt.com/products/clearbg-2?utm_source=badge-follow&utm_medium=badge&utm_source=badge-clearbg&#0045;2" target="_blank" rel="noopener noreferrer"
+                           class="hidden dark:inline-block" aria-label="Follow ClearBG on Product Hunt (opens in a new tab)">
+                            <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1265851&theme=dark" alt="ClearBG - A&#0032;free&#0032;image&#0032;toolkit&#0032;that&#0032;runs&#0032;100&#0037;&#0032;in&#0032;your&#0032;browser | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" loading="lazy" />
                         </a>
                     </div>
                 </div>
@@ -227,6 +239,7 @@
                         <a href="{% url 'remover:favicon' %}" class="hover:text-primaryText transition-colors">{% t "Favicon Generator" %}</a>
                         <a href="{% url 'remover:qr' %}" class="hover:text-primaryText transition-colors">{% t "QR Code Generator" %}</a>
                         <a href="{% url 'remover:exif' %}" class="hover:text-primaryText transition-colors">{% t "EXIF Remover" %}</a>
+                        <a href="{% url 'remover:pdf' %}" class="hover:text-primaryText transition-colors">{% t "Image to PDF" %}</a>
                     </nav>
                 </div>
                 <!-- Use cases -->
@@ -266,6 +279,10 @@
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none" role="status" aria-live="polite"></div>
 
+    <!-- Shared helpers (window.CBG). A classic script so the type="module" tool
+         scripts, which are deferred, always see it — and so tools never need a
+         local ES import, which Django's static storage can't rewrite. -->
+    <script src="{% static 'js/kit.js' %}"></script>
     <!-- Custom colour picker replacing the unreliable native <input type=color> dialog. -->
     <script src="{% static 'js/colorpicker.js' %}"></script>
     <!-- Collapses overflowing tool-nav items into a "More" menu so it never clips. -->

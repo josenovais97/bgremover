@@ -13,48 +13,14 @@ const MODEL_CACHE = 'bgr-model-v1';
 // ESM (@imgly, JSZip on cdn.jsdelivr.net). Both are immutable per version, so a
 // CDN outage can't break repeat visitors — everything is served from cache.
 const MODEL_HOSTS = ['staticimgly.com', 'cdn.jsdelivr.net'];
+// The shell is GENERATED from the tool list and the contents of static/js (see
+// SHELL_PAGES / SHELL_ASSETS in remover/views.py), not hand-listed here: the
+// hand-written version silently fell nine tool pages behind while the offline
+// landing page advertised those tools as working without a connection.
 const SHELL = [
-  '/',
-  '/convert/',
-  '/instagram/',
-  '/crop/',
-  '/favicon-generator/',
-  '/sticker-maker/',
-  '/passport-photo/',
-  '/ecommerce/',
-  '/blur-background/',
-  '{% static "css/tailwind.css" %}',
-  '{% static "css/fontawesome.css" %}',
-  '{% static "webfonts/fa-solid-900.woff2" %}',
-  '{% static "webfonts/fa-regular-400.woff2" %}',
-  '{% static "webfonts/fa-brands-400.woff2" %}',
-  '{% static "js/app.js" %}',
-  '{% static "js/handoff.js" %}',
-  '{% static "js/compose-worker.js" %}',
-  '{% static "js/converter.js" %}',
-  '{% static "js/instagram.js" %}',
-  '{% static "js/crop.js" %}',
-  '{% static "js/favicon.js" %}',
-  '{% static "js/sticker.js" %}',
-  '{% static "js/textbehind.js" %}',
-  '{% static "js/qr.js" %}',
-  '{% static "js/redact.js" %}',
-  '{% static "js/exif.js" %}',
-  '{% static "js/resize.js" %}',
-  '{% static "js/watermark.js" %}',
-  '{% static "js/gif.js" %}',
-  '{% static "js/passport.js" %}',
-  '{% static "js/ecommerce.js" %}',
-  '{% static "js/blur.js" %}',
-  '{% static "js/stats.js" %}',
-  '{% static "js/demo.js" %}',
-  '{% static "js/theme.js" %}',
-  '{% static "js/colorpicker.js" %}',
-  '{% static "js/nav.js" %}',
-  '/manifest.webmanifest',
-  '{% static "img/favicon.svg" %}',
-  '{% static "img/icon-192.png" %}',
-  '{% static "img/icon-512.png" %}',
+{% for path in shell_pages %}  '{{ path }}',
+{% endfor %}{% for asset in shell_assets %}  '{% static asset %}',
+{% endfor %}  '/manifest.webmanifest',
 ];
 
 self.addEventListener('install', (event) => {

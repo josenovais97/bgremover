@@ -52,12 +52,18 @@
 
   // Which tool the visitor is on, derived from the URL path (locale prefix
   // stripped) so per-tool conversion tracking needs no change in each tool's JS.
+  // Keep in step with STATS_TOOLS in remover/views.py — the server drops any
+  // tool it doesn't recognise, so a missing entry here is a silently lost count.
   const TOOL_BY_PATH = {
     '/': 'home', '/blur-background/': 'blur',
     '/ecommerce/': 'ecommerce', '/sticker-maker/': 'sticker',
     '/passport-photo/': 'passport', '/instagram/': 'instagram', '/crop/': 'crop',
     '/convert/': 'convert', '/compress/': 'compress', '/meme-maker/': 'meme',
-    '/favicon-generator/': 'favicon',
+    '/favicon-generator/': 'favicon', '/redact-image/': 'redact',
+    '/exif-remover/': 'exif', '/resize-image/': 'resize',
+    '/watermark-image/': 'watermark', '/gif-maker/': 'gif',
+    '/qr-code-generator/': 'qr', '/text-behind-image/': 'text_behind',
+    '/image-to-pdf/': 'pdf',
   };
   function toolId() {
     const p = location.pathname.replace(/^\/pt(\/|$)/, '/');

@@ -6,6 +6,11 @@
 {% block og_title %}WhatsApp Sticker Maker — Cut Out, Outline &amp; Caption, Free{% endblock %}
 
 {% block extra_seo %}
+<!-- Display fonts for the canvas artwork. Google Fonts is only requested on the
+     few pages that actually paint with these families — the UI font (Inter) is
+     self-hosted site-wide, so these preconnects are page-local. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Pacifico&amp;family=Bebas+Neue&amp;display=swap">
 <script type="application/ld+json">
 {
