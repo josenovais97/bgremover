@@ -1,8 +1,8 @@
 # ClearBG — a free, private image toolkit that runs in your browser
 
-**18 image tools that never upload your photos.** Background removal, conversion,
-compression, resizing, passport photos, stickers, QR codes, metadata stripping and
-more — all of it executes on the visitor's device. Django serves fast, SEO-optimised
+**19 image tools that never upload your photos.** Background removal, conversion,
+compression, resizing, image-to-PDF, passport photos, stickers, QR codes, metadata
+stripping and more — all of it executes on the visitor's device. Django serves fast, SEO-optimised
 HTML; the pixels never touch the server.
 
 Live: **[clearbg.pt](https://clearbg.pt)**
@@ -38,21 +38,34 @@ Every tool is 100% client-side, free, unlimited, and watermark-free.
 | **Favicon generator** | `/favicon-generator/` | A full icon set as a ZIP: multi-size `.ico`, PNGs, Apple touch, PWA + maskable, `site.webmanifest`, paste-ready HTML. |
 | **QR code generator** | `/qr-code-generator/` | Styled static QR (square/rounded/dot modules, styled eyes, gradient, centre logo) → PNG or SVG. |
 | **EXIF remover** | `/exif-remover/` | Reads GPS/camera/date metadata, then strips it — **losslessly** for JPEG (marker segments dropped, pixel data untouched). |
+| **Image to PDF** | `/image-to-pdf/` | Combine photos or scans into one multi-page PDF; drag to reorder, A4/Letter/fit-image, margins. JPEG and PNG bytes are embedded as-is. |
 
 Removed: the AI upscaler (`/upscale/`) — client-side super-resolution froze the tab. The
 URL 301s to home so the indexed page never 404s.
+
+**Batch** is supported by the remover, convert, compress, eCommerce, GIF and PDF
+tools, plus resize, watermark and EXIF — for those three the first file is the one
+you tune on screen and the rest are exported with the same settings as a ZIP
+(queued images keep their own aspect ratio).
 
 ### Cross-tool features
 
 - **Hand-off between tools** — "Continue in Crop / Sticker / Instagram" passes the result
   through IndexedDB with no re-upload. One-shot, 60-second TTL (`static/js/handoff.js`).
-- **PWA** — installable, with a service worker that caches the app shell and keeps the
-  ~40 MB model in a separate long-lived cache so a redeploy never evicts it.
+- **PWA** — installable (with app shortcuts and a dedicated maskable icon), and a service
+  worker whose shell is *generated* from the tool list and the contents of `static/js`, so
+  it can't fall behind the toolkit. The ~40 MB model lives in a separate long-lived cache
+  that a redeploy never evicts.
 - **Per-tool accent colours** — every tool has a signature colour that themes the whole
   page, including the browser chrome (`theme-color`).
 - **Shared UI kit** — glassmorphism, dark mode, toasts, a custom colour picker, live value
   bubbles on every slider, before/after demo sliders, an "All tools" mega-menu with a
   responsive overflow nav.
+- **`window.CBG`** (`static/js/kit.js`) — the helpers every tool needs (`$`, `Toast`,
+  `loadImage`, drag/drop/paste wiring, ZIP export, a localStorage settings store). Loaded
+  as a *classic* script from `base.html`, which is what lets tool modules share code at
+  all: Django's static storage can't rewrite ES-module import paths, so a local `import`
+  between modules breaks in production.
 
 ---
 
@@ -61,9 +74,12 @@ URL 301s to home so the indexed page never 404s.
 **Input** — drag & drop, file picker, or clipboard paste (`Ctrl+V`); JPG / PNG / WEBP at
 full resolution; batch; a one-click sample photo for visitors with nothing to hand.
 
-**Backgrounds** — transparent, colour presets or any custom colour, a **two-colour
-gradient** (with angle), a **blurred copy of the original photo**, your **own uploaded
-image**, or one of **17 preset photo backgrounds** grouped into Studio / Colorful / Scenes.
+**Backgrounds** — four one-tap **quick presets** (Transparent / White / Studio / Blur
+photo) sit above the detailed controls, which offer colour presets or any custom colour, a
+**two-colour gradient** (with angle), a **blurred copy of the original photo**, your **own
+uploaded image**, or one of **17 preset photo backgrounds** grouped into Studio / Colorful
+/ Scenes. Every quick preset drives the same setter as its detailed control, so the two
+stay in sync in both directions.
 
 **Refine brush editor** — erase leftover background or restore over-trimmed areas by hand,
 with zoom/pan (wheel, Move tool, hold-Space), soft brushes, edge smoothing, undo, and
@@ -75,7 +91,9 @@ or the **original image with its background kept** — so you can crop without r
 background at all. Works before removal finishes, and is non-destructive (re-open or
 remove the crop any time).
 
-**Effects & export** — coloured outline/stroke, drop shadow and padding; PNG / JPG / WEBP;
+**Effects & export** — coloured outline/stroke, drop shadow, padding and **trim
+transparent edges** (crops the export to the subject's alpha bounding box, before any
+background or outline is composited, so those hug the subject); PNG / JPG / WEBP;
 keep the original size or scale to 512×512, 1080×1920 or a custom W×H (aspect preserved).
 
 **Batch niceties** — per-card undo/redo, "apply this card's settings to all", download all
@@ -96,15 +114,15 @@ pages the full `isnet` model is used; elsewhere it falls back to `isnet_quint8`.
 | Layer | Choice |
 |-------|--------|
 | Backend | Python + Django 5 (stateless, **no database**) |
-| Frontend | HTML, compiled Tailwind CSS, self-hosted Font Awesome subset, vanilla JS (ESM) |
+| Frontend | HTML, compiled Tailwind CSS, self-hosted Inter + Font Awesome subset, vanilla JS (ESM) |
 | AI model | `@imgly/background-removal` 1.6 (WASM/WebGPU, ISNet), loaded from jsDelivr |
-| Other libs (all CDN ESM) | JSZip, gifenc, exifr, qrcode-generator |
+| Other libs (all CDN ESM) | JSZip, gifenc, exifr, qrcode-generator, pdf-lib |
 | Static | WhiteNoise (finders mode; compressed + hashed manifest in prod) |
 | Counter | Upstash Redis REST (optional, env-gated) |
 | Security | CSP + Permissions-Policy, COOP/COEP on tool pages, HSTS, secure cookies |
 | Serving | Gunicorn + Nginx / Docker / Vercel |
 
-### Two prebuilt artifacts you must not forget
+### Three prebuilt artifacts you must not forget
 
 Both are **committed build outputs with no build step at deploy time** — edit the source
 and rebuild, or your change silently does nothing.
@@ -113,11 +131,17 @@ and rebuild, or your change silently does nothing.
    `static/src/input.css`, config `tailwind.config.js`). A class that wasn't in the
    templates at build time is simply absent. After adding classes, run
    `npm run build:css` and commit the result.
-2. **`static/css/fontawesome.css` + `static/webfonts/*.woff2`** are a ~93-glyph Font
+2. **`static/css/fontawesome.css` + `static/webfonts/fa-*.woff2`** are a ~93-glyph Font
    Awesome subset. An icon outside the subset renders as a blank box. Check with
    `grep '\.fa-name:before' static/css/fontawesome.css` before using a new one — the
    `IconSubsetTests` suite fails the build if you don't. FA's `fa-rotate-*`/`fa-flip-*`
    utilities are not included; use Tailwind transforms (`-scale-x-100`) instead.
+3. **`static/css/inter.css` + `static/webfonts/inter/*.woff2`** are Google Fonts' variable
+   Inter files, self-hosted. One file per subset covers the whole 400–800 range (the css2
+   API returns the same file for each discrete weight). Regenerate by re-fetching
+   `Inter:wght@400..800` with a browser User-Agent and keeping the latin/latin-ext faces.
+   Google Fonts is still requested — but only on the four pages whose canvases paint with
+   Anton / Bebas Neue / Pacifico / Playfair.
 
 ### The accent-colour system
 
@@ -171,6 +195,7 @@ bgremover/
 │   ├── js/app.js              # background remover + refine editor + crop dialog
 │   ├── js/compose-worker.js   # off-thread full-res export pipeline
 │   ├── js/<tool>.js           # one module per tool, deliberately self-contained
+│   ├── js/kit.js              # window.CBG — shared helpers (classic script)
 │   ├── js/handoff.js          # cross-tool image hand-off via IndexedDB
 │   ├── js/{theme,nav,stats,demo,range-value,colorpicker,landing,ads}.js  # shared chrome
 │   └── img/backgrounds/       # 17 preset backgrounds (full + thumb WEBP)
@@ -258,7 +283,7 @@ Settings are selected via `DJANGO_SETTINGS_MODULE`: `config.settings.development
 ## 🧪 Testing
 
 ```bash
-python manage.py test           # 62 Django tests: pages, SEO, i18n, PWA, accents, icon subset
+python manage.py test           # 79 Django tests: pages, SEO, i18n, PWA, accents, icon subset
 npm test                        # crop-geometry unit tests (Node, no browser)
 python manage.py check --deploy # production security audit (use prod settings)
 ```
@@ -268,6 +293,11 @@ silently: **WCAG AA contrast** for every tool accent, that gradient headlines us
 pair rather than the surface pair, that no template references a **Font Awesome glyph
 outside the committed subset**, that ads never render on cross-origin-isolated pages, and
 that the Portuguese routes/hreflang work.
+
+`EveryToolTests` walks `TOOL_NAV` itself, so every tool — present and future — is checked
+to render, load its JS module, own an accent, and appear in both the sitemap and the
+homepage grid. `PWATests` asserts the service-worker shell still covers every tool page
+and script, which is the drift that made the offline claim untrue.
 
 Browser smoke tests (Playwright) live in `tests/` — see [`tests/README.md`](tests/README.md).
 
@@ -284,7 +314,8 @@ DJANGO_SETTINGS_MODULE=config.settings.production \
 ## 🔎 SEO & content architecture
 
 Everything is generated from data in `remover/views.py`, so adding a page is a data edit
-that automatically extends the nav, the internal links and the sitemap (**~71 URLs**).
+that automatically extends the nav, the internal links and the sitemap (**71 paths, listed
+in both languages**).
 
 | Set | Route | Source |
 |-----|-------|--------|
@@ -300,13 +331,15 @@ Also:
 - **Structured data**: `WebApplication` + `WebSite` + `Organization` site-wide,
   `FAQPage` from a single source (`remover/seo_content.py` — the visible accordion and the
   JSON-LD render from the same list), `BreadcrumbList` on landing pages.
-- **Canonicals** are built from `SITE_URL` + path (query stripped), so every host/UTM
-  variant consolidates onto one URL.
-- **hreflang** `en` / `pt` / `x-default` on every page, plus a footer language switcher.
+- **Canonicals**, `og:image` and the JSON-LD identity are all built from `SITE_URL` + path
+  (query stripped), so every host/UTM variant consolidates onto one URL and advertises the
+  same image.
+- **hreflang** `en` / `pt` / `x-default` on every page and on every sitemap entry, plus a
+  footer language switcher. The sitemap lists each page twice — once per language.
 - **Contextual internal links**: a related-tools row is injected into every page by
   `base.html` (same-group tools first — see `_related_tools()`).
 - `robots.txt` and `sitemap.xml` are generated from the page list with per-page
-  `priority` and `lastmod`.
+  `priority` and `lastmod` (~142 URLs: 71 paths × 2 languages).
 
 ---
 

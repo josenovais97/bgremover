@@ -4,6 +4,75 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] — 2026-07-21
+
+Six new tools since 1.7.0, batch support where it was missing, an image → PDF
+builder, and a round of correctness fixes to the SEO/PWA plumbing.
+
+### Added
+- **Image → PDF** (`/image-to-pdf/`) — combine photos or scans into one
+  multi-page PDF (pdf-lib). Drag thumbnails to reorder, remove pages, pick
+  A4 / US Letter / fit-the-image, auto or fixed orientation, and a margin.
+  JPEG and PNG bytes are embedded **as-is** (no canvas round-trip), so a scan
+  keeps exactly the quality it had. Built in the page — the format people use for
+  IDs, contracts and payslips never leaves the device.
+- **Batch for resize, watermark and EXIF removal.** The first file stays the one
+  you tune on screen; the rest are exported with the same settings as a ZIP.
+  Queued images keep their own aspect ratio (they're fitted inside the target box
+  rather than forced to its exact dimensions), and every watermark setting is
+  already relative to the image, so one mark lands correctly on any size.
+- **Auto-detect faces** in the redact tool, via the browser's own on-device
+  FaceDetector. The button only appears where the API exists, and detected boxes
+  are padded outwards so hair and chin are actually covered.
+- **Trim transparent edges** in the background remover — crops the export to the
+  subject's alpha bounding box *before* any background, outline, shadow or
+  padding is composited, so those hug the subject instead of the original frame.
+- **Quick background presets** (Transparent / White / Studio / Blur photo) above
+  the remover's detailed controls. Each drives the same setter as its detailed
+  control, so selection stays in sync in both directions.
+- **`window.CBG`** (`static/js/kit.js`) — shared `$`, `Toast`, `loadImage`,
+  drag/drop/paste wiring, ZIP export and a localStorage settings store, replacing
+  per-tool copies. A classic script, because Django's static storage cannot
+  rewrite ES-module import paths.
+- **PWA app shortcuts** and a dedicated maskable icon; resize/watermark/PDF now
+  remember their layout choices between visits.
+- **`EveryToolTests`** walks `TOOL_NAV` itself, so every tool present and future
+  is checked to render, load its JS, own an accent, and appear in the sitemap and
+  the homepage grid. 62 → 79 tests.
+
+### Fixed
+- **The service-worker shell had fallen nine tool pages behind** while
+  `/offline-image-editor/` advertised those tools as working offline. The shell
+  is now generated from the tool list and the contents of `static/js`, and a test
+  fails if it drifts again.
+- **The Portuguese site was absent from the sitemap entirely** — only reachable
+  through footer links. Every page is now listed once per language, and each
+  entry carries the full `xhtml:link` hreflang set (71 paths → 142 URLs).
+- **`og:image` and the JSON-LD identity were built from the request host** while
+  the canonical used `SITE_URL`, so a www/apex or http/https variant advertised a
+  different image and identity than the canonical it pointed at.
+- The remover's workspace, result card, refine editor and crop dialog were
+  hard-coded English — a Portuguese visitor hit mixed language exactly at the
+  moment of use. All of it now runs through `{% t %}`.
+- `"purpose": "any maskable"` on every manifest icon (the documented
+  anti-pattern) — there is now a dedicated maskable asset.
+- The homepage carried **two Product Hunt badges**, one directly under the
+  primary CTA, both hard-coded to the light theme. One badge remains, in the
+  footer, and it follows the theme.
+
+### Changed
+- **Inter is self-hosted** (`static/css/inter.css` + `static/webfonts/inter/`).
+  Google Fonts is now requested only by the four pages whose canvases paint with
+  Anton / Bebas Neue / Pacifico / Playfair, and those carry a preconnect.
+- **Bricolage Grotesque is gone.** It was downloaded on every page and used by
+  nothing — no template ever referenced the `font-display` family it fed.
+- **Preset backgrounds re-encoded**: 3.7 MB → 2.2 MB (−43%), capped at 1600px and
+  ~250 KB each, so picking one is snappier.
+- The homepage tool grid moved directly under the hero. The site is an 18-tool
+  kit; the grid was below the explainer, where it was invisible without scrolling.
+- Per-tool conversion counters now cover redact, EXIF, resize, watermark, GIF, QR,
+  text-behind and PDF — they previously reported as `other` and were dropped.
+
 ## [1.7.0] — 2026-07-13
 
 eCommerce tools, portrait-mode blur, and a real social-proof counter.

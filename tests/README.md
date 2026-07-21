@@ -82,9 +82,14 @@ PNG.
 
 ---
 
-## Not covered
+## Coverage notes
 
-Most tools have no automated coverage at all — compress, convert, resize, watermark, GIF,
-QR, EXIF, redact, meme, favicon, sticker, passport, blur, eCommerce and text-behind are
-verified by hand. The `run` skill (`.claude/skills/run/SKILL.md`) drives the app in a
-browser for manual verification of a change.
+`EveryToolTests` walks `TOOL_NAV` itself, so every tool — present and future — is checked
+to render, load its JS module, own an accent colour, and appear in both the sitemap and the
+homepage grid. That is deliberately shallow but automatic: a new tool cannot ship with zero
+coverage. `PWATests` additionally asserts the service-worker shell still lists every tool
+page and script.
+
+What is still verified by hand is each tool's *behaviour* — that the compressor hits a
+target size, that the GIF encoder produces a playable file, and so on. The `run` skill
+(`.claude/skills/run/SKILL.md`) drives the app in a browser for that.
