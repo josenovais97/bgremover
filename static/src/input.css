@@ -190,6 +190,15 @@
     @apply hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400;
   }
 
+  /* Single-line / multi-line text input. Every tool had been repeating this
+     exact stack of utilities inline; the QR content types needed a dozen of
+     them at once, which was the point to name it. */
+  .qr-field {
+    @apply w-full px-3 py-2 rounded-lg border border-gray-300 bg-transparent text-sm
+           placeholder:text-gray-400 dark:border-gray-700
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  }
+
   /* Segmented control (Format). */
   .seg {
     @apply inline-flex items-center gap-1 p-1 rounded-xl

@@ -8,7 +8,7 @@
  * only built when the user asks. Nothing is uploaded.
  */
 
-const { $, $$, Toast, loadImage, t } = CBG;
+const { $, $$, Toast, loadImage, download, t } = CBG;
 import { GIFEncoder, applyPalette, quantize } from 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm';
 
 const humanSize = (b) => (b < 1024 * 1024 ? `${Math.round(b / 1024)} KB` : `${(b / 1048576).toFixed(1)} MB`);
@@ -65,6 +65,7 @@ const App = {
     $('#gf-loop').addEventListener('change', (e) => { this.loop = e.target.checked; this.invalidate(); });
     $('#gf-bounce').addEventListener('change', (e) => { this.bounce = e.target.checked; this.invalidate(); this.play(); });
     $('#gf-create').addEventListener('click', () => this.create());
+    $('#gf-download').addEventListener('click', () => this.save());
     $('#gf-new').addEventListener('click', () => this.reset());
   },
 
@@ -150,6 +151,19 @@ const App = {
     const dl = $('#gf-download');
     dl.classList.add('hidden');
     if (this.gifUrl) { URL.revokeObjectURL(this.gifUrl); this.gifUrl = null; }
+    this.gifBlob = null;
+  },
+
+  /**
+   * Save the built GIF.
+   *
+   * Opted OUT of cross-tool chaining (`chain: false`): every destination tool
+   * composites through a canvas, so a chained GIF would arrive as a single
+   * still frame with the animation silently gone. Offering that hop would be
+   * worse than not offering it.
+   */
+  save() {
+    if (this.gifBlob) download(this.gifBlob, 'animation.gif', { chain: false });
   },
 
   renderFrames() {
@@ -217,6 +231,7 @@ const App = {
       const blob = new Blob([gif.bytes()], { type: 'image/gif' });
       if (this.gifUrl) URL.revokeObjectURL(this.gifUrl);
       this.gifUrl = URL.createObjectURL(blob);
+      this.gifBlob = blob;
       const dl = $('#gf-download');
       dl.href = this.gifUrl;
       dl.classList.remove('hidden');
