@@ -1,10 +1,22 @@
 """Tests for the remover views and SEO endpoints."""
+import json
+import re
+from pathlib import Path
+
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils import translation
 
-from remover.context_processors import TOOL_ACCENTS, TOOL_NAV
-from remover.views import SHELL_ASSETS, SHELL_PAGES, TOOL_PATHS, USE_CASES
+from remover.context_processors import CHAIN_EXCLUDED, TOOL_ACCENTS, TOOL_NAV
+from remover.translations import JS_UI
+from remover.views import (
+    SHELL_ASSETS,
+    SHELL_PAGES,
+    SITEMAP_PATHS,
+    TOOL_PATHS,
+    TRANSLATED_PATHS,
+    USE_CASES,
+)
 
 
 class PageTests(SimpleTestCase):
@@ -460,20 +472,283 @@ class SitemapContentTests(SimpleTestCase):
         response = self.client.get(reverse("remover:sitemap"))
         self.assertContains(response, "/convert/")
 
-    def test_sitemap_lists_the_portuguese_site(self):
+    def test_sitemap_lists_the_translated_portuguese_pages(self):
         # The /pt/ pages were absent entirely, so they were only reachable via
         # footer links — the sitemap claimed the site was English-only.
         response = self.client.get(reverse("remover:sitemap")).content.decode()
-        self.assertIn("/pt/convert/</loc>", response)
         self.assertIn("/pt/</loc>", response)
+        self.assertIn("/pt/remove-background/logo/</loc>", response)
+
+    def test_sitemap_omits_untranslated_portuguese_pages(self):
+        # /pt/convert/ resolves, but convert.html has no {% t %} — it serves the
+        # English page. Submitting it duplicated /convert/ and claimed a
+        # translation that does not exist.
+        response = self.client.get(reverse("remover:sitemap")).content.decode()
+        self.assertIn("/convert/</loc>", response)
+        self.assertNotIn("/pt/convert/</loc>", response)
+        self.assertNotIn("/pt/about/</loc>", response)
+
+    def test_sitemap_pt_url_count_matches_translated_paths(self):
+        response = self.client.get(reverse("remover:sitemap")).content.decode()
+        pt_locs = re.findall(r"<loc>[^<]*/pt/[^<]*</loc>", response)
+        self.assertEqual(len(pt_locs), len(TRANSLATED_PATHS))
 
     def test_sitemap_declares_hreflang_alternates(self):
         response = self.client.get(reverse("remover:sitemap")).content.decode()
         self.assertIn('xmlns:xhtml="http://www.w3.org/1999/xhtml"', response)
         self.assertIn('hreflang="pt"', response)
         self.assertIn('hreflang="x-default"', response)
-        # Both language entries must carry the full alternate set.
-        self.assertEqual(response.count('hreflang="en"'), response.count("<url>"))
+        # Where alternates are declared they must be declared from BOTH sides —
+        # Google treats a page that names its siblings one-way as unlinked. So
+        # the alternate count is two entries per translated path, not one.
+        self.assertEqual(
+            response.count('hreflang="en"'), 2 * len(TRANSLATED_PATHS)
+        )
+        self.assertEqual(
+            response.count('hreflang="en"'), response.count('hreflang="pt"')
+        )
+
+
+class TranslationCoverageTests(SimpleTestCase):
+    """`TRANSLATED_PATHS` must describe reality, in both directions.
+
+    The list decides which pages advertise a Portuguese alternate to crawlers,
+    so an entry that isn't really translated is a false claim to Google — and a
+    translated page missing from the list is finished work that never ships.
+    Both directions are checked against the rendered page rather than against a
+    hand-kept note, because the hand-kept version is what drifted before.
+
+    "Really translated" is measured by counting how many distinct Portuguese
+    phrases the /pt/ page renders that its English twin does not. A page with a
+    translated body sits far above one that merely inherits the translated header
+    and footer, so the two form separate bands (currently 71+ vs under 60). The
+    test asserts the BANDS DO NOT OVERLAP rather than picking a threshold: no
+    magic number to re-tune, and it fails from either direction — a listed page
+    that isn't translated sinks into the low band, and a newly translated page
+    that nobody listed rises out of it.
+    """
+
+    def _pt_phrase_count(self, path):
+        """How many distinct Portuguese translations appear on /pt/<path>."""
+        from remover.translations import UI
+
+        body = self.client.get(f"/pt{path}").content.decode()
+        # Compared against the English render so a phrase that is spelled the
+        # same in both languages ("Meme", "Favicon") is not counted as evidence.
+        english = self.client.get(path).content.decode()
+        return sum(
+            1
+            for en, pt in UI.items()
+            if pt != en and pt in body and pt not in english
+        )
+
+    def test_translated_paths_are_in_the_sitemap(self):
+        self.assertTrue(TRANSLATED_PATHS)
+        self.assertTrue(TRANSLATED_PATHS.issubset(set(SITEMAP_PATHS)))
+
+    def test_translated_paths_match_what_the_pages_actually_render(self):
+        counts = {p: self._pt_phrase_count(p) for p in SITEMAP_PATHS}
+        declared = {p: n for p, n in counts.items() if p in TRANSLATED_PATHS}
+        rest = {p: n for p, n in counts.items() if p not in TRANSLATED_PATHS}
+        if not declared or not rest:
+            self.skipTest("needs both a translated and an untranslated page")
+
+        weakest = min(declared, key=declared.get)
+        strongest = max(rest, key=rest.get)
+        self.assertGreater(
+            declared[weakest],
+            rest[strongest],
+            f"TRANSLATED_PATHS no longer matches what the site renders.\n"
+            f"  weakest declared-translated page: {weakest} "
+            f"({declared[weakest]} Portuguese phrases)\n"
+            f"  most-translated page NOT declared: {strongest} "
+            f"({rest[strongest]} Portuguese phrases)\n"
+            f"Either {weakest} was listed before its template was translated "
+            f"(drop it), or {strongest} has since been translated (add it).",
+        )
+
+
+class HreflangGateTests(SimpleTestCase):
+    """Only genuinely translated pages may advertise a Portuguese alternate."""
+
+    def test_translated_page_declares_alternates(self):
+        for path in ("/", "/pt/"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertContains(response, 'hreflang="pt"')
+                self.assertContains(response, 'hreflang="x-default"')
+
+    def test_untranslated_page_declares_no_alternates(self):
+        for path in ("/crop/", "/pt/crop/", "/about/", "/pt/about/"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertNotContains(response, 'rel="alternate" hreflang')
+
+    def test_untranslated_pt_page_canonicalises_to_its_english_twin(self):
+        # /pt/crop/ serves the English page, so pointing it at itself would put
+        # two URLs with the same content in the index competing for one query.
+        response = self.client.get("/pt/crop/").content.decode()
+        canonical = re.search(r'rel="canonical" href="([^"]+)"', response).group(1)
+        self.assertTrue(canonical.endswith("/crop/"))
+        self.assertNotIn("/pt/", canonical)
+
+    def test_translated_pt_page_canonicalises_to_itself(self):
+        response = self.client.get("/pt/").content.decode()
+        canonical = re.search(r'rel="canonical" href="([^"]+)"', response).group(1)
+        self.assertTrue(canonical.endswith("/pt/"))
+
+    def test_language_switcher_survives_on_untranslated_pages(self):
+        # The switcher is a UX affordance, not an SEO claim: a Portuguese visitor
+        # who lands on /crop/ must still be able to reach the translated part of
+        # the site. It used to share the hreflang flag, so gating that would have
+        # silently removed the switcher from most of the site.
+        for path in ("/crop/", "/about/"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertContains(response, 'hreflang="pt"', html=False)
+                self.assertContains(response, "Portugu")
+
+
+class JsTranslationTests(SimpleTestCase):
+    """The runtime strings the tools raise must be translatable, and translated.
+
+    Template copy has {% t %} and a reviewer who notices English on a /pt/ page.
+    Runtime messages are invisible until something succeeds or fails, which is
+    exactly when a wrong language is most jarring — so the catalogue is checked
+    mechanically instead.
+    """
+
+    JS_DIR = Path(__file__).resolve().parent.parent / "static" / "js"
+    # t('…') / t("…") — the second group is the key. Template literals are not
+    # matched: a key with a ${} hole in it could never be looked up anyway.
+    CALL = re.compile(r"[^\w.]t\((['\"])(.+?)\1")
+
+    def _keys_used(self):
+        found = {}
+        for path in sorted(self.JS_DIR.glob("*.js")):
+            for _, key in self.CALL.findall(path.read_text()):
+                found.setdefault(key, path.name)
+        return found
+
+    def test_every_translated_string_is_in_the_catalogue(self):
+        missing = {k: f for k, f in self._keys_used().items() if k not in JS_UI}
+        self.assertFalse(
+            missing,
+            "these strings are wrapped in t() but have no entry in "
+            "translations.JS_UI, so they stay English on /pt/: "
+            + ", ".join(f"{k!r} ({f})" for k, f in sorted(missing.items())),
+        )
+
+    def test_no_tool_raises_an_untranslated_message(self):
+        # Toast.show('literal') rather than Toast.show(t('literal')). This is
+        # the drift that reintroduces English into the Portuguese site.
+        bare = re.compile(r"Toast\.show\(\s*['\"`]")
+        offenders = [
+            p.name for p in sorted(self.JS_DIR.glob("*.js")) if bare.search(p.read_text())
+        ]
+        self.assertFalse(
+            offenders,
+            "raw message passed to Toast.show in: " + ", ".join(offenders)
+            + " — wrap it in t() and add the string to translations.JS_UI",
+        )
+
+    def test_placeholders_survive_translation(self):
+        # A dropped {placeholder} renders a sentence with a hole in it.
+        holes = re.compile(r"\{(\w+)\}")
+        for en, pt in JS_UI.items():
+            with self.subTest(key=en):
+                self.assertEqual(
+                    sorted(holes.findall(en)),
+                    sorted(holes.findall(pt)),
+                    f"placeholders differ between {en!r} and {pt!r}",
+                )
+
+    def test_catalogue_is_served_on_portuguese_pages_only(self):
+        # English keys ARE the English text, so an English page needs no payload.
+        self.assertNotContains(self.client.get("/crop/"), 'id="cbg-i18n"')
+        self.assertContains(self.client.get("/pt/crop/"), 'id="cbg-i18n"')
+
+
+class ChainTests(SimpleTestCase):
+    """Cross-tool image chaining (kit.js Chain + the "keep editing" bar)."""
+
+    def test_every_tool_page_offers_chain_destinations(self):
+        for item in TOOL_NAV:
+            with self.subTest(tool=item["name"]):
+                response = self.client.get(reverse(f"remover:{item['name']}"))
+                self.assertContains(response, 'id="chain-targets"')
+
+    def test_a_tool_is_never_a_destination_from_itself(self):
+        for item in TOOL_NAV:
+            with self.subTest(tool=item["name"]):
+                url = reverse(f"remover:{item['name']}")
+                targets = json.loads(
+                    re.search(
+                        r'id="chain-targets"[^>]*>(.*?)</script>',
+                        self.client.get(url).content.decode(),
+                        re.S,
+                    ).group(1)
+                )
+                self.assertTrue(targets)
+                self.assertNotIn(url, [t["url"] for t in targets])
+
+    def test_excluded_tools_are_never_destinations(self):
+        # The QR generator builds a code from a link; handing it a photo is
+        # meaningless, and its only file input is an optional centre logo.
+        for name in CHAIN_EXCLUDED:
+            excluded_url = reverse(f"remover:{name}")
+            for item in TOOL_NAV:
+                with self.subTest(tool=item["name"], excluded=name):
+                    body = self.client.get(reverse(f"remover:{item['name']}")).content.decode()
+                    targets = json.loads(
+                        re.search(r'id="chain-targets"[^>]*>(.*?)</script>', body, re.S).group(1)
+                    )
+                    self.assertNotIn(excluded_url, [t["url"] for t in targets])
+
+    def test_tool_pages_mark_a_primary_input_for_incoming_images(self):
+        # kit.js delivers a chained image by firing `change` on this input, so a
+        # page without the marker silently drops what the user sent to it.
+        for item in TOOL_NAV:
+            if item["name"] in CHAIN_EXCLUDED:
+                continue
+            with self.subTest(tool=item["name"]):
+                body = self.client.get(reverse(f"remover:{item['name']}")).content.decode()
+                self.assertEqual(
+                    body.count("data-chain-input"), 1,
+                    f"{item['name']} must mark exactly one primary file input",
+                )
+
+
+class SharedKitTests(SimpleTestCase):
+    """No tool may go back to carrying private copies of the shared helpers."""
+
+    JS_DIR = Path(__file__).resolve().parent.parent / "static" / "js"
+
+    def test_no_tool_defines_its_own_toast(self):
+        # There were sixteen of these, all building their markup with innerHTML
+        # — which interpolated the user's own file name into HTML. CBG.Toast
+        # uses textContent.
+        offenders = [
+            p.name
+            for p in sorted(self.JS_DIR.glob("*.js"))
+            if p.name != "kit.js" and "const Toast = {" in p.read_text()
+        ]
+        self.assertFalse(offenders, "private Toast copy in: " + ", ".join(offenders))
+
+    def test_no_tool_hand_rolls_a_download_anchor(self):
+        # CBG.download is what registers a result with the chain, so a tool that
+        # builds its own anchor exports fine but drops out of "keep editing".
+        anchor = re.compile(r"\.download\s*=\s*")
+        offenders = [
+            p.name
+            for p in sorted(self.JS_DIR.glob("*.js"))
+            if p.name != "kit.js" and anchor.search(p.read_text())
+        ]
+        self.assertFalse(
+            offenders,
+            "hand-rolled download anchor in: " + ", ".join(offenders)
+            + " — use CBG.download(blob, name)",
+        )
 
 
 class SiteVerificationTests(SimpleTestCase):

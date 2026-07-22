@@ -50,8 +50,13 @@ you tune on screen and the rest are exported with the same settings as a ZIP
 
 ### Cross-tool features
 
-- **Hand-off between tools** — "Continue in Crop / Sticker / Instagram" passes the result
-  through IndexedDB with no re-upload. One-shot, 60-second TTL (`static/js/handoff.js`).
+- **Chaining between tools** — export from any tool and a "Keep editing this image" bar
+  offers the others; the result travels through IndexedDB with no re-upload, as many hops
+  as you like ("remove background → crop → watermark → compress"). Read-and-clear with a
+  5-minute TTL, so a stale image can never load itself into an unrelated later visit
+  (`CBG.Chain` in `static/js/kit.js`). Every tool is a destination automatically: the
+  incoming file is delivered to whichever input carries `data-chain-input`, so the tool's
+  own change handler does the work and no tool needs to know the feature exists.
 - **PWA** — installable (with app shortcuts and a dedicated maskable icon), and a service
   worker whose shell is *generated* from the tool list and the contents of `static/js`, so
   it can't fall behind the toolkit. The ~40 MB model lives in a separate long-lived cache
@@ -61,11 +66,13 @@ you tune on screen and the rest are exported with the same settings as a ZIP
 - **Shared UI kit** — glassmorphism, dark mode, toasts, a custom colour picker, live value
   bubbles on every slider, before/after demo sliders, an "All tools" mega-menu with a
   responsive overflow nav.
-- **`window.CBG`** (`static/js/kit.js`) — the helpers every tool needs (`$`, `Toast`,
-  `loadImage`, drag/drop/paste wiring, ZIP export, a localStorage settings store). Loaded
-  as a *classic* script from `base.html`, which is what lets tool modules share code at
-  all: Django's static storage can't rewrite ES-module import paths, so a local `import`
-  between modules breaks in production.
+- **`window.CBG`** (`static/js/kit.js`) — the helpers every tool needs (`$`, `Toast`, `t`,
+  `loadImage`, `download`, `Chain`, drag/drop/paste wiring, ZIP export, a localStorage
+  settings store). Loaded as a *classic* script from `base.html`, which is what lets tool
+  modules share code at all: Django's static storage can't rewrite ES-module import paths,
+  so a local `import` between modules breaks in production. **Every** tool module now uses
+  it — `SharedKitTests` fails the build if one goes back to a private `Toast` or a
+  hand-rolled download anchor (which would also silently drop it out of the chain).
 
 ---
 
@@ -173,12 +180,12 @@ bgremover/
 │   ├── views.py               # every page + the data that drives the SEO pages
 │   ├── seo_content.py         # FAQ copy (renders the accordion AND the JSON-LD)
 │   ├── passport_data.py       # 22 countries: sizes, rules, FAQs
-│   ├── translations.py        # in-code pt-PT catalogue (no gettext build step)
+│   ├── translations.py        # in-code pt-PT catalogues: UI ({% t %}) + JS_UI (CBG.t)
 │   ├── context_processors.py  # TOOL_NAV, TOOL_GROUPS, TOOL_ACCENTS, canonical/hreflang
 │   ├── templatetags/i18n_extras.py   # the {% t %} tag
 │   ├── urls.py
 │   ├── models.py              # intentionally empty (no DB)
-│   └── tests.py               # 62 tests
+│   └── tests.py               # 98 tests
 ├── templates/
 │   ├── base.html              # layout, SEO, theme, tool nav + mega-menu, footer
 │   ├── remover/*.html         # one template per tool
@@ -195,8 +202,7 @@ bgremover/
 │   ├── js/app.js              # background remover + refine editor + crop dialog
 │   ├── js/compose-worker.js   # off-thread full-res export pipeline
 │   ├── js/<tool>.js           # one module per tool, deliberately self-contained
-│   ├── js/kit.js              # window.CBG — shared helpers (classic script)
-│   ├── js/handoff.js          # cross-tool image hand-off via IndexedDB
+│   ├── js/kit.js              # window.CBG — shared helpers, i18n, cross-tool chain
 │   ├── js/{theme,nav,stats,demo,range-value,colorpicker,landing,ads}.js  # shared chrome
 │   └── img/backgrounds/       # 17 preset backgrounds (full + thumb WEBP)
 ├── tests/                     # Node geometry test + Playwright smoke tests
@@ -283,7 +289,7 @@ Settings are selected via `DJANGO_SETTINGS_MODULE`: `config.settings.development
 ## 🧪 Testing
 
 ```bash
-python manage.py test           # 79 Django tests: pages, SEO, i18n, PWA, accents, icon subset
+python manage.py test           # 98 Django tests: pages, SEO, i18n, PWA, accents, icon subset
 npm test                        # crop-geometry unit tests (Node, no browser)
 python manage.py check --deploy # production security audit (use prod settings)
 ```
@@ -292,12 +298,24 @@ Beyond the obvious page tests, the Django suite guards a few things that are eas
 silently: **WCAG AA contrast** for every tool accent, that gradient headlines use the text
 pair rather than the surface pair, that no template references a **Font Awesome glyph
 outside the committed subset**, that ads never render on cross-origin-isolated pages, and
-that the Portuguese routes/hreflang work.
+that the Portuguese routes work and only claim `hreflang` where a translation exists.
 
-`EveryToolTests` walks `TOOL_NAV` itself, so every tool — present and future — is checked
-to render, load its JS module, own an accent, and appear in both the sitemap and the
-homepage grid. `PWATests` asserts the service-worker shell still covers every tool page
-and script, which is the drift that made the offline claim untrue.
+Several suites are written to walk the tool list rather than a hand-kept copy of it, since
+a second list is the thing that drifts:
+
+- `EveryToolTests` — every tool, present and future, renders, loads its JS module, owns an
+  accent, and appears in both the sitemap and the homepage grid.
+- `PWATests` — the service-worker shell still covers every tool page and script. This is
+  the drift that once made the offline claim untrue.
+- `ChainTests` — every tool offers chain destinations, never lists itself, never lists an
+  excluded tool, and marks exactly one `data-chain-input` so an incoming image can't be
+  dropped or delivered to a logo picker.
+- `SharedKitTests` — no tool has grown a private `Toast` or a hand-rolled download anchor
+  again.
+- `JsTranslationTests` — every runtime string is in `JS_UI`, no raw literal reaches
+  `Toast.show`, and no `{placeholder}` is lost in translation.
+- `TranslationCoverageTests` — `TRANSLATED_PATHS` matches how much Portuguese each page
+  actually renders, in both directions.
 
 Browser smoke tests (Playwright) live in `tests/` — see [`tests/README.md`](tests/README.md).
 
@@ -314,8 +332,8 @@ DJANGO_SETTINGS_MODULE=config.settings.production \
 ## 🔎 SEO & content architecture
 
 Everything is generated from data in `remover/views.py`, so adding a page is a data edit
-that automatically extends the nav, the internal links and the sitemap (**71 paths, listed
-in both languages**).
+that automatically extends the nav, the internal links and the sitemap (**72 paths; the 12
+with a real Portuguese translation are listed in both languages**).
 
 | Set | Route | Source |
 |-----|-------|--------|
@@ -335,11 +353,12 @@ Also:
   (query stripped), so every host/UTM variant consolidates onto one URL and advertises the
   same image.
 - **hreflang** `en` / `pt` / `x-default` on every page and on every sitemap entry, plus a
-  footer language switcher. The sitemap lists each page twice — once per language.
+  footer language switcher — but only for pages that really are translated (see
+  `TRANSLATED_PATHS`), so the sitemap lists a page twice only when a translation exists.
 - **Contextual internal links**: a related-tools row is injected into every page by
   `base.html` (same-group tools first — see `_related_tools()`).
 - `robots.txt` and `sitemap.xml` are generated from the page list with per-page
-  `priority` and `lastmod` (~142 URLs: 71 paths × 2 languages).
+  `priority` and `lastmod` (84 URLs: 72 English paths + the 12 translated Portuguese ones).
 
 ---
 
@@ -349,11 +368,34 @@ English is served at the root, Portuguese under `/pt/`, via `i18n_patterns` with
 `prefix_default_language=False`.
 
 Translations do **not** use gettext `.mo` files (msgfmt isn't assumed to exist on Vercel).
-Instead `remover/translations.py` holds an in-code catalogue resolved by the `{% t %}` tag,
-with graceful English fallback for anything untranslated. Current coverage: the shared
-chrome, the home page and all 11 use-case landing pages. The tool editor UIs, passport /
-country pages and legal pages still fall back to English — extend by adding strings to
-`translations.py`.
+Instead `remover/translations.py` holds two in-code catalogues:
+
+- **`UI`** — template copy, resolved by the `{% t %}` tag.
+- **`JS_UI`** — the messages tools raise *while you use them* ("Crop applied", "Export
+  failed"), resolved by `CBG.t(key, vars)` in the browser. `base.html` ships it as JSON
+  on `/pt/` pages only: keys are the English source text, so an English page needs no
+  payload at all. `CBG.plural(n, one, many)` picks between two keys, because Portuguese
+  and English don't always agree on which counts are plural.
+
+Both fall back to English for anything untranslated. `JsTranslationTests` fails the build
+if a string is wrapped in `t()` without a catalogue entry, if a raw literal is passed to
+`Toast.show`, or if a `{placeholder}` is dropped in translation.
+
+**Page coverage is partial, and that is now declared rather than implied.** The shared
+chrome, the home page and all 11 use-case landing pages are translated; the tool editor
+UIs, passport/country pages and legal pages still render English under `/pt/`.
+
+`views.TRANSLATED_PATHS` lists the pages that are really translated, and it gates three
+things: `hreflang` alternates, sitemap entries, and the canonical. An untranslated `/pt/`
+page stays reachable and keeps its translated chrome, but it no longer tells Google a
+Portuguese version exists, and it canonicalises to its English twin instead of competing
+with it. The footer language switcher is deliberately *not* gated on this — it is a UX
+affordance, and a Portuguese visitor landing deep in the site should still reach the part
+that is translated.
+
+`TranslationCoverageTests` keeps the list honest in both directions: it counts how much
+Portuguese each page actually renders and fails if a declared page isn't translated, or if
+a newly translated page was never added.
 
 ---
 

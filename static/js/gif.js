@@ -7,34 +7,11 @@
  * slider drag, so the canvas plays a cheap preview loop and the real GIF is
  * only built when the user asks. Nothing is uploaded.
  */
+
+const { $, $$, Toast, loadImage, t } = CBG;
 import { GIFEncoder, applyPalette, quantize } from 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm';
 
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const humanSize = (b) => (b < 1024 * 1024 ? `${Math.round(b / 1024)} KB` : `${(b / 1048576).toFixed(1)} MB`);
-
-const loadImage = (src) => new Promise((resolve, reject) => {
-  const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src;
-});
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 const App = {
   frames: [],       // [{ img, url, name }]
@@ -103,14 +80,14 @@ const App = {
     // Snapshot before clearing the input — fileList is the live input.files.
     const files = [...(fileList || [])].filter((f) => f && /^image\//.test(f.type));
     this.input.value = '';
-    if (!files.length) { Toast.show('Please choose image files', 'error'); return; }
+    if (!files.length) { Toast.show(t('Please choose image files'), 'error'); return; }
     for (const f of files) {
       const url = URL.createObjectURL(f);
       try {
         this.frames.push({ img: await loadImage(url), url, name: f.name });
       } catch {
         URL.revokeObjectURL(url);
-        Toast.show(`Could not read ${f.name}`, 'error');
+        Toast.show(t('Could not read {name}', { name: f.name }), 'error');
       }
     }
     if (!this.frames.length) return;
@@ -208,7 +185,7 @@ const App = {
   },
 
   async create() {
-    if (this.frames.length < 2) { Toast.show('Add at least 2 photos', 'error'); return; }
+    if (this.frames.length < 2) { Toast.show(t('Add at least 2 photos'), 'error'); return; }
     const btn = $('#gf-create');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1.5"></i>Encoding…';
@@ -245,7 +222,7 @@ const App = {
       dl.classList.remove('hidden');
       $('#gf-status').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>GIF ready · ${w}×${h} · ${seq.length} frames · ${humanSize(blob.size)}`;
     } catch (err) {
-      Toast.show('Could not build the GIF', 'error');
+      Toast.show(t('Could not build the GIF'), 'error');
       $('#gf-status').textContent = 'Encoding failed — try fewer or smaller frames.';
     } finally {
       btn.disabled = false;

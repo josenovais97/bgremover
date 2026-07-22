@@ -5,8 +5,15 @@ from django.utils.translation import get_language
 
 from config.middleware import ISOLATED_VIEWS
 
+from .translations import js_catalogue
 from .translations import t as tr
-from .views import USE_CASES
+from .views import USE_CASES, is_translated_path
+
+# Tools that cannot accept an arbitrary image handed over from another tool, so
+# they never appear as a destination in the "keep editing" bar. The QR generator
+# builds a code from a link — its only file input is an optional centre logo,
+# and dropping someone's photo there would be nonsense.
+CHAIN_EXCLUDED = {"qr"}
 
 # The tool switcher in the header. Defined once here so every item renders with
 # identical markup (no per-link drift in sizing/wrapping) and adding a tool is a
@@ -169,8 +176,16 @@ def _canonical_url(request):
     reach — www/apex, http/https, ?utm=… — declares the same canonical, letting
     Google consolidate signals onto one URL. `request.path` already excludes the
     query string and keeps any language prefix (e.g. /pt/…), which is correct.
+
+    One exception: a /pt/ page whose template is NOT translated (see
+    `views.TRANSLATED_PATHS`) serves the same English body as its root twin, so
+    it canonicalises to that twin instead of to itself. Two URLs serving the same
+    content otherwise compete with each other for the same query.
     """
-    return settings.SITE_URL.rstrip("/") + request.path
+    path = request.path
+    if path.startswith("/pt/") and not is_translated_path(path):
+        path = path[3:]
+    return settings.SITE_URL.rstrip("/") + path
 
 
 def _alternate_urls(request):
@@ -238,13 +253,39 @@ def seo(request):
         # Monetization: expose the AdSense config only where ads are allowed.
         "adsense_client": settings.ADSENSE_CLIENT if ads_allowed else "",
         "adsense_slot_landing": settings.ADSENSE_SLOT_LANDING,
-        # i18n
+        # i18n. `alt_*` drive the footer language switcher and are always offered
+        # — every page is reachable in both languages, and a Portuguese visitor
+        # who lands deep in the site should still be able to get to the
+        # translated part of it.
+        #
+        # `hreflang_alternates` is the SEO signal and is deliberately narrower:
+        # it is only true where the page BODY is really translated. The two were
+        # the same flag before, which meant every page told Google a Portuguese
+        # version existed while serving English.
         "LANGUAGE_CODE": get_language() or "en",
         "alt_en": alternates.get("en"),
         "alt_pt": alternates.get("pt"),
+        "hreflang_alternates": bool(alternates) and is_translated_path(request.path),
         # Canonical URL built from SITE_URL (host/query-stable) for <link rel=canonical> + og:url.
         "canonical_url": canonical_url,
         "site_url": settings.SITE_URL.rstrip("/"),
         # Contextual internal linking: a few related tools for the current page.
         "related_tools": _related_tools(tool_nav, url_name),
+        # Runtime strings for CBG.t(). Empty (and so omitted) on English pages.
+        # Passed as a dict, not pre-serialised: base.html renders it with
+        # |json_script, which escapes `<` and `&` for safe <script> embedding.
+        "js_i18n": js_catalogue(),
+        # Destinations for the cross-tool "keep editing this image" bar. Derived
+        # from TOOL_NAV like everything else, so a new tool becomes a valid
+        # destination by existing rather than by being listed a second time.
+        "chain_targets": [
+            {"url": t["url"], "label": t["label"], "icon": t["icon"]}
+            for t in _related_tools(tool_nav, url_name, limit=6)
+            if t["name"] not in CHAIN_EXCLUDED
+        ],
+        # Name of the current tool, so a chained image can tell its destination
+        # where it came from ("Carried over from Remove BG").
+        "current_tool_label": next(
+            (t["label"] for t in tool_nav if t["name"] == url_name), ""
+        ),
     }

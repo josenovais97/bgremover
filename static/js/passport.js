@@ -7,43 +7,16 @@
  * dimensions that photo booths / official portals expect (at 300 DPI), plus an
  * optional 6×4" print sheet tiled with copies. Nothing is uploaded.
  *
- * Self-contained (own helpers/toast) — only absolute-URL (CDN) imports are used,
- * since Django's static storage doesn't rewrite ES-module import paths.
+ * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
+ * a classic script — a local ES import would break, since Django's hashed-manifest
+ * static storage does not rewrite ES-module import paths.
  */
+
+const { $, $$, Toast, loadImage, download, t } = CBG;
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 
 /* --------------------------------------------------------------- helpers */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 function rafThrottle(fn) {
   let scheduled = false;
@@ -219,7 +192,7 @@ const App = {
 
   async load(file) {
     this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
+    if (!file || !/^image\//.test(file.type)) { Toast.show(t('Please choose an image'), 'error'); return; }
     this.cutout = null;
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
@@ -236,10 +209,10 @@ const App = {
       this.autoFit();
       this.render();
       window.__clearbgReport?.(1);
-      Toast.show('Background removed — position the head inside the guides', 'success');
+      Toast.show(t('Background removed — position the head inside the guides'), 'success');
     } catch (err) {
       console.error('[passport] bg removal failed:', err);
-      Toast.show('Background removal failed', 'error');
+      Toast.show(t('Background removal failed'), 'error');
       this.setBusy(false);
     }
   },
@@ -363,7 +336,7 @@ const App = {
     this.paint(c, f);
     const ext = fmt === 'image/png' ? 'png' : 'jpg';
     const blob = await new Promise((res) => c.toBlob(res, fmt, 0.95));
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
     this.download(blob, this.filename(ext));
     const kb = Math.round(blob.size / 1024);
     $('#pp-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${ext.toUpperCase()} · ${f.w}×${f.h}px · ${kb} KB`;
@@ -389,7 +362,7 @@ const App = {
     ctx.fillRect(0, 0, SW, SH);
     const cols = Math.max(1, Math.floor((SW - 2 * margin + gap) / (f.w + gap)));
     const rows = Math.max(1, Math.floor((SH - 2 * margin + gap) / (f.h + gap)));
-    if (cols * rows === 0) { Toast.show('Photo is larger than a 6×4 print', 'error'); return; }
+    if (cols * rows === 0) { Toast.show(t('Photo is larger than a 6×4 print'), 'error'); return; }
     const totalW = cols * f.w + (cols - 1) * gap;
     const totalH = rows * f.h + (rows - 1) * gap;
     const ox = (SW - totalW) / 2, oy = (SH - totalH) / 2;
@@ -403,19 +376,13 @@ const App = {
       }
     }
     const blob = await new Promise((res) => sheet.toBlob(res, 'image/jpeg', 0.95));
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
     this.download(blob, this.filename('sheet.jpg'));
     $('#pp-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Print sheet saved · ${cols * rows} copies on 6×4"`;
   },
 
   download(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    download(blob, name);
   },
 
   reset() {
