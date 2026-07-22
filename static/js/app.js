@@ -1330,10 +1330,7 @@ class Card {
         if (!this.processedBlob) return; // nothing to hand off yet
         e.preventDefault();
         const base = (this.file?.name || 'cutout').replace(/\.[^.]+$/, '');
-        await Chain.sendTo(a.href, a.textContent.trim(), {
-          blob: this.processedBlob,
-          name: `${base}.png`,
-        });
+        await Chain.sendTo(a.href, { blob: this.processedBlob, name: `${base}.png` });
       }),
     );
     $$('.zoomable', this.el).forEach((img) =>

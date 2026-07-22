@@ -24,6 +24,7 @@ const App = {
   shape: 'box',      // 'box' (drag a rectangle) | 'lasso' (trace a freehand shape)
   mode: 'blur',      // 'blur' | 'pixelate' | 'black' (applies to all regions)
   strength: 50,
+  showOriginal: false, // comparison view: canvas shows the untouched photo
 
   init() {
     this.dropzone = $('#rd-dropzone');
@@ -74,6 +75,7 @@ const App = {
 
     $('#rd-undo').addEventListener('click', () => { this.regions.pop(); this.updateButtons(); this.render(); });
     $('#rd-clear').addEventListener('click', () => { this.regions = []; this.updateButtons(); this.render(); });
+    $('#rd-compare').addEventListener('click', () => this.setCompare(!this.showOriginal));
     $('#rd-download').addEventListener('click', () => this.export('image/png'));
     $('#rd-download-jpg').addEventListener('click', () => this.export('image/jpeg'));
     $('#rd-new').addEventListener('click', () => this.reset());
@@ -81,6 +83,9 @@ const App = {
     // Draw a region on the canvas: a dragged box, or a traced freehand shape.
     this.canvas.addEventListener('pointerdown', (e) => {
       if (!this.original) return;
+      // Drawing on the comparison view would place a region against a picture
+      // the user is not editing; snap back to the redacted view first.
+      if (this.showOriginal) { this.setCompare(false); return; }
       this.canvas.setPointerCapture?.(e.pointerId);
       const p = this.toImage(e);
       this.drawing = true;
@@ -210,6 +215,31 @@ const App = {
     $('#rd-undo').disabled = !has;
     $('#rd-clear').disabled = !has;
     $('#rd-download').disabled = $('#rd-download-jpg').disabled = !this.original;
+    // Nothing to compare against until something is actually hidden.
+    const compare = $('#rd-compare');
+    compare.disabled = !has;
+    if (!has && this.showOriginal) this.setCompare(false);
+  },
+
+  /**
+   * Swap the canvas between the redacted result and the untouched original.
+   *
+   * A toggle rather than press-and-hold: this is the check you make before
+   * exporting something you intend to publish, so it has to work the same way
+   * for a mouse, a thumb and a keyboard — and holding a button steady while
+   * squinting at a small area is the wrong ergonomic for that.
+   */
+  setCompare(on) {
+    this.showOriginal = on;
+    const btn = $('#rd-compare');
+    btn.setAttribute('aria-pressed', String(on));
+    // Both glyphs are in the committed Font Awesome subset. The obvious partner
+    // for the eye — the struck-through variant — is NOT in it, and an icon
+    // outside the subset renders as a blank box with no error anywhere.
+    btn.querySelector('i').className = on ? 'fa-solid fa-shield-halved' : 'fa-solid fa-eye';
+    $('#rd-compare-label').textContent = on ? 'Show redacted' : 'Show original';
+    $('#rd-original-badge').classList.toggle('hidden', !on);
+    this.render();
   },
 
   // Apply the current effect inside one region. The effect is painted over the
@@ -241,12 +271,13 @@ const App = {
     ctx.restore();
   },
 
-  paint(canvas, outlines) {
+  paint(canvas, outlines, bare) {
     const w = this.original.naturalWidth, h = this.original.naturalHeight;
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, w, h);
     ctx.drawImage(this.original, 0, 0, w, h);
+    if (bare) return; // comparison view: the untouched original
     for (const box of this.regions) this.applyRegion(ctx, w, h, box);
     if (this.pending) this.applyRegion(ctx, w, h, this.pending);
     if (outlines) {
@@ -266,7 +297,9 @@ const App = {
 
   render() {
     if (!this.original) return;
-    this.paint(this.canvas, true);
+    // While comparing, paint the original with neither effects nor outlines —
+    // an outline over an unredacted face would suggest it was covered.
+    this.paint(this.canvas, !this.showOriginal, this.showOriginal);
   },
 
   async load(file) {
@@ -280,8 +313,10 @@ const App = {
       Toast.show(t('Could not read that image'), 'error'); return;
     }
     this.regions = [];
+    this.showOriginal = false;
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
+    this.setCompare(false);
     this.updateButtons();
     this.render();
   },
@@ -304,6 +339,7 @@ const App = {
     this.original = null;
     this.regions = [];
     this.pending = null;
+    this.setCompare(false);
     $('#rd-done').textContent = '';
   },
 };

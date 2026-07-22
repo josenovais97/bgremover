@@ -362,6 +362,7 @@ JS_UI = {
     "Failed: {detail}": "Falhou: {detail}",
     # --- Cross-tool chaining (kit.js) ---
     "Keep editing this image:": "Continue a editar esta imagem:",
+    "— keep going:": "— continue:",
     "Carried over from {tool}": "Trazido de {tool}",
 }
 

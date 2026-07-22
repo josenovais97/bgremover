@@ -231,10 +231,11 @@
      * that hold several at once — the remover's batch has one cut-out per card,
      * so the card passes its own rather than whichever was offered last.
      */
-    async sendTo(url, toolLabel, payload) {
+    async sendTo(url, payload) {
       const current = payload || this._pending;
       if (!current) { location.href = url; return; }
       const { blob, name } = current;
+      const here = document.body.dataset.toolLabel || '';
       try {
         const db = await openDb();
         await new Promise((resolve, reject) => {
@@ -244,8 +245,11 @@
             name,
             type: blob.type || 'image/png',
             ts: Date.now(),
-            from: document.body.dataset.toolLabel || '',
-            steps: [...currentSteps(), toolLabel].filter(Boolean),
+            from: here,
+            // The journey records where the image HAS BEEN, so it appends this
+            // tool — not the destination, which hasn't touched the image yet
+            // and will add itself when it renders its own bar.
+            steps: [...currentSteps(), here].filter(Boolean),
           }, KEY);
           tx.oncomplete = resolve;
           tx.onerror = () => reject(tx.error);
@@ -279,8 +283,13 @@
     },
   };
 
+  /** Tools this image has already been through, this session. */
   function currentSteps() {
     try { return JSON.parse(sessionStorage.getItem('clearbg:steps') || '[]'); } catch { return []; }
+  }
+
+  function setSteps(steps) {
+    try { sessionStorage.setItem('clearbg:steps', JSON.stringify(steps)); } catch { /* private mode */ }
   }
 
   /**
@@ -299,7 +308,13 @@
     const input = $('[data-chain-input]');
     if (!input) return;
     const handoff = await Chain.take();
-    if (!handoff) return;
+    if (!handoff) {
+      // Arriving at a tool with nothing in flight starts a new journey. Without
+      // this the trail from an earlier chain would persist for the whole session
+      // and be shown over an unrelated image the user has just picked.
+      setSteps([]);
+      return;
+    }
     try {
       const dt = new DataTransfer();
       dt.items.add(handoff.file);
@@ -308,7 +323,7 @@
     } catch {
       return; // no DataTransfer (old Safari) — the user picks the file as usual
     }
-    try { sessionStorage.setItem('clearbg:steps', JSON.stringify(handoff.steps)); } catch { /* private mode */ }
+    setSteps(handoff.steps);
     if (handoff.from) Toast.show(t('Carried over from {tool}', { tool: handoff.from }), 'info');
   }
 
@@ -329,6 +344,25 @@
     c.classList.toggle('bottom-28', up);
   }
 
+  /**
+   * Write the journey so far into `el`: "Remove BG → Crop → Watermark".
+   *
+   * The trail is what makes the toolkit read as one editor rather than a set of
+   * pages that happen to hand files to each other — without it the bar can only
+   * say "here are some other tools", which is the thing a user already knows.
+   * On the first hop there is no journey yet, so it just states the offer.
+   */
+  function renderTrail(el) {
+    const steps = [...currentSteps(), document.body.dataset.toolLabel]
+      .filter(Boolean)
+      // Re-entering the same tool twice in a row (export, tweak, export again)
+      // is one step, not two.
+      .filter((s, i, all) => s !== all[i - 1]);
+    el.textContent = steps.length > 1
+      ? `${steps.join(' → ')} ${t('— keep going:')}`
+      : t('Keep editing this image:');
+  }
+
   function renderBar() {
     if (barEl || !Chain.has()) return;
     let targets = [];
@@ -340,16 +374,16 @@
       'fixed inset-x-0 bottom-0 z-40 px-4 pb-4 pointer-events-none print:hidden';
     barEl.innerHTML = `
       <div class="pointer-events-auto mx-auto max-w-3xl glass border border-gray-200/70 dark:border-gray-800/70 rounded-2xl shadow-xl p-3 sm:p-4 flex flex-wrap items-center gap-x-3 gap-y-2 translate-y-3 opacity-0 transition-all duration-300">
-        <span class="flex items-center gap-2 text-sm font-medium">
-          <i class="fa-solid fa-circle-check text-green-500" aria-hidden="true"></i>
-          <span data-label></span>
+        <span class="flex items-center gap-2 text-sm font-medium min-w-0">
+          <i class="fa-solid fa-circle-check text-green-500 shrink-0" aria-hidden="true"></i>
+          <span data-label class="truncate"></span>
         </span>
         <div class="flex flex-wrap items-center gap-1.5 ml-auto" data-targets></div>
         <button type="button" data-dismiss class="p-2 -m-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
       </div>`;
-    barEl.querySelector('[data-label]').textContent = t('Keep editing this image:');
+    renderTrail(barEl.querySelector('[data-label]'));
 
     const holder = barEl.querySelector('[data-targets]');
     for (const tool of targets.slice(0, 5)) {
@@ -359,7 +393,7 @@
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-primary/40 bg-primary/5 text-primaryText hover:bg-primary/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
       b.innerHTML = `<i class="${tool.icon}" aria-hidden="true"></i>`;
       b.appendChild(document.createTextNode(tool.label));
-      b.addEventListener('click', () => Chain.sendTo(tool.url, tool.label));
+      b.addEventListener('click', () => Chain.sendTo(tool.url));
       holder.appendChild(b);
     }
     barEl.querySelector('[data-dismiss]').addEventListener('click', () => {

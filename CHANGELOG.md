@@ -4,6 +4,49 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **The chain bar shows the journey** — "Crop → Convert → Compress — keep going:"
+  rather than a fixed label. 1.9.0 carried the trail through IndexedDB and
+  sessionStorage but never rendered it; without it the bar could only say "here
+  are some other tools", which is the thing a user already knows. Arriving at a
+  tool with nothing in flight clears the trail, so an earlier journey is never
+  shown over an unrelated image.
+- **Compare against the original in Blur & Redact** (`/redact-image/`). The point
+  of redacting is that something is really covered, and that can only be judged
+  against the original — but the tool only ever showed the redacted result. A
+  toggle (not press-and-hold, so it works the same for a mouse, a thumb and a
+  keyboard) swaps the canvas, with a badge on the photo so the two views can't be
+  confused. Drawing while comparing snaps back rather than placing a region
+  against a picture you aren't editing.
+- **A demo on Image to PDF** (`/image-to-pdf/`), which was the only tool page
+  without one. Deliberately not the shared before/after slider: there is no
+  "after" of the same frame to wipe between — three photos become one paged
+  document, and the document is the thing worth showing. The asset is generated
+  from the same page geometry the exporter uses (A4 portrait, image fitted inside
+  the margin).
+
+### Changed
+- **The QR generator was rebuilt to match the rest of the toolkit.** It read as
+  the cheapest page on the site: the code floated small in a mostly empty panel,
+  the download buttons sat below six stacked panels of equal visual weight, and
+  the four style presets were four words in four boxes — you had to click each
+  one to find out what it did.
+  - The style presets now render a live miniature of the code they produce,
+    painted by the same routine as the 512px export (the drawing code was pulled
+    out of `App` into free functions taking an options object, so a thumbnail
+    cannot drift from what clicking it does).
+  - Downloads moved beside the preview, which is presented on a white card that
+    stays white in dark mode — a QR is ink on paper, and previewing it on a dark
+    surface misrepresents what you print.
+  - Added one-tap curated colour pairs, a live export summary (size, recovery
+    level), and a **low-contrast warning**: the two reliable ways to make a QR
+    unscannable are low contrast and a light foreground, and nothing flagged
+    either. Gradients are checked at their weakest stop.
+  - Size, error correction and quiet-zone margin moved into a collapsed
+    "Advanced" panel; they had been pushing the download button off the page.
+
 ## [1.9.0] — 2026-07-22
 
 Nineteen tools become one editor, the runtime speaks Portuguese, and the site
