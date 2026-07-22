@@ -19,6 +19,13 @@ Params:
         <p class="text-gray-600 dark:text-gray-300">
             {% t "Every tool runs the same way the background remover does — on your device, free, with nothing uploaded." %}
         </p>
+        {% comment %}Chaining is the toolkit's best feature and it was invisible: the bar that
+        offers the next tool only appears once you export, which is the moment you were
+        already leaving. Saying it here is what turns nineteen pages into one editor.{% endcomment %}
+        <p class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm bg-primary/10 text-primaryText font-medium">
+            <i class="fa-solid fa-arrow-right-arrow-left text-xs" aria-hidden="true"></i>
+            {% t "Finish in one, carry straight on to the next — no re-uploading." %}
+        </p>
     </div>
 
     {% comment %}

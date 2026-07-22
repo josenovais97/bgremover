@@ -2,7 +2,7 @@
 {% load static i18n_extras %}
 
 {% block title %}Free QR Code Generator — No Expiry, No Tracking, PNG &amp; SVG{% endblock %}
-{% block description %}Generate QR codes free in your browser. Custom colours, high-resolution PNG and scalable SVG downloads. Static codes that never expire and don't track scans — nothing is uploaded.{% endblock %}
+{% block description %}Generate QR codes free in your browser — links, Wi-Fi networks, contact cards, email, SMS and phone. Custom colours, high-resolution PNG and scalable SVG. Static codes that never expire and don't track scans, and nothing is uploaded.{% endblock %}
 {% block og_title %}Free QR Code Generator — Private, No Expiry{% endblock %}
 
 {% block extra_seo %}
@@ -32,8 +32,9 @@
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Generator</span>
         </h1>
         <p class="text-lg text-gray-600 dark:text-gray-300">
-            Turn any link or text into a QR code — custom colours, crisp PNG or scalable SVG.
-            Static codes that <strong>never expire</strong> and don't track scans. Free and 100% private.
+            Links, <strong>Wi-Fi networks</strong>, contact cards, email, SMS or plain text — with custom
+            colours and a crisp PNG or scalable SVG. Static codes that <strong>never expire</strong> and
+            don't track scans. Free and 100% private.
         </p>
     </section>
 
@@ -68,10 +69,77 @@
         </div>
 
         <div class="space-y-4">
-            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-2">
-                <label for="qr-text" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Content</label>
-                <textarea id="qr-text" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" placeholder="https://…  ·  Wi-Fi  ·  email  ·  any text">https://clearbg.pt</textarea>
-                <p class="text-[11px] text-gray-400">The data lives in the code itself — shorter text makes a simpler, easier-to-scan pattern.</p>
+            {% comment %}A QR can carry structured payloads, but only if it is written in the
+            exact syntax a scanner expects (WIFI:S:…;T:WPA;P:…;; and so on). Asking people to
+            type that by hand is asking them to look it up, so each type gets real fields and
+            qr.js encodes them — including the character escaping the Wi-Fi format needs.{% endcomment %}
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Content</span>
+
+                <div id="qr-types" class="grid grid-cols-3 gap-1.5 text-xs font-medium" role="group" aria-label="QR code type">
+                    <button type="button" class="qr-type px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-type="link" aria-pressed="true">Link</button>
+                    <button type="button" class="qr-type px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-type="wifi" aria-pressed="false">Wi-Fi</button>
+                    <button type="button" class="qr-type px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-type="vcard" aria-pressed="false">Contact</button>
+                    <button type="button" class="qr-type px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-type="email" aria-pressed="false">Email</button>
+                    <button type="button" class="qr-type px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-type="sms" aria-pressed="false">SMS</button>
+                    <button type="button" class="qr-type px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-type="phone" aria-pressed="false">Phone</button>
+                </div>
+
+                <!-- Link / plain text -->
+                <div class="qr-fields space-y-2" data-fields="link">
+                    <textarea id="qr-text" rows="2" class="qr-in w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" placeholder="https://…  or  any text" aria-label="Link or text">https://clearbg.pt</textarea>
+                </div>
+
+                <!-- Wi-Fi -->
+                <div class="qr-fields hidden space-y-2" data-fields="wifi">
+                    <input id="qr-wifi-ssid" type="text" class="qr-in qr-field" placeholder="Network name (SSID)" aria-label="Wi-Fi network name">
+                    <input id="qr-wifi-pass" type="text" class="qr-in qr-field" placeholder="Password" aria-label="Wi-Fi password">
+                    <div class="grid grid-cols-3 gap-1.5 text-xs font-medium">
+                        <button type="button" class="qr-wifi-sec px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 ring-2 ring-primary" data-sec="WPA">WPA/WPA2</button>
+                        <button type="button" class="qr-wifi-sec px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-sec="WEP">WEP</button>
+                        <button type="button" class="qr-wifi-sec px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-sec="nopass">Open</button>
+                    </div>
+                    <label class="flex items-center justify-between gap-2 text-xs cursor-pointer select-none">
+                        <span class="text-gray-500 dark:text-gray-400">Hidden network</span>
+                        <input id="qr-wifi-hidden" type="checkbox" class="qr-in accent-primary w-4 h-4">
+                    </label>
+                    <p class="text-[11px] text-gray-400">Scanning it joins the network — anyone who can see the code can read the password.</p>
+                </div>
+
+                <!-- Contact (vCard) -->
+                <div class="qr-fields hidden space-y-2" data-fields="vcard">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input id="qr-vc-first" type="text" class="qr-in qr-field" placeholder="First name" aria-label="First name">
+                        <input id="qr-vc-last" type="text" class="qr-in qr-field" placeholder="Last name" aria-label="Last name">
+                    </div>
+                    <input id="qr-vc-phone" type="tel" class="qr-in qr-field" placeholder="Phone" aria-label="Contact phone">
+                    <input id="qr-vc-email" type="email" class="qr-in qr-field" placeholder="Email" aria-label="Contact email">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input id="qr-vc-org" type="text" class="qr-in qr-field" placeholder="Company" aria-label="Company">
+                        <input id="qr-vc-title" type="text" class="qr-in qr-field" placeholder="Job title" aria-label="Job title">
+                    </div>
+                    <input id="qr-vc-url" type="url" class="qr-in qr-field" placeholder="Website" aria-label="Contact website">
+                </div>
+
+                <!-- Email -->
+                <div class="qr-fields hidden space-y-2" data-fields="email">
+                    <input id="qr-em-to" type="email" class="qr-in qr-field" placeholder="To" aria-label="Email recipient">
+                    <input id="qr-em-subject" type="text" class="qr-in qr-field" placeholder="Subject" aria-label="Email subject">
+                    <textarea id="qr-em-body" rows="2" class="qr-in qr-field resize-none" placeholder="Message" aria-label="Email message"></textarea>
+                </div>
+
+                <!-- SMS -->
+                <div class="qr-fields hidden space-y-2" data-fields="sms">
+                    <input id="qr-sms-to" type="tel" class="qr-in qr-field" placeholder="Phone number" aria-label="SMS recipient">
+                    <textarea id="qr-sms-body" rows="2" class="qr-in qr-field resize-none" placeholder="Message" aria-label="SMS message"></textarea>
+                </div>
+
+                <!-- Phone -->
+                <div class="qr-fields hidden space-y-2" data-fields="phone">
+                    <input id="qr-tel" type="tel" class="qr-in qr-field" placeholder="Phone number" aria-label="Phone number">
+                </div>
+
+                <p class="text-[11px] text-gray-400">The data lives in the code itself — less of it makes a simpler, easier-to-scan pattern.</p>
             </div>
 
             {% comment %}Preset tiles render a real miniature of the style they apply (qr.js

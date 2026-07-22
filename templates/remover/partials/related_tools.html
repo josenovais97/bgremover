@@ -12,7 +12,10 @@ hub, which already shows the full grid).
 <section aria-labelledby="related-title" class="mt-16 max-w-4xl mx-auto space-y-6">
     <div class="text-center space-y-2">
         <h2 id="related-title" class="text-2xl font-bold tracking-tight">{% t "More free, private tools" %}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400">{% t "Same story everywhere — runs in your browser, nothing uploaded." %}</p>
+        {% comment %}Phrased as a hand-off rather than a plain cross-link: this block sits at
+        the foot of every tool page, which is exactly where someone who has just finished
+        one job decides whether there is a second one.{% endcomment %}
+        <p class="text-sm text-gray-500 dark:text-gray-400">{% t "Export here and keep editing there — your image carries over, with no re-upload." %}</p>
     </div>
     <ul role="list" class="flex flex-wrap justify-center gap-3 sm:gap-4">
         {% for item in related_tools %}

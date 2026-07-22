@@ -103,6 +103,92 @@ function paintMatrix(ctx, model, o, px) {
   drawEye(ctx, m * cell, (count - 7 + m) * cell, cell, fill, o);
 }
 
+/* -------------------------------------------------------------- payloads
+ * Encoders for the structured QR types. These are the syntaxes phone cameras
+ * actually recognise; typing them by hand means looking them up first, which is
+ * why the content box used to advertise "Wi-Fi · email" while only accepting
+ * raw text.
+ */
+
+/** Escape the characters that terminate fields in the WIFI: format. */
+const wifiEscape = (s) => String(s || '').replace(/([\\;,:"])/g, '\\$1');
+
+const vcardEscape = (s) =>
+  String(s || '').replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
+
+/**
+ * One vCard line. Pass an ARRAY for a structured field (N, ADR).
+ *
+ * The distinction matters: in `N:Family;Given;;;` the semicolons separate the
+ * five name components, so they must stay raw while the components themselves
+ * are escaped. Escaping the separators too collapses the whole name into the
+ * family-name slot.
+ */
+function vcardLine(key, value) {
+  if (Array.isArray(value)) {
+    if (!value.some(Boolean)) return '';
+    return `${key}:${value.map(vcardEscape).join(';')}\n`;
+  }
+  if (!value) return '';
+  return `${key}:${vcardEscape(value)}\n`;
+}
+
+const PAYLOAD = {
+  link: (f) => f.text.trim(),
+
+  wifi: (f) => {
+    if (!f.ssid) return '';
+    const parts = [`T:${f.security}`, `S:${wifiEscape(f.ssid)}`];
+    // An open network carries no password field at all; sending an empty one
+    // makes some Android scanners prompt for a key that does not exist.
+    if (f.security !== 'nopass' && f.password) parts.push(`P:${wifiEscape(f.password)}`);
+    if (f.hidden) parts.push('H:true');
+    return `WIFI:${parts.join(';')};;`;
+  },
+
+  vcard: (f) => {
+    const full = [f.first, f.last].filter(Boolean).join(' ');
+    if (!full && !f.phone && !f.email) return '';
+    return 'BEGIN:VCARD\nVERSION:3.0\n'
+      + vcardLine('N', [f.last, f.first, '', '', ''])
+      + vcardLine('FN', full)
+      + vcardLine('ORG', f.org)
+      + vcardLine('TITLE', f.title)
+      + vcardLine('TEL;TYPE=CELL', f.phone)
+      + vcardLine('EMAIL', f.email)
+      + vcardLine('URL', f.url)
+      + 'END:VCARD';
+  },
+
+  // mailto/sms/tel rather than the older MATMSG:/SMSTO: forms — every modern
+  // camera app hands these straight to the OS, which knows what to do with them.
+  email: (f) => {
+    if (!f.to) return '';
+    const q = [];
+    if (f.subject) q.push(`subject=${encodeURIComponent(f.subject)}`);
+    if (f.body) q.push(`body=${encodeURIComponent(f.body)}`);
+    return `mailto:${f.to.trim()}${q.length ? '?' + q.join('&') : ''}`;
+  },
+
+  sms: (f) => {
+    if (!f.to) return '';
+    const n = f.to.replace(/[^\d+]/g, '');
+    return `sms:${n}${f.body ? `?body=${encodeURIComponent(f.body)}` : ''}`;
+  },
+
+  phone: (f) => (f.number ? `tel:${f.number.replace(/[^\d+]/g, '')}` : ''),
+};
+
+/** What to ask for when a type has nothing to encode yet. */
+const PROMPT = {
+  link: 'Enter a link or some text.',
+  wifi: 'Enter the network name to build the code.',
+  vcard: 'Enter a name, phone or email to build the card.',
+  email: 'Enter the email address to send to.',
+  sms: 'Enter the phone number to text.',
+  phone: 'Enter the phone number to call.',
+};
+
 /** Relative luminance, for the "these two colours won't scan" warning. */
 function luminance(hex) {
   const h = String(hex).replace('#', '');
@@ -119,6 +205,8 @@ function contrastRatio(a, b) {
 }
 
 const App = {
+  type: 'link',
+  wifiSecurity: 'WPA',
   text: 'https://clearbg.pt',
   fg: '#111827', bg: '#ffffff',
   gradient: false, fg2: '#4f46e5', gradAngle: 45,
@@ -131,7 +219,19 @@ const App = {
     this.canvas = $('#qr-canvas');
     const render = rafThrottle(() => this.render());
 
-    $('#qr-text').addEventListener('input', (e) => { this.text = e.target.value; render(); });
+    // One listener for every field of every type: any edit re-encodes the
+    // active type's payload, so adding a field is a template-only change.
+    $$('.qr-in').forEach((el) =>
+      el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', () => { this.syncContent(); render(); }));
+
+    $$('.qr-type').forEach((b) => b.addEventListener('click', () => this.setType(b.dataset.type, render)));
+    $$('.qr-wifi-sec').forEach((b) => b.addEventListener('click', () => {
+      this.wifiSecurity = b.dataset.sec;
+      this.highlight('.qr-wifi-sec', b);
+      // An open network has no password to type.
+      $('#qr-wifi-pass').classList.toggle('hidden', this.wifiSecurity === 'nopass');
+      this.syncContent(); render();
+    }));
     $('#qr-fg').addEventListener('input', (e) => { this.fg = e.target.value; render(); });
     $('#qr-bg').addEventListener('input', (e) => { this.bg = e.target.value; render(); });
     $('#qr-fg2').addEventListener('input', (e) => { this.fg2 = e.target.value; render(); });
@@ -158,11 +258,49 @@ const App = {
 
     this.buildPalettes();
     this.renderThumbs();
+    this.syncContent();
     this.render();
   },
 
   highlight(sel, btn) {
     $$(sel).forEach((x) => { const a = x === btn; x.classList.toggle('ring-2', a); x.classList.toggle('ring-primary', a); });
+  },
+
+  /** Switch content type: show its fields, re-encode, move focus into it. */
+  setType(type, render) {
+    this.type = type;
+    $$('.qr-type').forEach((b) => {
+      const on = b.dataset.type === type;
+      b.setAttribute('aria-pressed', String(on));
+      b.classList.toggle('ring-2', on);
+      b.classList.toggle('ring-primary', on);
+    });
+    $$('.qr-fields').forEach((f) => f.classList.toggle('hidden', f.dataset.fields !== type));
+    this.syncContent();
+    render();
+    $(`.qr-fields[data-fields="${type}"] .qr-in`)?.focus();
+  },
+
+  /** Re-encode the active type's fields into the string the QR will carry. */
+  syncContent() {
+    const val = (sel) => ($(sel)?.value || '').trim();
+    const fields = {
+      link: () => ({ text: $('#qr-text').value }),
+      wifi: () => ({
+        ssid: val('#qr-wifi-ssid'), password: val('#qr-wifi-pass'),
+        security: this.wifiSecurity, hidden: $('#qr-wifi-hidden').checked,
+      }),
+      vcard: () => ({
+        first: val('#qr-vc-first'), last: val('#qr-vc-last'),
+        phone: val('#qr-vc-phone'), email: val('#qr-vc-email'),
+        org: val('#qr-vc-org'), title: val('#qr-vc-title'), url: val('#qr-vc-url'),
+      }),
+      email: () => ({ to: val('#qr-em-to'), subject: val('#qr-em-subject'), body: val('#qr-em-body') }),
+      sms: () => ({ to: val('#qr-sms-to'), body: val('#qr-sms-body') }),
+      phone: () => ({ number: val('#qr-tel') }),
+    }[this.type]();
+    this.text = PAYLOAD[this.type](fields);
+    this.empty = !this.text;
   },
 
   /** Selected state for the style tiles, which are cards rather than pills. */
@@ -274,8 +412,21 @@ const App = {
   },
 
   render() {
-    const ok = this.build();
     const dl = $('#qr-download'), dls = $('#qr-download-svg');
+
+    // A structured type with its key field still blank would otherwise encode a
+    // single space and render a perfectly scannable code for nothing at all.
+    if (this.empty) {
+      dl.disabled = dls.disabled = true;
+      const ctx = this.canvas.getContext('2d');
+      this.canvas.width = this.canvas.height = 512;
+      ctx.fillStyle = this.bg;
+      ctx.fillRect(0, 0, 512, 512);
+      $('#qr-done').textContent = PROMPT[this.type];
+      return;
+    }
+
+    const ok = this.build();
     if (!ok) {
       dl.disabled = dls.disabled = true;
       $('#qr-done').innerHTML = '<span class="text-red-500">Too much data — shorten the text or lower the error correction.</span>';
@@ -386,4 +537,11 @@ const App = {
   },
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  // Read-only handle for the browser smoke tests, which assert the encoded
+  // payload directly — the escaping rules in the WIFI:/vCard formats are the
+  // part most likely to break silently, and a rendered code can't be diffed.
+  // Everything here is already present in the page's own form fields.
+  window.__qr = App;
+});

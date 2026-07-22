@@ -88,8 +88,13 @@
    * here, which is what makes "continue in another tool" work everywhere
    * without each tool having to know the feature exists: the thing you just
    * exported IS the thing you'd want to carry to the next tool.
+   *
+   * Pass `{ chain: false }` when the result must NOT be offered onwards. The
+   * GIF maker does: every destination tool composites through a canvas, so a
+   * chained GIF would arrive as its first frame with the animation silently
+   * discarded — worse than not offering the hop at all.
    */
-  function download(blob, name) {
+  function download(blob, name, { chain = true } = {}) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -98,7 +103,7 @@
     a.click();
     URL.revokeObjectURL(url);
     a.remove();
-    if (/^image\//.test(blob.type || '')) Chain.offer(blob, name);
+    if (chain && /^image\//.test(blob.type || '')) Chain.offer(blob, name);
   }
 
   /**

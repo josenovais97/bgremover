@@ -7,6 +7,23 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **QR codes for Wi-Fi, contacts, email, SMS and phone**, not just links. A QR can
+  carry these already, but only in the exact syntax a scanner expects
+  (`WIFI:T:WPA;S:…;P:…;;`, a vCard block, `mailto:`), so the content box had been
+  advertising "Wi-Fi · email" while accepting raw text — you had to know the
+  format and type it yourself. Each type now has real fields and qr.js encodes
+  them, including the escaping the Wi-Fi format needs and the structured-vs-
+  escaped distinction in a vCard `N:` line. A type with its key field still blank
+  disables export rather than rendering a scannable code for a single space.
+- **The GIF maker's export goes through the shared download path**, and
+  deliberately opts OUT of cross-tool chaining (`CBG.download(…, {chain: false})`).
+  Every destination tool composites through a canvas, so a chained GIF would
+  arrive as its first frame with the animation silently discarded. Not offering
+  the hop is better than offering a lossy one.
+- **Cross-tool chaining is now advertised** on the homepage tool grid and in the
+  related-tools block at the foot of every tool page. The feature shipped in
+  1.9.0 with no way to discover it: the bar that offers the next tool only
+  appears once you export, which is the moment you were already leaving.
 - **The chain bar shows the journey** — "Crop → Convert → Compress — keep going:"
   rather than a fixed label. 1.9.0 carried the trail through IndexedDB and
   sessionStorage but never rendered it; without it the bar could only say "here
@@ -26,6 +43,18 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   document, and the document is the thing worth showing. The asset is generated
   from the same page geometry the exporter uses (A4 portrait, image fitted inside
   the margin).
+
+### Fixed
+- **`tests/smoke_crop.py` had been failing and nobody noticed.** The options
+  panel gained tabs (Background / Size & format / Effects) and now opens by
+  itself when a card finishes, so the test's unconditional `.options-btn` click
+  was *closing* it and every control below became unreachable. It ensures the
+  panel is open and activates the right tab per assertion. This is the only
+  end-to-end coverage of the remover's crop dialog, effects and export sizing —
+  the 98 Django tests assert markup, not behaviour.
+- **The EXIF demo contradicted the sample photo the same page offers.** It listed
+  an invented iPhone-in-Lisbon set while "Try a sample photo" loads a Pixel 7 Pro
+  photo taken in Kenya. The demo now shows the real metadata inside that file.
 
 ### Changed
 - **The QR generator was rebuilt to match the rest of the toolkit.** It read as

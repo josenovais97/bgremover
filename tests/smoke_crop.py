@@ -105,8 +105,24 @@ def main():
         # Sticker effects grow the composed output and clear cleanly.
         pg.click("#crop-cancel") if pg.evaluate(
             "()=>!document.querySelector('#crop-modal').classList.contains('hidden')") else None
-        pg.click(".options-btn")
-        time.sleep(0.2)
+        # The options panel is open once a card finishes, and `.options-btn`
+        # TOGGLES it — clicking unconditionally used to close it, leaving every
+        # control below unreachable. Ensure it is open instead of assuming.
+        if not pg.is_visible(".options-panel"):
+            pg.click(".options-btn")
+            time.sleep(0.3)
+
+        def tab(name):
+            """Show one of the options panel's tabpanels.
+
+            The panel is tabbed (Background / Size & format / Effects) and only
+            the active panel is in the DOM flow — a control in a hidden tab can
+            never be clicked, which is what silently broke this file.
+            """
+            pg.click(f".opt-tab[data-tab={name}]")
+            time.sleep(0.25)
+
+        tab("effects")
         size_before = pg.evaluate("()=>{const i=document.querySelector('.processed-img');"
                                   "return [i.naturalWidth,i.naturalHeight];}")
         pg.check(".fx-outline")
@@ -122,6 +138,7 @@ def main():
         check("turning outline off restores the original size", size_off == size_before)
 
         # Rich background (gradient) composites into the preview.
+        tab("background")
         pg.click(".bg-grad-btn")
         time.sleep(0.6)
         check("gradient background composites into the preview",
@@ -129,6 +146,7 @@ def main():
               and pg.evaluate("()=>document.querySelector('.bg-grad-btn').classList.contains('bg-primary')"))
 
         # Export size preset produces an exact-size download (read the PNG IHDR).
+        tab("size")
         pg.click(".size-btn[data-size='512x512']")
         time.sleep(0.2)
         with pg.expect_download(timeout=8000) as di:

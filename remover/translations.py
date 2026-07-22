@@ -54,6 +54,10 @@ UI = {
     "More free, private tools": "Mais ferramentas grátis e privadas",
     "Same story everywhere — runs in your browser, nothing uploaded.":
         "A mesma história em todo o lado — corre no seu navegador, sem nada carregado.",
+    "Export here and keep editing there — your image carries over, with no re-upload.":
+        "Exporte aqui e continue a editar ali — a sua imagem acompanha-o, sem novo carregamento.",
+    "Finish in one, carry straight on to the next — no re-uploading.":
+        "Termine numa e siga logo para a seguinte — sem voltar a carregar.",
     # Homepage tool grid — heading, intro, and one blurb per TOOL_NAV entry
     "One toolkit for every image job": "Um conjunto de ferramentas para cada tarefa",
     "Every tool runs the same way the background remover does — on your device, free, with nothing uploaded.":
