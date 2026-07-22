@@ -100,8 +100,8 @@
                 <p class="text-[11px] text-gray-400">For anything that must stay unreadable, use <strong>Pixelate</strong> or <strong>Black bar</strong> — a light blur can sometimes be reversed.</p>
             </div>
 
-            {# Revealed by redact.js only where the browser ships the Shape Detection
-               API — an always-visible button that can't work would be worse than none. #}
+            {% comment %} Revealed by redact.js only where the browser ships the Shape Detection
+               API — an always-visible button that can't work would be worse than none. {% endcomment %}
             <button id="rd-auto" type="button" class="hidden w-full px-4 py-2.5 rounded-xl text-xs font-semibold border border-primary/50 bg-primary/5 text-primaryText hover:bg-primary/10 transition disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <i class="fa-solid fa-user mr-1.5" aria-hidden="true"></i>Auto-detect faces
                 <span class="block font-normal text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Detected on your device — nothing is uploaded</span>
