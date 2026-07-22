@@ -34,9 +34,9 @@ Every tool is 100% client-side, free, unlimited, and watermark-free.
 | **Passport & ID photos** | `/passport-photo/` | Exact biometric size at 300 DPI for 22 countries, guide lines, auto-fit, 6×4 print sheet. |
 | **Product photos** | `/ecommerce/` | One click → product centred on pure white at Amazon / Etsy / Shopify sizes. Batch + ZIP. |
 | **Background blur** | `/blur-background/` | Portrait-mode depth: the removal mask keeps the subject sharp and blurs the rest. |
-| **Blur & redact** | `/redact-image/` | Drag boxes *or trace a freehand lasso* over faces/plates/text; blur, pixelate or black out. |
+| **Blur & redact** | `/redact-image/` | Drag boxes *or trace a freehand lasso* over faces/plates/text; blur, pixelate or black out, and toggle back to the original to check your work. |
 | **Favicon generator** | `/favicon-generator/` | A full icon set as a ZIP: multi-size `.ico`, PNGs, Apple touch, PWA + maskable, `site.webmanifest`, paste-ready HTML. |
-| **QR code generator** | `/qr-code-generator/` | Styled static QR (square/rounded/dot modules, styled eyes, gradient, centre logo) → PNG or SVG. |
+| **QR code generator** | `/qr-code-generator/` | Styled static QR (square/rounded/dot modules, styled eyes, gradient, centre logo) → PNG or SVG. Live-rendered style previews, curated colour pairs and a low-contrast warning. |
 | **EXIF remover** | `/exif-remover/` | Reads GPS/camera/date metadata, then strips it — **losslessly** for JPEG (marker segments dropped, pixel data untouched). |
 | **Image to PDF** | `/image-to-pdf/` | Combine photos or scans into one multi-page PDF; drag to reorder, A4/Letter/fit-image, margins. JPEG and PNG bytes are embedded as-is. |
 

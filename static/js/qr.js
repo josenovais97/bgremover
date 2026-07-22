@@ -23,6 +23,101 @@ const PRESETS = {
   soft: { moduleShape: 'rounded', eyeShape: 'rounded', gradient: true, fg: '#4f46e5', fg2: '#06b6d4' },
 };
 
+// Curated foreground/background pairs. Every one is dark-on-light or light-on-
+// dark with a wide margin, because the two reliable ways to make a QR unscannable
+// are low contrast and an inverted (light-on-dark) code that some readers reject.
+const PALETTES = [
+  { name: 'Ink', fg: '#111827', bg: '#ffffff', gradient: false },
+  { name: 'Ocean', fg: '#0369a1', bg: '#ffffff', gradient: true, fg2: '#0891b2' },
+  { name: 'Grape', fg: '#6d28d9', bg: '#ffffff', gradient: true, fg2: '#c026d3' },
+  { name: 'Sunset', fg: '#c2410c', bg: '#ffffff', gradient: true, fg2: '#be123c' },
+  { name: 'Forest', fg: '#065f46', bg: '#ffffff', gradient: false },
+  { name: 'Midnight', fg: '#e5e7eb', bg: '#0f172a', gradient: false },
+];
+
+/* ----------------------------------------------------------------- drawing
+ * These are free functions taking an options object rather than methods on App,
+ * so the style-preset thumbnails paint through exactly the same code as the
+ * 512px export. A thumbnail drawn by a separate simplified routine would
+ * eventually stop matching what clicking it actually does.
+ */
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  if (r > 0.01 && ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+  else ctx.rect(x, y, w, h);
+}
+
+function drawModule(ctx, x, y, cell, shape) {
+  // Dots must slightly overlap their neighbours (r ≥ 0.5·cell) or scanners
+  // can't fit the module grid; 0.52 keeps a clean dot look with a safety margin.
+  if (shape === 'dots') { ctx.beginPath(); ctx.arc(x + cell / 2, y + cell / 2, cell * 0.52, 0, Math.PI * 2); ctx.fill(); }
+  else if (shape === 'rounded') { roundRectPath(ctx, x, y, cell, cell, cell * 0.35); ctx.fill(); }
+  else ctx.fillRect(x, y, cell, cell);
+}
+
+function eyeRadius(n, shape) {
+  return shape === 'circle' ? n / 2 : shape === 'rounded' ? n * 0.28 : 0;
+}
+
+function drawEye(ctx, ox, oy, cell, fill, o) {
+  ctx.fillStyle = fill;
+  roundRectPath(ctx, ox, oy, 7 * cell, 7 * cell, eyeRadius(7 * cell, o.eyeShape)); ctx.fill();
+  ctx.fillStyle = o.bg;
+  roundRectPath(ctx, ox + cell, oy + cell, 5 * cell, 5 * cell, eyeRadius(5 * cell, o.eyeShape)); ctx.fill();
+  ctx.fillStyle = fill;
+  roundRectPath(ctx, ox + 2 * cell, oy + 2 * cell, 3 * cell, 3 * cell, eyeRadius(3 * cell, o.eyeShape)); ctx.fill();
+}
+
+const isEye = (r, c, n) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+
+/** Paint `model` onto `ctx` at `px` pixels square, styled by `o`. */
+function paintMatrix(ctx, model, o, px) {
+  const count = model.count;
+  const m = o.margin ? 4 : 0;
+  const total = count + m * 2;
+  const cell = px / total;
+
+  ctx.fillStyle = o.bg;
+  ctx.fillRect(0, 0, px, px);
+
+  let fill = o.fg;
+  if (o.gradient) {
+    const rad = (o.gradAngle * Math.PI) / 180;
+    const span = count * cell;
+    const g = ctx.createLinearGradient(m * cell, m * cell,
+      m * cell + Math.cos(rad) * span, m * cell + Math.sin(rad) * span);
+    g.addColorStop(0, o.fg); g.addColorStop(1, o.fg2);
+    fill = g;
+  }
+
+  ctx.fillStyle = fill;
+  for (let r = 0; r < count; r++) {
+    for (let c = 0; c < count; c++) {
+      if (model.isDark(r, c) && !isEye(r, c, count)) {
+        drawModule(ctx, (c + m) * cell, (r + m) * cell, cell, o.moduleShape);
+      }
+    }
+  }
+  drawEye(ctx, m * cell, m * cell, cell, fill, o);
+  drawEye(ctx, (count - 7 + m) * cell, m * cell, cell, fill, o);
+  drawEye(ctx, m * cell, (count - 7 + m) * cell, cell, fill, o);
+}
+
+/** Relative luminance, for the "these two colours won't scan" warning. */
+function luminance(hex) {
+  const h = String(hex).replace('#', '');
+  const v = [0, 2, 4].map((i) => {
+    const n = parseInt(h.slice(i, i + 2), 16) / 255;
+    return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+}
+
+function contrastRatio(a, b) {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 const App = {
   text: 'https://clearbg.pt',
   fg: '#111827', bg: '#ffffff',
@@ -53,7 +148,7 @@ const App = {
     $$('.qr-mod').forEach((b) => b.addEventListener('click', () => { this.moduleShape = b.dataset.shape; this.highlight('.qr-mod', b); render(); }));
     $$('.qr-eye').forEach((b) => b.addEventListener('click', () => { this.eyeShape = b.dataset.eye; this.highlight('.qr-eye', b); render(); }));
     $$('.qr-ecc-btn').forEach((b) => b.addEventListener('click', () => { this.ecc = b.dataset.ecc; this.highlight('.qr-ecc-btn', b); render(); }));
-    $$('.qr-preset').forEach((b) => b.addEventListener('click', () => { this.applyPreset(b.dataset.preset); this.highlight('.qr-preset', b); render(); }));
+    $$('.qr-preset').forEach((b) => b.addEventListener('click', () => { this.applyPreset(b.dataset.preset); this.highlightPreset(b.dataset.preset); render(); }));
 
     $('#qr-logo').addEventListener('change', (e) => this.setLogo(e.target.files[0]));
     $('#qr-logo-clear').addEventListener('click', () => this.clearLogo());
@@ -61,11 +156,36 @@ const App = {
     $('#qr-download').addEventListener('click', () => this.downloadPng());
     $('#qr-download-svg').addEventListener('click', () => this.downloadSvg());
 
+    this.buildPalettes();
+    this.renderThumbs();
     this.render();
   },
 
   highlight(sel, btn) {
     $$(sel).forEach((x) => { const a = x === btn; x.classList.toggle('ring-2', a); x.classList.toggle('ring-primary', a); });
+  },
+
+  /** Selected state for the style tiles, which are cards rather than pills. */
+  highlightPreset(name) {
+    $$('.qr-preset').forEach((x) => {
+      const on = x.dataset.preset === name;
+      x.setAttribute('aria-pressed', String(on));
+      x.classList.toggle('border-primary', on);
+      x.classList.toggle('bg-primary/5', on);
+      x.classList.toggle('border-gray-200', !on);
+      x.classList.toggle('dark:border-gray-800', !on);
+      x.classList.toggle('hover:border-primary/60', !on);
+    });
+  },
+
+  /** Mirror the current colours back into the pickers and the gradient row. */
+  syncColourInputs() {
+    $('#qr-fg').value = this.fg;
+    $('#qr-bg').value = this.bg;
+    $('#qr-fg2').value = this.fg2;
+    $('#qr-gradient').checked = this.gradient;
+    $('#qr-gradient-row').classList.toggle('hidden', !this.gradient);
+    $('#qr-gradient-row').classList.toggle('flex', this.gradient);
   },
 
   applyPreset(name) {
@@ -75,11 +195,31 @@ const App = {
     // Reflect the preset in the controls.
     $$('.qr-mod').forEach((x) => { const a = x.dataset.shape === this.moduleShape; x.classList.toggle('ring-2', a); x.classList.toggle('ring-primary', a); });
     $$('.qr-eye').forEach((x) => { const a = x.dataset.eye === this.eyeShape; x.classList.toggle('ring-2', a); x.classList.toggle('ring-primary', a); });
-    $('#qr-gradient').checked = this.gradient;
-    $('#qr-gradient-row').classList.toggle('hidden', !this.gradient);
-    $('#qr-gradient-row').classList.toggle('flex', this.gradient);
-    if (p.fg) $('#qr-fg').value = this.fg;
-    if (p.fg2) $('#qr-fg2').value = this.fg2;
+    this.syncColourInputs();
+  },
+
+  /** Build the one-tap colour pairs, each previewing its own fill. */
+  buildPalettes() {
+    const holder = $('#qr-palettes');
+    PALETTES.forEach((p) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className =
+        'qr-palette w-8 h-8 rounded-lg border border-gray-300 dark:border-gray-700 shadow-sm transition hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+      b.title = p.name;
+      b.setAttribute('aria-label', `${p.name} colours`);
+      // The swatch shows the fill over the background it is meant to sit on, so
+      // a light-on-dark pair reads as such before you apply it.
+      b.style.background = p.gradient
+        ? `linear-gradient(135deg, ${p.fg}, ${p.fg2})`
+        : `linear-gradient(135deg, ${p.fg} 0 50%, ${p.bg} 50% 100%)`;
+      b.addEventListener('click', () => {
+        Object.assign(this, { fg: p.fg, bg: p.bg, gradient: p.gradient, fg2: p.fg2 || this.fg2 });
+        this.syncColourInputs();
+        this.render();
+      });
+      holder.appendChild(b);
+    });
   },
 
   async setLogo(file) {
@@ -112,52 +252,25 @@ const App = {
     return true;
   },
 
-  isEye(r, c, n) {
-    return (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
-  },
-
-  roundRectPath(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    if (r > 0.01 && ctx.roundRect) ctx.roundRect(x, y, w, h, r);
-    else ctx.rect(x, y, w, h);
-  },
-
-  drawShape(ctx, x, y, cell) {
-    // Dots must slightly overlap their neighbours (r ≥ 0.5·cell) or scanners
-    // can't fit the module grid; 0.52 keeps a clean dot look with a safety margin.
-    if (this.moduleShape === 'dots') { ctx.beginPath(); ctx.arc(x + cell / 2, y + cell / 2, cell * 0.52, 0, Math.PI * 2); ctx.fill(); }
-    else if (this.moduleShape === 'rounded') { this.roundRectPath(ctx, x, y, cell, cell, cell * 0.35); ctx.fill(); }
-    else ctx.fillRect(x, y, cell, cell);
-  },
-
-  eyeRadius(n) {
-    return this.eyeShape === 'circle' ? n / 2 : this.eyeShape === 'rounded' ? n * 0.28 : 0;
-  },
-
-  drawEye(ctx, ox, oy, cell, fill) {
-    ctx.fillStyle = fill;
-    this.roundRectPath(ctx, ox, oy, 7 * cell, 7 * cell, this.eyeRadius(7 * cell)); ctx.fill();
-    ctx.fillStyle = this.bg;
-    this.roundRectPath(ctx, ox + cell, oy + cell, 5 * cell, 5 * cell, this.eyeRadius(5 * cell)); ctx.fill();
-    ctx.fillStyle = fill;
-    this.roundRectPath(ctx, ox + 2 * cell, oy + 2 * cell, 3 * cell, 3 * cell, this.eyeRadius(3 * cell)); ctx.fill();
-  },
-
-  gradientFor(ctx, ox, oy, span) {
-    const rad = (this.gradAngle * Math.PI) / 180;
-    const g = ctx.createLinearGradient(ox, oy, ox + Math.cos(rad) * span, oy + Math.sin(rad) * span);
-    g.addColorStop(0, this.fg); g.addColorStop(1, this.fg2);
-    return g;
-  },
-
   drawLogo(ctx, px) {
     const box = px * 0.22, x = (px - box) / 2, y = (px - box) / 2, pad = box * 0.14;
     ctx.fillStyle = this.bg;
-    this.roundRectPath(ctx, x - pad, y - pad, box + 2 * pad, box + 2 * pad, box * 0.2); ctx.fill();
+    roundRectPath(ctx, x - pad, y - pad, box + 2 * pad, box + 2 * pad, box * 0.2); ctx.fill();
     const img = this.logoImg;
     const s = Math.min(box / img.naturalWidth, box / img.naturalHeight);
     const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
     ctx.drawImage(img, x + (box - dw) / 2, y + (box - dh) / 2, dw, dh);
+  },
+
+  /** The style fields paintMatrix needs, snapshotted from current state. */
+  style(overrides) {
+    return {
+      moduleShape: this.moduleShape, eyeShape: this.eyeShape,
+      fg: this.fg, fg2: this.fg2, bg: this.bg,
+      gradient: this.gradient, gradAngle: this.gradAngle,
+      margin: this.margin,
+      ...overrides,
+    };
   },
 
   render() {
@@ -171,30 +284,48 @@ const App = {
     dl.disabled = dls.disabled = false;
     $('#qr-done').textContent = 'Scan it to test before you download.';
 
-    const { count } = this.model;
-    const m = this.margin ? 4 : 0;
-    const total = count + m * 2;
+    const total = this.model.count + (this.margin ? 8 : 0);
     const px = Math.max(total, this.size);
-    const cell = px / total;
     const c = this.canvas;
     c.width = px; c.height = px;
     const ctx = c.getContext('2d');
-    ctx.fillStyle = this.bg;
-    ctx.fillRect(0, 0, px, px);
-
-    const fill = this.gradient ? this.gradientFor(ctx, m * cell, m * cell, count * cell) : this.fg;
-    ctx.fillStyle = fill;
-    for (let r = 0; r < count; r++) {
-      for (let col = 0; col < count; col++) {
-        if (this.model.isDark(r, col) && !this.isEye(r, col, count)) {
-          this.drawShape(ctx, (col + m) * cell, (r + m) * cell, cell);
-        }
-      }
-    }
-    this.drawEye(ctx, m * cell, m * cell, cell, fill);
-    this.drawEye(ctx, (count - 7 + m) * cell, m * cell, cell, fill);
-    this.drawEye(ctx, m * cell, (count - 7 + m) * cell, cell, fill);
+    paintMatrix(ctx, this.model, this.style(), px);
     if (this.logoImg) this.drawLogo(ctx, px);
+    this.updateSpecs();
+  },
+
+  /** Live export summary under the preview, and the contrast warning. */
+  updateSpecs() {
+    const ECC_LABEL = { L: 'Low recovery', M: 'Medium recovery', Q: 'High recovery', H: 'Max recovery' };
+    const px = this.canvas.width;
+    $('#qr-spec-size').textContent = `${px} × ${px}`;
+    $('#qr-spec-ecc').textContent = ECC_LABEL[this.logoImg ? 'H' : this.ecc];
+    // Compare the lighter gradient stop too — a gradient is only as scannable
+    // as its weakest end against the background.
+    const worst = this.gradient
+      ? Math.min(contrastRatio(this.fg, this.bg), contrastRatio(this.fg2, this.bg))
+      : contrastRatio(this.fg, this.bg);
+    $('#qr-contrast').classList.toggle('hidden', worst >= 4);
+  },
+
+  /** Paint each style tile with a miniature of the code it would produce. */
+  renderThumbs() {
+    const qr = qrcode(0, 'M');
+    qr.addData('https://clearbg.pt');
+    try { qr.make(); } catch { return; }
+    const model = { count: qr.getModuleCount(), isDark: (r, c) => qr.isDark(r, c) };
+
+    $$('.qr-preset').forEach((btn) => {
+      const canvas = btn.querySelector('canvas');
+      if (!canvas) return;
+      const p = PRESETS[btn.dataset.preset];
+      const ctx = canvas.getContext('2d');
+      paintMatrix(ctx, model, {
+        moduleShape: p.moduleShape, eyeShape: p.eyeShape,
+        fg: p.fg || '#111827', fg2: p.fg2 || '#4f46e5', bg: '#ffffff',
+        gradient: !!p.gradient, gradAngle: 45, margin: true,
+      }, canvas.width);
+    });
   },
 
   // --- SVG (vector) mirror of the canvas render ---
@@ -212,7 +343,7 @@ const App = {
     let body = '';
     for (let r = 0; r < count; r++) {
       for (let col = 0; col < count; col++) {
-        if (!this.model.isDark(r, col) || this.isEye(r, col, count)) continue;
+        if (!this.model.isDark(r, col) || isEye(r, col, count)) continue;
         const x = col + m, y = r + m;
         if (this.moduleShape === 'dots') body += `<circle cx="${f(x + 0.5)}" cy="${f(y + 0.5)}" r="0.52"/>`;
         else if (this.moduleShape === 'rounded') body += `<rect x="${x}" y="${y}" width="1" height="1" rx="0.35"/>`;
@@ -220,7 +351,7 @@ const App = {
       }
     }
     const eye = (ox, oy) => {
-      const rr = (n) => f(this.eyeRadius(n));
+      const rr = (n) => f(eyeRadius(n, this.eyeShape));
       return `<rect x="${ox}" y="${oy}" width="7" height="7" rx="${rr(7)}" fill="${fillRef}"/>` +
         `<rect x="${ox + 1}" y="${oy + 1}" width="5" height="5" rx="${rr(5)}" fill="${this.bg}"/>` +
         `<rect x="${ox + 2}" y="${oy + 2}" width="3" height="3" rx="${rr(3)}" fill="${fillRef}"/>`;
