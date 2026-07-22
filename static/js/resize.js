@@ -12,7 +12,7 @@
  *
  * Shared helpers come from window.CBG (static/js/kit.js).
  */
-const { $, $$, Toast, loadImage, dropzone, zipDownload, remember, baseName } = window.CBG;
+const { $, $$, Toast, loadImage, dropzone, zipDownload, remember, baseName, download, t } = CBG;
 
 const clampInt = (v) => Math.max(1, Math.round(v || 0));
 const prefs = remember('resize');
@@ -96,7 +96,7 @@ const App = {
     this.queue = rest;
     if (this.url) URL.revokeObjectURL(this.url);
     this.url = URL.createObjectURL(first);
-    try { this.img = await loadImage(this.url); } catch { Toast.show('Could not read that image', 'error'); return; }
+    try { this.img = await loadImage(this.url); } catch { Toast.show(t('Could not read that image'), 'error'); return; }
     this.ow = this.img.naturalWidth; this.oh = this.img.naturalHeight;
     this.w = this.ow; this.h = this.oh;
     $('#rs-preview').src = this.url;
@@ -147,8 +147,8 @@ const App = {
   async download() {
     if (!this.img) return;
     const out = await this.resizeFile(this.file, true);
-    if (!out) { Toast.show('Export failed', 'error'); return; }
-    window.CBG.download(out.blob, out.name);
+    if (!out) { Toast.show(t('Export failed'), 'error'); return; }
+    download(out.blob, out.name);
     $('#rs-dims').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${this.w} × ${this.h}px · ${Math.round(out.blob.size / 1024)} KB`;
   },
 
@@ -163,7 +163,7 @@ const App = {
       for (const f of this.queue) entries.push(await this.resizeFile(f, false));
       await zipDownload(entries.filter(Boolean), 'clearbg-resized.zip');
     } catch {
-      Toast.show('Could not build the ZIP', 'error');
+      Toast.show(t('Could not build the ZIP'), 'error');
     } finally {
       btn.disabled = false;
       label.textContent = original;

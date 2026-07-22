@@ -5,43 +5,17 @@
  * bold outlined meme font (draggable, word-wrapped, uppercase by default), and
  * exports a PNG/JPG or copies to the clipboard. Nothing is uploaded.
  *
- * Self-contained (own helpers/toast); no local ES-module imports.
+ * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
+ * a classic script — a local ES import would break, since Django's hashed-manifest
+ * static storage does not rewrite ES-module import paths.
  */
 
+const { $, $$, Toast, loadImage, download, t } = CBG;
+
 /* --------------------------------------------------------------- helpers */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
 const toBlob = (canvas, mime, q) => new Promise((res) => canvas.toBlob(res, mime, q));
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 function rafThrottle(fn) {
   let scheduled = false;
@@ -114,13 +88,13 @@ const App = {
 
   async load(file) {
     this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
+    if (!file || !/^image\//.test(file.type)) { Toast.show(t('Please choose an image'), 'error'); return; }
     try {
       if (this.imgUrl) URL.revokeObjectURL(this.imgUrl);
       this.imgUrl = URL.createObjectURL(file);
       this.img = await loadImage(this.imgUrl);
     } catch {
-      Toast.show("Couldn't open that image", 'error');
+      Toast.show(t("Couldn't open that image"), 'error');
       return;
     }
     const iw = this.img.naturalWidth, ih = this.img.naturalHeight;
@@ -241,16 +215,9 @@ const App = {
   async export(fmt) {
     if (!this.img) return;
     const blob = await toBlob(this.compose(fmt), fmt, 0.92);
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
     const ext = fmt === 'image/jpeg' ? 'jpg' : 'png';
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `meme.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    download(blob, `meme.${ext}`);
   },
 
   async copy() {
@@ -258,9 +225,9 @@ const App = {
     try {
       const blob = await toBlob(this.compose('image/png'), 'image/png');
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-      Toast.show('Meme copied to clipboard', 'success');
+      Toast.show(t('Meme copied to clipboard'), 'success');
     } catch {
-      Toast.show('Copy not supported here — use Download', 'error');
+      Toast.show(t('Copy not supported here — use Download'), 'error');
     }
   },
 

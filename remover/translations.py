@@ -32,6 +32,11 @@ UI = {
     "eCommerce": "eCommerce",
     "Blur": "Desfocar",
     "Portrait": "Retrato",
+    "Resize": "Redimensionar",
+    "Text Behind": "Texto Atrás",
+    "Redact": "Ocultar",
+    "QR Code": "Código QR",
+    # "Instagram" and "EXIF" are left alone — both are proper nouns in Portuguese.
     "Favicon": "Favicon",
     "Image to PDF": "Imagem para PDF",
     "Combine photos or scans into one PDF": "Junte fotos ou digitalizações num só PDF",
@@ -257,6 +262,118 @@ def t(text, lang=None):
     if _is_pt(lang):
         return UI.get(text, text)
     return text
+
+
+# --- Runtime (JavaScript) strings --------------------------------------------
+# Messages the tools raise while you use them. These live apart from UI because
+# they are shipped to the browser as JSON (see js_catalogue below) rather than
+# rendered by {% t %} — sending the whole UI catalogue would mean paying for the
+# marketing copy on every tool page.
+#
+# `{name}`-style placeholders are filled in by CBG.t(key, vars). Keep them in
+# both languages; a missing placeholder silently drops the value.
+#
+# Singular/plural pairs are two separate keys picked by CBG.plural(n, …),
+# because Portuguese and English do not always agree on which counts are plural.
+JS_UI = {
+    # --- Input / file handling ---
+    "Please choose an image": "Escolha uma imagem",
+    "Please choose image files": "Escolha ficheiros de imagem",
+    "Couldn't open that image": "Não foi possível abrir essa imagem",
+    "Could not read that image": "Não foi possível ler essa imagem",
+    "Could not load that image": "Não foi possível carregar essa imagem",
+    "Could not read {name}": "Não foi possível ler {name}",
+    "{name}: too large (max {max})": "{name}: demasiado grande (máx. {max})",
+    "{name}: unsupported format (use JPG, PNG or WEBP)":
+        "{name}: formato não suportado (use JPG, PNG ou WEBP)",
+    "Couldn't load the sample": "Não foi possível carregar o exemplo",
+    "Couldn't load that logo": "Não foi possível carregar esse logótipo",
+    "Cleared all images": "Todas as imagens foram removidas",
+    "History cleared": "Histórico limpo",
+    "Add at least 2 photos": "Adicione pelo menos 2 fotografias",
+    "Add more images to apply options to all":
+        "Adicione mais imagens para aplicar as opções a todas",
+    # --- Export ---
+    "Export failed": "A exportação falhou",
+    "Building ZIP…": "A criar o ZIP…",
+    "Could not build the ZIP": "Não foi possível criar o ZIP",
+    "Could not build the GIF": "Não foi possível criar o GIF",
+    "Could not build the PDF": "Não foi possível criar o PDF",
+    "Building your icon pack…": "A criar o seu pacote de ícones…",
+    "Could not build the icon pack": "Não foi possível criar o pacote de ícones",
+    "Icon pack downloaded": "Pacote de ícones descarregado",
+    "Could not prepare the download": "Não foi possível preparar a transferência",
+    "WebP not supported here — downloading PNG instead":
+        "WebP não é suportado aqui — a descarregar PNG",
+    "Building carousel ZIP…": "A criar o ZIP do carrossel…",
+    "Carousel export failed": "A exportação do carrossel falhou",
+    "Saved a {n}-tile carousel — post the tiles in order":
+        "Carrossel de {n} imagens guardado — publique-as por ordem",
+    "Saved crop {w}×{h}": "Recorte {w}×{h} guardado",
+    "Saved {w}×{h} for Instagram": "Guardado {w}×{h} para Instagram",
+    "Photo is larger than a 6×4 print": "A fotografia é maior do que uma impressão 6×4",
+    # --- Clipboard ---
+    "Copied to clipboard": "Copiado para a área de transferência",
+    "Meme copied to clipboard": "Meme copiado para a área de transferência",
+    "HTML copied to clipboard": "HTML copiado para a área de transferência",
+    "Copy failed": "Não foi possível copiar",
+    "Clipboard not supported in this browser":
+        "A área de transferência não é suportada neste navegador",
+    "Copy not supported here — use Download":
+        "Cópia não suportada aqui — use Descarregar",
+    # --- Background removal ---
+    "Background removal failed": "A remoção do fundo falhou",
+    "Background removed": "Fundo removido",
+    "Background removed — add your outline & text":
+        "Fundo removido — adicione o contorno e o texto",
+    "Background removed — position the head inside the guides":
+        "Fundo removido — posicione a cabeça dentro das guias",
+    "Could not cut out the subject": "Não foi possível recortar o assunto",
+    "Could not find the subject": "Não foi possível encontrar o assunto",
+    "Portrait blur applied — adjust the strength":
+        "Desfoque de retrato aplicado — ajuste a intensidade",
+    # --- Editing ---
+    "Crop applied": "Recorte aplicado",
+    "Edits applied": "Alterações aplicadas",
+    "Could not open the image to crop": "Não foi possível abrir a imagem para recortar",
+    "Could not render the crop preview":
+        "Não foi possível gerar a pré-visualização do recorte",
+    "Type your text and drag it behind the subject":
+        "Escreva o seu texto e arraste-o para trás do assunto",
+    'Saved look "{name}"': 'Estilo "{name}" guardado',
+    # --- Redaction ---
+    "Face detection is not available in this browser":
+        "A deteção de rostos não está disponível neste navegador",
+    "No faces found — draw over them by hand":
+        "Nenhum rosto encontrado — desenhe sobre eles manualmente",
+    "{n} face hidden — adjust or add more by hand":
+        "{n} rosto ocultado — ajuste ou adicione mais manualmente",
+    "{n} faces hidden — adjust or add more by hand":
+        "{n} rostos ocultados — ajuste ou adicione mais manualmente",
+    # --- Batch ---
+    "Applied to {n} other image": "Aplicado a mais {n} imagem",
+    "Applied to {n} other images": "Aplicado a mais {n} imagens",
+    "Ready — {n} photo. Pick a marketplace and download.":
+        "Pronto — {n} fotografia. Escolha um marketplace e descarregue.",
+    "Ready — {n} photos. Pick a marketplace and download.":
+        "Pronto — {n} fotografias. Escolha um marketplace e descarregue.",
+    # --- Errors ---
+    "Error: {message}": "Erro: {message}",
+    "Failed: {detail}": "Falhou: {detail}",
+    # --- Cross-tool chaining (kit.js) ---
+    "Keep editing this image:": "Continue a editar esta imagem:",
+    "Carried over from {tool}": "Trazido de {tool}",
+}
+
+
+def js_catalogue(lang=None):
+    """The runtime string catalogue for the browser, or {} on English pages.
+
+    Empty for English on purpose: CBG.t() returns its key unchanged when a
+    string is missing, and the keys ARE the English text, so an English page
+    needs no payload at all.
+    """
+    return JS_UI if _is_pt(lang) else {}
 
 
 # --- Landing-page (use-case) copy, fully translated --------------------------

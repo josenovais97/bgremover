@@ -6,43 +6,17 @@
  * marketplace expects. One click per marketplace (Amazon / Etsy / Shopify).
  * Nothing is uploaded.
  *
- * Self-contained (own helpers/toast) — only absolute-URL (CDN) imports are used.
+ * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
+ * a classic script — a local ES import would break, since Django's hashed-manifest
+ * static storage does not rewrite ES-module import paths.
  */
+
+const { $, $$, Toast, loadImage, download, t } = CBG;
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 
 /* --------------------------------------------------------------- helpers */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 function rafThrottle(fn) {
   let scheduled = false;
@@ -191,7 +165,7 @@ const App = {
     // input.files, so resetting the value first would empty it out.
     const files = [...(fileList || [])].filter((f) => f && /^image\//.test(f.type));
     this.input.value = '';
-    if (!files.length) { Toast.show('Please choose image files', 'error'); return; }
+    if (!files.length) { Toast.show(t('Please choose image files'), 'error'); return; }
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
     files.forEach((f) => this.addItem(f));
@@ -229,7 +203,7 @@ const App = {
     this.busy = false;
     this.updateDownload();
     const done = this.doneItems().length;
-    if (done) Toast.show(`Ready — ${done} photo${done > 1 ? 's' : ''}. Pick a marketplace and download.`, 'success');
+    if (done) Toast.show(CBG.plural(done, 'Ready — {n} photo. Pick a marketplace and download.', 'Ready — {n} photos. Pick a marketplace and download.'), 'success');
   },
 
   paintItem(it) {
@@ -307,10 +281,7 @@ const App = {
   },
 
   saveBlob(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name;
-    document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
+    download(blob, name);
   },
 
   async exportOne(item) {
@@ -318,7 +289,7 @@ const App = {
     const m = MARKETS[this.market];
     const { ext } = this.fmt();
     const blob = await this.renderExportBlob(item);
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
     const base = item.name.replace(/\.[^.]+$/, '');
     this.saveBlob(blob, `${base}-${m.label.toLowerCase()}-${m.size}.${ext}`);
   },

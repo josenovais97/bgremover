@@ -13,7 +13,10 @@
     <meta name="description" content="{% block description %}Remove image backgrounds instantly and 100% free. AI runs in your browser — no uploads, no watermarks, no quality loss. Export transparent PNGs in full resolution.{% endblock %}">
     <link rel="canonical" href="{{ canonical_url }}">
     <meta name="robots" content="index, follow">
-    {% if alt_en and alt_pt %}
+    {% comment %}Only pages whose body is really translated advertise a Portuguese
+    alternate — see views.TRANSLATED_PATHS. The footer switcher below is separate and
+    stays on every page; this is the crawler-facing claim, and it has to be true.{% endcomment %}
+    {% if hreflang_alternates %}
     <link rel="alternate" hreflang="en" href="{{ alt_en }}">
     <link rel="alternate" hreflang="pt" href="{{ alt_pt }}">
     <link rel="alternate" hreflang="x-default" href="{{ alt_en }}">
@@ -106,7 +109,7 @@
     <!-- Set theme before paint (external so no inline script is needed). -->
     <script src="{% static 'js/theme.js' %}"></script>
 </head>
-<body style="--color-primary: {{ accent_rgb }}; --color-primary-hover: {{ accent_rgb_hover }}; --accent-text-dark: {{ accent_rgb_text_dark }}; --accent-text-dark-alt: {{ accent_rgb_text_dark_alt }}" class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col font-sans">
+<body data-tool-label="{{ current_tool_label }}" style="--color-primary: {{ accent_rgb }}; --color-primary-hover: {{ accent_rgb_hover }}; --accent-text-dark: {{ accent_rgb_text_dark }}; --accent-text-dark-alt: {{ accent_rgb_text_dark_alt }}" class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col font-sans">
 
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white">{% t "Skip to content" %}</a>
 
@@ -278,6 +281,15 @@
     </footer>
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none" role="status" aria-live="polite"></div>
+
+    {% comment %}Runtime strings for CBG.t(). Rendered only on translated pages — on
+    English ones CBG.t() returns its key, which IS the English text, so there is nothing
+    to send. json_script escapes for safe embedding in <script>.{% endcomment %}
+    {% if js_i18n %}{{ js_i18n|json_script:"cbg-i18n" }}{% endif %}
+    {% comment %}Destinations for the cross-tool "keep editing this image" bar (kit.js).
+    Derived from TOOL_NAV, so a new tool is a valid destination without being listed
+    anywhere a second time.{% endcomment %}
+    {{ chain_targets|json_script:"chain-targets" }}
 
     <!-- Shared helpers (window.CBG). A classic script so the type="module" tool
          scripts, which are deferred, always see it — and so tools never need a

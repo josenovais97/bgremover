@@ -15,7 +15,7 @@
  */
 import exifr from 'https://cdn.jsdelivr.net/npm/exifr@7.1.3/+esm';
 
-const { $, Toast, loadImage, dropzone, zipDownload, baseName } = window.CBG;
+const { $, Toast, loadImage, humanSize, dropzone, zipDownload, baseName, download, t } = CBG;
 
 // Losslessly strip a JPEG's metadata: keep every marker segment except the
 // APPn (0xE0–0xEF, where EXIF/JFIF/XMP live) and COM (0xFE) blocks, and copy
@@ -69,8 +69,6 @@ const NOTABLE = {
   Orientation: 'Orientation', Artist: 'Author', Copyright: 'Copyright',
 };
 
-const { humanSize } = window.CBG;
-
 const App = {
   file: null,
   buffer: null,
@@ -107,7 +105,7 @@ const App = {
       const blob = await res.blob();
       await this.load([new File([blob], 'zebra-sample.jpg', { type: 'image/jpeg' })]);
     } catch {
-      Toast.show('Could not load the sample', 'error');
+      Toast.show(t("Couldn't load the sample"), 'error');
     }
   },
 
@@ -212,8 +210,8 @@ const App = {
   async download() {
     if (!this.file) return;
     const { blob, ext } = await this.cleanBlob();
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
-    window.CBG.download(blob, `${baseName(this.file.name)}-clean.${ext}`);
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+    download(blob, `${baseName(this.file.name)}-clean.${ext}`);
     $('#ex-filemeta').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Clean copy saved · ${humanSize(blob.size)} · no metadata`;
   },
 
@@ -232,7 +230,7 @@ const App = {
       }
       await zipDownload(entries, 'clearbg-metadata-removed.zip');
     } catch {
-      Toast.show('Could not build the ZIP', 'error');
+      Toast.show(t('Could not build the ZIP'), 'error');
     } finally {
       btn.disabled = false;
       label.textContent = original;

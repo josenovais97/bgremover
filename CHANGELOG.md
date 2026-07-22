@@ -4,6 +4,70 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] — 2026-07-22
+
+Nineteen tools become one editor, the runtime speaks Portuguese, and the site
+stops telling Google about translations that don't exist.
+
+### Added
+- **Chain an image across tools.** Export from any tool and a "Keep editing this
+  image" bar offers the others; the result travels through IndexedDB with no
+  re-upload, for as many hops as you like — *remove background → crop →
+  watermark → compress*. Previously this ran one hop, from the remover to three
+  hard-coded destinations; with nineteen tools the interesting journeys are
+  longer than that, and re-picking the file at every step was what made the site
+  feel like nineteen separate pages instead of one editor.
+
+  Any tool is a destination automatically: the incoming file is delivered to
+  whichever input carries `data-chain-input` and the tool's own change handler
+  does the rest, so no tool needs to know the feature exists. Destinations come
+  from `TOOL_NAV`, so a new tool joins by existing. The QR generator is excluded
+  — its only file input is an optional centre logo.
+- **`CBG.t()` — runtime strings are translatable.** Every message a tool raises
+  while you use it ("Crop applied", "Export failed", "Copied to clipboard") was
+  an English literal in JS. A Portuguese visitor hit English at the exact moment
+  something succeeded or failed, on the one page that *was* translated.
+  `remover/translations.py` now carries a second catalogue (`JS_UI`), shipped as
+  JSON on `/pt/` pages only — keys are the English source text, so an English
+  page needs no payload at all. `CBG.plural(n, one, many)` picks between two keys
+  where the languages disagree about which counts are plural.
+
+### Fixed
+- **The site advertised a Portuguese version of 60 pages that render English.**
+  Every page emitted `hreflang="pt"` and the sitemap listed all 71 paths twice,
+  but only the home page and the 11 use-case landings are actually translated —
+  so ~60 Portuguese URLs were near-duplicates of their English twins, declared as
+  translations. `views.TRANSLATED_PATHS` now gates the alternate set, the sitemap
+  and the canonical: an untranslated `/pt/` page stays reachable and keeps its
+  translated chrome, but it is not advertised as Portuguese and canonicalises to
+  its English twin instead of competing with it. Sitemap: 142 → 84 URLs.
+
+  The footer language switcher is deliberately *not* gated on this. It shared the
+  flag before, so narrowing one would have silently removed the other from most
+  of the site.
+- **Sixteen tools each carried a private `Toast` that built its markup with
+  `innerHTML`** — interpolating the user's own file name into HTML. They now use
+  `CBG.Toast`, which uses `textContent`.
+
+### Changed
+- **The `window.CBG` migration is finished.** 1.8.0 introduced the shared kit and
+  said it replaced the per-tool copies; four of nineteen modules had actually
+  adopted it, so the codebase was paying for both approaches. All nineteen now
+  use it — `$`, `$$`, `Toast`, `loadImage`, `humanSize`, `download` — which
+  deleted ~1.4 KB of duplication per module, and is what makes chaining work
+  everywhere: `CBG.download()` is the single export path, so the thing you just
+  saved is the thing offered to the next tool.
+- `static/js/handoff.js` is gone; `CBG.Chain` replaces it. Its TTL went from 60 s
+  to 5 minutes — long enough for a slow page load on a phone, short enough that
+  the image is always one you chose moments ago.
+- 79 → 98 tests. The new ones guard the things this release could silently
+  regress: `TranslationCoverageTests` measures how much Portuguese each page
+  really renders and fails if `TRANSLATED_PATHS` disagrees in either direction;
+  `JsTranslationTests` fails on a string wrapped in `t()` with no catalogue entry,
+  a raw literal passed to `Toast.show`, or a `{placeholder}` dropped in
+  translation; `ChainTests` and `SharedKitTests` guard the chain wiring and stop a
+  tool re-growing a private `Toast` or a hand-rolled download anchor.
+
 ## [1.8.0] — 2026-07-21
 
 Six new tools since 1.7.0, batch support where it was missing, an image → PDF

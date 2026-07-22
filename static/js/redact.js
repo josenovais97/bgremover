@@ -10,36 +10,10 @@
  * rectangle ({type:'rect', x,y,w,h}) dragged as a box, or a freehand polygon
  * ({type:'path', points:[{x,y}…]}) traced with the lasso. Self-contained.
  */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+const { $, $$, Toast, loadImage, download, t } = CBG;
+
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 const App = {
   original: null,
@@ -209,7 +183,7 @@ const App = {
     try {
       const detector = new window.FaceDetector({ fastMode: false });
       const faces = await detector.detect(this.original);
-      if (!faces.length) { Toast.show('No faces found — draw over them by hand', 'error'); return; }
+      if (!faces.length) { Toast.show(t('No faces found — draw over them by hand'), 'error'); return; }
       for (const { boundingBox: b } of faces) {
         const padX = b.width * 0.18;
         const padY = b.height * 0.22;
@@ -223,9 +197,9 @@ const App = {
       }
       this.updateButtons();
       this.render();
-      Toast.show(`${faces.length} face${faces.length === 1 ? '' : 's'} hidden — adjust or add more by hand`);
+      Toast.show(CBG.plural(faces.length, '{n} face hidden — adjust or add more by hand', '{n} faces hidden — adjust or add more by hand'));
     } catch {
-      Toast.show('Face detection is not available in this browser', 'error');
+      Toast.show(t('Face detection is not available in this browser'), 'error');
     } finally {
       btn.disabled = false;
     }
@@ -297,13 +271,13 @@ const App = {
 
   async load(file) {
     this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
+    if (!file || !/^image\//.test(file.type)) { Toast.show(t('Please choose an image'), 'error'); return; }
     if (this.srcUrl) URL.revokeObjectURL(this.srcUrl);
     this.srcUrl = URL.createObjectURL(file);
     try {
       this.original = await loadImage(this.srcUrl);
     } catch {
-      Toast.show('Could not read that image', 'error'); return;
+      Toast.show(t('Could not read that image'), 'error'); return;
     }
     this.regions = [];
     this.dropzone.parentElement.classList.add('hidden');
@@ -318,11 +292,8 @@ const App = {
     this.paint(c, false); // no outlines in the export
     const ext = fmt === 'image/png' ? 'png' : 'jpg';
     const blob = await new Promise((res) => c.toBlob(res, fmt, 0.95));
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `redacted.${ext}`;
-    document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+    download(blob, `redacted.${ext}`);
     $('#rd-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${ext.toUpperCase()} · ${this.regions.length} area${this.regions.length === 1 ? '' : 's'} hidden`;
   },
 

@@ -6,16 +6,15 @@
  * downscales the longest side. Never produces a file larger than the original —
  * if it can't beat it, the original is kept. Nothing is uploaded.
  *
- * Self-contained (own helpers/toast); only absolute-URL (CDN) imports, since
- * Django's static storage doesn't rewrite ES-module import paths.
+ * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
+ * a classic script — a local ES import would break, since Django's hashed-manifest
+ * static storage does not rewrite ES-module import paths.
  */
+
+const { $, Toast, loadImage, humanSize, download, t } = CBG;
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 
 /* --------------------------------------------------------------- helpers */
-const $ = (s, r = document) => r.querySelector(s);
-
-const humanSize = (b) =>
-  b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1048576).toFixed(1)} MB`;
 
 const sanitizeName = (name) =>
   name.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_').slice(0, 60) || 'image';
@@ -25,35 +24,7 @@ const extOf = (file) => {
   return t || (file.name.split('.').pop() || 'img').toLowerCase();
 };
 
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
 const toBlob = (canvas, mime, q) => new Promise((res) => canvas.toBlob(res, mime, q));
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 /* ------------------------------------------------------------ global state */
 const target = { mime: 'image/webp', ext: 'webp', mode: 'quality', quality: 0.75, targetKB: 200, maxDim: 0 };
@@ -175,14 +146,7 @@ class CompressCard {
 
   download() {
     if (!this.out) return;
-    const url = URL.createObjectURL(this.out.blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${sanitizeName(this.file.name)}-min.${this.out.ext}`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    CBG.download(this.out.blob, `${sanitizeName(this.file.name)}-min.${this.out.ext}`);
   }
 
   destroy() {
@@ -243,7 +207,7 @@ const App = {
   add(fileList) {
     const files = [...fileList].filter((f) => f.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name));
     this.input.value = '';
-    if (!files.length) { Toast.show('Please choose image files', 'error'); return; }
+    if (!files.length) { Toast.show(t('Please choose image files'), 'error'); return; }
     this.controls.classList.remove('hidden');
     for (const file of files) this.cards.push(new CompressCard(file));
     this.refresh();
@@ -302,13 +266,13 @@ const App = {
 
   clear() {
     [...this.cards].forEach((c) => c.destroy());
-    Toast.show('Cleared all images', 'info');
+    Toast.show(t('Cleared all images'), 'info');
   },
 
   async downloadAll() {
     const ready = this.cards.filter((c) => c.out);
     if (!ready.length) return;
-    Toast.show('Building ZIP…', 'info');
+    Toast.show(t('Building ZIP…'), 'info');
     const zip = new JSZip();
     const used = {};
     for (const card of ready) {
@@ -319,14 +283,7 @@ const App = {
       zip.file(name, card.out.blob);
     }
     const blob = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'compressed-images.zip';
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    download(blob, 'compressed-images.zip');
   },
 };
 

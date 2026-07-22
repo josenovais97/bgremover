@@ -13,7 +13,7 @@
  */
 import { PDFDocument } from 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm';
 
-const { $, $$, Toast, loadImage, dropzone, download, remember } = window.CBG;
+const { $, $$, Toast, loadImage, dropzone, download, remember, t } = CBG;
 
 // Page sizes in PDF points (1pt = 1/72in).
 const PAGE_SIZES = {
@@ -91,7 +91,7 @@ const App = {
         this.pages.push({ file, url, w: img.naturalWidth, h: img.naturalHeight });
       } catch {
         URL.revokeObjectURL(url);
-        Toast.show(`Could not read ${file.name}`, 'error');
+        Toast.show(t('Could not read {name}', { name: file.name }), 'error');
       }
     }
     if (!this.pages.length) return;
@@ -201,7 +201,7 @@ const App = {
       $('#pdf-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${this.pages.length} page${this.pages.length === 1 ? '' : 's'} · ${window.CBG.humanSize(blob.size)}`;
       window.__clearbgReport?.(1, 'downloaded');
     } catch {
-      Toast.show('Could not build the PDF', 'error');
+      Toast.show(t('Could not build the PDF'), 'error');
     } finally {
       btn.disabled = false;
       label.textContent = 'Download PDF';

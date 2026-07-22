@@ -5,42 +5,15 @@
  * every size, an Apple touch icon, PWA + maskable icons, a site.webmanifest and
  * a copy-paste <head> snippet, bundled into a ZIP. Nothing is uploaded.
  *
- * Self-contained (own helpers/toast) — Django's static storage doesn't rewrite
- * ES-module import paths, so only absolute-URL (CDN) imports are used.
+ * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
+ * a classic script — a local ES import would break, since Django's hashed-manifest
+ * static storage does not rewrite ES-module import paths.
  */
+
+const { $, $$, Toast, loadImage, download, t } = CBG;
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 
 /* --------------------------------------------------------------- helpers */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 function rafThrottle(fn) {
   let scheduled = false;
@@ -124,13 +97,13 @@ const App = {
 
   async load(file) {
     this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
+    if (!file || !/^image\//.test(file.type)) { Toast.show(t('Please choose an image'), 'error'); return; }
     if (this.url) URL.revokeObjectURL(this.url);
     this.url = URL.createObjectURL(file);
     try {
       this.img = await loadImage(this.url);
     } catch {
-      Toast.show("Couldn't open that image", 'error');
+      Toast.show(t("Couldn't open that image"), 'error');
       return;
     }
     this.dropzone.parentElement.classList.add('hidden');
@@ -273,13 +246,13 @@ const App = {
 
   copySnippet() {
     navigator.clipboard.writeText(this.snippet())
-      .then(() => Toast.show('HTML copied to clipboard', 'success'))
-      .catch(() => Toast.show('Copy failed', 'error'));
+      .then(() => Toast.show(t('HTML copied to clipboard'), 'success'))
+      .catch(() => Toast.show(t('Copy failed'), 'error'));
   },
 
   async download() {
     if (!this.img) return;
-    Toast.show('Building your icon pack…', 'info');
+    Toast.show(t('Building your icon pack…'), 'info');
     try {
       const zip = new JSZip();
       // PNG icons.
@@ -298,18 +271,11 @@ const App = {
       zip.file('head-snippet.html', this.snippet() + '\n');
 
       const blob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'favicon-pack.zip';
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
-      a.remove();
-      Toast.show('Icon pack downloaded', 'success');
+      download(blob, 'favicon-pack.zip');
+      Toast.show(t('Icon pack downloaded'), 'success');
     } catch (err) {
       console.error('[favicon] export failed:', err);
-      Toast.show('Could not build the icon pack', 'error');
+      Toast.show(t('Could not build the icon pack'), 'error');
     }
   },
 

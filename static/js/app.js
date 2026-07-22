@@ -8,9 +8,11 @@
  * To swap the model later, replace the `removeBackground` import and the call
  * inside `Card.process()` — the rest of the UI is model-agnostic.
  */
+
 import { removeBackground, preload } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
-import { putHandoff } from './handoff.js';
+
+const { $, $$, Toast, loadImage, t, download, Chain } = CBG;
 
 /* ------------------------------------------------------------------ config */
 const CONFIG = {
@@ -45,8 +47,6 @@ const CROPS = {
 };
 
 /* --------------------------------------------------------------- utilities */
-const $ = (sel, root = document) => root.querySelector(sel);
-const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
@@ -283,14 +283,6 @@ const humanSize = (bytes) => {
 const sanitizeName = (name) =>
   name.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_').slice(0, 60) || 'image';
 
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
 /* ------------------------------------------------------------- preferences */
 // Remembers the last-used background/format so batch users don't re-pick them
 // for every image. Wrapped in try/catch because localStorage can be disabled
@@ -313,29 +305,6 @@ const Prefs = {
 };
 
 /* -------------------------------------------------------------- toast queue */
-const Toast = {
-  show(message, type = 'success') {
-    const container = $('#toast-container');
-    const styles = {
-      success: ['bg-green-50 dark:bg-green-900/40', 'text-green-800 dark:text-green-200', 'border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40', 'text-red-800 dark:text-red-200', 'border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40', 'text-blue-800 dark:text-blue-200', 'border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    }[type] || [];
-    const [bg, text, border, icon] = styles;
-
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${bg} ${text} ${border}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    container.appendChild(el);
-
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => {
-      el.classList.add('opacity-0', 'translate-y-4');
-      setTimeout(() => el.remove(), 300);
-    }, 3800);
-  },
-};
 
 /* --------------------------------------------------------- model warm-up */
 const ModelStatus = {
@@ -935,7 +904,7 @@ const Cropper = {
     try {
       await this.loadSourceImage();
     } catch {
-      Toast.show('Could not open the image to crop', 'error');
+      Toast.show(t('Could not open the image to crop'), 'error');
       return;
     }
 
@@ -1003,7 +972,7 @@ const Cropper = {
         this.updateSourceButtons();
         this.redraw();
       })
-      .catch(() => Toast.show('Could not load that image', 'error'));
+      .catch(() => Toast.show(t('Could not load that image'), 'error'));
   },
 
   /** Highlight the active source and disable Cut-out until bg removal is done. */
@@ -1181,7 +1150,7 @@ const Cropper = {
       flipV: this.flipV,
     });
     this.close();
-    Toast.show('Crop applied', 'success');
+    Toast.show(t('Crop applied'), 'success');
   },
 };
 
@@ -1352,14 +1321,19 @@ class Card {
       });
     }
 
-    // "Continue in <tool>" — hand the cut-out to another tool with no re-upload.
+    // "Continue in <tool>" — hand THIS card's cut-out to another tool with no
+    // re-upload. The remover keeps its own per-card menu rather than relying on
+    // the shared bar in kit.js, because a batch has one result per card and the
+    // bar can only speak for one image.
     $$('[data-tool]', this.el).forEach((a) =>
       a.addEventListener('click', async (e) => {
         if (!this.processedBlob) return; // nothing to hand off yet
         e.preventDefault();
         const base = (this.file?.name || 'cutout').replace(/\.[^.]+$/, '');
-        await putHandoff(this.processedBlob, `${base}.png`);
-        location.href = a.href;
+        await Chain.sendTo(a.href, a.textContent.trim(), {
+          blob: this.processedBlob,
+          name: `${base}.png`,
+        });
       }),
     );
     $$('.zoomable', this.el).forEach((img) =>
@@ -1512,7 +1486,7 @@ class Card {
       const detail = (err && (err.message || err.name)) || 'Unknown error';
       this.el.querySelector('.error-msg').textContent = detail.slice(0, 180);
       this.setState('error');
-      Toast.show(`Failed: ${detail}`.slice(0, 140), 'error');
+      Toast.show(t('Failed: {detail}', { detail }).slice(0, 140), 'error');
     }
   }
 
@@ -1901,7 +1875,7 @@ class Card {
       // there's no need to composite the full-res image on every change.
       blob = await this.compose('image/png', this.bg, this.cropState, this.sticker, null, 1024);
     } catch {
-      if (seq === this._previewSeq) Toast.show('Could not render the crop preview', 'error');
+      if (seq === this._previewSeq) Toast.show(t('Could not render the crop preview'), 'error');
       return;
     }
     // A newer refresh started while we were composing — discard this stale result.
@@ -2066,18 +2040,11 @@ class Card {
     try {
       blob = await this.exportBlob();
     } catch {
-      Toast.show('Could not prepare the download', 'error');
+      Toast.show(t('Could not prepare the download'), 'error');
       return;
     }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
     const suffix = this.cropState && this.cropState.source === 'original' ? 'crop' : 'no-bg';
-    a.download = `${sanitizeName(this.file.name)}-${suffix}.${EXT[this.format]}`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    download(blob, `${sanitizeName(this.file.name)}-${suffix}.${EXT[this.format]}`);
   }
 
   async copy() {
@@ -2085,9 +2052,9 @@ class Card {
     try {
       const blob = await this.exportBlob('image/png', this.bg);
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-      Toast.show('Copied to clipboard', 'success');
+      Toast.show(t('Copied to clipboard'), 'success');
     } catch {
-      Toast.show('Clipboard not supported in this browser', 'error');
+      Toast.show(t('Clipboard not supported in this browser'), 'error');
     }
   }
 
@@ -2099,7 +2066,7 @@ class Card {
     this.el.querySelector('.meta').textContent = `${humanSize(this.file.size)} → ${humanSize(blob.size)} · edited`;
     this.refreshPreview(); // re-applies any active crop over the new cut-out
     this.saveToHistory();
-    Toast.show('Edits applied', 'success');
+    Toast.show(t('Edits applied'), 'success');
   }
 
   async saveToHistory() {
@@ -2148,12 +2115,12 @@ const App = {
     // Surface uncaught errors so failures are never silent.
     window.addEventListener('error', (e) => {
       console.error('[bg-remover] error:', e.error || e.message);
-      Toast.show(`Error: ${e.message}`.slice(0, 140), 'error');
+      Toast.show(t('Error: {message}', { message: e.message }).slice(0, 140), 'error');
     });
     window.addEventListener('unhandledrejection', (e) => {
       const reason = e.reason?.message || e.reason || 'Unknown error';
       console.error('[bg-remover] unhandled rejection:', e.reason);
-      Toast.show(`Error: ${reason}`.slice(0, 140), 'error');
+      Toast.show(t('Error: {message}', { message: reason }).slice(0, 140), 'error');
     });
 
     ModelStatus.init();
@@ -2188,7 +2155,7 @@ const App = {
           const resp = await fetch(trySample.dataset.src);
           const blob = await resp.blob();
           this.handleFiles([new File([blob], 'sample.jpg', { type: blob.type || 'image/webp' })]);
-        } catch { Toast.show("Couldn't load the sample", 'error'); }
+        } catch { Toast.show(t("Couldn't load the sample"), 'error'); }
       });
     }
 
@@ -2245,11 +2212,11 @@ const App = {
     const valid = [];
     for (const file of files) {
       if (!CONFIG.acceptedTypes.includes(file.type)) {
-        Toast.show(`${file.name}: unsupported format (use JPG, PNG or WEBP)`, 'error');
+        Toast.show(t('{name}: unsupported format (use JPG, PNG or WEBP)', { name: file.name }), 'error');
         continue;
       }
       if (file.size > CONFIG.maxFileSize) {
-        Toast.show(`${file.name}: too large (max ${humanSize(CONFIG.maxFileSize)})`, 'error');
+        Toast.show(t('{name}: too large (max {max})', { name: file.name, max: humanSize(CONFIG.maxFileSize) }), 'error');
         continue;
       }
       valid.push(file);
@@ -2271,7 +2238,7 @@ const App = {
     $('#download-all-btn').addEventListener('click', () => this.downloadAll());
     $('#clear-history-btn').addEventListener('click', () => {
       History.clear();
-      Toast.show('History cleared', 'info');
+      Toast.show(t('History cleared'), 'info');
     });
   },
 
@@ -2288,7 +2255,7 @@ const App = {
   clearAll() {
     [...this.cards].forEach((c) => c.destroy());
     this.showLanding();
-    Toast.show('Cleared all images', 'info');
+    Toast.show(t('Cleared all images'), 'info');
   },
 
   refreshToolbar() {
@@ -2305,17 +2272,17 @@ const App = {
   applyOptionsToAll(source) {
     const others = this.cards.filter((c) => c !== source);
     if (!others.length) {
-      Toast.show('Add more images to apply options to all', 'info');
+      Toast.show(t('Add more images to apply options to all'), 'info');
       return;
     }
     others.forEach((c) => c.applyOptionsFrom(source));
-    Toast.show(`Applied to ${others.length} other image${others.length > 1 ? 's' : ''}`, 'success');
+    Toast.show(CBG.plural(others.length, 'Applied to {n} other image', 'Applied to {n} other images'), 'success');
   },
 
   async downloadAll() {
     const ready = this.cards.filter((c) => c.done && c.processedBlob);
     if (!ready.length) return;
-    Toast.show('Building ZIP…', 'info');
+    Toast.show(t('Building ZIP…'), 'info');
     const zip = new JSZip();
     const used = {};
     for (const card of ready) {
@@ -2326,14 +2293,7 @@ const App = {
       zip.file(name, await card.exportBlob());
     }
     const blob = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bg-remover-results.zip';
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    download(blob, 'bg-remover-results.zip');
   },
 
   bindShortcuts() {

@@ -1,5 +1,3 @@
-import { takeHandoff } from './handoff.js';
-
 /**
  * WhatsApp / Telegram sticker maker — 100% client-side.
  *
@@ -8,42 +6,15 @@ import { takeHandoff } from './handoff.js';
  * and exports a ready-to-use 512×512 transparent WebP (kept under WhatsApp's
  * 100KB limit) or a PNG. Nothing is uploaded.
  *
- * Self-contained (own helpers/toast) — only absolute-URL (CDN) imports are used,
- * since Django's static storage doesn't rewrite ES-module import paths.
+ * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
+ * a classic script — a local ES import would break, since Django's hashed-manifest
+ * static storage does not rewrite ES-module import paths.
  */
 
+const { $, $$, Toast, loadImage, download, t } = CBG;
+
 /* --------------------------------------------------------------- helpers */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 function rafThrottle(fn) {
   let scheduled = false;
@@ -143,7 +114,7 @@ const App = {
 
   async load(file) {
     this.input.value = '';
-    if (!file || !/^image\//.test(file.type)) { Toast.show('Please choose an image', 'error'); return; }
+    if (!file || !/^image\//.test(file.type)) { Toast.show(t('Please choose an image'), 'error'); return; }
     this.cutout = null;
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
@@ -161,10 +132,10 @@ const App = {
       this.ensureFont();
       this.render();
       window.__clearbgReport?.(1);
-      Toast.show('Background removed — add your outline & text', 'success');
+      Toast.show(t('Background removed — add your outline & text'), 'success');
     } catch (err) {
       console.error('[sticker] bg removal failed:', err);
-      Toast.show('Background removal failed', 'error');
+      Toast.show(t('Background removal failed'), 'error');
       this.setBusy(false);
     }
   },
@@ -283,21 +254,14 @@ const App = {
         blob = await new Promise((res) => c.toBlob(res, fmt, quality));
       }
     }
-    if (!blob) { Toast.show('Export failed', 'error'); return; }
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
     // Some browsers can't encode WebP — fall back to PNG rather than mislabel it.
     if (isWebp && blob.type !== 'image/webp') {
-      Toast.show('WebP not supported here — downloading PNG instead', 'info');
+      Toast.show(t('WebP not supported here — downloading PNG instead'), 'info');
       return this.export('image/png');
     }
     const ext = isWebp ? 'webp' : 'png';
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `sticker.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    download(blob, `sticker.${ext}`);
     const kb = Math.round(blob.size / 1024);
     $('#stk-size-note').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${ext.toUpperCase()} · ${kb} KB${isWebp && kb <= 100 ? ' · WhatsApp ready' : ''}`;
   },
@@ -314,6 +278,4 @@ const App = {
 
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
-  // If we arrived via "Continue in Sticker" from another tool, load that image.
-  takeHandoff().then((file) => { if (file) App.load(file); });
 });

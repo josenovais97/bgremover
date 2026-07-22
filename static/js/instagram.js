@@ -1,5 +1,3 @@
-import { takeHandoff } from './handoff.js';
-
 /**
  * Instagram photo editor — 100% client-side.
  *
@@ -18,9 +16,9 @@ import { takeHandoff } from './handoff.js';
  *  - reposition with drag + zoom.
  * Background removal is an optional extra, lazy-loaded only if used.
  *
- * Self-contained (own helpers/toast) because Django's hashed-manifest static
- * storage doesn't rewrite ES-module import paths — cross-file local imports
- * would break in production, but CDN (absolute-URL) imports are fine.
+ * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
+ * a classic script — a local ES import would break, since Django's hashed-manifest
+ * static storage does not rewrite ES-module import paths.
  *
  * Note: sharpen is a manual convolution pass, NOT a canvas `url(#…)` filter.
  * Combining an SVG `url()` reference with filter functions in `ctx.filter`
@@ -28,9 +26,9 @@ import { takeHandoff } from './handoff.js';
  * colour grading — so the two are kept strictly separate.
  */
 
+const { $, $$, Toast, loadImage, download, t } = CBG;
+
 /* --------------------------------------------------------------- helpers */
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 // Coalesce a burst of calls (e.g. the `input` events a native colour picker
@@ -44,34 +42,6 @@ function rafThrottle(fn) {
     requestAnimationFrame(() => { scheduled = false; fn(...args); });
   };
 }
-
-const loadImage = (src) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-
-const Toast = {
-  show(message, type = 'success') {
-    const c = $('#toast-container');
-    if (!c) return;
-    const map = {
-      success: ['bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800', 'fa-circle-check text-green-500'],
-      error: ['bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800', 'fa-circle-exclamation text-red-500'],
-      info: ['bg-blue-50 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800', 'fa-circle-info text-blue-500'],
-    };
-    const [cls, icon] = map[type] || map.success;
-    const el = document.createElement('div');
-    el.className = `pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg transition-all duration-300 translate-y-4 opacity-0 ${cls}`;
-    el.setAttribute('role', 'alert');
-    el.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="font-medium text-sm">${message}</span>`;
-    c.appendChild(el);
-    requestAnimationFrame(() => el.classList.remove('translate-y-4', 'opacity-0'));
-    setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3600);
-  },
-};
 
 // The adjustment keys that make up a "look". Everything blends linearly on these.
 const ADJ_KEYS = ['brightness', 'contrast', 'saturate', 'warmth', 'sharpen', 'grain', 'vignette'];
@@ -348,14 +318,14 @@ const App = {
 
   async load(file) {
     this.input.value = '';
-    if (!file || !file.type.startsWith('image/')) { Toast.show('Please choose an image', 'error'); return; }
+    if (!file || !file.type.startsWith('image/')) { Toast.show(t('Please choose an image'), 'error'); return; }
     this.file = file;
     if (this.origUrl) URL.revokeObjectURL(this.origUrl);
     this.origUrl = URL.createObjectURL(file);
     try {
       this.raw = await loadImage(this.origUrl);
     } catch {
-      Toast.show("Couldn't open that image", 'error');
+      Toast.show(t("Couldn't open that image"), 'error');
       return;
     }
     // Reset state for the new photo.
@@ -659,7 +629,7 @@ const App = {
       try {
         this.watermark.logoUrl = URL.createObjectURL(file);
         this.watermark.logoImg = await loadImage(this.watermark.logoUrl);
-      } catch { Toast.show("Couldn't load that logo", 'error'); }
+      } catch { Toast.show(t("Couldn't load that logo"), 'error'); }
     }
     $('#ig-wm-logo-clear').classList.toggle('hidden', !this.watermark.logoImg);
     if (this.watermark.on) this.render();
@@ -729,7 +699,7 @@ const App = {
     for (const k of ADJ_KEYS) presets[name][k] = this.adj[k];
     this.storePresets(presets);
     this.renderPresets();
-    Toast.show(`Saved look "${name}"`, 'success');
+    Toast.show(t('Saved look "{name}"', { name }), 'success');
   },
 
   applyPreset(name) {
@@ -1179,10 +1149,10 @@ const App = {
       this.rebuildSource();
       $('#ig-restore-bg').classList.remove('hidden');
       this.render();
-      Toast.show('Background removed', 'success');
+      Toast.show(t('Background removed'), 'success');
     } catch (err) {
       console.error('[instagram] bg removal failed:', err);
-      Toast.show('Background removal failed', 'error');
+      Toast.show(t('Background removal failed'), 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = original;
@@ -1190,14 +1160,7 @@ const App = {
   },
 
   saveBlob(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
+    download(blob, name);
   },
 
   async download() {
@@ -1208,14 +1171,14 @@ const App = {
     const blob = await new Promise((res) => out.toBlob(res, this.exportFmt, isPng ? undefined : this.quality));
     const ext = isPng ? 'png' : 'jpg';
     this.saveBlob(blob, `instagram-${this.format.key}-${this.format.w}x${this.format.h}.${ext}`);
-    Toast.show(`Saved ${this.format.w}×${this.format.h} for Instagram`, 'success');
+    Toast.show(t('Saved {w}×{h} for Instagram', { w: this.format.w, h: this.format.h }), 'success');
   },
 
   async downloadCarousel() {
     if (!this.img) return;
     const n = this.carousel;
     const fmt = this.format;
-    Toast.show('Building carousel ZIP…', 'info');
+    Toast.show(t('Building carousel ZIP…'), 'info');
     try {
       const JSZip = (await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
       const zip = new JSZip();
@@ -1231,10 +1194,10 @@ const App = {
       }
       const blob = await zip.generateAsync({ type: 'blob' });
       this.saveBlob(blob, `instagram-carousel-${n}x-${fmt.key}.zip`);
-      Toast.show(`Saved a ${n}-tile carousel — post the tiles in order`, 'success');
+      Toast.show(t('Saved a {n}-tile carousel — post the tiles in order', { n }), 'success');
     } catch (err) {
       console.error('[instagram] carousel export failed:', err);
-      Toast.show('Carousel export failed', 'error');
+      Toast.show(t('Carousel export failed'), 'error');
     }
   },
 
@@ -1250,6 +1213,4 @@ const App = {
 
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
-  // If we arrived via "Continue in Instagram" from another tool, load that image.
-  takeHandoff().then((file) => { if (file) App.load(file); });
 });

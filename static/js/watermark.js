@@ -12,7 +12,7 @@
  *
  * Shared helpers come from window.CBG (static/js/kit.js).
  */
-const { $, $$, Toast, loadImage, dropzone, zipDownload, remember, baseName } = window.CBG;
+const { $, $$, Toast, loadImage, dropzone, zipDownload, remember, baseName, download, t } = CBG;
 
 const prefs = remember('watermark');
 
@@ -92,7 +92,7 @@ const App = {
     this.queue = rest;
     if (this.url) URL.revokeObjectURL(this.url);
     this.url = URL.createObjectURL(first);
-    try { this.img = await loadImage(this.url); } catch { Toast.show('Could not read that image', 'error'); return; }
+    try { this.img = await loadImage(this.url); } catch { Toast.show(t('Could not read that image'), 'error'); return; }
     this.canvas.width = this.img.naturalWidth;
     this.canvas.height = this.img.naturalHeight;
     this.render();
@@ -198,8 +198,8 @@ const App = {
     if (!this.img) return;
     // The visible canvas is already the full-resolution result — reuse it.
     const out = await this.stamp(this.file, this.canvas, this.img);
-    if (!out) { Toast.show('Export failed', 'error'); return; }
-    window.CBG.download(out.blob, out.name);
+    if (!out) { Toast.show(t('Export failed'), 'error'); return; }
+    download(out.blob, out.name);
     $('#wm-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${this.canvas.width} × ${this.canvas.height}px · ${Math.round(out.blob.size / 1024)} KB`;
   },
 
@@ -214,7 +214,7 @@ const App = {
       for (const f of this.queue) entries.push(await this.stamp(f));
       await zipDownload(entries.filter(Boolean), 'clearbg-watermarked.zip');
     } catch {
-      Toast.show('Could not build the ZIP', 'error');
+      Toast.show(t('Could not build the ZIP'), 'error');
     } finally {
       btn.disabled = false;
       label.textContent = original;

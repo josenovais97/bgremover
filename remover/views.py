@@ -782,6 +782,35 @@ SITEMAP_PATHS = (
     + INFO_PATHS
 )
 
+# Paths whose PAGE CONTENT is actually translated into Portuguese — not merely
+# reachable under /pt/. Every path is reachable there (i18n_patterns wraps the
+# whole URLconf), but only these two templates run their body through {% t %};
+# the rest render English text inside translated chrome.
+#
+# This distinction is a ranking problem, not a cosmetic one. Declaring
+# hreflang="pt" for a page that serves English tells Google a translation exists
+# where it doesn't, and lists a near-duplicate of the English page in the
+# sitemap. So the alternate set, the sitemap and the canonical are all gated on
+# this list: untranslated /pt/ pages stay reachable and keep their translated
+# chrome, but they are not advertised as Portuguese and they canonicalise to
+# their English twin.
+#
+# ADD A PATH HERE ONLY AFTER ITS TEMPLATE IS TRANSLATED. `TranslationCoverageTests`
+# renders each one and fails if the body is not actually Portuguese, so an
+# aspirational entry cannot ship.
+TRANSLATED_PATHS = frozenset(
+    ["/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+)
+
+
+def is_translated_path(path):
+    """True if `path` (language prefix stripped) has real Portuguese content."""
+    if path.startswith("/pt/"):
+        path = path[3:]
+    elif path == "/pt":
+        path = "/"
+    return path in TRANSLATED_PATHS
+
 
 # --- PWA app shell ----------------------------------------------------------
 # What the service worker precaches so the tools work offline. Both lists are
@@ -1261,10 +1290,15 @@ def yandex_verify(request):
 def sitemap_xml(request):
     """Serve an XML sitemap for the static routes, with per-URL priority.
 
-    Each path is listed once per language — English at the root, Portuguese under
-    ``/pt/`` — and every entry carries the full hreflang alternate set. The
-    Portuguese site was previously absent from the sitemap entirely, so it was
-    only discoverable through footer links.
+    A path with a real Portuguese translation is listed twice — English at the
+    root, Portuguese under ``/pt/`` — and both entries carry the full hreflang
+    alternate set (Google treats a page that names its siblings from only one
+    side as unlinked).
+
+    A path that is merely *reachable* under ``/pt/`` but still renders English
+    (see ``TRANSLATED_PATHS``) is listed once, in English, with no alternates.
+    Listing it twice submitted a near-duplicate for indexing and claimed a
+    translation that does not exist.
     """
     from datetime import date
 
@@ -1275,11 +1309,12 @@ def sitemap_xml(request):
         alt_en = f"{site_url}{path}"
         alt_pt = f"{site_url}/pt{path}"
         priority = _sitemap_priority(path)
-        for loc in (alt_en, alt_pt):
+        translated = path in TRANSLATED_PATHS
+        for loc in ((alt_en, alt_pt) if translated else (alt_en,)):
             urls.append({
                 "loc": loc,
-                "alt_en": alt_en,
-                "alt_pt": alt_pt,
+                "alt_en": alt_en if translated else "",
+                "alt_pt": alt_pt if translated else "",
                 "priority": priority,
                 "lastmod": lastmod,
             })
