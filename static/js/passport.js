@@ -135,7 +135,7 @@ const App = {
 
     $('#pp-download').addEventListener('click', () => this.export('image/jpeg'));
     $('#pp-download-png').addEventListener('click', () => this.export('image/png'));
-    $('#pp-sheet').addEventListener('click', () => this.exportSheet());
+    $$('.pp-sheet').forEach((b) => b.addEventListener('click', () => this.exportSheet(b.dataset.sheet)));
     $('#pp-new').addEventListener('click', () => this.reset());
 
     // Deep link from a country landing page: /passport-photo/?w=35&h=45&country=UK
@@ -187,7 +187,7 @@ const App = {
   setBusy(busy, text) {
     $('#pp-status').classList.toggle('hidden', !busy);
     if (text) $('#pp-status-text').textContent = text;
-    ['#pp-download', '#pp-download-png', '#pp-sheet'].forEach((s) => { $(s).disabled = busy || !this.cutout; });
+    [$('#pp-download'), $('#pp-download-png'), ...$$('.pp-sheet')].forEach((el) => { el.disabled = busy || !this.cutout; });
   },
 
   async load(file) {
@@ -343,13 +343,22 @@ const App = {
   },
 
   /**
-   * Tile the photo onto a 6×4 in (1800×1200 @300) print sheet with thin cut
-   * guides — take it to any pharmacy/kiosk that prints 6×4" photos.
+   * Tile the photo onto a print sheet with thin cut guides, at 300 DPI:
+   *   '6x4'    6×4 in  (1800×1200) — pharmacy / kiosk photo print
+   *   'a4'     A4      (210×297 mm) — home printer, most of the world
+   *   'letter' Letter  (8.5×11 in) — home printer, US / Canada
+   * Portrait orientation for the paper sizes fits more rows of a tall photo.
    */
-  async exportSheet() {
+  async exportSheet(kind = '6x4') {
     if (!this.cutout) return;
     const f = this.frame();
-    const SW = inch(6), SH = inch(4), gap = mm(3), margin = mm(4);
+    const SHEETS = {
+      '6x4': { w: inch(6), h: inch(4), label: '6×4"' },
+      a4: { w: mm(210), h: mm(297), label: 'A4' },
+      letter: { w: inch(8.5), h: inch(11), label: 'Letter' },
+    };
+    const paper = SHEETS[kind] || SHEETS['6x4'];
+    const SW = paper.w, SH = paper.h, gap = mm(3), margin = mm(4);
     // One rendered photo to stamp repeatedly.
     const photo = document.createElement('canvas');
     photo.width = f.w; photo.height = f.h;
@@ -377,8 +386,8 @@ const App = {
     }
     const blob = await new Promise((res) => sheet.toBlob(res, 'image/jpeg', 0.95));
     if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
-    this.download(blob, this.filename('sheet.jpg'));
-    $('#pp-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Print sheet saved · ${cols * rows} copies on 6×4"`;
+    this.download(blob, this.filename(`sheet-${kind}.jpg`));
+    $('#pp-done').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Print sheet saved · ${cols * rows} copies on ${paper.label}`;
   },
 
   download(blob, name) {

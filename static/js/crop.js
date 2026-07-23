@@ -12,10 +12,16 @@
  * static storage does not rewrite ES-module import paths.
  */
 
-const { $, $$, Toast, loadImage, download, t } = CBG;
+const { $, $$, Toast, loadImage, download, zipDownload, baseName, t } = CBG;
 
 /* --------------------------------------------------------------- helpers */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+const MIME_FOR = { png: 'image/png', jpg: 'image/jpeg', avif: 'image/avif' };
+// AVIF encoding is Chromium-only; when it isn't supported canvas.toBlob falls
+// back to PNG, so the download extension is taken from the blob we actually got.
+const extForType = (type) =>
+  ({ 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/avif': 'avif', 'image/png': 'png' }[type] || 'png');
 
 // Cover-crop: sample a rect of the source at the target aspect, positioned by
 // the normalised centre (u,v) and zoom, clamped to stay inside the image.
@@ -50,6 +56,8 @@ const App = {
   raw: null,
   oriented: null, // raw with rotation/flip baked in; the crop source
   origUrl: null,
+  file: null,     // the on-screen file
+  queue: [],      // extra files exported with the same crop settings as a ZIP
 
   init() {
     this.dropzone = $('#cr-dropzone');
@@ -61,7 +69,7 @@ const App = {
     $('#cr-browse').addEventListener('click', (e) => { e.stopPropagation(); open(); });
     this.dropzone.addEventListener('click', open);
     this.dropzone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-    this.input.addEventListener('change', (e) => this.load(e.target.files[0]));
+    this.input.addEventListener('change', (e) => this.load([...e.target.files]));
 
     const icon = $('#cr-icon');
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((evt) =>
@@ -70,10 +78,10 @@ const App = {
       this.dropzone.addEventListener(evt, () => icon.classList.add('scale-110')));
     ['dragleave', 'drop'].forEach((evt) =>
       this.dropzone.addEventListener(evt, () => icon.classList.remove('scale-110')));
-    this.dropzone.addEventListener('drop', (e) => this.load(e.dataTransfer.files[0]));
+    this.dropzone.addEventListener('drop', (e) => this.load([...e.dataTransfer.files]));
     document.addEventListener('paste', (e) => {
-      const f = [...(e.clipboardData?.items || [])].find((i) => i.kind === 'file');
-      if (f) this.load(f.getAsFile());
+      const files = [...(e.clipboardData?.items || [])].filter((i) => i.kind === 'file').map((i) => i.getAsFile());
+      if (files.length) this.load(files);
     });
 
     $$('.cr-shape').forEach((b) => b.addEventListener('click', () => this.setShape(b)));
@@ -100,14 +108,19 @@ const App = {
     ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => this.canvas.addEventListener(ev, () => { this.drag = null; }));
 
     $('#cr-download').addEventListener('click', () => this.download());
+    $('[data-batch-zip]').addEventListener('click', () => this.downloadAll());
     $('#cr-new').addEventListener('click', () => this.reset());
   },
 
-  async load(file) {
+  async load(files) {
     this.input.value = '';
-    if (!file || !file.type.startsWith('image/')) { Toast.show(t('Please choose an image'), 'error'); return; }
+    const images = (Array.isArray(files) ? files : [files]).filter((f) => f && f.type.startsWith('image/'));
+    if (!images.length) { Toast.show(t('Please choose an image'), 'error'); return; }
+    const [first, ...rest] = images;
+    this.file = first;
+    this.queue = rest;
     if (this.origUrl) URL.revokeObjectURL(this.origUrl);
-    this.origUrl = URL.createObjectURL(file);
+    this.origUrl = URL.createObjectURL(first);
     try {
       this.raw = await loadImage(this.origUrl);
     } catch {
@@ -125,6 +138,81 @@ const App = {
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
     this.render();
+    this.syncBatch();
+  },
+
+  syncBatch() {
+    const batch = $('[data-batch]');
+    if (!batch) return;
+    const n = this.queue.length + 1;
+    batch.classList.toggle('hidden', n < 2);
+    batch.querySelector('[data-batch-count]').textContent = n;
+  },
+
+  // Bake rotation + flip into an offscreen canvas for an arbitrary image (used by
+  // the batch export, which never puts the queued image on screen).
+  orientedOf(img) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const swap = this.rot === 90 || this.rot === 270;
+    const ow = swap ? ih : iw;
+    const oh = swap ? iw : ih;
+    const c = document.createElement('canvas');
+    c.width = ow; c.height = oh;
+    const x = c.getContext('2d');
+    x.translate(ow / 2, oh / 2);
+    x.rotate((this.rot * Math.PI) / 180);
+    x.scale(this.flipH ? -1 : 1, this.flipV ? -1 : 1);
+    x.drawImage(img, -iw / 2, -ih / 2);
+    return c;
+  },
+
+  // Crop `img` with the CURRENT settings (shape, ratio, rotate/flip, zoom, u, v),
+  // without disturbing the on-screen state. Returns { blob, W, H }.
+  async cropOne(img) {
+    const src = this.orientedOf(img);
+    const geo = frameGeometry(src.width, src.height, this.aspect(), this.zoom, this.u, this.v);
+    const W = Math.max(1, Math.round(geo.sw));
+    const H = Math.max(1, Math.round(geo.sh));
+    const out = document.createElement('canvas');
+    out.width = W; out.height = H;
+    const ctx = out.getContext('2d');
+    ctx.save();
+    if (this.format === 'jpg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); }
+    this.clipShape(ctx, W, H);
+    ctx.drawImage(src, geo.sx, geo.sy, geo.sw, geo.sh, 0, 0, W, H);
+    ctx.restore();
+    const mime = MIME_FOR[this.format] || 'image/png';
+    const blob = await new Promise((res) => out.toBlob(res, mime, 0.95));
+    return { blob, W, H };
+  },
+
+  async downloadAll() {
+    const btn = $('[data-batch-zip]');
+    const label = btn.querySelector('[data-batch-label]');
+    const original = label.textContent;
+    btn.disabled = true;
+    label.textContent = 'Cropping…';
+    try {
+      const entries = [];
+      const files = [this.file, ...this.queue];
+      const imgs = [this.raw];
+      for (const f of this.queue) {
+        const url = URL.createObjectURL(f);
+        try { imgs.push(await loadImage(url)); } catch { imgs.push(null); } finally { URL.revokeObjectURL(url); }
+      }
+      for (let i = 0; i < files.length; i++) {
+        if (!imgs[i]) continue;
+        const { blob } = await this.cropOne(imgs[i]);
+        if (blob) entries.push({ name: `${baseName(files[i].name)}-crop.${extForType(blob.type)}`, blob });
+      }
+      await zipDownload(entries, 'clearbg-cropped.zip');
+    } catch {
+      Toast.show(t('Could not build the ZIP'), 'error');
+    } finally {
+      btn.disabled = false;
+      label.textContent = original;
+    }
   },
 
   // Bake rotation + flip into an offscreen canvas that becomes the crop source.
@@ -176,9 +264,11 @@ const App = {
   setFormat(btn) {
     this.format = btn.dataset.format;
     this.highlight('.cr-format', btn);
-    $('#cr-format-note').textContent = this.format === 'png'
-      ? 'PNG keeps transparent corners on rounded/circle crops.'
-      : 'JPG has no transparency — rounded/circle corners fill white.';
+    $('#cr-format-note').textContent = this.format === 'jpg'
+      ? 'JPG has no transparency — rounded/circle corners fill white.'
+      : this.format === 'avif'
+        ? 'AVIF is the smallest file and keeps transparency (Chromium browsers).'
+        : 'PNG keeps transparent corners on rounded/circle crops.';
   },
 
   highlight(selector, btn) {
@@ -264,10 +354,11 @@ const App = {
     const H = Math.max(1, Math.round(geo.sh));
     const out = document.createElement('canvas');
     const jpg = this.format === 'jpg';
-    this.paint(out, W, H, jpg);
-    const mime = jpg ? 'image/jpeg' : 'image/png';
+    this.paint(out, W, H, jpg);          // only JPG needs a white matte
+    const mime = MIME_FOR[this.format] || 'image/png';
     const blob = await new Promise((res) => out.toBlob(res, mime, 0.95));
-    download(blob, `crop-${W}x${H}.${jpg ? 'jpg' : 'png'}`);
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+    download(blob, `crop-${W}x${H}.${extForType(blob.type)}`);
     Toast.show(t('Saved crop {w}×{h}', { w: W, h: H }), 'success');
   },
 
@@ -276,6 +367,8 @@ const App = {
     this.dropzone.parentElement.classList.remove('hidden');
     if (this.origUrl) { URL.revokeObjectURL(this.origUrl); this.origUrl = null; }
     this.raw = this.oriented = null;
+    this.queue = [];
+    this.syncBatch();
   },
 };
 

@@ -17,6 +17,12 @@ const { $, $$, Toast, loadImage, dropzone, zipDownload, remember, baseName, down
 const clampInt = (v) => Math.max(1, Math.round(v || 0));
 const prefs = remember('resize');
 
+// File extension for an image MIME type. AVIF encoding is Chromium-only; when a
+// browser can't encode it, canvas.toBlob silently returns PNG, so the extension
+// is always derived from the blob we actually got, never from what we asked for.
+const extForType = (type) =>
+  ({ 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/avif': 'avif', 'image/png': 'png' }[type] || 'png');
+
 const App = {
   img: null,
   ow: 0, oh: 0,          // original dimensions
@@ -115,8 +121,8 @@ const App = {
   /** Target type + extension for a source file, honouring the format choice. */
   typeFor(file) {
     const type = this.fmt
-      || (file.type === 'image/jpeg' ? 'image/jpeg' : file.type === 'image/webp' ? 'image/webp' : 'image/png');
-    return { type, ext: type === 'image/jpeg' ? 'jpg' : type === 'image/webp' ? 'webp' : 'png' };
+      || (['image/jpeg', 'image/webp', 'image/avif'].includes(file.type) ? file.type : 'image/png');
+    return { type, ext: extForType(type) };
   },
 
   /** Resize one image and return {name, blob}. `exact` forces this.w × this.h. */
@@ -134,10 +140,12 @@ const App = {
       c.width = w; c.height = h;
       const ctx = c.getContext('2d');
       ctx.imageSmoothingQuality = 'high';
-      const { type, ext } = this.typeFor(file);
+      const { type } = this.typeFor(file);
       if (type === 'image/jpeg') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h); }
       ctx.drawImage(img, 0, 0, w, h);
       const blob = await new Promise((res) => c.toBlob(res, type, 0.95));
+      // Extension follows the bytes we actually got (AVIF may fall back to PNG).
+      const ext = extForType(blob ? blob.type : type);
       return blob ? { name: `${baseName(file.name)}-${w}x${h}.${ext}`, blob } : null;
     } finally {
       URL.revokeObjectURL(url);

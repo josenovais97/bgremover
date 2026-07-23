@@ -61,6 +61,14 @@ TOOL_NAV = [
      "blurb": "Strip GPS and camera data from photos"},
     {"name": "pdf", "icon": "fa-solid fa-file-arrow-down", "label": "Image to PDF", "group": "optimize",
      "blurb": "Combine photos or scans into one PDF"},
+    {"name": "collage", "icon": "fa-solid fa-table-columns", "label": "Collage", "group": "create",
+     "blurb": "Arrange several photos into a grid"},
+    {"name": "border", "icon": "fa-solid fa-image-portrait", "label": "Border", "group": "create",
+     "blurb": "Add a border or a Polaroid frame"},
+    {"name": "palette", "icon": "fa-solid fa-swatchbook", "label": "Palette", "group": "optimize",
+     "blurb": "Pull the colours out of any photo"},
+    {"name": "base64", "icon": "fa-solid fa-code", "label": "Base64", "group": "optimize",
+     "blurb": "Encode or decode an image data URI"},
 ]
 
 # Categories for the "All tools" mega-menu, in display order. Each groups the
@@ -124,6 +132,10 @@ TOOL_ACCENTS = {
     # not a colour. Kept a shade apart from QR's slate so the two read as
     # different tools rather than the same grey.
     "pdf": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),           # stone 600/700/400/300
+    "collage": ("126 34 206", "107 33 168", "168 85 247", "192 132 252"),    # purple 700/800/500/400
+    "border": ("190 18 60", "159 18 57", "244 63 94", "251 113 133"),        # rose 700/800/500/400
+    "palette": ("162 28 175", "134 25 143", "217 70 239", "232 121 249"),    # fuchsia 700/800/500/400
+    "base64": ("82 82 91", "63 63 70", "161 161 170", "212 212 216"),        # zinc 600/700/400/300
 }
 _DEFAULT_ACCENT = TOOL_ACCENTS["index"]
 

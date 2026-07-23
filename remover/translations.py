@@ -364,6 +364,14 @@ JS_UI = {
     # --- Errors ---
     "Error: {message}": "Erro: {message}",
     "Failed: {detail}": "Falhou: {detail}",
+    # --- Base64 / palette / collage / border ---
+    "That is not a valid image data URI": "Isso não é um URI de dados de imagem válido",
+    "Click to copy": "Clique para copiar",
+    "Copied {value}": "{value} copiado",
+    "Palette copied as CSS": "Paleta copiada como CSS",
+    "Remove": "Remover",
+    "{n} photo": "{n} fotografia",
+    "{n} photos": "{n} fotografias",
     # --- Cross-tool chaining (kit.js) ---
     "Keep editing this image:": "Continue a editar esta imagem:",
     "— keep going:": "— continue:",
