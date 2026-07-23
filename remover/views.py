@@ -4,8 +4,10 @@ Views for the background remover.
 The heavy lifting (AI background removal) runs client-side, so these views only
 render the single-page app and the SEO helper endpoints (robots.txt, sitemap).
 """
+import ipaddress
 import json
 import logging
+import time
 import urllib.request
 from pathlib import Path
 
@@ -1210,6 +1212,54 @@ def _stats_ns():
     return (settings.STATS_KEY or "clearbg:processed").split(":", 1)[0]
 
 
+# Abuse guard for the only public, unauthenticated write endpoint. Without it a
+# loop of POSTs could inflate the vanity counter and — the real cost — burn
+# Upstash request quota, since every accepted POST is 1-2 REST calls. A
+# fixed-window counter in the same store caps accepted writes per client IP.
+STATS_POST_LIMIT = 60      # accepted POSTs per IP per window
+STATS_POST_WINDOW = 60     # window length, seconds
+
+
+def _client_ip(request):
+    """Best-effort client IP, honouring the proxy's X-Forwarded-For (Vercel).
+
+    Parsed through ``ipaddress`` before it is ever used to build a Redis key:
+    X-Forwarded-For is attacker-controlled, so an unfiltered value like
+    ``1.2.3.4/flushall`` would inject extra path segments into the Upstash REST
+    call, and a varying junk suffix would also mint a fresh rate-limit bucket
+    per request. Anything that is not a valid IP collapses to a single shared
+    ``unknown`` bucket. (A spoofed *valid* IP per request can still evade the
+    limit — inherent to trusting XFF — but this is a vanity-counter speed bump,
+    not an auth boundary.)
+    """
+    xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    candidate = xff.split(",")[0].strip() if xff else request.META.get("REMOTE_ADDR", "")
+    try:
+        return str(ipaddress.ip_address(candidate))
+    except ValueError:
+        return "unknown"
+
+
+def _stats_rate_limited(request):
+    """True if this client IP is over the stats-POST budget for the window.
+
+    Fixed-window counter: INCR a per-IP/per-window key and set its TTL on the
+    first hit so it self-expires. Fails OPEN (returns False) whenever Upstash
+    can't be reached or returns a non-integer, so a transient store outage
+    never blocks the counter instead of merely failing to throttle.
+    """
+    bucket = int(time.time()) // STATS_POST_WINDOW
+    key = f"{_stats_ns()}:rl:{bucket}:{_client_ip(request)}"
+    count = _upstash(f"incr/{key}")
+    try:
+        count = int(count)
+    except (ValueError, TypeError):
+        return False
+    if count == 1:
+        _upstash(f"expire/{key}/{STATS_POST_WINDOW}")
+    return count > STATS_POST_LIMIT
+
+
 @csrf_exempt
 def stats(request):
     """Global 'images processed' counter + per-tool conversion events (Upstash).
@@ -1248,6 +1298,12 @@ def stats(request):
         return response
 
     if request.method == "POST":
+        if _stats_rate_limited(request):
+            response = JsonResponse(
+                {"enabled": True, "count": None, "error": "rate_limited"}, status=429
+            )
+            response["Cache-Control"] = "no-store"
+            return response
         try:
             payload = json.loads(request.body or b"{}")
         except (ValueError, TypeError, json.JSONDecodeError):

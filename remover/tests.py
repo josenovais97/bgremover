@@ -2,6 +2,7 @@
 import json
 import re
 from pathlib import Path
+from unittest import mock
 
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
@@ -171,6 +172,76 @@ class StatsCounterTests(SimpleTestCase):
     def test_home_has_social_proof_placeholder(self):
         response = self.client.get(reverse("remover:index"))
         self.assertContains(response, 'id="social-proof"')
+
+    # The stats POST is the only public, unauthenticated write endpoint, so it
+    # carries a per-IP fixed-window rate limit (Upstash-backed). These tests
+    # enable Upstash via override_settings and mock the REST helper so nothing
+    # touches the network.
+    _UPSTASH = dict(
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="test-token",
+        STATS_KEY="clearbg:processed",
+    )
+
+    @override_settings(**_UPSTASH)
+    def test_post_over_rate_limit_is_rejected_without_incrementing(self):
+        def fake(path):
+            if path.startswith("incr/") and ":rl:" in path:
+                return 61  # over STATS_POST_LIMIT (60)
+            return 0
+
+        with mock.patch("remover.views._upstash", side_effect=fake) as m:
+            post = self.client.post(
+                reverse("remover:stats"),
+                data='{"n": 3, "event": "processed", "tool": "crop"}',
+                content_type="application/json",
+            )
+        self.assertEqual(post.status_code, 429)
+        # The vanity counter must NOT have been touched for a rejected request.
+        self.assertFalse(
+            any(str(c.args[0]).startswith("incrby/") for c in m.call_args_list),
+            "a rate-limited POST still incremented the counter",
+        )
+
+    @override_settings(**_UPSTASH)
+    def test_post_under_rate_limit_increments(self):
+        def fake(path):
+            if path.startswith("incr/") and ":rl:" in path:
+                return 1  # first hit of the window → allowed
+            return 7      # incrby / get both report a live count
+
+        with mock.patch("remover.views._upstash", side_effect=fake):
+            post = self.client.post(
+                reverse("remover:stats"),
+                data='{"n": 3, "event": "processed"}',
+                content_type="application/json",
+            )
+        self.assertEqual(post.status_code, 200)
+        self.assertJSONEqual(post.content, {"enabled": True, "count": 7})
+
+    def test_client_ip_reads_clean_forwarded_header(self):
+        from django.test import RequestFactory
+
+        from remover.views import _client_ip
+
+        req = RequestFactory().post(
+            "/api/stats/", HTTP_X_FORWARDED_FOR="1.2.3.4, 10.0.0.1"
+        )
+        self.assertEqual(_client_ip(req), "1.2.3.4")
+
+    def test_client_ip_rejects_injection_attempt(self):
+        # A spoofed X-Forwarded-For must never inject extra Upstash path
+        # segments — a non-IP value collapses to a single shared bucket.
+        from django.test import RequestFactory
+
+        from remover.views import _client_ip
+
+        req = RequestFactory().post(
+            "/api/stats/", HTTP_X_FORWARDED_FOR="1.2.3.4/flushall"
+        )
+        ip = _client_ip(req)
+        self.assertNotIn("/", ip)
+        self.assertEqual(ip, "unknown")
 
 
 class PassportCountryTests(SimpleTestCase):
