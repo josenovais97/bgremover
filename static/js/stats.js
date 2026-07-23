@@ -63,7 +63,8 @@
     '/exif-remover/': 'exif', '/resize-image/': 'resize',
     '/watermark-image/': 'watermark', '/gif-maker/': 'gif',
     '/qr-code-generator/': 'qr', '/text-behind-image/': 'text_behind',
-    '/image-to-pdf/': 'pdf',
+    '/image-to-pdf/': 'pdf', '/color-palette/': 'palette', '/collage/': 'collage',
+    '/add-border/': 'border', '/base64-image/': 'base64',
   };
   function toolId() {
     const p = location.pathname.replace(/^\/pt(\/|$)/, '/');

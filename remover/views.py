@@ -20,10 +20,14 @@ from django.views.decorators.http import require_GET
 from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, country_faqs
 from .seo_content import (
     ALTERNATIVE_FAQS,
+    BASE64_FAQS,
     BLUR_FAQS,
+    BORDER_FAQS,
+    COLLAGE_FAQS,
     ECOMMERCE_FAQS,
     EXIF_FAQS,
     INDEX_FAQS,
+    PALETTE_FAQS,
     PASSPORT_FAQS,
     PDF_FAQS,
     QR_FAQS,
@@ -768,7 +772,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/image-to-pdf/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
@@ -1075,6 +1079,42 @@ def exif(request):
 
 
 @require_GET
+def base64_image(request):
+    """Render the client-side image ⇄ Base64 data-URI converter."""
+    return render(request, "remover/base64.html", {
+        "faqs": BASE64_FAQS,
+        "faq_jsonld": faq_jsonld(BASE64_FAQS),
+    })
+
+
+@require_GET
+def palette(request):
+    """Render the client-side colour palette extractor."""
+    return render(request, "remover/palette.html", {
+        "faqs": PALETTE_FAQS,
+        "faq_jsonld": faq_jsonld(PALETTE_FAQS),
+    })
+
+
+@require_GET
+def border(request):
+    """Render the client-side border / Polaroid frame tool."""
+    return render(request, "remover/border.html", {
+        "faqs": BORDER_FAQS,
+        "faq_jsonld": faq_jsonld(BORDER_FAQS),
+    })
+
+
+@require_GET
+def collage(request):
+    """Render the client-side collage / photo grid maker."""
+    return render(request, "remover/collage.html", {
+        "faqs": COLLAGE_FAQS,
+        "faq_jsonld": faq_jsonld(COLLAGE_FAQS),
+    })
+
+
+@require_GET
 def alternative(request):
     """SEO comparison landing page targeting 'free remove.bg alternative'."""
     # (feature, ClearBG, remove.bg) — based on each service's public free tier.
@@ -1154,9 +1194,10 @@ def _upstash(path):
 # malicious client can never inject arbitrary Redis keys/commands via the path.
 STATS_EVENTS = {"processed", "downloaded"}
 STATS_TOOLS = {
-    "home", "blur", "portrait", "ecommerce", "sticker", "passport",
+    "home", "blur", "ecommerce", "sticker", "passport",
     "instagram", "crop", "convert", "compress", "meme", "favicon",
     "redact", "exif", "resize", "watermark", "gif", "qr", "text_behind", "pdf",
+    "base64", "palette", "border", "collage",
 }
 
 

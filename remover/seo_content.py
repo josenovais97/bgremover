@@ -186,3 +186,48 @@ ALTERNATIVE_FAQS = [
     {"q": "What else can ClearBG do that remove.bg can't?",
      "a": "Beyond background removal it includes a whole free toolkit — image converter and compressor, crop, Instagram editor, stickers, passport photos, product-photo maker, background blur, a text-behind-image effect, a QR generator and a blur/redact tool — all private and in your browser."},
 ]
+
+
+BASE64_FAQS = [
+    {"q": "Is this Base64 converter free?",
+     "a": "Yes — free, unlimited and no sign-up. Encode and decode as many images as you like."},
+    {"q": "Are my images uploaded?",
+     "a": "No. Both the encode and the decode run entirely in your browser, so the file never leaves your device — safe for private assets."},
+    {"q": "When should I use a Base64 data URI?",
+     "a": "Inline a small image straight into CSS, HTML or an SVG, embed one inside a JSON payload, or avoid an extra network request for a tiny icon. For large photos a normal file is usually better, since Base64 adds about 33% to the size."},
+    {"q": "Can I decode a data URI back to a file?",
+     "a": "Yes — switch to Base64 → Image, paste a full data: URI or raw Base64, preview it, and download the original image."},
+]
+
+PALETTE_FAQS = [
+    {"q": "Is this colour palette tool free?",
+     "a": "Yes — free, unlimited and no sign-up. Extract a palette from as many photos as you like."},
+    {"q": "Is my photo uploaded?",
+     "a": "No. The image is read into a canvas in your browser and the colours are counted locally, so nothing is ever uploaded."},
+    {"q": "How are the colours chosen?",
+     "a": "The tool counts the most common colours in the image and merges near-duplicates, so the swatches read as a real palette rather than several shades of the same tone. Pick 4 to 12 colours."},
+    {"q": "Can I copy an exact pixel colour?",
+     "a": "Yes — hover the photo to eyedrop any pixel and click to copy its HEX or RGB value. You can also copy the whole palette as CSS variables."},
+]
+
+BORDER_FAQS = [
+    {"q": "Is this border and frame tool free?",
+     "a": "Yes — free, unlimited, no watermark and no sign-up. Frame as many photos as you like at full quality."},
+    {"q": "Is my photo uploaded?",
+     "a": "No. The border is drawn onto your photo entirely in your browser, so nothing is ever uploaded."},
+    {"q": "What's the Polaroid style?",
+     "a": "It wraps the photo in a white frame with a deep captioned bottom edge, like an instant photo. Type a caption and it's centred along the base."},
+    {"q": "Can I get rounded corners or a gradient border?",
+     "a": "Yes — set any border width and colour, round the corners, or switch on a two-colour gradient with an adjustable angle. Export PNG to keep transparent rounded corners, or JPG on white."},
+]
+
+COLLAGE_FAQS = [
+    {"q": "Is this collage maker free?",
+     "a": "Yes — free, unlimited, no watermark and no sign-up. Combine as many photos as you like."},
+    {"q": "Are my photos uploaded?",
+     "a": "No. The collage is composited entirely in your browser, so your photos never leave your device."},
+    {"q": "Can I choose the layout?",
+     "a": "Yes — pick 2 to 5 columns, adjust the gap and corner radius, set a background colour, and choose a square, 4:5, 3:2 or 16:9 output. Each photo is cover-fit so nothing is stretched."},
+    {"q": "Can I add or remove photos after starting?",
+     "a": "Yes — add more at any time, and remove any tile with the × on its thumbnail. The grid re-flows automatically."},
+]

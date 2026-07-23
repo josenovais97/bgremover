@@ -28,7 +28,7 @@ const toBlob = (canvas, mime, q) => new Promise((res) => canvas.toBlob(res, mime
 
 /* ------------------------------------------------------------ global state */
 const target = { mime: 'image/webp', ext: 'webp', mode: 'quality', quality: 0.75, targetKB: 200, maxDim: 0 };
-const MIME_LABEL = { 'image/webp': 'WEBP', 'image/jpeg': 'JPG', 'image/png': 'PNG' };
+const MIME_LABEL = { 'image/webp': 'WEBP', 'image/jpeg': 'JPG', 'image/png': 'PNG', 'image/avif': 'AVIF' };
 
 /* Find the highest quality whose encoded size fits the byte budget. */
 async function encodeToTarget(canvas, mime, targetBytes) {
