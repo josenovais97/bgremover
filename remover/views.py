@@ -11,13 +11,13 @@ from pathlib import Path
 
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
-from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, country_faqs
+from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, FOLDED_COUNTRY_SLUGS, country_faqs
 from .seo_content import (
     ALTERNATIVE_FAQS,
     BASE64_FAQS,
@@ -976,6 +976,10 @@ def passport_country(request, country):
     """Render a per-country passport-photo landing page (programmatic SEO)."""
     c = COUNTRIES_BY_SLUG.get(country)
     if c is None:
+        # A retired near-duplicate page: 301 to the hub so its equity consolidates
+        # instead of 404-ing (see passport_data.FOLDED_COUNTRY_SLUGS).
+        if country in FOLDED_COUNTRY_SLUGS:
+            return redirect(reverse("remover:passport"), permanent=True)
         raise Http404("Unknown country")
     faqs = country_faqs(c)
     # A few sibling countries for internal linking (keeps crawlers moving).
