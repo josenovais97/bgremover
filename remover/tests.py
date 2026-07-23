@@ -188,6 +188,21 @@ class PassportCountryTests(SimpleTestCase):
         response = self.client.get(reverse("remover:passport_country", args=["atlantis"]))
         self.assertEqual(response.status_code, 404)
 
+    def test_folded_countries_redirect_to_the_hub(self):
+        # Retired near-duplicate pages 301 to the main tool (not 404) so any
+        # link equity / stale index entries consolidate onto a rankable page.
+        from remover.passport_data import FOLDED_COUNTRY_SLUGS
+        hub = reverse("remover:passport")
+        for slug in FOLDED_COUNTRY_SLUGS:
+            response = self.client.get(reverse("remover:passport_country", args=[slug]))
+            self.assertRedirects(response, hub, status_code=301, target_status_code=200)
+
+    def test_folded_countries_are_not_in_the_sitemap(self):
+        from remover.passport_data import FOLDED_COUNTRY_SLUGS
+        response = self.client.get(reverse("remover:sitemap"))
+        for slug in FOLDED_COUNTRY_SLUGS:
+            self.assertNotContains(response, f"/passport-photo/{slug}/")
+
     def test_country_pages_in_sitemap(self):
         from remover.passport_data import COUNTRIES
         response = self.client.get(reverse("remover:sitemap"))

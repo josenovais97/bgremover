@@ -201,11 +201,19 @@ def _canonical_url(request):
 
 
 def _alternate_urls(request):
-    """Absolute English + Portuguese URLs for the current page (for hreflang)."""
+    """Absolute English + Portuguese URLs for the current page (for hreflang).
+
+    Built from SITE_URL — NOT the request host — so the hreflang set always names
+    the same host as the canonical (which is also SITE_URL-based). Otherwise a
+    crawl arriving on www./the apex/the public *.vercel.app alias would emit
+    hreflang URLs on a different host than the canonical, and Google discards a
+    hreflang cluster whose URLs disagree with the page's own canonical.
+    """
+    base = settings.SITE_URL.rstrip("/")
     try:
         return {
-            "en": request.build_absolute_uri(translate_url(request.path, "en")),
-            "pt": request.build_absolute_uri(translate_url(request.path, "pt")),
+            "en": base + translate_url(request.path, "en"),
+            "pt": base + translate_url(request.path, "pt"),
         }
     except Exception:
         return {}

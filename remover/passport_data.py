@@ -39,6 +39,15 @@ def _entry(slug, name, flag, w_mm, h_mm, *, imperial=None, bg="plain white", hea
 # Curated, confidently-sourced set. 35×45 mm is the international default used by
 # the majority of countries; the exceptions (US, Canada, China, Brazil) carry
 # their own dimensions.
+# Only countries with a genuinely distinct spec or real standalone search intent
+# keep their own page. A wider list (Germany, France, Japan, …) shared the
+# identical 35×45 mm / plain-white spec with no distinguishing content, so those
+# pages were 85%-similar near-duplicates Google discovered but refused to index
+# (measured: 0.83 sibling similarity vs a 0.32 boilerplate floor). They now 301
+# to the main tool (see FOLDED_COUNTRY_SLUGS) — the tool still makes photos for
+# every country via its own preset list in passport.js; only the thin SEO pages
+# are gone. Portugal stays deliberately: it's the home market where the .pt ccTLD
+# is a ranking advantage rather than a handicap.
 COUNTRIES = [
     _entry("united-states", "United States", "🇺🇸", 51, 51, imperial="2 × 2 in",
            note="The 2×2 inch size is used for the US passport, visa, Green Card and DV lottery."),
@@ -46,32 +55,30 @@ COUNTRIES = [
            note="Used for the UK passport and most UK visa applications."),
     _entry("canada", "Canada", "🇨🇦", 50, 70,
            note="Canada uses a larger 50×70 mm photo for passports."),
-    _entry("australia", "Australia", "🇦🇺", 35, 45, bg="plain white or light grey"),
+    _entry("australia", "Australia", "🇦🇺", 35, 45, bg="plain white or light grey",
+           note="Australian passport photos use a plain white or light grey background."),
     _entry("india", "India", "🇮🇳", 35, 45,
            note="Common size for the Indian passport (Passport Seva) application."),
     _entry("schengen-visa", "Schengen Visa (EU)", "🇪🇺", 35, 45,
            note="Accepted across Schengen-area visa and residence applications."),
-    _entry("germany", "Germany", "🇩🇪", 35, 45),
-    _entry("france", "France", "🇫🇷", 35, 45),
-    _entry("italy", "Italy", "🇮🇹", 35, 45),
-    _entry("portugal", "Portugal", "🇵🇹", 35, 45),
-    _entry("ireland", "Ireland", "🇮🇪", 35, 45),
-    _entry("netherlands", "Netherlands", "🇳🇱", 35, 45),
+    _entry("portugal", "Portugal", "🇵🇹", 35, 45,
+           note="Portugal uses the EU-standard 35×45 mm size for passport photos."),
     _entry("china", "China", "🇨🇳", 33, 48,
            note="China visa photos use a 33×48 mm size on a white background."),
-    _entry("japan", "Japan", "🇯🇵", 35, 45),
     _entry("brazil", "Brazil", "🇧🇷", 50, 70,
            note="Brazil commonly uses a 5×7 cm (50×70 mm) photo."),
-    _entry("new-zealand", "New Zealand", "🇳🇿", 35, 45),
-    _entry("south-africa", "South Africa", "🇿🇦", 35, 45),
-    _entry("singapore", "Singapore", "🇸🇬", 35, 45),
-    _entry("philippines", "Philippines", "🇵🇭", 35, 45),
-    _entry("south-korea", "South Korea", "🇰🇷", 35, 45),
-    _entry("nigeria", "Nigeria", "🇳🇬", 35, 45),
-    _entry("pakistan", "Pakistan", "🇵🇰", 35, 45),
 ]
 
 COUNTRIES_BY_SLUG = {c["slug"]: c for c in COUNTRIES}
+
+# Retired per-country pages (identical 35×45 mm / plain-white spec, no unique
+# content). They 301 to the main passport tool so any link equity and stray index
+# entries consolidate onto a page that can actually rank, instead of 404-ing.
+FOLDED_COUNTRY_SLUGS = frozenset({
+    "germany", "france", "italy", "ireland", "netherlands", "japan",
+    "new-zealand", "south-africa", "singapore", "philippines",
+    "south-korea", "nigeria", "pakistan",
+})
 
 
 def size_label(c):
