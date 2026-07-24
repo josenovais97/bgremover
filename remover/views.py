@@ -26,9 +26,15 @@ from .seo_content import (
     BLUR_FAQS,
     BORDER_FAQS,
     COLLAGE_FAQS,
+    COMPRESS_FAQS,
+    CONVERT_FAQS,
+    CROP_FAQS,
     ECOMMERCE_FAQS,
     EXIF_FAQS,
+    FAVICON_FAQS,
     INDEX_FAQS,
+    INSTAGRAM_FAQS,
+    MEME_FAQS,
     PALETTE_FAQS,
     PASSPORT_FAQS,
     PDF_FAQS,
@@ -36,6 +42,8 @@ from .seo_content import (
     REDACT_FAQS,
     RESIZE_FAQS,
     GIF_FAQS,
+    VIDEO_GIF_FAQS,
+    STICKER_FAQS,
     WATERMARK_FAQS,
     TEXTBEHIND_FAQS,
     faq_jsonld,
@@ -774,7 +782,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
@@ -924,43 +932,66 @@ def compress_page(request, slug):
 @require_GET
 def convert(request):
     """Render the client-side image format converter."""
-    return render(request, "remover/convert.html", {"formats": CONVERT_FORMATS})
+    return render(request, "remover/convert.html", {
+        "formats": CONVERT_FORMATS,
+        "faqs": CONVERT_FAQS,
+        "faq_jsonld": faq_jsonld(CONVERT_FAQS),
+    })
 
 
 @require_GET
 def instagram(request):
     """Render the client-side Instagram photo editor."""
-    return render(request, "remover/instagram.html", {"formats": IG_FORMATS})
+    return render(request, "remover/instagram.html", {
+        "formats": IG_FORMATS,
+        "faqs": INSTAGRAM_FAQS,
+        "faq_jsonld": faq_jsonld(INSTAGRAM_FAQS),
+    })
 
 
 @require_GET
 def crop(request):
     """Render the standalone client-side crop tool (no background removal)."""
-    return render(request, "remover/crop.html")
+    return render(request, "remover/crop.html", {
+        "faqs": CROP_FAQS,
+        "faq_jsonld": faq_jsonld(CROP_FAQS),
+    })
 
 
 @require_GET
 def favicon_generator(request):
     """Render the client-side favicon / app-icon generator."""
-    return render(request, "remover/favicon.html")
+    return render(request, "remover/favicon.html", {
+        "faqs": FAVICON_FAQS,
+        "faq_jsonld": faq_jsonld(FAVICON_FAQS),
+    })
 
 
 @require_GET
 def sticker(request):
     """Render the client-side WhatsApp sticker maker."""
-    return render(request, "remover/sticker.html")
+    return render(request, "remover/sticker.html", {
+        "faqs": STICKER_FAQS,
+        "faq_jsonld": faq_jsonld(STICKER_FAQS),
+    })
 
 
 @require_GET
 def compress(request):
     """Render the client-side image compressor."""
-    return render(request, "remover/compress.html")
+    return render(request, "remover/compress.html", {
+        "faqs": COMPRESS_FAQS,
+        "faq_jsonld": faq_jsonld(COMPRESS_FAQS),
+    })
 
 
 @require_GET
 def meme(request):
     """Render the client-side meme generator."""
-    return render(request, "remover/meme.html")
+    return render(request, "remover/meme.html", {
+        "faqs": MEME_FAQS,
+        "faq_jsonld": faq_jsonld(MEME_FAQS),
+    })
 
 
 @require_GET
@@ -1054,6 +1085,15 @@ def gif(request):
     return render(request, "remover/gif.html", {
         "faqs": GIF_FAQS,
         "faq_jsonld": faq_jsonld(GIF_FAQS),
+    })
+
+
+@require_GET
+def video_gif(request):
+    """Render the client-side video → animated GIF converter."""
+    return render(request, "remover/video_gif.html", {
+        "faqs": VIDEO_GIF_FAQS,
+        "faq_jsonld": faq_jsonld(VIDEO_GIF_FAQS),
     })
 
 
@@ -1202,7 +1242,7 @@ STATS_EVENTS = {"processed", "downloaded"}
 STATS_TOOLS = {
     "home", "blur", "ecommerce", "sticker", "passport",
     "instagram", "crop", "convert", "compress", "meme", "favicon",
-    "redact", "exif", "resize", "watermark", "gif", "qr", "text_behind", "pdf",
+    "redact", "exif", "resize", "watermark", "gif", "video_gif", "qr", "text_behind", "pdf",
     "base64", "palette", "border", "collage",
 }
 

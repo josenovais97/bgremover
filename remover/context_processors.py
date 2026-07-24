@@ -13,7 +13,9 @@ from .views import USE_CASES, is_translated_path
 # they never appear as a destination in the "keep editing" bar. The QR generator
 # builds a code from a link — its only file input is an optional centre logo,
 # and dropping someone's photo there would be nonsense.
-CHAIN_EXCLUDED = {"qr"}
+# The video → GIF tool takes a video file, so an image handed over from another
+# tool can't be its input either — like the QR generator, it's a source-only hop.
+CHAIN_EXCLUDED = {"qr", "video_gif"}
 
 # The tool switcher in the header. Defined once here so every item renders with
 # identical markup (no per-link drift in sizing/wrapping) and adding a tool is a
@@ -43,6 +45,8 @@ TOOL_NAV = [
      "blurb": "Stamp text or a logo across an image"},
     {"name": "gif", "icon": "fa-solid fa-images", "label": "GIF Maker", "group": "create",
      "blurb": "Turn a set of frames into an animation"},
+    {"name": "video_gif", "icon": "fa-solid fa-images", "label": "Video to GIF", "group": "create",
+     "blurb": "Convert an MP4 or WebM clip into a GIF"},
     {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme", "group": "create",
      "blurb": "Classic top and bottom caption text"},
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos",
@@ -128,6 +132,7 @@ TOOL_ACCENTS = {
     "resize": ("194 65 12", "154 52 18", "234 88 12", "249 115 22"),         # orange 700/800/600/500
     "watermark": ("77 124 15", "63 98 18", "101 163 13", "132 204 22"),      # lime 700/800/600/500
     "gif": ("147 51 234", "126 34 206", "168 85 247", "192 132 252"),         # purple 600/700/500/400
+    "video_gif": ("147 51 234", "126 34 206", "168 85 247", "192 132 252"),   # purple 600/700/500/400 (GIF family)
     # Warm neutral for the same reason QR is cool neutral: a PDF is ink on paper,
     # not a colour. Kept a shade apart from QR's slate so the two read as
     # different tools rather than the same grey.

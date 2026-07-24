@@ -35,6 +35,10 @@ CSP = "; ".join(
         "form-action 'self'",
         # https: lets AdSense creatives (served from many hosts) load their images.
         "img-src 'self' data: blob: https:",
+        # blob: lets the video → GIF tool load a user-picked clip into a <video>
+        # element (an object URL). Without this, default-src blocks it and the
+        # video reports MEDIA_ERR_SRC_NOT_SUPPORTED as if the codec were bad.
+        "media-src 'self' blob:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
         # 'unsafe-eval' + 'wasm-unsafe-eval': required by the onnxruntime-web WASM

@@ -161,6 +161,21 @@ GIF_FAQS = [
      "a": "No. Frames are fitted onto a canvas of the size you pick, so mixed dimensions and orientations work fine."},
 ]
 
+VIDEO_GIF_FAQS = [
+    {"q": "Is this video-to-GIF converter free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark. Convert as many clips as you like and export a full-quality animated GIF."},
+    {"q": "Is my video uploaded to a server?",
+     "a": "No. Your browser decodes the video and encodes the GIF entirely on your device, so the file never leaves your computer. Nothing is uploaded — which matters for private recordings and screen captures."},
+    {"q": "Which video formats can I convert?",
+     "a": "Any format your browser can play — MP4 (H.264), WebM and most MOV files work everywhere. Because the decoding is done by the browser itself, a few older or unusual codecs may not open; re-saving as MP4 or WebM fixes that."},
+    {"q": "Can I trim the video before converting?",
+     "a": "Yes — drag the start and end handles to pick the exact section you want. A GIF stores every frame separately, so a shorter clip is the single biggest thing you can do to keep the file small."},
+    {"q": "How do I make the GIF smaller?",
+     "a": "Trim to a shorter clip, drop the frame rate (5–10 fps is plenty for most GIFs) and choose a smaller output size. GIF size grows with duration, frame rate and dimensions."},
+    {"q": "Why doesn't it keep the sound?",
+     "a": "GIF is an image format — it has no audio track at all. The converter takes the picture frames only, which is why animated GIFs are always silent."},
+]
+
 PDF_FAQS = [
     {"q": "Is this image-to-PDF converter free?",
      "a": "Yes — free, unlimited, no sign-up and no watermark. Combine as many photos or scans as you like into one PDF."},
@@ -230,4 +245,101 @@ COLLAGE_FAQS = [
      "a": "Yes — pick 2 to 5 columns, adjust the gap and corner radius, set a background colour, and choose a square, 4:5, 3:2 or 16:9 output. Each photo is cover-fit so nothing is stretched."},
     {"q": "Can I add or remove photos after starting?",
      "a": "Yes — add more at any time, and remove any tile with the × on its thumbnail. The grid re-flows automatically."},
+]
+
+CONVERT_FAQS = [
+    {"q": "Which image formats can I convert between?",
+     "a": "You can convert between PNG, JPG, WEBP and AVIF in any direction — for example PNG to JPG, JPG to WEBP, or WEBP to PNG. Upload one of those formats and export any of the others."},
+    {"q": "What's the difference between PNG, JPG, WEBP and AVIF?",
+     "a": "PNG is lossless and supports transparency, which makes it ideal for logos, icons and screenshots. JPG is a small, lossy format best for photographs, but it has no transparency. WEBP and AVIF are modern formats that combine small file sizes with transparency support — AVIF is usually the smallest, WEBP has the widest browser support."},
+    {"q": "Will converting reduce my image quality?",
+     "a": "Converting to a lossless format like PNG keeps every pixel intact. Converting to a lossy format (JPG, WEBP or AVIF) re-encodes the image, so there can be a small quality change, but you keep the full original resolution — nothing is downscaled."},
+    {"q": "Does converting to PNG add transparency to a JPG?",
+     "a": "No. Converting a JPG to PNG changes the container, but it can't invent transparency that wasn't in the original — a JPG has a solid background. To make a background transparent you need our background remover, which cuts out the subject first."},
+    {"q": "Are my images uploaded to a server?",
+     "a": "No. The conversion runs entirely in your browser using the canvas API, so your images never leave your device. There are no upload limits and no per-file cost."},
+    {"q": "Can I convert several images at once?",
+     "a": "Yes. Drop in a batch of images, pick the output format, and download them together — all processed locally, one after another."},
+]
+
+COMPRESS_FAQS = [
+    {"q": "How does image compression reduce file size?",
+     "a": "Compression re-encodes the image at a lower quality setting and, for photos, discards fine detail the eye barely notices. This tool lets you trade a little quality for a much smaller file, and shows the before/after size so you can pick the sweet spot for your target."},
+    {"q": "Will compressing make my image look bad?",
+     "a": "Not if you pick a sensible quality level. At 70–85% quality most photos look identical to the original while the file shrinks by 60–80%. You can preview the result and adjust the slider before downloading, so you stay in control."},
+    {"q": "What's the best format to compress to?",
+     "a": "For photographs, WEBP or AVIF usually give the smallest file at the same visual quality, followed by JPG. For graphics with flat colour or transparency, PNG or WEBP are better. The tool lets you compare formats so you can choose the smallest acceptable file."},
+    {"q": "Can I compress an image to a specific size, like under 1MB?",
+     "a": "Yes — lower the quality slider until the estimated size drops below your target (for example 1MB, 500KB or 100KB for an email or upload limit). The live size readout updates as you adjust, so you can hit an exact budget."},
+    {"q": "Are my images uploaded when I compress them?",
+     "a": "No. All compression happens locally in your browser, so your images are never uploaded, stored or seen by anyone. It works offline once the page has loaded."},
+    {"q": "Does compressing remove EXIF and location data?",
+     "a": "Re-encoding an image typically strips most embedded metadata, including camera info and GPS coordinates. If you specifically want to remove metadata while keeping full quality, use our EXIF remover instead."},
+]
+
+CROP_FAQS = [
+    {"q": "Is this image cropper free and private?",
+     "a": "Yes — it's completely free with no watermark or sign-up, and the crop happens entirely in your browser, so your photo is never uploaded."},
+    {"q": "How do I crop an image to a circle?",
+     "a": "Choose the circle shape, and the tool masks your photo into a perfect circle with transparent corners. Export it as a PNG to keep the transparency — ideal for profile pictures and avatars."},
+    {"q": "Can I crop to a specific aspect ratio?",
+     "a": "Yes. Pick a preset ratio like 1:1, 4:5, 16:9 or 9:16, or enter your own custom width:height. The crop box locks to that ratio while you drag and zoom to frame the shot."},
+    {"q": "Does cropping reduce the image resolution?",
+     "a": "No upscaling ever happens. The download is exported at the native resolution of the cropped region, so you keep every pixel inside the crop at full quality."},
+    {"q": "Can I rotate or flip while cropping?",
+     "a": "Yes — rotate in 90° steps and flip horizontally or vertically before you export, so a sideways phone photo comes out the right way up."},
+    {"q": "What format should I export a cropped image as?",
+     "a": "Use PNG for circle or rounded crops so the transparent corners are preserved. Use JPG for a smaller file when you don't need transparency, or AVIF for the smallest file on modern browsers."},
+]
+
+INSTAGRAM_FAQS = [
+    {"q": "What are the correct Instagram image sizes?",
+     "a": "A feed post is 1080×1080 (square) or 1080×1350 (4:5 portrait), a story or reel is 1080×1920 (9:16), and a profile picture is displayed as a circle. This tool fits your photo to whichever size you pick without stretching it."},
+    {"q": "Why does Instagram crop my photos?",
+     "a": "Instagram fits every image into a fixed aspect ratio and crops whatever doesn't fit. By resizing to the exact ratio first — with the subject framed the way you want — you decide what stays in frame instead of leaving it to Instagram."},
+    {"q": "Can I fit a whole photo without cropping it?",
+     "a": "Yes. Choose a padded fit and the tool adds a background so the entire photo fits inside the square or portrait frame, with no important edges cut off."},
+    {"q": "Is this Instagram resizer free and private?",
+     "a": "Yes — free, unlimited and watermark-free, and the resizing runs in your browser, so your photos are never uploaded to a server."},
+    {"q": "Does resizing for Instagram lower the quality?",
+     "a": "The tool exports at Instagram's recommended pixel dimensions, which keeps images crisp in the feed. Because everything is processed locally at full quality, there's no extra compression beyond what you choose."},
+]
+
+FAVICON_FAQS = [
+    {"q": "What sizes do I need for a favicon?",
+     "a": "A complete set covers 16×16 and 32×32 for browser tabs, 180×180 for the Apple touch icon, and 192×192 and 512×512 for Android and PWA home-screen icons. This generator produces all of them from a single image at once."},
+    {"q": "What image should I use to make a favicon?",
+     "a": "Use a square image with a bold, simple mark that stays recognisable at 16×16 pixels. A transparent PNG works best so the icon blends into any tab colour, but you can also use a JPG or a logo on a solid background."},
+    {"q": "How do I add the favicon to my website?",
+     "a": "Download the generated icons, drop them in your site's root or assets folder, and add the accompanying link tags to your HTML head. The tool gives you the exact tags to paste, including the Apple touch icon and web manifest references."},
+    {"q": "Is the favicon generator free and private?",
+     "a": "Yes — completely free with no sign-up, and every icon size is rendered in your browser, so your source image is never uploaded."},
+    {"q": "Can I make an icon for a PWA or app home screen?",
+     "a": "Yes. The 192×192 and 512×512 outputs are exactly what a web app manifest needs for the Android and PWA home-screen icons, including a maskable-safe version."},
+]
+
+STICKER_FAQS = [
+    {"q": "How do I make a WhatsApp or Telegram sticker?",
+     "a": "Upload a photo, let the tool cut out the subject and add a white die-cut outline, then export a transparent PNG. WhatsApp stickers should be 512×512 with transparency, which is exactly what this tool produces."},
+    {"q": "Do stickers need a transparent background?",
+     "a": "Yes. A sticker is the subject only, with everything around it transparent, so it sits cleanly on any chat bubble. The tool removes the background automatically and adds the classic sticker outline."},
+    {"q": "Is the sticker maker free and private?",
+     "a": "Yes — free, unlimited and watermark-free. The cut-out and outline are generated in your browser, so your photos are never uploaded to a server."},
+    {"q": "Can I change the outline thickness or colour?",
+     "a": "Yes — adjust the outline width and colour to get the die-cut look you want, from a thin edge to a bold white border."},
+    {"q": "What size are the exported stickers?",
+     "a": "Stickers export as a square transparent PNG suitable for WhatsApp, Telegram and Signal sticker packs, at full quality with no watermark."},
+]
+
+MEME_FAQS = [
+    {"q": "Is this meme generator free?",
+     "a": "Yes — completely free with no watermark, no sign-up and no limits. Make as many memes as you like."},
+    {"q": "Can I add top and bottom text like a classic meme?",
+     "a": "Yes. Add the classic bold white top and bottom captions in the traditional Impact style, with an automatic black outline so the text stays readable over any image."},
+    {"q": "Are my images uploaded when I make a meme?",
+     "a": "No. The meme is drawn entirely in your browser on a canvas, so your image and captions never leave your device."},
+    {"q": "Can I use my own photo as a meme template?",
+     "a": "Yes — upload any photo or screenshot and add captions to it. You're not limited to preset templates."},
+    {"q": "What size does the meme export at?",
+     "a": "The meme is exported at the resolution of your source image, so it stays sharp when you share it or post it online."},
 ]
