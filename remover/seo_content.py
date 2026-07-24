@@ -176,6 +176,21 @@ VIDEO_GIF_FAQS = [
      "a": "GIF is an image format — it has no audio track at all. The converter takes the picture frames only, which is why animated GIFs are always silent."},
 ]
 
+VIDEO_CONVERTER_FAQS = [
+    {"q": "Is this video converter free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark. Trim, change speed, mute and re-encode as many videos as you like."},
+    {"q": "Is my video uploaded to a server?",
+     "a": "No. Your browser decodes and re-encodes the video entirely on your device, so the file never leaves your computer — nothing is uploaded. That's ideal for private clips and screen recordings."},
+    {"q": "Can I convert MOV to MP4?",
+     "a": "Yes, as long as your browser can play the source and record MP4 — recent Chrome, Edge and Safari can. Where MP4 recording isn't available the tool falls back to WebM, which plays on every modern browser and website."},
+    {"q": "Can I speed up or slow down the video?",
+     "a": "Yes — pick from 0.5× up to 2×. Unlike the GIF speed trick, this changes the actual video timing, so the exported file really plays faster or slower (the audio speeds up with it)."},
+    {"q": "How can I make the file smaller?",
+     "a": "Trim to just the part you need, drop the size to Max 720 or Max 480, and remove the audio if you don't need it. Each of those cuts the file size."},
+    {"q": "Why does converting take about as long as the video?",
+     "a": "The video is re-encoded by playing it through your browser in real time — that's what lets it work with no upload and no server. A shorter clip, or a faster speed setting, finishes sooner."},
+]
+
 PDF_FAQS = [
     {"q": "Is this image-to-PDF converter free?",
      "a": "Yes — free, unlimited, no sign-up and no watermark. Combine as many photos or scans as you like into one PDF."},

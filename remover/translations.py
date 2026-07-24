@@ -304,6 +304,7 @@ JS_UI = {
     "Could not build the GIF": "Não foi possível criar o GIF",
     "Please choose a video file": "Escolha um ficheiro de vídeo",
     "This video format can't be read in your browser — try an MP4 or WebM.": "O seu navegador não consegue ler este formato de vídeo — experimente um MP4 ou WebM.",
+    "Could not convert the video": "Não foi possível converter o vídeo",
     "Could not build the PDF": "Não foi possível criar o PDF",
     "Building your icon pack…": "A criar o seu pacote de ícones…",
     "Could not build the icon pack": "Não foi possível criar o pacote de ícones",

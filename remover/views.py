@@ -43,6 +43,7 @@ from .seo_content import (
     RESIZE_FAQS,
     GIF_FAQS,
     VIDEO_GIF_FAQS,
+    VIDEO_CONVERTER_FAQS,
     STICKER_FAQS,
     WATERMARK_FAQS,
     TEXTBEHIND_FAQS,
@@ -782,7 +783,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
@@ -1098,6 +1099,15 @@ def video_gif(request):
 
 
 @require_GET
+def video_converter(request):
+    """Render the client-side video converter (trim / speed / mute / re-encode)."""
+    return render(request, "remover/video_converter.html", {
+        "faqs": VIDEO_CONVERTER_FAQS,
+        "faq_jsonld": faq_jsonld(VIDEO_CONVERTER_FAQS),
+    })
+
+
+@require_GET
 def resize(request):
     """Render the client-side image resizer."""
     return render(request, "remover/resize.html", {
@@ -1242,7 +1252,7 @@ STATS_EVENTS = {"processed", "downloaded"}
 STATS_TOOLS = {
     "home", "blur", "ecommerce", "sticker", "passport",
     "instagram", "crop", "convert", "compress", "meme", "favicon",
-    "redact", "exif", "resize", "watermark", "gif", "video_gif", "qr", "text_behind", "pdf",
+    "redact", "exif", "resize", "watermark", "gif", "video_gif", "video_converter", "qr", "text_behind", "pdf",
     "base64", "palette", "border", "collage",
 }
 

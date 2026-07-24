@@ -27,8 +27,10 @@ const App = {
   start: 0,
   end: 0,
   fps: 10,
+  speed: 1,
   size: 360,
   fit: 'cover',
+  mode: 'normal',   // normal | reverse | boomerang
   loop: true,
   gifUrl: null,
   gifBlob: null,
@@ -60,6 +62,13 @@ const App = {
       this.segment($$('.vg-fps'), b);
       this.invalidate(); this.updateEstimate();
     }));
+    $$('.vg-speed').forEach((b) => b.addEventListener('click', () => {
+      this.speed = +b.dataset.speed;
+      this.segment($$('.vg-speed'), b);
+      // Mirror the chosen speed on the preview so it plays like the GIF will.
+      this.video.playbackRate = this.speed;
+      this.invalidate(); this.updateEstimate();
+    }));
     $$('.vg-size').forEach((b) => b.addEventListener('click', () => {
       this.size = +b.dataset.size;
       this.segment($$('.vg-size'), b);
@@ -69,6 +78,11 @@ const App = {
       this.fit = b.dataset.fit;
       this.segment($$('.vg-fit'), b);
       this.invalidate();
+    }));
+    $$('.vg-mode').forEach((b) => b.addEventListener('click', () => {
+      this.mode = b.dataset.mode;
+      this.segment($$('.vg-mode'), b);
+      this.invalidate(); this.updateEstimate();
     }));
     $('#vg-loop').addEventListener('change', (e) => { this.loop = e.target.checked; this.invalidate(); });
     $('#vg-create').addEventListener('click', () => this.create());
@@ -156,16 +170,37 @@ const App = {
     this.updateEstimate();
   },
 
-  frameCount() {
-    return Math.min(MAX_FRAMES, Math.max(2, Math.round((this.end - this.start) * this.fps)));
+  /** How many frames the fps/duration ask for, before any cap. */
+  baseFrames() {
+    return Math.max(2, Math.round((this.end - this.start) * this.fps));
+  },
+
+  /**
+   * Evenly spaced sample times across the trimmed window. Boomerang plays each
+   * frame ~twice, so its base count is halved to keep the FINAL GIF within
+   * MAX_FRAMES rather than the samples.
+   */
+  sampleTimes() {
+    const maxBase = this.mode === 'boomerang' ? Math.floor(MAX_FRAMES / 2) + 1 : MAX_FRAMES;
+    const n = Math.min(maxBase, this.baseFrames());
+    const step = (this.end - this.start) / n;
+    return Array.from({ length: n }, (_, i) => this.start + i * step);
+  },
+
+  /** Reorder the samples for the chosen play mode (boomerang shares endpoints). */
+  orderTimes(times) {
+    if (this.mode === 'reverse') return [...times].reverse();
+    if (this.mode === 'boomerang' && times.length >= 3) return times.concat(times.slice(1, -1).reverse());
+    return times;
   },
 
   updateEstimate() {
-    const n = this.frameCount();
-    const capped = (this.end - this.start) * this.fps > MAX_FRAMES;
-    $('#vg-estimate').innerHTML = capped
-      ? `~${n} frames · <span class="text-amber-600 dark:text-amber-400">capped — shorten the clip or lower the fps for a smoother result</span>`
-      : `${n} frames · ${fmtTime(this.end - this.start)} at ${this.fps} fps`;
+    const out = this.orderTimes(this.sampleTimes()).length;
+    const wanted = this.mode === 'boomerang' ? this.baseFrames() * 2 - 2 : this.baseFrames();
+    const tail = `${this.fps} fps${this.speed !== 1 ? ` · ${this.speed}×` : ''}${this.mode !== 'normal' ? ` · ${this.mode}` : ''}`;
+    $('#vg-estimate').innerHTML = wanted > MAX_FRAMES
+      ? `~${out} frames · <span class="text-amber-600 dark:text-amber-400">capped — shorten the clip or lower the fps</span>`
+      : `${out} frames · ${tail}`;
   },
 
   /** GIF has one fixed logical screen — derive it from the video, capped at `size`. */
@@ -219,14 +254,16 @@ const App = {
     const [w, h] = this.dims();
     this.canvas.width = w; this.canvas.height = h;
     const ctx = this.canvas.getContext('2d', { willReadFrequently: true });
-    const n = this.frameCount();
-    const delay = Math.round(1000 / this.fps);
-    const step = (this.end - this.start) / n;
+    const seq = this.orderTimes(this.sampleTimes());
+    const n = seq.length;
+    // Speed scales how long each frame is shown, not which frames we sample —
+    // so the loop stays smooth and just plays faster/slower.
+    const delay = Math.round(1000 / this.fps / this.speed);
     const gif = GIFEncoder();
 
     try {
       for (let i = 0; i < n; i += 1) {
-        await this.seek(this.start + i * step);
+        await this.seek(seq[i]);
         this.paint(ctx, w, h);
         const { data } = ctx.getImageData(0, 0, w, h);
         const palette = quantize(data, 256);
@@ -261,6 +298,11 @@ const App = {
   reset() {
     if (this.url) URL.revokeObjectURL(this.url);
     this.url = null;
+    this.speed = 1;
+    this.mode = 'normal';
+    this.video.playbackRate = 1;
+    this.segment($$('.vg-speed'), $('.vg-speed[data-speed="1"]'));
+    this.segment($$('.vg-mode'), $('.vg-mode[data-mode="normal"]'));
     this.video.removeAttribute('src');
     this.video.load();
     this.invalidate();

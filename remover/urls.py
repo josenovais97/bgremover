@@ -36,6 +36,7 @@ urlpatterns = [
     path("watermark-image/", views.watermark, name="watermark"),
     path("gif-maker/", views.gif, name="gif"),
     path("video-to-gif/", views.video_gif, name="video_gif"),
+    path("video-converter/", views.video_converter, name="video_converter"),
     path("image-to-pdf/", views.image_to_pdf, name="pdf"),
     path("color-palette/", views.palette, name="palette"),
     path("collage/", views.collage, name="collage"),
