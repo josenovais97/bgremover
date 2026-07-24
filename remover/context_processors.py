@@ -189,6 +189,24 @@ def _related_tools(tool_nav, url_name, limit=4):
     return ordered[:limit]
 
 
+def _tool_columns(tool_groups, n=2):
+    """Split the tool groups into `n` height-balanced columns for the mega-menu.
+
+    A plain CSS grid of groups makes every row as tall as its tallest group, so a
+    short group (e.g. "Remove & Edit") leaves a big empty gap before the next row
+    starts. Instead we pre-assign whole groups to columns — biggest first onto the
+    currently-shortest column — and let each column stack its groups with no
+    inter-row gap. Natural group order is preserved within each column.
+    """
+    heights = [0] * n
+    buckets = [[] for _ in range(n)]
+    for idx, group in sorted(enumerate(tool_groups), key=lambda p: -len(p[1]["items"])):
+        c = heights.index(min(heights))
+        buckets[c].append((idx, group))
+        heights[c] += len(group["items"]) + 1  # +1 approximates the group header
+    return [[g for _, g in sorted(col, key=lambda p: p[0])] for col in buckets]
+
+
 def _canonical_url(request):
     """Fixed canonical URL for the current page: SITE_URL + path, no query string.
 
@@ -278,6 +296,8 @@ def seo(request):
         # Header tool switcher: flat list (pill row) + grouped (mega-menu).
         "tool_nav": tool_nav,
         "tool_groups": tool_groups,
+        # Pre-balanced two-column split of the groups for the "All tools" menu.
+        "tool_columns": _tool_columns(tool_groups),
         # Monetization: expose the AdSense config only where ads are allowed.
         "adsense_client": settings.ADSENSE_CLIENT if ads_allowed else "",
         "adsense_slot_landing": settings.ADSENSE_SLOT_LANDING,
