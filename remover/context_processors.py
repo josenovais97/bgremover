@@ -67,6 +67,8 @@ TOOL_NAV = [
      "blurb": "Strip GPS and camera data from photos"},
     {"name": "pdf", "icon": "fa-solid fa-file-arrow-down", "label": "Image to PDF", "group": "optimize",
      "blurb": "Combine photos or scans into one PDF"},
+    {"name": "screenshot", "icon": "fa-solid fa-mobile-screen", "label": "Beautify Shot", "group": "create",
+     "blurb": "Frame a screenshot on a pretty backdrop"},
     {"name": "collage", "icon": "fa-solid fa-table-columns", "label": "Collage", "group": "create",
      "blurb": "Arrange several photos into a grid"},
     {"name": "border", "icon": "fa-solid fa-image-portrait", "label": "Border", "group": "create",
@@ -144,6 +146,9 @@ TOOL_ACCENTS = {
     "border": ("190 18 60", "159 18 57", "244 63 94", "251 113 133"),        # rose 700/800/500/400
     "palette": ("162 28 175", "134 25 143", "217 70 239", "232 121 249"),    # fuchsia 700/800/500/400
     "base64": ("82 82 91", "63 63 70", "161 161 170", "212 212 216"),        # zinc 600/700/400/300
+    # A shade apart from crop's blue 600/700 (like collage vs gif in purple), so
+    # the two blue tools still read as different tools.
+    "screenshot": ("29 78 216", "30 64 175", "59 130 246", "96 165 250"),    # blue 700/800/500/400
 }
 _DEFAULT_ACCENT = TOOL_ACCENTS["index"]
 

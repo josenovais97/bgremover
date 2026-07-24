@@ -173,6 +173,12 @@
                 </div>
 
                 <nav class="flex items-center gap-1 glass rounded-full p-1.5 shadow-sm border border-gray-200/70 dark:border-gray-800/70 shrink-0" aria-label="Utilities">
+                    <button id="cmd-btn" type="button" aria-haspopup="dialog" aria-controls="cmd-palette"
+                            class="tip grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            aria-label="{% t 'Search tools' %}" data-tooltip="Ctrl K">
+                        {% comment %}Inline SVG — the FA subset carries no plain magnifier glyph.{% endcomment %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="w-4 h-4 text-gray-600 dark:text-gray-300" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    </button>
                     <button id="shortcuts-btn" type="button" class="tip hidden sm:grid place-items-center w-9 h-9 rounded-full hover:bg-gray-200/70 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Keyboard shortcuts" data-tooltip="Shortcuts">
                         <i class="fa-regular fa-keyboard text-gray-600 dark:text-gray-300" aria-hidden="true"></i>
                     </button>
@@ -245,6 +251,7 @@
                         <a href="{% url 'remover:redact' %}" class="hover:text-primaryText transition-colors">{% t "Blur & Redact" %}</a>
                         <a href="{% url 'remover:favicon' %}" class="hover:text-primaryText transition-colors">{% t "Favicon Generator" %}</a>
                         <a href="{% url 'remover:qr' %}" class="hover:text-primaryText transition-colors">{% t "QR Code Generator" %}</a>
+                        <a href="{% url 'remover:screenshot' %}" class="hover:text-primaryText transition-colors">{% t "Screenshot Beautifier" %}</a>
                         <a href="{% url 'remover:exif' %}" class="hover:text-primaryText transition-colors">{% t "EXIF Remover" %}</a>
                         <a href="{% url 'remover:pdf' %}" class="hover:text-primaryText transition-colors">{% t "Image to PDF" %}</a>
                     </nav>
@@ -284,6 +291,41 @@
         </div>
     </footer>
 
+    {% comment %}Ctrl+K command palette: jump to any tool from anywhere. Rendered
+    server-side from tool_nav (same source as the pill row and mega-menu), so a
+    new tool appears here by existing. Filtering/keyboard is js/command.js.{% endcomment %}
+    <div id="cmd-palette" class="hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="{% t 'Search tools' %}">
+        <div data-cmd-close class="absolute inset-0 bg-gray-950/40 backdrop-blur-sm"></div>
+        <div class="relative max-w-xl mx-auto mt-[10vh] px-4">
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 shadow-2xl overflow-hidden">
+                <div class="flex items-center gap-3 px-4 border-b border-gray-200/70 dark:border-gray-800/70">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="w-4 h-4 shrink-0 text-gray-400" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" placeholder="{% t 'Search tools…' %}"
+                           role="combobox" aria-expanded="true" aria-controls="cmd-list" aria-activedescendant=""
+                           class="w-full py-3.5 bg-transparent text-sm focus:outline-none placeholder:text-gray-400">
+                    <kbd class="hidden sm:block shrink-0 text-[10px] font-semibold text-gray-400 border border-gray-300 dark:border-gray-700 rounded px-1.5 py-0.5">Esc</kbd>
+                </div>
+                <ul id="cmd-list" role="listbox" aria-label="{% t 'All tools' %}" class="max-h-[55vh] overflow-y-auto p-2">
+                    {% for item in tool_nav %}
+                    <li id="cmd-opt-{{ item.name }}" role="option" data-cmd-item data-url="{{ item.url }}" data-name="{{ item.name }}"
+                        data-text="{{ item.label|lower }} {{ item.blurb|lower }}" aria-selected="false" style="{{ item.accent_vars }}"
+                        class="tool-card flex items-center gap-3 px-3 py-2 rounded-xl text-sm cursor-pointer">
+                        <span class="w-8 h-8 shrink-0 grid place-items-center rounded-lg bg-primary/10 text-primaryText">
+                            <i class="{{ item.icon }}" aria-hidden="true"></i>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block font-medium truncate">{{ item.label }}</span>
+                            <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">{{ item.blurb }}</span>
+                        </span>
+                        <span data-cmd-flag class="hidden ml-auto shrink-0 text-[10px] font-semibold uppercase tracking-wider text-gray-400">{% t "Recent" %}</span>
+                    </li>
+                    {% endfor %}
+                    <li id="cmd-empty" class="hidden px-3 py-6 text-sm text-center text-gray-500 dark:text-gray-400">{% t "No tools found" %}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none" role="status" aria-live="polite"></div>
 
     {% comment %}Runtime strings for CBG.t(). Rendered only on translated pages — on
@@ -303,6 +345,8 @@
     <script src="{% static 'js/colorpicker.js' %}"></script>
     <!-- Collapses overflowing tool-nav items into a "More" menu so it never clips. -->
     <script src="{% static 'js/nav.js' %}" defer></script>
+    <!-- Ctrl+K command palette (filter + keyboard nav over the list above). -->
+    <script src="{% static 'js/command.js' %}" defer></script>
     <!-- Social-proof counter (defines __clearbgReport; shows the hero total). -->
     <script src="{% static 'js/stats.js' %}" defer></script>
     <!-- Drives the reusable before/after demo slider on the tool pages. -->

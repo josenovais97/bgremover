@@ -346,6 +346,19 @@ STICKER_FAQS = [
      "a": "Stickers export as a square transparent PNG suitable for WhatsApp, Telegram and Signal sticker packs, at full quality with no watermark."},
 ]
 
+SCREENSHOT_FAQS = [
+    {"q": "What does the screenshot beautifier do?",
+     "a": "It turns a plain screenshot into a share-ready image: your capture is centred on a colour or gradient backdrop with padding, rounded corners, a soft drop shadow and an optional browser-style window frame — the look you see in product launches, tweets and documentation."},
+    {"q": "Is my screenshot uploaded anywhere?",
+     "a": "No. The framing is drawn on a canvas in your browser, so the screenshot never leaves your device. That matters for screenshots especially — they often show private dashboards, names or messages."},
+    {"q": "Can I add a macOS-style browser window around my screenshot?",
+     "a": "Yes — toggle the window frame to add a title bar with the classic three traffic-light dots, in a light or dark style. It's drawn around your image, so nothing in the screenshot is covered."},
+    {"q": "What sizes can I export?",
+     "a": "Auto keeps the canvas hugging your screenshot plus its padding, or you can pick a fixed 16:9, 4:3 or square canvas — handy for Open Graph images, X/Twitter cards and slide decks. Exports are PNG or JPG at full quality."},
+    {"q": "Is it free, and is there a watermark?",
+     "a": "Completely free, unlimited and watermark-free — like every ClearBG tool. No account, no credits, no upsell on the export button."},
+]
+
 MEME_FAQS = [
     {"q": "Is this meme generator free?",
      "a": "Yes — completely free with no watermark, no sign-up and no limits. Make as many memes as you like."},

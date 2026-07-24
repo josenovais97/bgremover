@@ -38,6 +38,14 @@ UI = {
     "QR Code": "Código QR",
     # "Instagram" and "EXIF" are left alone — both are proper nouns in Portuguese.
     "Favicon": "Favicon",
+    "Beautify Shot": "Embelezar Captura",
+    "Frame a screenshot on a pretty backdrop": "Emoldure uma captura de ecrã num fundo bonito",
+    "Screenshot Beautifier": "Embelezador de Capturas",
+    # Command palette (Ctrl+K)
+    "Search tools": "Pesquisar ferramentas",
+    "Search tools…": "Pesquisar ferramentas…",
+    "No tools found": "Nenhuma ferramenta encontrada",
+    "Recent": "Recente",
     "Image to PDF": "Imagem para PDF",
     "Combine photos or scans into one PDF": "Junte fotos ou digitalizações num só PDF",
     "More": "Mais",

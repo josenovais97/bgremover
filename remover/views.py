@@ -41,6 +41,7 @@ from .seo_content import (
     QR_FAQS,
     REDACT_FAQS,
     RESIZE_FAQS,
+    SCREENSHOT_FAQS,
     GIF_FAQS,
     VIDEO_GIF_FAQS,
     VIDEO_CONVERTER_FAQS,
@@ -783,7 +784,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/", "/screenshot-beautifier/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
@@ -1158,6 +1159,15 @@ def border(request):
     return render(request, "remover/border.html", {
         "faqs": BORDER_FAQS,
         "faq_jsonld": faq_jsonld(BORDER_FAQS),
+    })
+
+
+@require_GET
+def screenshot(request):
+    """Render the client-side screenshot beautifier (backdrop / frame / shadow)."""
+    return render(request, "remover/screenshot.html", {
+        "faqs": SCREENSHOT_FAQS,
+        "faq_jsonld": faq_jsonld(SCREENSHOT_FAQS),
     })
 
 

@@ -7,6 +7,25 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Screenshot Beautifier** (`/screenshot-beautifier/`) — the "launch post" look:
+  a screenshot centred on a curated gradient (or solid, or transparent) backdrop
+  with padding, rounded corners, a soft drop shadow and an optional macOS-style
+  browser window frame in a light or dark theme, on an auto, 16:9, 4:3 or square
+  canvas. Pure canvas work (no model), exports PNG/JPG through `CBG.download` so
+  it chains like every other tool, and the demo pair is generated with the same
+  geometry the tool draws. New blue 700/800 accent, a shade apart from crop's
+  blue 600/700 the way collage sits a shade from GIF in purple.
+- **A Ctrl+K command palette.** With 26 tools, the pill row shows eight and the
+  mega-menu needs a click and a scan; the palette jumps anywhere in two
+  keystrokes (Ctrl/⌘+K or `/`, then type). The list is server-rendered in
+  `base.html` from the same `TOOL_NAV` the nav and mega-menu use — so a new tool
+  appears in it by existing, labels arrive already translated, and each row
+  paints itself in its own tool's accent via the existing `tool-card` token
+  re-derivation. `js/command.js` only does behaviour: token filtering, arrow-key
+  navigation, and a "Recent" ranking of the visitor's actual tool visits
+  (recorded on every page load, palette or not) shown when the query is empty.
+  A search button in the header advertises it — as an inline SVG, because the
+  committed Font Awesome subset carries no plain magnifier glyph.
 - **QR codes for Wi-Fi, contacts, email, SMS and phone**, not just links. A QR can
   carry these already, but only in the exact syntax a scanner expects
   (`WIFI:T:WPA;S:…;P:…;;`, a vCard block, `mailto:`), so the content box had been

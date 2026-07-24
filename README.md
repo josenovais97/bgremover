@@ -1,6 +1,6 @@
 # ClearBG — a free, private image toolkit that runs in your browser
 
-**19 image tools that never upload your photos.** Background removal, conversion,
+**26 image & video tools that never upload your files.** Background removal, conversion,
 compression, resizing, image-to-PDF, passport photos, stickers, QR codes, metadata
 stripping and more — all of it executes on the visitor's device. Django serves fast, SEO-optimised
 HTML; the pixels never touch the server.
@@ -39,6 +39,13 @@ Every tool is 100% client-side, free, unlimited, and watermark-free.
 | **QR code generator** | `/qr-code-generator/` | Styled static QR (square/rounded/dot modules, styled eyes, gradient, centre logo) → PNG or SVG. Live-rendered style previews, curated colour pairs and a low-contrast warning. |
 | **EXIF remover** | `/exif-remover/` | Reads GPS/camera/date metadata, then strips it — **losslessly** for JPEG (marker segments dropped, pixel data untouched). |
 | **Image to PDF** | `/image-to-pdf/` | Combine photos or scans into one multi-page PDF; drag to reorder, A4/Letter/fit-image, margins. JPEG and PNG bytes are embedded as-is. |
+| **Screenshot beautifier** | `/screenshot-beautifier/` | The "launch post" look: gradient backdrop, padding, rounded corners, drop shadow, optional macOS-style browser frame; auto/16:9/4:3/1:1 canvas. |
+| **Video to GIF** | `/video-to-gif/` | Convert an MP4/WebM clip into an animated GIF. |
+| **Video converter** | `/video-converter/` | Trim, change speed and convert video to MP4. |
+| **Collage** | `/collage/` | Arrange several photos into a grid. |
+| **Border & Polaroid** | `/add-border/` | Solid/gradient border, rounded corners, or a captioned Polaroid frame. |
+| **Colour palette** | `/color-palette/` | Pull the dominant colours out of any photo. |
+| **Base64** | `/base64-image/` | Encode or decode an image data URI. |
 
 Removed: the AI upscaler (`/upscale/`) — client-side super-resolution froze the tab. The
 URL 301s to home so the indexed page never 404s.
@@ -50,6 +57,10 @@ you tune on screen and the rest are exported with the same settings as a ZIP
 
 ### Cross-tool features
 
+- **Ctrl+K command palette** — jump to any tool in two keystrokes (Ctrl/⌘+K or `/`,
+  then type). Server-rendered from `TOOL_NAV` in `base.html`, so a new tool appears in
+  it by existing; `static/js/command.js` adds filtering, arrow-key navigation and a
+  "Recent" ranking of the visitor's actual tool visits.
 - **Chaining between tools** — export from any tool and a "Keep editing this image" bar
   offers the others; the result travels through IndexedDB with no re-upload, as many hops
   as you like ("remove background → crop → watermark → compress"). Read-and-clear with a

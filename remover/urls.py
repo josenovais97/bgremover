@@ -42,6 +42,7 @@ urlpatterns = [
     path("collage/", views.collage, name="collage"),
     path("add-border/", views.border, name="border"),
     path("base64-image/", views.base64_image, name="base64"),
+    path("screenshot-beautifier/", views.screenshot, name="screenshot"),
     path("remove-bg-alternative/", views.alternative, name="alternative"),
     # Privacy-angle landing pages (see PRIVACY_PAGES). Explicit routes keep the
     # keyword-rich top-level URLs; each maps to the shared privacy_page view.
