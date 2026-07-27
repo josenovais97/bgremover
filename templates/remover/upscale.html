@@ -3,7 +3,7 @@
 
 {% block title %}{% t "Upscale an Image 2× or 4× — Free, Sharp & In Your Browser" %}{% endblock %}
 {% block description %}{% t "Enlarge images 2× or 4× with high-quality Lanczos resampling and detail sharpening — free and instant, right in your browser. No upload, no watermark, no sign-up." %}{% endblock %}
-{% block og_title %}Free Image Upscaler — Enlarge 2× / 4× Privately{% endblock %}
+{% block og_title %}{% t "Free Image Upscaler — Enlarge 2× / 4× Privately" %}{% endblock %}
 
 {% block extra_seo %}
 <script type="application/ld+json">
@@ -61,7 +61,7 @@
     <section id="up-editor" class="hidden max-w-5xl mx-auto grid lg:grid-cols-[1fr_18rem] gap-6 items-start">
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 relative">
             <img id="up-preview" alt="Preview" class="w-full max-h-[52vh] object-contain rounded-lg shadow checkerboard">
-            <div id="up-busy" class="hidden absolute inset-0 grid place-items-center bg-white/60 dark:bg-gray-950/60 rounded-2xl z-10">
+            <div id="up-busy" role="status" aria-live="polite" class="hidden absolute inset-0 grid place-items-center bg-white/60 dark:bg-gray-950/60 rounded-2xl z-10">
                 <span class="flex items-center gap-2 text-sm font-semibold"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> {% t "Upscaling…" %}</span>
             </div>
         </div>

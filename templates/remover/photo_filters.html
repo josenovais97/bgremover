@@ -3,7 +3,7 @@
 
 {% block title %}{% t "Photo Filters & Adjustments — Free Online Editor, No Upload" %}{% endblock %}
 {% block description %}{% t "Apply one-tap looks and fine-tune brightness, contrast, saturation, warmth, vignette and grain — free, in your browser, full-resolution export with no watermark and nothing uploaded." %}{% endblock %}
-{% block og_title %}Photo Filters — Free Private Editor{% endblock %}
+{% block og_title %}{% t "Photo Filters — Free Private Editor" %}{% endblock %}
 
 {% block extra_seo %}
 <script type="application/ld+json">
@@ -59,8 +59,8 @@
     <!-- Editor -->
     <section id="pf-editor" class="hidden max-w-6xl mx-auto grid lg:grid-cols-[1fr_20rem] gap-6 items-start">
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 relative">
-            <canvas id="pf-canvas" class="w-full max-h-[56vh] object-contain rounded-lg shadow"></canvas>
-            <span id="pf-compare-badge" class="hidden absolute top-6 left-6 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">Original</span>
+            <canvas id="pf-canvas" role="img" aria-label="{% t 'Live preview of your photo with the current filter and adjustments' %}" class="w-full max-h-[56vh] object-contain rounded-lg shadow"></canvas>
+            <span id="pf-compare-badge" class="hidden absolute top-6 left-6 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">{% t "Original" %}</span>
         </div>
 
         <div class="space-y-4">

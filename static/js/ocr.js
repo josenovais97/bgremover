@@ -28,11 +28,33 @@ const App = {
       onFiles: (files) => this.load(files[0]),
     });
 
+    this.pickDefaultLang();
     $('#oc-rerun').addEventListener('click', () => this.recognise());
     $('#oc-lang').addEventListener('change', () => this.recognise());
     $('#oc-copy').addEventListener('click', () => this.copy());
     $('#oc-save').addEventListener('click', () => this.saveTxt());
     $('#oc-new').addEventListener('click', () => this.reset());
+  },
+
+  /**
+   * Default the OCR language to the visitor's, not always English: the page
+   * language first (a /pt/ visitor is reading Portuguese), then the browser's.
+   * Only switches if the guess is one of the offered packs — otherwise the
+   * English default stands, and the manual picker always wins afterwards.
+   */
+  pickDefaultLang() {
+    const select = $('#oc-lang');
+    const map = { en: 'eng', pt: 'por', es: 'spa', fr: 'fra', de: 'deu' };
+    const codes = [
+      (document.documentElement.lang || '').slice(0, 2).toLowerCase(),
+      (navigator.language || '').slice(0, 2).toLowerCase(),
+    ];
+    for (const c of codes) {
+      if (map[c] && [...select.options].some((o) => o.value === map[c])) {
+        select.value = map[c];
+        return;
+      }
+    }
   },
 
   async load(file) {
@@ -72,7 +94,10 @@ const App = {
     box.value = '';
     box.placeholder = t('Reading…');
     $('#oc-bar').style.width = '5%';
-    $('#oc-words').textContent = '';
+    // #oc-words is an aria-live region — mirror the state there too, so a
+    // screen reader hears "Reading…" and then the outcome, not just a silent
+    // placeholder change on the textarea.
+    $('#oc-words').textContent = t('Reading…');
     try {
       const worker = await this.getWorker($('#oc-lang').value);
       const { data } = await worker.recognize(this.file);
@@ -80,6 +105,7 @@ const App = {
       $('#oc-bar').style.width = '100%';
       if (!text) {
         box.placeholder = t('No text found in that image');
+        $('#oc-words').textContent = t('No text found in that image');
         Toast.show(t('No text found in that image'), 'info');
         return;
       }
@@ -88,6 +114,7 @@ const App = {
       window.__clearbgReport?.(1);
     } catch {
       box.placeholder = t('Could not read the text');
+      $('#oc-words').textContent = t('Could not read the text');
       Toast.show(t('Could not read the text'), 'error');
       $('#oc-bar').style.width = '0%';
     }

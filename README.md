@@ -354,7 +354,7 @@ DJANGO_SETTINGS_MODULE=config.settings.production \
 ## 🔎 SEO & content architecture
 
 Everything is generated from data in `remover/views.py`, so adding a page is a data edit
-that automatically extends the nav, the internal links and the sitemap (**77 paths; the 19
+that automatically extends the nav, the internal links and the sitemap (**78 paths; the 19
 with a real Portuguese translation are listed in both languages**).
 
 | Set | Route | Source |
@@ -364,7 +364,7 @@ with a real Portuguese translation are listed in both languages**).
 | Privacy-angle landings (3) | `/private-image-tools/`, `/remove-background-without-uploading/`, `/offline-image-editor/` | `PRIVACY_PAGES` |
 | Tool intent landings (3) | `/open-heic-on-windows/`, `/convert-iphone-photos-to-jpg/`, `/extract-text-from-image/` | `TOOL_LANDINGS` (each `cta.url_name` funnels to its tool) |
 | Compress intent variants (10) | `/compress-png/`, `/compress-image-under-500kb/`, `/compress-video/`, … | `COMPRESS_PAGES` (`/compress-video/` carries `cta_url_name` and funnels to the video converter) |
-| Competitor comparisons (4 + 1) | `/tinypng-alternative/`, `/canva-alternative/`, `/adobe-express-alternative/`, `/photoroom-alternative/`, `/remove-bg-alternative/` | `COMPARISONS`, `alternative()` |
+| Competitor comparisons (5 + 1) | `/tinypng-alternative/`, `/canva-alternative/`, `/adobe-express-alternative/`, `/photoroom-alternative/`, `/cloudconvert-alternative/`, `/remove-bg-alternative/` | `COMPARISONS`, `alternative()` (CloudConvert funnels to the HEIC converter) |
 | Info | `/about/`, `/privacy/`, `/terms/` | templates |
 
 Also:
@@ -381,7 +381,7 @@ Also:
 - **Contextual internal links**: a related-tools row is injected into every page by
   `base.html` (same-group tools first — see `_related_tools()`).
 - `robots.txt` and `sitemap.xml` are generated from the page list with per-page
-  `priority` and `lastmod` (96 URLs: 77 English paths + the 19 translated Portuguese ones).
+  `priority` and `lastmod` (97 URLs: 78 English paths + the 19 translated Portuguese ones).
 
 ---
 

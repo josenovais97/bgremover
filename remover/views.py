@@ -912,6 +912,41 @@ COMPARISONS = [
              "a": "No. Full-resolution, watermark-free exports are free in ClearBG."},
         ],
     },
+    {
+        "slug": "cloudconvert-alternative", "url_name": "cmp_cloudconvert", "nav": "vs CloudConvert",
+        "competitor": "CloudConvert", "cta_url_name": "heic", "cta_icon": "fa-mobile-screen",
+        "cta_label": "Convert a file free", "cta_note": "No account. Nothing uploaded.",
+        "title": "Free CloudConvert Alternative — Convert Files Without Uploading",
+        "description": "A private CloudConvert alternative for images: convert HEIC, PNG, JPG, WEBP and turn PDFs into images in your browser — no upload, no minutes limit, no account. See the comparison.",
+        "h1_lead": "The private", "h1_highlight": "CloudConvert alternative",
+        "tagline": "Convert HEIC, PNG, JPG and WEBP, and turn PDFs into images — in your browser, with no upload, no conversion-minutes cap and no account.",
+        "intro": [
+            "CloudConvert handles a huge range of formats, but it does the work on its servers: your file is uploaded, the free tier caps how many conversions you can run per day, and an account is needed for more. For the common image jobs — opening iPhone HEIC photos, swapping between PNG/JPG/WEBP, or pulling images out of a PDF — that's more friction (and less privacy) than you need.",
+            "ClearBG does those conversions right in your browser. Your files never leave your device, there's no daily minutes limit, and there's nothing to sign up for. It won't convert a spreadsheet or a video codec CloudConvert supports — but for images and PDF pages, it's instant, private and free.",
+        ],
+        "rows": [
+            {"feature": "Your files", "us": "Never uploaded — converted in-browser", "them": "Uploaded to their servers"},
+            {"feature": "HEIC → JPG", "us": "Yes, batch, on-device", "them": "Yes, uploaded"},
+            {"feature": "PDF → images", "us": "Yes, every page, on-device", "them": "Yes, uploaded"},
+            {"feature": "Daily limit", "us": "None", "them": "Free tier caps conversion minutes/day"},
+            {"feature": "Account", "us": "Never", "them": "Needed beyond the free allowance"},
+            {"feature": "Scope", "us": "Images, PDF pages, SVG, favicons…", "them": "Very broad (docs, audio, video…)"},
+            {"feature": "Price", "us": "Free & unlimited", "them": "Free tier; paid packages"},
+        ],
+        "why": [
+            {"icon": "fa-lock", "title": "Files stay on your device", "text": "Conversion runs in the browser — nothing is uploaded, so it's safe for personal photos and confidential documents."},
+            {"icon": "fa-mobile-screen", "title": "Built for the iPhone HEIC problem", "text": "Decode the HEIC photos Windows and Android can't open, in a batch, without an account."},
+            {"icon": "fa-circle-check", "title": "No daily cap", "text": "Convert as many images or PDF pages as you like, free, with no conversion-minutes limit."},
+        ],
+        "faqs": [
+            {"q": "Is ClearBG a free CloudConvert alternative?",
+             "a": "For image and PDF-page conversions, yes: it converts HEIC, PNG, JPG and WEBP and turns PDF pages into images for free, and unlike CloudConvert it does it in your browser so nothing is uploaded. It doesn't cover documents, audio or video formats."},
+            {"q": "Can it convert HEIC without uploading?",
+             "a": "Yes — the HEIC decoder runs on your device via WebAssembly, so your iPhone photos never leave the browser. Batch conversion and a ZIP download are included."},
+            {"q": "Is there a daily conversion limit?",
+             "a": "No. There's no per-day cap and no account — the work happens locally, so there's nothing to meter."},
+        ],
+    },
 ]
 
 COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}

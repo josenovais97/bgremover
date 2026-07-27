@@ -3,7 +3,7 @@
 
 {% block title %}{% t "Remove Objects from Photos — Free, Private & In Your Browser" %}{% endblock %}
 {% block description %}{% t "Erase unwanted objects, people or blemishes from a photo: brush over them and a content-aware fill blends them away. Free, no watermark, and nothing is uploaded — it all runs in your browser." %}{% endblock %}
-{% block og_title %}Remove Objects from Photos — Free &amp; Private{% endblock %}
+{% block og_title %}{% t "Remove Objects from Photos — Free & Private" %}{% endblock %}
 
 {% block extra_seo %}
 <script type="application/ld+json">
@@ -63,11 +63,15 @@
     <section id="ro-editor" class="hidden max-w-6xl mx-auto grid lg:grid-cols-[1fr_18rem] gap-6 items-start">
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 relative">
             <div id="ro-stage" class="relative mx-auto max-w-full touch-none select-none" style="line-height:0">
-                <canvas id="ro-canvas" class="max-w-full rounded-lg shadow"></canvas>
-                <canvas id="ro-overlay" class="absolute inset-0 max-w-full rounded-lg cursor-crosshair"></canvas>
+                <canvas id="ro-canvas" role="img" aria-label="{% t 'Your photo — brush over the object you want to remove' %}" class="max-w-full rounded-lg shadow"></canvas>
+                <canvas id="ro-overlay" aria-hidden="true" class="absolute inset-0 max-w-full rounded-lg cursor-crosshair"></canvas>
                 <div id="ro-cursor" class="hidden absolute pointer-events-none rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.6)]" aria-hidden="true"></div>
             </div>
-            <div id="ro-busy" class="hidden absolute inset-0 grid place-items-center bg-white/60 dark:bg-gray-950/60 rounded-2xl z-10">
+            {% comment %}Painting the mask needs a pointer; the erase/undo actions are on
+            keyboard-reachable buttons. State that plainly for assistive tech rather than
+            leaving a silent canvas.{% endcomment %}
+            <p class="sr-only">{% t "Brushing the mask requires a mouse, trackpad or touchscreen. The Erase, Undo and Download buttons are keyboard-accessible." %}</p>
+            <div id="ro-busy" role="status" aria-live="polite" class="hidden absolute inset-0 grid place-items-center bg-white/60 dark:bg-gray-950/60 rounded-2xl z-10">
                 <span class="flex items-center gap-2 text-sm font-semibold"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> {% t "Erasing…" %}</span>
             </div>
         </div>

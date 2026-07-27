@@ -30,15 +30,17 @@
     <meta property="og:url" content="{{ canonical_url }}">
     {% comment %}Absolute URLs are built from SITE_URL (like the canonical), NOT the request
     host — otherwise a www/apex or http/https variant advertises a different image and
-    identity than the canonical it points at.{% endcomment %}
-    <meta property="og:image" content="{{ site_url }}{% static 'img/og-image.png' %}">
+    identity than the canonical it points at. `og_image` is a per-tool card
+    (context_processors.OG_IMAGES), falling back to the site-wide one.{% endcomment %}
+    <meta property="og:image" content="{{ site_url }}{% static og_image %}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
+    {% comment %}Twitter Cards fall back to the og: tags when their twitter-specific
+    equivalents are absent, so og:title / og:description / og:image cover the card too.
+    We used to hard-code a stale generic twitter:title here (it read "Background Remover"
+    on every tool page); dropping it lets each page's real og:title through.{% endcomment %}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Free AI Background Remover — No Watermark">
-    <meta name="twitter:description" content="Remove backgrounds instantly, privately, and for free. AI runs in your browser.">
-    <meta name="twitter:image" content="{{ site_url }}{% static 'img/og-image.png' %}">
 
     <script type="application/ld+json">
     {
@@ -237,33 +239,13 @@
                 <!-- Tools -->
                 <div class="space-y-3">
                     <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "Tools" %}</h3>
+                    {% comment %}Rendered from tool_nav (FOOTER_LABELS), the same source as the
+                    header nav and mega-menu — so a new tool joins the footer by existing rather
+                    than by being added to a hand-kept list that had drifted seven tools behind.{% endcomment %}
                     <nav class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400" aria-label="Tools">
-                        <a href="{% url 'remover:index' %}" class="hover:text-primaryText transition-colors">{% t "Background Remover" %}</a>
-                        <a href="{% url 'remover:convert' %}" class="hover:text-primaryText transition-colors">{% t "Image Converter" %}</a>
-                        <a href="{% url 'remover:resize' %}" class="hover:text-primaryText transition-colors">{% t "Image Resizer" %}</a>
-                        <a href="{% url 'remover:compress' %}" class="hover:text-primaryText transition-colors">{% t "Image Compressor" %}</a>
-                        <a href="{% url 'remover:meme' %}" class="hover:text-primaryText transition-colors">{% t "Meme Maker" %}</a>
-                        <a href="{% url 'remover:instagram' %}" class="hover:text-primaryText transition-colors">{% t "Instagram Editor" %}</a>
-                        <a href="{% url 'remover:crop' %}" class="hover:text-primaryText transition-colors">{% t "Crop Image" %}</a>
-                        <a href="{% url 'remover:sticker' %}" class="hover:text-primaryText transition-colors">{% t "Sticker Maker" %}</a>
-                        <a href="{% url 'remover:text_behind' %}" class="hover:text-primaryText transition-colors">{% t "Text Behind Image" %}</a>
-                        <a href="{% url 'remover:watermark' %}" class="hover:text-primaryText transition-colors">{% t "Watermark" %}</a>
-                        <a href="{% url 'remover:passport' %}" class="hover:text-primaryText transition-colors">{% t "Passport Photo" %}</a>
-                        <a href="{% url 'remover:ecommerce' %}" class="hover:text-primaryText transition-colors">{% t "Product Photos" %}</a>
-                        <a href="{% url 'remover:blur' %}" class="hover:text-primaryText transition-colors">{% t "Background Blur" %}</a>
-                        <a href="{% url 'remover:redact' %}" class="hover:text-primaryText transition-colors">{% t "Blur & Redact" %}</a>
-                        <a href="{% url 'remover:favicon' %}" class="hover:text-primaryText transition-colors">{% t "Favicon Generator" %}</a>
-                        <a href="{% url 'remover:qr' %}" class="hover:text-primaryText transition-colors">{% t "QR Code Generator" %}</a>
-                        <a href="{% url 'remover:screenshot' %}" class="hover:text-primaryText transition-colors">{% t "Screenshot Beautifier" %}</a>
-                        <a href="{% url 'remover:exif' %}" class="hover:text-primaryText transition-colors">{% t "EXIF Remover" %}</a>
-                        <a href="{% url 'remover:pdf' %}" class="hover:text-primaryText transition-colors">{% t "Image to PDF" %}</a>
-                        <a href="{% url 'remover:remove_object' %}" class="hover:text-primaryText transition-colors">{% t "Remove Object" %}</a>
-                        <a href="{% url 'remover:photo_filters' %}" class="hover:text-primaryText transition-colors">{% t "Photo Filters" %}</a>
-                        <a href="{% url 'remover:upscale' %}" class="hover:text-primaryText transition-colors">{% t "Image Upscaler" %}</a>
-                        <a href="{% url 'remover:heic' %}" class="hover:text-primaryText transition-colors">{% t "HEIC to JPG" %}</a>
-                        <a href="{% url 'remover:pdf_to_image' %}" class="hover:text-primaryText transition-colors">{% t "PDF to Images" %}</a>
-                        <a href="{% url 'remover:ocr' %}" class="hover:text-primaryText transition-colors">{% t "Image to Text" %}</a>
-                        <a href="{% url 'remover:svg_to_png' %}" class="hover:text-primaryText transition-colors">{% t "SVG to PNG" %}</a>
+                        {% for item in tool_nav %}
+                        <a href="{{ item.url }}" class="hover:text-primaryText transition-colors">{{ item.footer }}</a>
+                        {% endfor %}
                     </nav>
                 </div>
                 <!-- Use cases -->

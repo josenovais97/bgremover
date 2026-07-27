@@ -95,6 +95,31 @@ TOOL_NAV = [
      "blurb": "Rasterise vector art at any size, pixel-sharp"},
 ]
 
+# The footer's Tools column uses fuller, more descriptive labels than the nav
+# pills ("Background Remover", not "Remove BG") — better for the internal-link
+# anchor text search engines read. Keyed by url_name; a tool without an entry
+# falls back to its nav label. Because the footer is rendered by walking
+# TOOL_NAV (not a hand-kept copy), a new tool appears here by existing —
+# the previous hand-maintained list had silently fallen seven tools behind.
+FOOTER_LABELS = {
+    "index": "Background Remover", "convert": "Image Converter",
+    "resize": "Image Resizer", "compress": "Image Compressor",
+    "meme": "Meme Maker", "instagram": "Instagram Editor", "crop": "Crop Image",
+    "sticker": "Sticker Maker", "text_behind": "Text Behind Image",
+    "watermark": "Watermark", "passport": "Passport Photo",
+    "ecommerce": "Product Photos", "blur": "Background Blur",
+    "redact": "Blur & Redact", "favicon": "Favicon Generator",
+    "qr": "QR Code Generator", "screenshot": "Screenshot Beautifier",
+    "exif": "EXIF Remover", "pdf": "Image to PDF", "gif": "GIF Maker",
+    "video_gif": "Video to GIF", "video_converter": "Video Converter",
+    "base64": "Base64 Image", "palette": "Colour Palette",
+    "collage": "Photo Collage", "border": "Border & Polaroid",
+    "remove_object": "Remove Object", "photo_filters": "Photo Filters",
+    "upscale": "Image Upscaler", "heic": "HEIC to JPG",
+    "pdf_to_image": "PDF to Images", "ocr": "Image to Text",
+    "svg_to_png": "SVG to PNG",
+}
+
 # Categories for the "All tools" mega-menu, in display order. Each groups the
 # TOOL_NAV items whose `group` matches its key. Labels are translated at render.
 TOOL_GROUPS = [
@@ -174,6 +199,21 @@ TOOL_ACCENTS = {
     "svg_to_png": ("77 124 15", "63 98 18", "101 163 13", "132 204 22"),     # lime 700/800/600/500
 }
 _DEFAULT_ACCENT = TOOL_ACCENTS["index"]
+
+
+# Per-tool Open Graph share cards (1200×630), keyed by url_name. A page not
+# listed here falls back to the site-wide og-image.png. Only tools with a
+# purpose-built card are listed; add a `img/og/<tool>.png` and a line here.
+OG_IMAGES = {
+    "remove_object": "img/og/remove-object.png",
+    "photo_filters": "img/og/photo-filters.png",
+    "upscale": "img/og/upscale.png",
+    "heic": "img/og/heic.png",
+    "pdf_to_image": "img/og/pdf-to-image.png",
+    "ocr": "img/og/ocr.png",
+    "svg_to_png": "img/og/svg-to-png.png",
+}
+_DEFAULT_OG_IMAGE = "img/og-image.png"
 
 
 def _hex(rgb):
@@ -300,6 +340,7 @@ def seo(request):
             **item,
             "label": tr(item["label"]),
             "blurb": tr(item["blurb"]),
+            "footer": tr(FOOTER_LABELS.get(item["name"], item["label"])),
             "url": reverse(f"remover:{item['name']}"),
             "accent_vars": _accent_vars(item["name"]),
         }
@@ -318,6 +359,8 @@ def seo(request):
         "accent_hex": _hex(accent),
         "google_site_verification": settings.GOOGLE_SITE_VERIFICATION,
         "bing_site_verification": settings.BING_SITE_VERIFICATION,
+        # Per-tool OG share card (falls back to the site-wide image).
+        "og_image": OG_IMAGES.get(url_name, _DEFAULT_OG_IMAGE),
         # Landing pages are surfaced in the footer of every page; the nav label is
         # translated so the footer localises too.
         "use_cases": [{"slug": c["slug"], "nav": tr(c["nav"])} for c in USE_CASES],

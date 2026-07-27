@@ -1021,3 +1021,126 @@ class IconSubsetTests(SimpleTestCase):
             "re-subset the webfont to include these:\n"
             + "\n".join(f"  {n} <- {', '.join(sorted(f))}" for n, f in sorted(missing.items())),
         )
+
+
+class NewToolSpecificsTests(SimpleTestCase):
+    """Static (no-browser) guards for the 1.10 tools' plumbing.
+
+    EveryToolTests already checks they render, load a script, own an accent and
+    reach the sitemap. These assert the details that a template edit could break
+    silently — file-type filters, the object-remover worker, per-tool OG cards,
+    and that the localized FAQ actually swaps in on /pt/.
+    """
+
+    ACCEPT = {
+        "heic": [".heic", ".heif"],
+        "pdf_to_image": ["application/pdf"],
+        "svg_to_png": [".svg"],
+    }
+
+    def test_format_specific_inputs_accept_the_right_files(self):
+        for name, tokens in self.ACCEPT.items():
+            body = self.client.get(reverse(f"remover:{name}")).content.decode()
+            for tok in tokens:
+                with self.subTest(tool=name, token=tok):
+                    self.assertIn(tok, body)
+
+    def test_object_remover_references_its_worker(self):
+        # The off-thread fill is resolved relative to the module; if the file is
+        # renamed the tool silently falls back to the main thread. Assert the
+        # module names the worker and the file exists.
+        from pathlib import Path
+
+        js = (Path(__file__).resolve().parent.parent / "static/js/remove-object.js").read_text()
+        self.assertIn("remove-object-worker.js", js)
+        self.assertTrue(
+            (Path(__file__).resolve().parent.parent / "static/js/remove-object-worker.js").exists()
+        )
+
+    def test_new_tools_have_a_per_tool_og_image(self):
+        from remover.context_processors import OG_IMAGES
+
+        for name, path in OG_IMAGES.items():
+            with self.subTest(tool=name):
+                body = self.client.get(reverse(f"remover:{name}")).content.decode()
+                self.assertIn(path, body)
+                # The static file must actually exist, or the card 404s.
+                self.assertTrue(
+                    (Path(__file__).resolve().parent.parent / "static" / path).exists(),
+                    f"{path} declared in OG_IMAGES but missing on disk",
+                )
+
+    def test_untitled_pages_fall_back_to_the_default_og_image(self):
+        body = self.client.get(reverse("remover:crop")).content.decode()
+        self.assertIn("img/og-image.png", body)
+
+    def test_stale_twitter_title_is_gone(self):
+        # It used to hard-code a generic title on every page; Twitter now falls
+        # back to og:title. A reintroduced twitter:title would re-stale it.
+        body = self.client.get(reverse("remover:heic")).content.decode()
+        self.assertNotIn("twitter:title", body)
+
+    def test_new_tools_report_to_the_stats_counter(self):
+        # A tool absent from STATS_TOOLS has its reports silently dropped.
+        from remover.views import STATS_TOOLS
+
+        for name in ("remove_object", "photo_filters", "upscale", "heic",
+                     "pdf_to_image", "ocr", "svg_to_png"):
+            with self.subTest(tool=name):
+                self.assertIn(name, STATS_TOOLS)
+
+    def test_new_tool_pages_localize_their_faq_in_portuguese(self):
+        # localize_faqs must swap the FAQ (accordion + JSON-LD) on /pt/. Check a
+        # known Portuguese answer fragment appears on each.
+        cases = {
+            "/pt/heic-to-jpg/": "por predefinição",          # "iPhones guardam... por predefinição"
+            "/pt/image-to-text/": "no seu dispositivo",
+            "/pt/svg-to-png/": "no tamanho exato",
+        }
+        for path, fragment in cases.items():
+            with self.subTest(path=path):
+                self.assertContains(self.client.get(path), fragment)
+
+
+class ToolLandingTests(SimpleTestCase):
+    """The HEIC/OCR intent landings and the CloudConvert comparison."""
+
+    def test_tool_landings_render_and_funnel_to_their_tool(self):
+        from remover.views import TOOL_LANDINGS
+
+        for page in TOOL_LANDINGS:
+            with self.subTest(slug=page["slug"]):
+                response = self.client.get(f"/{page['slug']}/")
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, page["h1"])
+                self.assertContains(response, reverse(f"remover:{page['cta']['url_name']}"))
+
+    def test_tool_landings_in_sitemap(self):
+        from remover.views import TOOL_LANDINGS
+
+        sitemap = self.client.get(reverse("remover:sitemap")).content.decode()
+        for page in TOOL_LANDINGS:
+            with self.subTest(slug=page["slug"]):
+                self.assertIn(f"/{page['slug']}/", sitemap)
+
+    def test_cloudconvert_comparison_renders(self):
+        response = self.client.get("/cloudconvert-alternative/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "CloudConvert")
+        self.assertContains(response, reverse("remover:heic"))
+
+
+class FooterTests(SimpleTestCase):
+    """The footer Tools column is generated from TOOL_NAV, so it can't drift."""
+
+    def test_footer_lists_every_tool(self):
+        body = self.client.get(reverse("remover:index")).content.decode()
+        # Grab the footer Tools <nav> and assert every tool URL appears in it.
+        import re
+
+        match = re.search(r'aria-label="Tools">(.*?)</nav>', body, re.S)
+        self.assertIsNotNone(match, "footer Tools nav not found")
+        footer = match.group(1)
+        for item in TOOL_NAV:
+            with self.subTest(tool=item["name"]):
+                self.assertIn(reverse(f"remover:{item['name']}"), footer)

@@ -6,55 +6,22 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Twenty-six tools become thirty-three, the newest seven are fully localized with
+their own demos and social cards, and a batch of correctness/SEO/accessibility
+work lands alongside.
+
 ### Added
-- **The seven new tools are fully translated and each has a demo.** The 1.10
-  tools shipped English-only with a bare dropzone; they now carry a before/after
-  (or file-flow) demo pane like every older tool, run their body copy through
-  `{% t %}`, and localise their FAQ accordion **and** its `FAQPage` JSON-LD from
-  one source (`translations.localize_faqs`). All seven are added to
-  `TRANSLATED_PATHS`, so `/pt/` advertises them to Google and the sitemap lists
-  them twice — `TranslationCoverageTests` verifies the Portuguese body really
-  renders. Site count: 33 tools, 74 English + 19 Portuguese sitemap URLs.
-- **Three intent-variant landing pages** targeting the searches the new tools
-  answer, funnelling to the tool that does the job (`TOOL_LANDINGS`, same
-  data-driven machinery as the privacy/compress landings): `/open-heic-on-windows/`,
-  `/convert-iphone-photos-to-jpg/` → the HEIC converter, and
-  `/extract-text-from-image/` → the OCR tool.
-- **Batch for Photo Filters and Upscale.** The first file is tuned on screen and
-  the rest are exported with the same look / scale as a ZIP — the shared
-  batch-bar pattern the resize/watermark/EXIF tools already use.
-- **The video tools' "grab this frame" now feeds the stats counter**, and every
-  new tool reports a processed/downloaded event, so all 33 appear in the
-  per-tool breakdown. `STATS_TOOLS` and `stats.js`'s path map were nine tools
-  behind — the same drift the 1.8.0 fix warned about.
-- **The homepage tool grid is grouped** under the four category headers the
-  mega-menu uses (Remove & Edit / Convert & Optimize / Create & Share / Photos).
-  A flat wall of 32 cards had stopped being scannable.
-
-### Changed
-- **The object remover's fill runs off the main thread.** The diffusion
-  (onion-peel + Jacobi) moved into `remove-object-worker.js`, so a big brush
-  area on a slow device can't jank the page; a byte-identical inline fallback
-  covers browsers without Workers.
-- **OCR language packs load from jsDelivr** instead of tesseract.js's default
-  host, so they land in the service worker's long-lived cache and OCR keeps
-  working offline after the first use.
-- The footer Tools list gained the seven new tools (it was hand-maintained and
-  had drifted behind the toolkit).
-
-### Added — the seven tools themselves (from the prior release notes below)
 - **Seven new tools** (26 → 33), all 100% client-side and wired into the nav,
   grid, palette, sitemap, PWA shell and chaining automatically by existing:
   - **Remove Object** (`/remove-object/`) — brush over anything and a
     content-aware fill blends it away. No model and no dependency: a
     multi-scale diffusion (onion-peel init + Jacobi relaxation at low
     resolution, feather-blended back at full resolution), so it's instant and
-    shines on even backgrounds.
+    shines on even backgrounds. The fill runs in a Web Worker
+    (`remove-object-worker.js`) with a byte-identical inline fallback.
   - **HEIC to JPG** (`/heic-to-jpg/`) — iPhones shoot HEIC by default and the
-    rest of the world can't open it; the search volume is enormous and the
-    privacy angle ("your camera roll doesn't transit a server to change
-    format") is real. Decodes via heic2any/libheif WASM, lazy-loaded from the
-    CDN on first convert; batch + ZIP; JPG/PNG/WEBP out.
+    rest of the world can't open it. Decodes via heic2any/libheif WASM,
+    lazy-loaded from the CDN on first convert; batch + ZIP; JPG/PNG/WEBP out.
   - **PDF to Images** (`/pdf-to-image/`) — every page rendered from the vector
     source at 1×/2×/4× via pdf.js. The pdf.js worker is cross-origin on the
     CDN and the Worker constructor refuses that, so its source is fetched and
@@ -65,154 +32,128 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     4× has 4× the real detail; transparency kept, viewBox fallback for
     dimension-less SVGs.
   - **Photo Filters** (`/photo-filters/`) — the Instagram editor's looks idea
-    as a standalone, general tool: ten presets that are just slider states
-    (so a look and a manual nudge always compose), hold-to-compare, and a
-    full-resolution re-render on export.
+    as a standalone tool: ten presets that are just slider states (so a look
+    and a manual nudge always compose), hold-to-compare, full-resolution
+    re-render on export.
   - **Upscale** (`/upscale/`) — the removed AI upscaler's URL returns as a
     Lanczos resample + unsharp mask (pica), honestly positioned as non-AI:
-    instant, dependable, and incapable of freezing the tab. The 301 to home
+    instant, dependable, and incapable of freezing the tab. The old 301 to home
     is gone; the indexed URL serves a real page again.
-- **Compress Video landing page** (`/compress-video/`) — the video converter
-  gained High/Balanced/**Small file** bitrate tiers, and the landing page says
-  so in the words people actually search. First `COMPRESS_PAGES` entry with a
-  `cta_url_name`, funnelling to the converter instead of the image compressor.
+- **Batch for Photo Filters and Upscale.** The first file is tuned on screen and
+  the rest are exported with the same look / scale as a ZIP — the shared
+  batch-bar pattern the resize/watermark/EXIF tools already use.
 - **Grab a frame from a video.** The two video tools are chain sources now:
   pause on a moment, press "Grab this frame as an image", and the full-res
-  frame is offered to every image tool through the existing chain bar. The
-  video tools still can't *receive* a chained image — their input is a video —
-  but a frame is a perfectly good image to send onwards.
-- **Palette exports** — copy the extracted palette as CSS variables, a
-  Tailwind `colors` block, or JSON. Dominant colours are only useful once they
-  leave the page.
-- **Compress zero-savings hint** — "saved 0%" now appends what to try next
-  (WEBP/AVIF or a lower quality) instead of dead-ending.
-
-### Changed
-- **The landing hero yields to the workspace.** On compress and convert the
-  first result used to render below the fold, under a full-height hero that
-  stayed put; collage already collapsed its hero and now they match it.
-- **Demo honesty pass.** The video converter's demo was a film-countdown GIF
-  that showed nothing about the tool; it's now a paused frame with a real trim
-  timeline (handles, playhead, kept-range label) drawn at the same geometry
-  the tool uses. Collage and Border finally got demo panes (a real 2×2 grid
-  and a captioned Polaroid, both generated from existing demo photos).
-- The mobile header now labels the "All tools" button instead of showing a
-  bare grid icon — on phones the pill row collapses to one or two tools, so
-  that button is the door to the other thirty and nothing said so.
-- The collage background-colour swatch has a border, so a white swatch no
-  longer reads as an empty input in light mode.
-- `CBG.dropzone` accepts an `accept` predicate for tools whose input is not a
-  plain raster image (HEIC arrives with an empty MIME type on some systems,
-  PDFs are `application/pdf`).
-
+  frame is offered to every image tool through the existing chain bar. They
+  still can't *receive* a chained image — their input is a video — but a frame
+  is a perfectly good image to send onwards.
+- **Palette exports** — copy the extracted palette as CSS variables, a Tailwind
+  `colors` block, or JSON. Dominant colours are only useful once they leave the
+  page.
+- **SEO landing pages, all data-driven from the same machinery as the existing
+  privacy/compress landings:**
+  - **Compress Video** (`/compress-video/`) — the video converter gained
+    High/Balanced/**Small file** bitrate tiers, and the page says so in the
+    words people search. First `COMPRESS_PAGES` entry with a `cta_url_name`.
+  - **Three tool intent landings** (`TOOL_LANDINGS`): `/open-heic-on-windows/`
+    and `/convert-iphone-photos-to-jpg/` → the HEIC converter,
+    `/extract-text-from-image/` → the OCR tool.
+  - **A CloudConvert comparison** (`/cloudconvert-alternative/`) → the HEIC
+    converter, on the privacy / no-daily-limit angle.
+- **Per-tool Open Graph share cards** for the seven newest tools
+  (`img/og/<tool>.png`, keyed by `context_processors.OG_IMAGES`, falling back to
+  the site-wide card). A shared page shows its own tool, title and demo instead
+  of the generic image, and `og:title` is translated so a shared `/pt/` page
+  gets a Portuguese card.
 - **The refine brush can finally see what it's restoring.** A "Show original"
   toggle (`O`) ghosts the whole photo at 35% under the cut-out, so Restore stops
-  being an act of memory — the erased background is right there under the brush.
-  The masked result is composited off-screen first, because `destination-in`
-  against the ghost would punch through it.
-- **Redo in the refine editor** (`Ctrl+Shift+Z` / `Ctrl+Y`, plus a button). Undo
-  existed; a slip past the stroke you wanted was unrecoverable. A new stroke
-  clears the redo stack (history branches), and both buttons disable when their
-  stack is empty so the state is visible.
-- **A Straighten slider on the crop tool** (`/crop/`, ±15° in 0.5° steps). The
-  90° buttons couldn't fix a crooked horizon. The fine angle is baked into the
-  same oriented-source canvas the rotate buttons use, scaled up just enough that
-  the tilted image still covers its frame — so straightening never exposes blank
-  corners, and batch exports pick it up for free. The crop geometry (and its
-  Node test suite) is untouched.
-- **A full-size quality compare on the compressor** (`/compress/`). Quality was
-  chosen blind: artifacts are invisible on a card-sized thumbnail, which is
-  exactly where "how low can I go" gets decided. Each card gets a Compare button
-  opening a full-screen wipe between the original and the compressed encode,
-  with the two file sizes in the corner badges. Disabled when the original was
-  kept ("already optimized") — comparing a file against itself shows nothing.
-- **Screenshot Beautifier** (`/screenshot-beautifier/`) — the "launch post" look:
-  a screenshot centred on a curated gradient (or solid, or transparent) backdrop
-  with padding, rounded corners, a soft drop shadow and an optional macOS-style
-  browser window frame in a light or dark theme, on an auto, 16:9, 4:3 or square
-  canvas. Pure canvas work (no model), exports PNG/JPG through `CBG.download` so
-  it chains like every other tool, and the demo pair is generated with the same
-  geometry the tool draws. New blue 700/800 accent, a shade apart from crop's
-  blue 600/700 the way collage sits a shade from GIF in purple.
-- **A Ctrl+K command palette.** With 26 tools, the pill row shows eight and the
-  mega-menu needs a click and a scan; the palette jumps anywhere in two
-  keystrokes (Ctrl/⌘+K or `/`, then type). The list is server-rendered in
-  `base.html` from the same `TOOL_NAV` the nav and mega-menu use — so a new tool
-  appears in it by existing, labels arrive already translated, and each row
-  paints itself in its own tool's accent via the existing `tool-card` token
-  re-derivation. `js/command.js` only does behaviour: token filtering, arrow-key
-  navigation, and a "Recent" ranking of the visitor's actual tool visits
-  (recorded on every page load, palette or not) shown when the query is empty.
-  A search button in the header advertises it — as an inline SVG, because the
-  committed Font Awesome subset carries no plain magnifier glyph.
-- **QR codes for Wi-Fi, contacts, email, SMS and phone**, not just links. A QR can
-  carry these already, but only in the exact syntax a scanner expects
-  (`WIFI:T:WPA;S:…;P:…;;`, a vCard block, `mailto:`), so the content box had been
-  advertising "Wi-Fi · email" while accepting raw text — you had to know the
-  format and type it yourself. Each type now has real fields and qr.js encodes
-  them, including the escaping the Wi-Fi format needs and the structured-vs-
-  escaped distinction in a vCard `N:` line. A type with its key field still blank
-  disables export rather than rendering a scannable code for a single space.
-- **The GIF maker's export goes through the shared download path**, and
-  deliberately opts OUT of cross-tool chaining (`CBG.download(…, {chain: false})`).
-  Every destination tool composites through a canvas, so a chained GIF would
-  arrive as its first frame with the animation silently discarded. Not offering
-  the hop is better than offering a lossy one.
-- **Cross-tool chaining is now advertised** on the homepage tool grid and in the
-  related-tools block at the foot of every tool page. The feature shipped in
-  1.9.0 with no way to discover it: the bar that offers the next tool only
-  appears once you export, which is the moment you were already leaving.
-- **The chain bar shows the journey** — "Crop → Convert → Compress — keep going:"
-  rather than a fixed label. 1.9.0 carried the trail through IndexedDB and
-  sessionStorage but never rendered it; without it the bar could only say "here
-  are some other tools", which is the thing a user already knows. Arriving at a
-  tool with nothing in flight clears the trail, so an earlier journey is never
-  shown over an unrelated image.
-- **Compare against the original in Blur & Redact** (`/redact-image/`). The point
-  of redacting is that something is really covered, and that can only be judged
-  against the original — but the tool only ever showed the redacted result. A
-  toggle (not press-and-hold, so it works the same for a mouse, a thumb and a
-  keyboard) swaps the canvas, with a badge on the photo so the two views can't be
-  confused. Drawing while comparing snaps back rather than placing a region
-  against a picture you aren't editing.
-- **A demo on Image to PDF** (`/image-to-pdf/`), which was the only tool page
-  without one. Deliberately not the shared before/after slider: there is no
-  "after" of the same frame to wipe between — three photos become one paged
-  document, and the document is the thing worth showing. The asset is generated
-  from the same page geometry the exporter uses (A4 portrait, image fitted inside
-  the margin).
-
-### Fixed
-- **`tests/smoke_crop.py` had been failing and nobody noticed.** The options
-  panel gained tabs (Background / Size & format / Effects) and now opens by
-  itself when a card finishes, so the test's unconditional `.options-btn` click
-  was *closing* it and every control below became unreachable. It ensures the
-  panel is open and activates the right tab per assertion. This is the only
-  end-to-end coverage of the remover's crop dialog, effects and export sizing —
-  the 98 Django tests assert markup, not behaviour.
-- **The EXIF demo contradicted the sample photo the same page offers.** It listed
-  an invented iPhone-in-Lisbon set while "Try a sample photo" loads a Pixel 7 Pro
-  photo taken in Kenya. The demo now shows the real metadata inside that file.
+  being an act of memory. The masked result is composited off-screen first,
+  because `destination-in` against the ghost would punch through it.
+- **Redo in the refine editor** (`Ctrl+Shift+Z` / `Ctrl+Y`, plus a button). A
+  new stroke clears the redo stack (history branches); both buttons disable when
+  their stack is empty so the state is visible.
+- **A Straighten slider on the crop tool** (`/crop/`, ±15° in 0.5° steps), baked
+  into the same oriented-source canvas the rotate buttons use and scaled up just
+  enough that straightening never exposes blank corners. Batch exports pick it
+  up for free; the crop geometry (and its Node test suite) is untouched.
+- **A full-size quality compare on the compressor** (`/compress/`) — a
+  full-screen wipe between the original and the compressed encode, because
+  artifacts are invisible on a card-sized thumbnail. Disabled when the original
+  was kept.
+- **Screenshot Beautifier** (`/screenshot-beautifier/`) — a screenshot on a
+  curated gradient/solid/transparent backdrop with padding, rounded corners, a
+  soft shadow and an optional macOS window frame, on an auto/16:9/4:3/square
+  canvas. Pure canvas work, exports through `CBG.download` so it chains.
+- **A Ctrl+K command palette** — jumps to any tool in two keystrokes,
+  server-rendered from `TOOL_NAV` (so a new tool appears by existing) with
+  `js/command.js` adding filtering, arrow-key nav and a "Recent" ranking.
+- **QR codes for Wi-Fi, contacts, email, SMS and phone**, not just links — each
+  type now has real fields and `qr.js` encodes them in the exact syntax a
+  scanner expects, with the Wi-Fi escaping and the vCard `N:` distinction.
+- **Cross-tool chaining is advertised** on the homepage grid and the
+  related-tools block, and **the chain bar shows the journey**
+  ("Crop → Convert → Compress — keep going:") rather than a fixed label.
+- **Compare against the original in Blur & Redact** (`/redact-image/`) — a
+  toggle (not press-and-hold, so it works for mouse, thumb and keyboard) swaps
+  the canvas, with a badge so the two views can't be confused.
+- **A demo on Image to PDF** (`/image-to-pdf/`), generated from the same page
+  geometry the exporter uses — the last tool page without one.
 
 ### Changed
-- **The QR generator was rebuilt to match the rest of the toolkit.** It read as
-  the cheapest page on the site: the code floated small in a mostly empty panel,
-  the download buttons sat below six stacked panels of equal visual weight, and
-  the four style presets were four words in four boxes — you had to click each
-  one to find out what it did.
-  - The style presets now render a live miniature of the code they produce,
-    painted by the same routine as the 512px export (the drawing code was pulled
-    out of `App` into free functions taking an options object, so a thumbnail
-    cannot drift from what clicking it does).
-  - Downloads moved beside the preview, which is presented on a white card that
-    stays white in dark mode — a QR is ink on paper, and previewing it on a dark
-    surface misrepresents what you print.
-  - Added one-tap curated colour pairs, a live export summary (size, recovery
-    level), and a **low-contrast warning**: the two reliable ways to make a QR
-    unscannable are low contrast and a light foreground, and nothing flagged
-    either. Gradients are checked at their weakest stop.
-  - Size, error correction and quiet-zone margin moved into a collapsed
-    "Advanced" panel; they had been pushing the download button off the page.
+- **The seven new tools are fully translated and each has a demo.** They shipped
+  English-only with a bare dropzone; they now carry a before/after (or
+  file-flow) demo pane, run their body copy through `{% t %}`, and localise
+  their FAQ accordion **and** its `FAQPage` JSON-LD from one source
+  (`translations.localize_faqs`). All seven joined `TRANSLATED_PATHS`, so `/pt/`
+  advertises them and the sitemap lists them twice —
+  `TranslationCoverageTests` verifies the Portuguese body really renders.
+  (77 English + 19 Portuguese sitemap URLs.)
+- **The homepage tool grid is grouped** under the four category headers the
+  mega-menu uses. A flat wall of 30+ cards had stopped being scannable.
+- **The footer Tools column is generated from `TOOL_NAV`** (via `FOOTER_LABELS`
+  for the richer anchor text), so it can't fall behind again — it had silently
+  dropped seven tools. `FooterTests` fails if any tool is missing. Six
+  previously-missing labels also gained Portuguese translations.
+- **Every tool now feeds the stats counter.** `STATS_TOOLS` and `stats.js`'s
+  path map were nine tools behind (the drift the 1.8.0 fix warned about); all
+  33 now report a processed/downloaded event and appear in the breakdown.
+- **OCR language packs load from jsDelivr** instead of tesseract.js's default
+  host, so they land in the service worker's long-lived cache and OCR keeps
+  working offline after first use. **OCR also defaults to the visitor's
+  language** (page locale, then browser), not always English.
+- **Accessibility pass on the canvas tools.** The object-remover and upscale
+  busy spinners are `role="status"` live regions; the canvases carry
+  `aria-label`s; the object remover states (for assistive tech) that brushing
+  needs a pointer while Erase/Undo/Download are keyboard-reachable; and the OCR
+  recogniser announces "Reading…" → word count / "no text found" via a live
+  region instead of only changing a placeholder.
+- **The landing hero yields to the workspace** on compress and convert (the
+  first result used to render below the fold, under a full-height hero).
+- **Demo honesty pass.** The video converter's demo is now a paused frame with a
+  real trim timeline; collage and border gained demo panes (a 2×2 grid and a
+  captioned Polaroid), all generated from existing demo photos.
+- **The stale, generic `twitter:title`** (it read "Background Remover" on every
+  page) is gone; Twitter now inherits `og:title`/`og:description`/`og:image`.
+- The mobile header labels the "All tools" button instead of a bare grid icon;
+  the collage background-colour swatch got a border; and `CBG.dropzone` accepts
+  an `accept` predicate for non-raster inputs (HEIC/PDF/SVG).
+- **Compress "saved 0%"** now appends what to try next (WEBP/AVIF or a lower
+  quality) instead of dead-ending.
+- **The QR generator was rebuilt to match the rest of the toolkit**: live
+  miniature style presets painted by the export routine, downloads beside a
+  white preview card, curated colour pairs, a live summary, a low-contrast
+  warning, and size/EC/margin moved into a collapsed "Advanced" panel.
+
+### Fixed
+- **The object remover leaked one blob URL per run** through the result preview;
+  it's revoked before each replacement now.
+- **`tests/smoke_crop.py` had been failing silently.** The options panel gained
+  tabs and now opens itself when a card finishes, so the test's unconditional
+  `.options-btn` click was *closing* it. It ensures the panel is open and
+  activates the right tab per assertion.
+- **The EXIF demo contradicted the sample photo the same page offers** (an
+  invented iPhone-in-Lisbon set vs the real Pixel 7 Pro photo taken in Kenya);
+  it now shows the real metadata inside that file.
 
 ## [1.9.0] — 2026-07-22
 

@@ -124,7 +124,11 @@ const App = {
     try {
       const { w, h } = this.outSize();
       this.result = await this.upscaleImage(this.img);
-      $('#up-preview').src = URL.createObjectURL(this.result);
+      // Revoke the previous result preview before replacing it — repeatedly
+      // hitting Upscale would otherwise leak one blob URL per run.
+      if (this.resultUrl) URL.revokeObjectURL(this.resultUrl);
+      this.resultUrl = URL.createObjectURL(this.result);
+      $('#up-preview').src = this.resultUrl;
       $('#up-download').disabled = false;
       window.__clearbgReport?.(1);
       Toast.show(t('Upscaled to {w}×{h}', { w, h }));
@@ -180,6 +184,7 @@ const App = {
     this.editor.classList.add('hidden');
     this.hero.classList.remove('hidden');
     if (this.url) { URL.revokeObjectURL(this.url); this.url = null; }
+    if (this.resultUrl) { URL.revokeObjectURL(this.resultUrl); this.resultUrl = null; }
     this.result = null;
     this.queue = [];
     this.syncBatch();

@@ -103,6 +103,21 @@ UI = {
     "Copy the text out of any photo or screenshot": "Copie o texto de qualquer foto ou captura",
     "SVG to PNG": "SVG para PNG",
     "Rasterise vector art at any size, pixel-sharp": "Converta vetores em qualquer tamanho, sem perda",
+    # --- New tool pages: og:title (social share cards) ------------------------
+    "Remove Objects from Photos — Free & Private":
+        "Remover Objetos de Fotografias — Grátis e Privado",
+    "Free Image Upscaler — Enlarge 2× / 4× Privately":
+        "Ampliador de Imagens Grátis — Amplie 2× / 4× em Privado",
+    "HEIC to JPG — Free Private Converter":
+        "HEIC para JPG — Conversor Grátis e Privado",
+    "PDF to Images — Free & Private Converter":
+        "PDF para Imagens — Conversor Grátis e Privado",
+    "Image to Text — Free Private OCR":
+        "Imagem para Texto — OCR Grátis e Privado",
+    "SVG to PNG — Free & Sharp at Any Size":
+        "SVG para PNG — Grátis e Nítido em Qualquer Tamanho",
+    "Photo Filters — Free Private Editor":
+        "Filtros de Fotografia — Editor Grátis e Privado",
     # --- New tool pages: shared body copy -------------------------------------
     "Drop a photo": "Largue uma fotografia",
     "Drop an image": "Largue uma imagem",
@@ -147,6 +162,10 @@ UI = {
     "Object removed": "Objeto removido",
     "Drag the handle — the stranger is brushed out, on-device":
         "Arraste o cursor — o estranho é apagado, no seu dispositivo",
+    "Your photo — brush over the object you want to remove":
+        "A sua foto — pinte sobre o objeto que quer remover",
+    "Brushing the mask requires a mouse, trackpad or touchscreen. The Erase, Undo and Download buttons are keyboard-accessible.":
+        "Pintar a máscara requer rato, trackpad ou ecrã tátil. Os botões Apagar, Anular e Descarregar são acessíveis por teclado.",
     # --- Upscale page ---
     "Enlarged locally — nothing is uploaded": "Ampliado localmente — nada é carregado",
     "Upscale an Image 2× or 4× — Free, Sharp & In Your Browser":
@@ -252,6 +271,7 @@ UI = {
         "O motor de OCR carrega uma vez e fica em cache — as capturas nunca saem do seu dispositivo",
     "A photo of text in, editable text out — recognised on your device":
         "Entra uma foto com texto, sai texto editável — reconhecido no seu dispositivo",
+    "Text recognition progress": "Progresso do reconhecimento de texto",
     "Read again": "Ler novamente",
     "Recognised text": "Texto reconhecido",
     "Copy text": "Copiar texto",
@@ -317,6 +337,8 @@ UI = {
     "Golden look": "Estilo dourado",
     "One tap, then fine-tune with the sliders — drag to compare":
         "Um toque e afine com os controlos — arraste para comparar",
+    "Live preview of your photo with the current filter and adjustments":
+        "Pré-visualização em direto da sua foto com o filtro e ajustes atuais",
     "Edit a photo in three steps": "Edite uma fotografia em três passos",
     "Tap a look, then fine-tune": "Toque num estilo e afine",
     "A look sets the starting point; every slider stays yours. Hold Compare to check.":
@@ -343,6 +365,12 @@ UI = {
     "EXIF Remover": "Removedor de EXIF",
     "Photo Filters": "Filtros de Fotografia",
     "Image Upscaler": "Ampliador de Imagens",
+    "Video to GIF": "Vídeo para GIF",
+    "Video Converter": "Conversor de Vídeo",
+    "Base64 Image": "Imagem Base64",
+    "Colour Palette": "Paleta de Cores",
+    "Photo Collage": "Colagem de Fotos",
+    "Border & Polaroid": "Moldura e Polaroid",
     "Coming from another tool?": "Vem de outra ferramenta?",
     "See how we compare to remove.bg": "Veja como nos comparamos ao remove.bg",
     "images processed": "imagens processadas",
