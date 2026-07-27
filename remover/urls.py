@@ -3,7 +3,7 @@ from django.urls import path
 from django.views.generic.base import RedirectView
 
 from . import views
-from .views import COMPARISONS, COMPRESS_PAGES
+from .views import COMPARISONS, COMPRESS_PAGES, TOOL_LANDINGS
 
 app_name = "remover"
 
@@ -65,6 +65,11 @@ urlpatterns = [
     *[
         path(f"{p['slug']}/", views.comparison, {"slug": p["slug"]}, name=p["url_name"])
         for p in COMPARISONS
+    ],
+    # Tool intent-variant landings (see TOOL_LANDINGS), generated from the data.
+    *[
+        path(f"{p['slug']}/", views.tool_landing, {"slug": p["slug"]}, name=p["url_name"])
+        for p in TOOL_LANDINGS
     ],
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
     path("about/", views.about, name="about"),

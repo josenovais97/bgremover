@@ -57,7 +57,7 @@ from .seo_content import (
     PHOTO_FILTERS_FAQS,
     faq_jsonld,
 )
-from .translations import localize_use_case
+from .translations import localize_faqs, localize_use_case
 
 logger = logging.getLogger(__name__)
 
@@ -411,6 +411,104 @@ PRIVACY_PAGES = [
 ]
 
 PRIVACY_PAGES_BY_SLUG = {p["slug"]: p for p in PRIVACY_PAGES}
+
+# Tool intent-variant landing pages: the words people actually search for a
+# job, funnelling to the tool that does it. Same machinery as PRIVACY_PAGES
+# (landing.html + curated tools + FAQ); `cta.url_name` names the destination.
+TOOL_LANDINGS = [
+    {
+        "slug": "open-heic-on-windows",
+        "url_name": "heic_windows",
+        "nav": "Open HEIC on Windows",
+        "title": "Can't Open HEIC on Windows? Convert to JPG Free — No Install",
+        "description": "Windows can't open your iPhone's HEIC photos? Convert them to JPG free, right in your browser — no codec pack, no installed software, nothing uploaded. Batch supported.",
+        "h1": "Open HEIC photos on Windows",
+        "tagline": "No codec pack, no paid app from the Microsoft Store — drop the photos in your browser and download them as JPGs Windows opens natively.",
+        "intro": [
+            "iPhones save photos as HEIC by default, and a fresh Windows install can't open them — Photos asks you to buy a codec, and half the \"free\" converter sites push the photo through their servers. There is a simpler way: the conversion can run inside your own browser.",
+            "Drop the HEIC files on the converter below and download JPGs (or PNGs) that open in Photos, Paint, Office and every website. The decoding happens on your PC — the photos are never uploaded, which matters when the camera roll you're converting is personal.",
+        ],
+        "benefits": [
+            {"icon": "fa-mobile-screen", "title": "No codec, no install", "text": "Works in the browser you already have — nothing to buy from the Store, nothing to install."},
+            {"icon": "fa-images", "title": "Whole folders at once", "text": "Drop a batch of HEICs and download them together as a ZIP of JPGs."},
+            {"icon": "fa-shield-halved", "title": "Photos stay on your PC", "text": "The decoder runs locally — your camera roll never transits a stranger's server."},
+        ],
+        "tools": ["heic", "convert", "compress", "resize"],
+        "cta": {"label": "Convert HEIC to JPG now", "url_name": "heic"},
+        "cta_icon": "fa-mobile-screen",
+        "faqs": [
+            {"q": "Why can't Windows open HEIC files?",
+             "a": "HEIC needs the HEVC codec, which Windows doesn't ship by default for licensing reasons — the Store sells it separately. Converting the photo to JPG sidesteps the codec entirely, and JPG opens everywhere."},
+            {"q": "Do I need to install anything?",
+             "a": "No. The converter runs in your browser using WebAssembly. Open the page, drop the files, download the JPGs."},
+            {"q": "Are my photos uploaded to convert them?",
+             "a": "No — decoding happens on your own machine. Nothing is sent to a server, stored or seen by anyone."},
+            {"q": "Will the converted photos lose quality?",
+             "a": "They're decoded at full resolution and re-encoded at high quality; the difference isn't visible. Choose PNG if you want a mathematically lossless export."},
+        ],
+    },
+    {
+        "slug": "convert-iphone-photos-to-jpg",
+        "url_name": "heic_iphone",
+        "nav": "iPhone photos to JPG",
+        "title": "Convert iPhone Photos to JPG — Free, Private, In Your Browser",
+        "description": "Turn iPhone HEIC photos into JPGs that open anywhere — free and in your browser, so your camera roll is never uploaded. Batch convert with ZIP download, no watermark.",
+        "h1": "Convert iPhone photos to JPG",
+        "tagline": "AirDropped or copied photos that nothing can open? Convert the whole batch to JPG on your own device — free, private, no app to install.",
+        "intro": [
+            "Since iOS 11, iPhones shoot in HEIC — half the file size of JPG, but Android phones, Windows PCs, older Macs and most upload forms can't read it. The fix is a one-time convert to JPG, and it doesn't require handing your photos to a website's server.",
+            "This converter decodes HEIC right in the browser and gives you back JPGs (or PNG / WEBP) at full resolution. Drop in one photo or a hundred; download them singly or as a ZIP.",
+        ],
+        "benefits": [
+            {"icon": "fa-mobile-screen", "title": "Made for the iPhone default", "text": "Reads the HEIC/HEIF files iOS produces, including AirDropped and USB-copied ones."},
+            {"icon": "fa-images", "title": "Batch + ZIP", "text": "Convert an entire trip's photos in one drop and grab a single ZIP."},
+            {"icon": "fa-shield-halved", "title": "Nothing uploaded", "text": "Decoding runs on your device — personal photos never leave it."},
+        ],
+        "tools": ["heic", "compress", "resize", "index"],
+        "cta": {"label": "Convert iPhone photos now", "url_name": "heic"},
+        "cta_icon": "fa-mobile-screen",
+        "faqs": [
+            {"q": "How do I stop my iPhone shooting HEIC?",
+             "a": "Settings → Camera → Formats → Most Compatible makes the camera shoot JPG directly. HEIC (High Efficiency) saves space though, so many people keep it and just convert the occasional photo that needs to be a JPG — which is what this tool is for."},
+            {"q": "Can I convert many photos at once?",
+             "a": "Yes — drop in a whole batch and download the results as a ZIP. There's no file limit."},
+            {"q": "Is it really free and private?",
+             "a": "Yes. Free, unlimited, watermark-free — and the conversion runs in your browser, so nothing is uploaded."},
+        ],
+    },
+    {
+        "slug": "extract-text-from-image",
+        "url_name": "ocr_extract",
+        "nav": "Extract text from image",
+        "title": "Extract Text from an Image — Free OCR, Nothing Uploaded",
+        "description": "Copy text out of a photo or screenshot with free on-device OCR — the image is read in your browser and never uploaded. Editable result, copy with one click, five languages.",
+        "h1": "Extract text from any image",
+        "tagline": "Screenshots, photographed documents, whiteboards — on-device OCR turns them into editable text without the image ever leaving your browser.",
+        "intro": [
+            "Retyping text from a screenshot is busywork, but most OCR sites make you upload the image to their servers — and screenshots are exactly the kind of file you don't want uploaded: conversations, invoices, credentials, contracts. This tool runs the OCR engine on your own device instead.",
+            "Drop in the image (or paste a screenshot straight from the clipboard), let the recogniser read it, then fix anything it got wrong in the editable box and copy the result. English, Portuguese, Spanish, French and German are supported.",
+        ],
+        "benefits": [
+            {"icon": "fa-align-left", "title": "Editable result", "text": "The recognised text lands in a text box you can correct before copying — OCR is never 100%, so the last metre matters."},
+            {"icon": "fa-globe", "title": "Five languages", "text": "English, Portuguese, Spanish, French and German packs, downloaded once and cached."},
+            {"icon": "fa-shield-halved", "title": "Screenshots stay private", "text": "The Tesseract engine runs in your browser via WebAssembly — nothing is uploaded."},
+        ],
+        "tools": ["ocr", "redact", "exif", "pdf_to_image"],
+        "cta": {"label": "Extract text now", "url_name": "ocr"},
+        "cta_icon": "fa-align-left",
+        "faqs": [
+            {"q": "How accurate is the text recognition?",
+             "a": "Very good on clean screenshots and printed documents; photos taken at an angle, handwriting and low light reduce accuracy. Sharp, straight-on images with good contrast recognise best — and the result box is editable, so fixes are quick."},
+            {"q": "Is my screenshot uploaded for the OCR?",
+             "a": "No. The engine (Tesseract, compiled to WebAssembly) runs on your device. The image never leaves your browser."},
+            {"q": "What languages can it read?",
+             "a": "English, Portuguese, Spanish, French and German. Pick the language before recognising; the language pack downloads once and is cached for offline use."},
+            {"q": "Can I extract text from a PDF?",
+             "a": "Turn the PDF's pages into images first with the PDF to Images tool, then run each page through the text extractor — both run entirely in your browser."},
+        ],
+    },
+]
+TOOL_LANDINGS_BY_SLUG = {p["slug"]: p for p in TOOL_LANDINGS}
 
 # Compress intent-variants. Same in-browser compressor, but a page per search
 # intent (by format, by target size, by use case) — "different intent, mostly the
@@ -825,7 +923,8 @@ INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
 COMPARISON_PATHS = [f"/{p['slug']}/" for p in COMPARISONS]
-LANDING_PATHS = ["/remove-bg-alternative/"] + PRIVACY_PATHS + COMPRESS_LANDING_PATHS + COMPARISON_PATHS
+TOOL_LANDING_PATHS = [f"/{p['slug']}/" for p in TOOL_LANDINGS]
+LANDING_PATHS = ["/remove-bg-alternative/"] + PRIVACY_PATHS + COMPRESS_LANDING_PATHS + COMPARISON_PATHS + TOOL_LANDING_PATHS
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
     + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
@@ -852,6 +951,10 @@ SITEMAP_PATHS = (
 # aspirational entry cannot ship.
 TRANSLATED_PATHS = frozenset(
     ["/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
+    # The seven 1.10 tool pages ship fully translated: body copy via {% t %},
+    # FAQ accordion + JSON-LD via translations.localize_faqs.
+    + ["/remove-object/", "/photo-filters/", "/upscale/", "/heic-to-jpg/",
+       "/pdf-to-image/", "/image-to-text/", "/svg-to-png/"]
 )
 
 
@@ -932,6 +1035,25 @@ def privacy_page(request, slug):
     ]
     return render(request, "remover/landing.html", {
         "page": {**page, "benefits_title": "Why it stays private", "siblings_title": "More on privacy"},
+        "siblings": siblings,
+        "cta_url": reverse(f"remover:{page['cta']['url_name']}"),
+        "faqs": page["faqs"],
+        "faq_jsonld": faq_jsonld(page["faqs"]),
+    })
+
+
+@require_GET
+def tool_landing(request, slug):
+    """Render a tool intent-variant landing page (HEIC, OCR, …)."""
+    page = TOOL_LANDINGS_BY_SLUG.get(slug)
+    if page is None:
+        raise Http404("Unknown page")
+    siblings = [
+        {"nav": p["nav"], "url": reverse(f"remover:{p['url_name']}")}
+        for p in TOOL_LANDINGS if p["slug"] != slug
+    ]
+    return render(request, "remover/landing.html", {
+        "page": {**page, "benefits_title": "Why use it", "siblings_title": "Related guides"},
         "siblings": siblings,
         "cta_url": reverse(f"remover:{page['cta']['url_name']}"),
         "faqs": page["faqs"],
@@ -1222,8 +1344,8 @@ def collage(request):
 def remove_object(request):
     """Render the client-side object remover (brush + content-aware fill)."""
     return render(request, "remover/remove_object.html", {
-        "faqs": REMOVE_OBJECT_FAQS,
-        "faq_jsonld": faq_jsonld(REMOVE_OBJECT_FAQS),
+        "faqs": localize_faqs(REMOVE_OBJECT_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(REMOVE_OBJECT_FAQS)),
     })
 
 
@@ -1231,8 +1353,8 @@ def remove_object(request):
 def upscale(request):
     """Render the client-side image upscaler (Lanczos resample + sharpen)."""
     return render(request, "remover/upscale.html", {
-        "faqs": UPSCALE_FAQS,
-        "faq_jsonld": faq_jsonld(UPSCALE_FAQS),
+        "faqs": localize_faqs(UPSCALE_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(UPSCALE_FAQS)),
     })
 
 
@@ -1240,8 +1362,8 @@ def upscale(request):
 def heic(request):
     """Render the client-side HEIC → JPG/PNG/WEBP converter."""
     return render(request, "remover/heic.html", {
-        "faqs": HEIC_FAQS,
-        "faq_jsonld": faq_jsonld(HEIC_FAQS),
+        "faqs": localize_faqs(HEIC_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(HEIC_FAQS)),
     })
 
 
@@ -1249,8 +1371,8 @@ def heic(request):
 def pdf_to_image(request):
     """Render the client-side PDF → images extractor."""
     return render(request, "remover/pdf_to_image.html", {
-        "faqs": PDF_TO_IMAGE_FAQS,
-        "faq_jsonld": faq_jsonld(PDF_TO_IMAGE_FAQS),
+        "faqs": localize_faqs(PDF_TO_IMAGE_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(PDF_TO_IMAGE_FAQS)),
     })
 
 
@@ -1258,8 +1380,8 @@ def pdf_to_image(request):
 def ocr(request):
     """Render the client-side OCR (copy text from an image) tool."""
     return render(request, "remover/ocr.html", {
-        "faqs": OCR_FAQS,
-        "faq_jsonld": faq_jsonld(OCR_FAQS),
+        "faqs": localize_faqs(OCR_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(OCR_FAQS)),
     })
 
 
@@ -1267,8 +1389,8 @@ def ocr(request):
 def svg_to_png(request):
     """Render the client-side SVG → PNG rasteriser."""
     return render(request, "remover/svg_to_png.html", {
-        "faqs": SVG_TO_PNG_FAQS,
-        "faq_jsonld": faq_jsonld(SVG_TO_PNG_FAQS),
+        "faqs": localize_faqs(SVG_TO_PNG_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(SVG_TO_PNG_FAQS)),
     })
 
 
@@ -1276,8 +1398,8 @@ def svg_to_png(request):
 def photo_filters(request):
     """Render the client-side photo filters / adjustments editor."""
     return render(request, "remover/photo_filters.html", {
-        "faqs": PHOTO_FILTERS_FAQS,
-        "faq_jsonld": faq_jsonld(PHOTO_FILTERS_FAQS),
+        "faqs": localize_faqs(PHOTO_FILTERS_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(PHOTO_FILTERS_FAQS)),
     })
 
 
@@ -1364,7 +1486,8 @@ STATS_TOOLS = {
     "home", "blur", "ecommerce", "sticker", "passport",
     "instagram", "crop", "convert", "compress", "meme", "favicon",
     "redact", "exif", "resize", "watermark", "gif", "video_gif", "video_converter", "qr", "text_behind", "pdf",
-    "base64", "palette", "border", "collage",
+    "base64", "palette", "border", "collage", "screenshot",
+    "remove_object", "photo_filters", "upscale", "heic", "pdf_to_image", "ocr", "svg_to_png",
 }
 
 

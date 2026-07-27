@@ -65,6 +65,12 @@
     '/qr-code-generator/': 'qr', '/text-behind-image/': 'text_behind',
     '/image-to-pdf/': 'pdf', '/color-palette/': 'palette', '/collage/': 'collage',
     '/add-border/': 'border', '/base64-image/': 'base64',
+    '/video-to-gif/': 'video_gif', '/video-converter/': 'video_converter',
+    '/screenshot-beautifier/': 'screenshot',
+    '/remove-object/': 'remove_object', '/photo-filters/': 'photo_filters',
+    '/upscale/': 'upscale', '/heic-to-jpg/': 'heic',
+    '/pdf-to-image/': 'pdf_to_image', '/image-to-text/': 'ocr',
+    '/svg-to-png/': 'svg_to_png',
   };
   function toolId() {
     const p = location.pathname.replace(/^\/pt(\/|$)/, '/');

@@ -103,6 +103,226 @@ UI = {
     "Copy the text out of any photo or screenshot": "Copie o texto de qualquer foto ou captura",
     "SVG to PNG": "SVG para PNG",
     "Rasterise vector art at any size, pixel-sharp": "Converta vetores em qualquer tamanho, sem perda",
+    # --- New tool pages: shared body copy -------------------------------------
+    "Drop a photo": "Largue uma fotografia",
+    "Drop an image": "Largue uma imagem",
+    "or click to browse — JPG, PNG or WEBP": "ou clique para procurar — JPG, PNG ou WEBP",
+    "Select a photo": "Selecionar uma fotografia",
+    "Select an image": "Selecionar uma imagem",
+    "Select photos": "Selecionar fotografias",
+    "New photo": "Nova fotografia",
+    "New image": "Nova imagem",
+    "Output format": "Formato de saída",
+    "Frequently asked questions": "Perguntas frequentes",
+    # --- Remove Object page ---
+    "Erased locally — nothing is uploaded": "Apagado localmente — nada é carregado",
+    "Remove Objects from Photos — Free, Private & In Your Browser":
+        "Remover Objetos de Fotografias — Grátis, Privado e no Navegador",
+    "Erase unwanted objects, people or blemishes from a photo: brush over them and a content-aware fill blends them away. Free, no watermark, and nothing is uploaded — it all runs in your browser.":
+        "Apague objetos, pessoas ou imperfeições de uma fotografia: pinte por cima e um preenchimento inteligente funde-os com o fundo. Grátis, sem marca de água e sem nada carregado — corre tudo no seu navegador.",
+    "Remove Objects from Photos": "Remova Objetos de Fotografias",
+    "Remove": "Remova",
+    "Objects": "Objetos",
+    "from Photos": "de Fotografias",
+    "Brush over the thing you want gone — a stranger, a sign, a blemish — and a":
+        "Pinte sobre o que quer remover — um estranho, um sinal, uma imperfeição — e um",
+    "content-aware fill": "preenchimento inteligente",
+    "blends it away. Free, private and instant.":
+        "funde-o com o fundo. Grátis, privado e instantâneo.",
+    "Works best on even backgrounds — sky, grass, walls, sand":
+        "Funciona melhor em fundos uniformes — céu, relva, paredes, areia",
+    "Brush over the object, then press": "Pinte sobre o objeto e carregue em",
+    "Repeat in smaller passes for tricky areas.": "Repita em passagens mais pequenas nas zonas difíceis.",
+    "Clear brush": "Limpar pincel",
+    "Erase selection": "Apagar seleção",
+    "Erasing…": "A apagar…",
+    "Erase an object in three steps": "Apague um objeto em três passos",
+    "Any JPG, PNG or WEBP — it's read straight in your browser, never uploaded.":
+        "Qualquer JPG, PNG ou WEBP — é lido diretamente no navegador, nunca carregado.",
+    "Brush the object": "Pinte o objeto",
+    "Paint over the thing you want gone and press Erase — the fill blends the area away.":
+        "Pinte sobre o que quer remover e carregue em Apagar — o preenchimento funde a área com o fundo.",
+    "Export full resolution as PNG or JPG — free and watermark-free.":
+        "Exporte em resolução total como PNG ou JPG — grátis e sem marca de água.",
+    "Object removed": "Objeto removido",
+    "Drag the handle — the stranger is brushed out, on-device":
+        "Arraste o cursor — o estranho é apagado, no seu dispositivo",
+    # --- Upscale page ---
+    "Enlarged locally — nothing is uploaded": "Ampliado localmente — nada é carregado",
+    "Upscale an Image 2× or 4× — Free, Sharp & In Your Browser":
+        "Ampliar uma Imagem 2× ou 4× — Grátis, Nítido e no Navegador",
+    "Enlarge images 2× or 4× with high-quality Lanczos resampling and detail sharpening — free and instant, right in your browser. No upload, no watermark, no sign-up.":
+        "Amplie imagens 2× ou 4× com reamostragem Lanczos de alta qualidade e reforço de detalhe — grátis e instantâneo, no seu navegador. Sem carregamentos, sem marca de água, sem registo.",
+    "Upscale an Image": "Amplie uma Imagem",
+    "2× or 4×": "2× ou 4×",
+    "High-quality": "Reamostragem",
+    "Lanczos resampling": "Lanczos de alta qualidade",
+    "with a gentle sharpening pass — edges stay clean instead of going soft or blocky. Instant, free and 100% private.":
+        "com um reforço subtil de nitidez — os contornos ficam limpos em vez de esborratados. Instantâneo, grátis e 100% privado.",
+    "Great for logos, small photos and web images headed for print":
+        "Ideal para logótipos, fotos pequenas e imagens da web destinadas a impressão",
+    "Scale": "Escala",
+    "Sharpen": "Nitidez",
+    "Upscaling…": "A ampliar…",
+    "Upscale an image in three steps": "Amplie uma imagem em três passos",
+    "Pick 2× or 4×": "Escolha 2× ou 4×",
+    "Lanczos resampling enlarges cleanly, and the sharpen slider brings detail forward.":
+        "A reamostragem Lanczos amplia de forma limpa e o controlo de nitidez realça o detalhe.",
+    "Export as lossless PNG or a high-quality JPG — no watermark, no limits.":
+        "Exporte como PNG sem perdas ou JPG de alta qualidade — sem marca de água, sem limites.",
+    "Plain stretch": "Esticado simples",
+    "Lanczos + sharpen": "Lanczos + nitidez",
+    "The same small image, stretched vs resampled — drag to compare":
+        "A mesma imagem pequena, esticada vs reamostrada — arraste para comparar",
+    # --- HEIC page ---
+    "Converted locally — nothing is uploaded": "Convertido localmente — nada é carregado",
+    "HEIC to JPG Converter — Free, Private & In Your Browser":
+        "Conversor de HEIC para JPG — Grátis, Privado e no Navegador",
+    "Convert iPhone HEIC photos to JPG, PNG or WEBP for free — right in your browser, so your photos are never uploaded. Batch convert and download as a ZIP. No watermark, no sign-up.":
+        "Converta fotos HEIC do iPhone para JPG, PNG ou WEBP gratuitamente — no seu navegador, sem as fotos serem carregadas. Converta em lote e descarregue em ZIP. Sem marca de água, sem registo.",
+    "Convert HEIC to": "Converta HEIC para",
+    "iPhone photos that won't open on Windows, Android or the web? Drop them here and get":
+        "Fotos do iPhone que não abrem no Windows, no Android ou na web? Largue-as aqui e receba",
+    "JPG, PNG or WEBP": "JPG, PNG ou WEBP",
+    "back — free, private and in your browser.":
+        "de volta — grátis, privado e no seu navegador.",
+    "Drop your HEIC photos": "Largue as suas fotos HEIC",
+    "or click to browse — .heic and .heif, single or batch":
+        "ou clique para procurar — .heic e .heif, uma ou em lote",
+    "The decoder loads once (~1 MB) and is cached — photos never leave your device":
+        "O descodificador carrega uma vez (~1 MB) e fica em cache — as fotos nunca saem do seu dispositivo",
+    "Same photo, a format everything opens — converted on your device":
+        "A mesma foto, num formato que tudo abre — convertida no seu dispositivo",
+    "Convert HEIC in three steps": "Converta HEIC em três passos",
+    "Drop your photos": "Largue as suas fotografias",
+    "Straight from an iPhone, AirDrop or a folder — .heic and .heif both work.":
+        "Diretamente do iPhone, por AirDrop ou de uma pasta — .heic e .heif funcionam.",
+    "Pick a format": "Escolha um formato",
+    "JPG opens everywhere; PNG is lossless; WEBP is smallest for the web.":
+        "JPG abre em todo o lado; PNG é sem perdas; WEBP é o mais pequeno para a web.",
+    "Grab photos one by one or all together as a ZIP — full resolution, no watermark.":
+        "Descarregue as fotos uma a uma ou todas juntas em ZIP — resolução total, sem marca de água.",
+    # --- PDF to images page ---
+    "Rendered locally — nothing is uploaded": "Processado localmente — nada é carregado",
+    "PDF to Images — Convert PDF Pages to PNG or JPG, Free":
+        "PDF para Imagens — Converta Páginas de PDF em PNG ou JPG, Grátis",
+    "Turn every page of a PDF into a sharp PNG or JPG image, free and in your browser — the PDF is never uploaded. Download single pages or all pages as a ZIP. No watermark, no limits.":
+        "Transforme cada página de um PDF numa imagem PNG ou JPG nítida, grátis e no seu navegador — o PDF nunca é carregado. Descarregue páginas individuais ou todas em ZIP. Sem marca de água, sem limites.",
+    "PDF to": "PDF para",
+    "Images": "Imagens",
+    "Every page of your PDF as a sharp": "Cada página do seu PDF como um",
+    "PNG or JPG": "PNG ou JPG nítido",
+    "— rendered from the vector source, so text stays crisp. Free, private, no page limits.":
+        "— gerado a partir da fonte vetorial, para o texto ficar nítido. Grátis, privado, sem limite de páginas.",
+    "Drop a PDF": "Largue um PDF",
+    "or click to browse — contracts, scans, slides, forms":
+        "ou clique para procurar — contratos, digitalizações, slides, formulários",
+    "Select a PDF": "Selecionar um PDF",
+    "Your document is parsed on your device — it never leaves the browser":
+        "O documento é lido no seu dispositivo — nunca sai do navegador",
+    "Resolution": "Resolução",
+    "One PDF in, every page out as its own sharp image":
+        "Entra um PDF, sai cada página como uma imagem nítida",
+    "PDF to images in three steps": "PDF para imagens em três passos",
+    "It's parsed right in your browser — private documents stay private.":
+        "É lido diretamente no navegador — documentos privados continuam privados.",
+    "Pick quality": "Escolha a qualidade",
+    "2× is sharp for screens; 4× is print quality. Pages render from the vector source.":
+        "2× é nítido para ecrã; 4× é qualidade de impressão. As páginas são geradas da fonte vetorial.",
+    "Save the pages you need, or every page at once as a ZIP.":
+        "Guarde as páginas de que precisa, ou todas de uma vez em ZIP.",
+    "New PDF": "Novo PDF",
+    # --- OCR page ---
+    "Recognised locally — nothing is uploaded": "Reconhecido localmente — nada é carregado",
+    "Image to Text (OCR) — Copy Text from a Photo, Free & Private":
+        "Imagem para Texto (OCR) — Copie Texto de uma Foto, Grátis e Privado",
+    "Extract and copy text from any photo or screenshot with on-device OCR — free, in your browser, nothing uploaded. Supports English and Portuguese. No watermark, no sign-up, no limits.":
+        "Extraia e copie texto de qualquer foto ou captura de ecrã com OCR no dispositivo — grátis, no navegador, sem nada carregado. Suporta português e inglês. Sem marca de água, sem registo, sem limites.",
+    "Copy Text out of": "Copie o Texto de",
+    "Any Image": "Qualquer Imagem",
+    "Screenshots, photos of documents, whiteboards — the OCR engine reads them":
+        "Capturas de ecrã, fotos de documentos, quadros — o motor de OCR lê-os",
+    "on your device": "no seu dispositivo",
+    "and hands you editable text. Free and private.":
+        "e devolve-lhe texto editável. Grátis e privado.",
+    "Drop an image with text": "Largue uma imagem com texto",
+    "or click to browse, or paste a screenshot — JPG, PNG or WEBP":
+        "ou clique para procurar, ou cole uma captura — JPG, PNG ou WEBP",
+    "The OCR engine loads once and is cached — screenshots never leave your device":
+        "O motor de OCR carrega uma vez e fica em cache — as capturas nunca saem do seu dispositivo",
+    "A photo of text in, editable text out — recognised on your device":
+        "Entra uma foto com texto, sai texto editável — reconhecido no seu dispositivo",
+    "Read again": "Ler novamente",
+    "Recognised text": "Texto reconhecido",
+    "Copy text": "Copiar texto",
+    "Save .txt": "Guardar .txt",
+    "Image to text in three steps": "Imagem para texto em três passos",
+    "A screenshot, a photo of a page, a whiteboard — paste works too.":
+        "Uma captura de ecrã, a foto de uma página, um quadro — colar também funciona.",
+    "On-device OCR reads it": "O OCR lê no dispositivo",
+    "The Tesseract engine runs in your browser via WebAssembly — nothing is uploaded.":
+        "O motor Tesseract corre no navegador via WebAssembly — nada é carregado.",
+    "Copy or save": "Copie ou guarde",
+    "Fix anything in the editable box, then copy it or save it as a .txt file.":
+        "Corrija o que precisar na caixa editável e depois copie ou guarde como ficheiro .txt.",
+    # --- SVG page ---
+    "Rasterised locally — nothing is uploaded": "Convertido localmente — nada é carregado",
+    "SVG to PNG Converter — Pixel-Sharp at Any Size, Free":
+        "Conversor de SVG para PNG — Nítido em Qualquer Tamanho, Grátis",
+    "Convert SVG to PNG at 1×, 2×, 4× or any exact width — rendered from the vector so edges stay pixel-sharp. Free, in your browser, transparent background kept, nothing uploaded.":
+        "Converta SVG para PNG a 1×, 2×, 4× ou numa largura exata — gerado do vetor para os contornos ficarem nítidos. Grátis, no navegador, com transparência mantida e sem nada carregado.",
+    "SVG to": "SVG para",
+    "Rendered from the": "Gerado a partir da",
+    "vector source": "fonte vetorial",
+    "at the exact size you pick — so a 4× export has 4× the real detail, not stretched pixels. Transparency preserved.":
+        "no tamanho exato que escolher — uma exportação a 4× tem 4× o detalhe real, não píxeis esticados. Transparência preservada.",
+    "Drop an SVG": "Largue um SVG",
+    "or click to browse — logos, icons, illustrations":
+        "ou clique para procurar — logótipos, ícones, ilustrações",
+    "Select an SVG": "Selecionar um SVG",
+    "Or an exact width (px)": "Ou uma largura exata (px)",
+    "New SVG": "Novo SVG",
+    "Stretched bitmap": "Bitmap esticado",
+    "Rendered from vector": "Gerado do vetor",
+    "The same logo at 4× — a stretched export vs a vector render":
+        "O mesmo logótipo a 4× — exportação esticada vs geração vetorial",
+    "SVG to PNG in three steps": "SVG para PNG em três passos",
+    "It's read and rendered right in your browser — never uploaded.":
+        "É lido e processado diretamente no navegador — nunca carregado.",
+    "Pick a size": "Escolha um tamanho",
+    "1×, 2×, 4× or an exact pixel width — the vector renders sharp at any of them.":
+        "1×, 2×, 4× ou uma largura exata em píxeis — o vetor fica nítido em qualquer uma.",
+    "PNG keeps transparency; JPG fills white. Free and watermark-free.":
+        "PNG mantém a transparência; JPG preenche a branco. Grátis e sem marca de água.",
+    # --- Photo filters page ---
+    "Edited locally — nothing is uploaded": "Editado localmente — nada é carregado",
+    "Photo Filters & Adjustments — Free Online Editor, No Upload":
+        "Filtros e Ajustes de Fotografia — Editor Online Grátis, Sem Carregamentos",
+    "Apply one-tap looks and fine-tune brightness, contrast, saturation, warmth, vignette and grain — free, in your browser, full-resolution export with no watermark and nothing uploaded.":
+        "Aplique estilos de um toque e afine brilho, contraste, saturação, calor, vinheta e grão — grátis, no navegador, com exportação em resolução total, sem marca de água e sem nada carregado.",
+    "Photo Filters &": "Filtros e",
+    "Adjustments": "Ajustes",
+    "Ten one-tap": "Dez",
+    "looks": "estilos de um toque",
+    "plus real sliders — brightness, contrast, saturation, warmth, vignette, grain. Full-resolution export, free and private.":
+        "e controlos reais — brilho, contraste, saturação, calor, vinheta, grão. Exportação em resolução total, grátis e privada.",
+    "Looks": "Estilos",
+    "Brightness": "Brilho",
+    "Contrast": "Contraste",
+    "Saturation": "Saturação",
+    "Warmth": "Calor",
+    "Vignette": "Vinheta",
+    "Grain": "Grão",
+    "Hold to compare": "Segure para comparar",
+    "Golden look": "Estilo dourado",
+    "One tap, then fine-tune with the sliders — drag to compare":
+        "Um toque e afine com os controlos — arraste para comparar",
+    "Edit a photo in three steps": "Edite uma fotografia em três passos",
+    "Tap a look, then fine-tune": "Toque num estilo e afine",
+    "A look sets the starting point; every slider stays yours. Hold Compare to check.":
+        "O estilo define o ponto de partida; os controlos continuam seus. Segure Comparar para verificar.",
+    "Your exact settings re-applied at full resolution — JPG, PNG or WEBP.":
+        "As suas definições exatas reaplicadas em resolução total — JPG, PNG ou WEBP.",
     # Footer
     "Background Remover": "Removedor de Fundo",
     "Image Converter": "Conversor de Imagens",
@@ -121,6 +341,8 @@ UI = {
     "Favicon Generator": "Gerador de Favicon",
     "QR Code Generator": "Gerador de Código QR",
     "EXIF Remover": "Removedor de EXIF",
+    "Photo Filters": "Filtros de Fotografia",
+    "Image Upscaler": "Ampliador de Imagens",
     "Coming from another tool?": "Vem de outra ferramenta?",
     "See how we compare to remove.bg": "Veja como nos comparamos ao remove.bg",
     "images processed": "imagens processadas",
@@ -440,6 +662,9 @@ JS_UI = {
     # --- SVG to PNG ---
     "That is not an SVG file": "Isso não é um ficheiro SVG",
     "Could not render that SVG": "Não foi possível processar esse SVG",
+    # --- Filters / upscale batch ---
+    "Exported {n} photo": "{n} fotografia exportada",
+    "Exported {n} photos": "{n} fotografias exportadas",
     # --- Video frame grab ---
     "Could not capture that frame": "Não foi possível capturar esse fotograma",
     "Frame captured — pick a tool below to edit it":
@@ -649,3 +874,138 @@ def localize_use_case(case, lang=None):
         return case
     tr = USE_CASES_PT.get(case["slug"])
     return {**case, **tr} if tr else case
+
+
+# --- FAQ translations for the translated tool pages ---------------------------
+# Keyed by the English question (the seo_content source of truth); each value is
+# the (question, answer) pair in Portuguese. localize_faqs() swaps them in on
+# /pt/ pages — for both the visible accordion and the FAQPage JSON-LD, which
+# render from the same list.
+FAQS_PT = {
+    # Remove object
+    "How do I remove an object from a photo?":
+        ("Como removo um objeto de uma fotografia?",
+         "Largue uma fotografia, pinte sobre o objeto que quer remover e carregue em Apagar. A ferramenta preenche a área pintada a partir dos píxeis à volta — tudo no seu navegador, em segundos."),
+    "Does it use AI? How good is the result?":
+        ("Usa IA? Qual é a qualidade do resultado?",
+         "Usa um preenchimento inteligente e rápido que funde as cores e a textura envolventes na área apagada. Brilha em céus, paredes, relva, areia e outros fundos uniformes; fundos muito detalhados podem pedir uma segunda passagem mais pequena."),
+    "Is my photo uploaded anywhere?":
+        ("A minha fotografia é carregada para algum lado?",
+         "Não. Todo o preenchimento corre no seu dispositivo — a fotografia nunca sai do navegador, que é exatamente o que quer ao editar imagens pessoais."),
+    "Can I remove people from photos?":
+        ("Posso remover pessoas das fotografias?",
+         "Sim — pinte sobre a pessoa e apague. Os resultados são melhores quando a pessoa está sobre um fundo relativamente uniforme, como céu, mar, relva ou uma parede."),
+    "Is it free, and is there a watermark?":
+        ("É grátis? Tem marca de água?",
+         "Completamente grátis e ilimitado, sem marca de água e sem registo — como todas as ferramentas ClearBG."),
+    # Upscale
+    "How does the upscaler enlarge my image?":
+        ("Como é que o ampliador aumenta a minha imagem?",
+         "Reamostra a imagem a 2× ou 4× com um filtro Lanczos de alta qualidade e aplica depois um reforço subtil de nitidez — a mesma abordagem do software profissional de fotografia. Corre instantaneamente no navegador."),
+    "Is this AI super-resolution?":
+        ("Isto é super-resolução por IA?",
+         "Não — e é deliberado. Os modelos de ampliação por IA no navegador são lentos e podem bloquear o separador em fotos grandes. Esta ferramenta troca um pouco dessa magia por resultados instantâneos e fiáveis em qualquer tamanho, sem nada carregado."),
+    "What sizes can I upscale to?":
+        ("Até que tamanhos posso ampliar?",
+         "O dobro ou o quádruplo do original, até um limite de segurança de 8000 píxeis no lado maior, para o navegador nunca ficar sem memória. As exportações são PNG (sem perdas) ou JPG."),
+    "Will an upscaled photo look better than the original?":
+        ("Uma foto ampliada fica melhor do que o original?",
+         "Ampliar não inventa detalhe que nunca foi captado, mas uma ampliação bem reamostrada e levemente nítida fica muito melhor do que um simples esticar — os contornos mantêm-se limpos em vez de ficarem esborratados."),
+    "Is it private and free?":
+        ("É privado e grátis?",
+         "Sim. A reamostragem corre inteiramente no seu dispositivo — nada é carregado — e é grátis, ilimitada e sem marca de água."),
+    # HEIC
+    "Why can't I open my iPhone's HEIC photos?":
+        ("Porque não consigo abrir as fotos HEIC do meu iPhone?",
+         "Os iPhones guardam fotos em HEIC por predefinição. Reduz os ficheiros para metade, mas o Windows, o Android e a maioria dos sites não o abrem — por isso a foto funciona no telemóvel e em mais lado nenhum. Converter para JPG resolve isso de imediato."),
+    "How do I convert HEIC to JPG for free?":
+        ("Como converto HEIC para JPG gratuitamente?",
+         "Largue aqui os seus ficheiros .heic e descarregue-os como JPG (ou PNG / WEBP). A conversão acontece no navegador — sem software para instalar, sem carregamentos, sem marca de água, sem limites."),
+    "Are my photos uploaded to a server?":
+        ("As minhas fotos são carregadas para um servidor?",
+         "Não. O descodificador HEIC corre no seu dispositivo, por isso as fotos nunca saem do navegador. E isso importa — fotos pessoais não deviam passar pelo servidor de terceiros só para mudar de formato."),
+    "Does converting HEIC lose quality?":
+        ("Converter HEIC perde qualidade?",
+         "A foto é descodificada em resolução total e recodificada em alta qualidade. O JPG tem perdas por natureza, mas neste nível a diferença não é visível; escolha PNG para uma exportação sem perdas."),
+    "Can I convert many HEIC photos at once?":
+        ("Posso converter muitas fotos HEIC de uma vez?",
+         "Sim — largue um lote inteiro e descarregue-as individualmente ou todas juntas em ZIP."),
+    # PDF to images
+    "How do I turn a PDF into images?":
+        ("Como transformo um PDF em imagens?",
+         "Largue aqui um PDF e cada página é gerada como imagem de alta resolução no seu navegador. Descarregue páginas individuais em PNG ou JPG, ou todas de uma vez em ZIP."),
+    "Is my PDF uploaded anywhere?":
+        ("O meu PDF é carregado para algum lado?",
+         "Não. O PDF é lido e processado inteiramente no seu dispositivo — importante, porque os PDFs são muitas vezes contratos, documentos, extratos e outros ficheiros privados."),
+    "What resolution are the exported images?":
+        ("Qual é a resolução das imagens exportadas?",
+         "As páginas são geradas ao dobro do tamanho nominal (cerca de 150 DPI) por predefinição, e pode aumentar para qualidade de impressão. O texto fica nítido porque a página é gerada da fonte vetorial, não esticada de uma pré-visualização."),
+    "Can I extract just one page?":
+        ("Posso extrair só uma página?",
+         "Sim — cada página tem o seu próprio botão de descarregar, por isso pode guardar exatamente as páginas de que precisa, ou todas em ZIP."),
+    # Shared by the PDF-to-images and photo-filters pages, so the answer stays
+    # generic enough to be true on both.
+    "Is it free, with no watermark?":
+        ("É grátis, sem marca de água?",
+         "Completamente grátis, ilimitado e sem marca de água — sem registo, sem limites e sem versão de teste."),
+    # OCR
+    "How do I copy text out of an image?":
+        ("Como copio o texto de uma imagem?",
+         "Largue uma foto ou captura de ecrã e o reconhecedor de texto lê-a no seu navegador. O texto reconhecido aparece numa caixa editável — copie-o todo com um clique."),
+    "Is my image uploaded for the text recognition?":
+        ("A imagem é carregada para o reconhecimento de texto?",
+         "Não. O motor de OCR (Tesseract, o mesmo motor open-source de muitos digitalizadores) corre no seu dispositivo via WebAssembly. As capturas de ecrã contêm muitas vezes conversas e documentos privados — aqui nunca saem do navegador."),
+    "Which languages does it recognise?":
+        ("Que idiomas reconhece?",
+         "Português e inglês estão incluídos, entre outros, e o motor descarrega o pacote do idioma escolhido na primeira utilização — depois fica em cache e funciona offline."),
+    "How accurate is it?":
+        ("Qual é a precisão?",
+         "Muito boa em capturas de ecrã limpas e documentos impressos; fotos difíceis (ângulos, manuscrito, pouca luz) reduzem a precisão. Imagens nítidas, de frente e com bom contraste reconhecem melhor."),
+    "Is it free and unlimited?":
+        ("É grátis e ilimitado?",
+         "Sim — grátis, ilimitado, sem marca de água, sem registo. Reconheça as imagens que quiser."),
+    # SVG to PNG
+    "How do I convert an SVG to PNG?":
+        ("Como converto um SVG para PNG?",
+         "Largue aqui um ficheiro .svg, escolha um tamanho (1×, 2×, 4× ou uma largura exata em píxeis) e descarregue um PNG nítido. O navegador converte o vetor diretamente, por isso os contornos ficam perfeitos em qualquer escala."),
+    "Why does my SVG export blurry from other tools?":
+        ("Porque é que o meu SVG sai desfocado noutras ferramentas?",
+         "Porque convertem no tamanho nominal do SVG e depois esticam o bitmap. Esta ferramenta gera o vetor no tamanho exato que escolher, por isso uma exportação a 4× tem 4× o detalhe real."),
+    "Does it keep transparency?":
+        ("Mantém a transparência?",
+         "Sim — as exportações PNG mantêm o fundo totalmente transparente por predefinição, ou pode preenchê-lo com qualquer cor. A exportação JPG preenche a branco automaticamente."),
+    "Is my SVG uploaded?":
+        ("O meu SVG é carregado?",
+         "Não. O ficheiro é lido e processado inteiramente no seu navegador — nada é enviado para um servidor."),
+    "What about fonts and embedded images inside the SVG?":
+        ("E as fontes e imagens incorporadas no SVG?",
+         "SVGs que incorporam as suas imagens e usam fontes de sistema comuns são gerados exatamente. Um SVG que referencia ficheiros externos ou webfonts pode ser gerado com fontes de substituição, porque o navegador o processa isoladamente."),
+    # Photo filters
+    "What can I adjust in this photo editor?":
+        ("O que posso ajustar neste editor de fotografia?",
+         "Estilos de um toque (vivo, quente, dramático, película, preto e branco e mais) e controlos manuais de brilho, contraste, saturação, calor, vinheta e grão. Segure o botão Comparar a qualquer momento para verificar contra o original."),
+    "Are the filters applied to the full-quality photo?":
+        ("Os filtros são aplicados à foto em qualidade total?",
+         "Sim. A pré-visualização é reduzida por velocidade, mas a exportação reaplica as suas definições exatas ao original em resolução total — sem perda de qualidade além do formato escolhido."),
+    "Is my photo uploaded to apply filters?":
+        ("A minha foto é carregada para aplicar os filtros?",
+         "Não. Cada ajuste é desenhado num canvas no seu dispositivo — a foto nunca sai do navegador."),
+    "Can I fine-tune a preset look?":
+        ("Posso afinar um estilo predefinido?",
+         "Sim — toque num estilo e ajuste qualquer controlo por cima. O estilo define um ponto de partida; os controlos continuam sempre seus."),
+}
+
+
+def localize_faqs(faqs, lang=None):
+    """Return `faqs` with Portuguese Q&A swapped in on /pt/ pages.
+
+    Keys are the English question text; a question without a translation stays
+    English (graceful degradation, like everything else in this module).
+    """
+    if not _is_pt(lang):
+        return faqs
+    out = []
+    for f in faqs:
+        tr = FAQS_PT.get(f["q"])
+        out.append({"q": tr[0], "a": tr[1]} if tr else f)
+    return out

@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static i18n_extras %}
 
-{% block title %}HEIC to JPG Converter — Free, Private &amp; In Your Browser{% endblock %}
-{% block description %}Convert iPhone HEIC photos to JPG, PNG or WEBP for free — right in your browser, so your photos are never uploaded. Batch convert and download as a ZIP. No watermark, no sign-up.{% endblock %}
+{% block title %}{% t "HEIC to JPG Converter — Free, Private & In Your Browser" %}{% endblock %}
+{% block description %}{% t "Convert iPhone HEIC photos to JPG, PNG or WEBP for free — right in your browser, so your photos are never uploaded. Batch convert and download as a ZIP. No watermark, no sign-up." %}{% endblock %}
 {% block og_title %}HEIC to JPG — Free Private Converter{% endblock %}
 
 {% block extra_seo %}
@@ -26,19 +26,19 @@
     <section id="hc-hero" class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-brands fa-apple" aria-hidden="true"></i> Converted locally — nothing is uploaded
+                <i class="fa-brands fa-apple" aria-hidden="true"></i> {% t "Converted locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Convert HEIC to
+                {% t "Convert HEIC to" %}
                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">JPG</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                iPhone photos that won't open on Windows, Android or the web? Drop them here and get
-                <strong>JPG, PNG or WEBP</strong> back — free, private and in your browser.
+                {% t "iPhone photos that won't open on Windows, Android or the web? Drop them here and get" %}
+                <strong>{% t "JPG, PNG or WEBP" %}</strong> {% t "back — free, private and in your browser." %}
             </p>
         </div>
 
-        <div class="max-w-2xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
             <div id="hc-dropzone" role="button" tabindex="0" aria-label="Upload HEIC photos. Drag and drop or click to browse."
                  class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <input type="file" id="hc-input" class="sr-only" accept=".heic,.heif,image/heic,image/heif" multiple>
@@ -46,14 +46,22 @@
                     <div id="hc-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                         <i class="fa-brands fa-apple" aria-hidden="true"></i>
                     </div>
-                    <h2 class="text-2xl font-semibold">Drop your HEIC photos</h2>
-                    <p class="text-gray-500 dark:text-gray-400">or click to browse — .heic and .heif, single or batch</p>
+                    <h2 class="text-2xl font-semibold">{% t "Drop your HEIC photos" %}</h2>
+                    <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — .heic and .heif, single or batch" %}</p>
                     <button id="hc-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select photos
+                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select photos" %}
                     </button>
-                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">The decoder loads once (~1 MB) and is cached — photos never leave your device</p>
+                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">{% t "The decoder loads once (~1 MB) and is cached — photos never leave your device" %}</p>
                 </div>
             </div>
+            <figure class="flex flex-col gap-3 w-full">
+                <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70">
+                    <img src="{% static 'img/demo-heic.webp' %}" width="820" height="616" alt="An iPhone photo with two file chips: IMG_0412.heic marked as won't open, converted to IMG_0412.jpg marked as opens everywhere" class="absolute inset-0 w-full h-full object-cover">
+                </div>
+                <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+                    <i class="fa-solid fa-circle-check text-green-500 mr-1" aria-hidden="true"></i>{% t "Same photo, a format everything opens — converted on your device" %}
+                </figcaption>
+            </figure>
         </div>
     </section>
 
@@ -61,7 +69,7 @@
     <section id="hc-controls" class="hidden max-w-5xl mx-auto glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-4">
         <div class="flex flex-wrap items-center gap-5">
             <div class="space-y-2">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Output format</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Output format" %}</span>
                 <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
                     <button type="button" data-fmt="image/jpeg" data-ext="jpg" class="hc-fmt px-4 py-2 bg-primary text-white">JPG</button>
                     <button type="button" data-fmt="image/png" data-ext="png" class="hc-fmt px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">PNG</button>
@@ -70,13 +78,13 @@
             </div>
             <div class="flex flex-wrap items-center gap-2 ml-auto">
                 <button id="hc-zip" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>Download all (ZIP)
+                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>{% t "Download all (ZIP)" %}
                 </button>
                 <button id="hc-add" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>Add more
+                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>{% t "Add more" %}
                 </button>
                 <button id="hc-clear" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>Clear
+                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>{% t "Clear" %}
                 </button>
             </div>
         </div>
@@ -86,11 +94,11 @@
 
     <!-- SEO / help -->
     <section aria-labelledby="hc-how" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="hc-how" class="text-2xl font-bold text-center">Convert HEIC in three steps</h2>
+        <h2 id="hc-how" class="text-2xl font-bold text-center">{% t "Convert HEIC in three steps" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop your photos</div><p class="text-sm text-gray-500 dark:text-gray-400">Straight from an iPhone, AirDrop or a folder — .heic and .heif both work.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Pick a format</div><p class="text-sm text-gray-500 dark:text-gray-400">JPG opens everywhere; PNG is lossless; WEBP is smallest for the web.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Grab photos one by one or all together as a ZIP — full resolution, no watermark.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>{% t "Drop your photos" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Straight from an iPhone, AirDrop or a folder — .heic and .heif both work." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>{% t "Pick a format" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "JPG opens everywhere; PNG is lossless; WEBP is smallest for the web." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>{% t "Download" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Grab photos one by one or all together as a ZIP — full resolution, no watermark." %}</p></div>
         </div>
     </section>
 

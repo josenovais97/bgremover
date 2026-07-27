@@ -7,6 +7,42 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **The seven new tools are fully translated and each has a demo.** The 1.10
+  tools shipped English-only with a bare dropzone; they now carry a before/after
+  (or file-flow) demo pane like every older tool, run their body copy through
+  `{% t %}`, and localise their FAQ accordion **and** its `FAQPage` JSON-LD from
+  one source (`translations.localize_faqs`). All seven are added to
+  `TRANSLATED_PATHS`, so `/pt/` advertises them to Google and the sitemap lists
+  them twice — `TranslationCoverageTests` verifies the Portuguese body really
+  renders. Site count: 33 tools, 74 English + 19 Portuguese sitemap URLs.
+- **Three intent-variant landing pages** targeting the searches the new tools
+  answer, funnelling to the tool that does the job (`TOOL_LANDINGS`, same
+  data-driven machinery as the privacy/compress landings): `/open-heic-on-windows/`,
+  `/convert-iphone-photos-to-jpg/` → the HEIC converter, and
+  `/extract-text-from-image/` → the OCR tool.
+- **Batch for Photo Filters and Upscale.** The first file is tuned on screen and
+  the rest are exported with the same look / scale as a ZIP — the shared
+  batch-bar pattern the resize/watermark/EXIF tools already use.
+- **The video tools' "grab this frame" now feeds the stats counter**, and every
+  new tool reports a processed/downloaded event, so all 33 appear in the
+  per-tool breakdown. `STATS_TOOLS` and `stats.js`'s path map were nine tools
+  behind — the same drift the 1.8.0 fix warned about.
+- **The homepage tool grid is grouped** under the four category headers the
+  mega-menu uses (Remove & Edit / Convert & Optimize / Create & Share / Photos).
+  A flat wall of 32 cards had stopped being scannable.
+
+### Changed
+- **The object remover's fill runs off the main thread.** The diffusion
+  (onion-peel + Jacobi) moved into `remove-object-worker.js`, so a big brush
+  area on a slow device can't jank the page; a byte-identical inline fallback
+  covers browsers without Workers.
+- **OCR language packs load from jsDelivr** instead of tesseract.js's default
+  host, so they land in the service worker's long-lived cache and OCR keeps
+  working offline after the first use.
+- The footer Tools list gained the seven new tools (it was hand-maintained and
+  had drifted behind the toolkit).
+
+### Added — the seven tools themselves (from the prior release notes below)
 - **Seven new tools** (26 → 33), all 100% client-side and wired into the nav,
   grid, palette, sitemap, PWA shell and chaining automatically by existing:
   - **Remove Object** (`/remove-object/`) — brush over anything and a

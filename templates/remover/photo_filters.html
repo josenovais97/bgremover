@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static i18n_extras %}
 
-{% block title %}Photo Filters &amp; Adjustments — Free Online Editor, No Upload{% endblock %}
-{% block description %}Apply one-tap looks and fine-tune brightness, contrast, saturation, warmth, vignette and grain — free, in your browser, full-resolution export with no watermark and nothing uploaded.{% endblock %}
+{% block title %}{% t "Photo Filters & Adjustments — Free Online Editor, No Upload" %}{% endblock %}
+{% block description %}{% t "Apply one-tap looks and fine-tune brightness, contrast, saturation, warmth, vignette and grain — free, in your browser, full-resolution export with no watermark and nothing uploaded." %}{% endblock %}
 {% block og_title %}Photo Filters — Free Private Editor{% endblock %}
 
 {% block extra_seo %}
@@ -26,33 +26,33 @@
     <section id="pf-hero" class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-solid fa-sliders" aria-hidden="true"></i> Edited locally — nothing is uploaded
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i> {% t "Edited locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Photo Filters &amp;
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Adjustments</span>
+                {% t "Photo Filters &" %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Adjustments" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                Ten one-tap <strong>looks</strong> plus real sliders — brightness, contrast, saturation, warmth,
-                vignette, grain. Full-resolution export, free and private.
+                {% t "Ten one-tap" %} <strong>{% t "looks" %}</strong> {% t "plus real sliders — brightness, contrast, saturation, warmth, vignette, grain. Full-resolution export, free and private." %}
             </p>
         </div>
 
-        <div class="max-w-2xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
             <div id="pf-dropzone" role="button" tabindex="0" aria-label="Upload a photo to edit. Drag and drop, click to browse, or paste."
                  class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <input type="file" id="pf-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp">
+                <input type="file" id="pf-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp" multiple>
                 <div class="flex flex-col items-center justify-center space-y-4 text-center">
                     <div id="pf-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                         <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                     </div>
-                    <h2 class="text-2xl font-semibold">Drop a photo</h2>
-                    <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                    <h2 class="text-2xl font-semibold">{% t "Drop a photo" %}</h2>
+                    <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — JPG, PNG or WEBP" %}</p>
                     <button id="pf-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select a photo" %}
                     </button>
                 </div>
             </div>
+            {% include 'remover/partials/demo.html' with before='img/demo-filters-before.webp' after='img/demo-filters-after.webp' before_label='Original' after_label='Golden look' caption='One tap, then fine-tune with the sliders — drag to compare' initial=40 %}
         </div>
     </section>
 
@@ -65,48 +65,48 @@
 
         <div class="space-y-4">
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Looks</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Looks" %}</span>
                 <div id="pf-looks" class="grid grid-cols-5 gap-1.5 text-[11px] font-medium"></div>
             </div>
 
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
                 <div class="space-y-1.5">
-                    <label for="pf-bright" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>Brightness</span><span data-val="bright" class="text-primaryText">100</span></label>
+                    <label for="pf-bright" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>{% t "Brightness" %}</span><span data-val="bright" class="text-primaryText">100</span></label>
                     <input id="pf-bright" data-k="bright" type="range" min="50" max="150" value="100" class="pf-slider w-full accent-primary">
                 </div>
                 <div class="space-y-1.5">
-                    <label for="pf-contrast" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>Contrast</span><span data-val="contrast" class="text-primaryText">100</span></label>
+                    <label for="pf-contrast" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>{% t "Contrast" %}</span><span data-val="contrast" class="text-primaryText">100</span></label>
                     <input id="pf-contrast" data-k="contrast" type="range" min="50" max="150" value="100" class="pf-slider w-full accent-primary">
                 </div>
                 <div class="space-y-1.5">
-                    <label for="pf-sat" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>Saturation</span><span data-val="sat" class="text-primaryText">100</span></label>
+                    <label for="pf-sat" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>{% t "Saturation" %}</span><span data-val="sat" class="text-primaryText">100</span></label>
                     <input id="pf-sat" data-k="sat" type="range" min="0" max="200" value="100" class="pf-slider w-full accent-primary">
                 </div>
                 <div class="space-y-1.5">
-                    <label for="pf-warmth" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>Warmth</span><span data-val="warmth" class="text-primaryText">0</span></label>
+                    <label for="pf-warmth" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>{% t "Warmth" %}</span><span data-val="warmth" class="text-primaryText">0</span></label>
                     <input id="pf-warmth" data-k="warmth" type="range" min="-50" max="50" value="0" class="pf-slider w-full accent-primary">
                 </div>
                 <div class="space-y-1.5">
-                    <label for="pf-vignette" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>Vignette</span><span data-val="vignette" class="text-primaryText">0</span></label>
+                    <label for="pf-vignette" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>{% t "Vignette" %}</span><span data-val="vignette" class="text-primaryText">0</span></label>
                     <input id="pf-vignette" data-k="vignette" type="range" min="0" max="100" value="0" class="pf-slider w-full accent-primary">
                 </div>
                 <div class="space-y-1.5">
-                    <label for="pf-grain" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>Grain</span><span data-val="grain" class="text-primaryText">0</span></label>
+                    <label for="pf-grain" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"><span>{% t "Grain" %}</span><span data-val="grain" class="text-primaryText">0</span></label>
                     <input id="pf-grain" data-k="grain" type="range" min="0" max="100" value="0" class="pf-slider w-full accent-primary">
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
                 <button id="pf-compare" type="button" class="px-3 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition select-none">
-                    <i class="fa-solid fa-eye mr-1.5" aria-hidden="true"></i>Hold to compare
+                    <i class="fa-solid fa-eye mr-1.5" aria-hidden="true"></i>{% t "Hold to compare" %}
                 </button>
                 <button id="pf-reset" type="button" class="px-3 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>Reset
+                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "Reset" %}
                 </button>
             </div>
 
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
-                <span class="text-gray-500 dark:text-gray-400">Format</span>
+                <span class="text-gray-500 dark:text-gray-400">{% t "Format" %}</span>
                 <div class="grid grid-cols-3 gap-1.5 text-sm font-medium">
                     <button type="button" class="pf-fmt px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-primary text-white" data-fmt="jpg">JPG</button>
                     <button type="button" class="pf-fmt px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700" data-fmt="png">PNG</button>
@@ -115,21 +115,22 @@
             </div>
 
             <button id="pf-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download
+                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>{% t "Download" %}
             </button>
+            {% include 'remover/partials/batch_bar.html' with note='The other photos get exactly this look and these slider settings.' %}
             <button id="pf-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New photo
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "New photo" %}
             </button>
         </div>
     </section>
 
     <!-- SEO / help -->
     <section aria-labelledby="pf-how" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="pf-how" class="text-2xl font-bold text-center">Edit a photo in three steps</h2>
+        <h2 id="pf-how" class="text-2xl font-bold text-center">{% t "Edit a photo in three steps" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">Any JPG, PNG or WEBP — read straight in your browser, never uploaded.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Tap a look, then fine-tune</div><p class="text-sm text-gray-500 dark:text-gray-400">A look sets the starting point; every slider stays yours. Hold Compare to check.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Your exact settings re-applied at full resolution — JPG, PNG or WEBP.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>{% t "Drop a photo" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Any JPG, PNG or WEBP — it's read straight in your browser, never uploaded." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>{% t "Tap a look, then fine-tune" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "A look sets the starting point; every slider stays yours. Hold Compare to check." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>{% t "Download" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Your exact settings re-applied at full resolution — JPG, PNG or WEBP." %}</p></div>
         </div>
     </section>
 

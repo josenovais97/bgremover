@@ -532,7 +532,7 @@ class EveryToolTests(SimpleTestCase):
 class BatchToolTests(SimpleTestCase):
     """Tools whose settings are image-independent accept a batch."""
 
-    BATCH_TOOLS = ["resize", "watermark", "exif", "pdf"]
+    BATCH_TOOLS = ["resize", "watermark", "exif", "pdf", "photo_filters", "upscale"]
 
     def test_file_inputs_accept_multiple(self):
         for name in self.BATCH_TOOLS:
@@ -542,7 +542,7 @@ class BatchToolTests(SimpleTestCase):
 
     def test_batch_bar_present(self):
         # pdf has its own page list rather than the shared bar.
-        for name in ["resize", "watermark", "exif"]:
+        for name in ["resize", "watermark", "exif", "photo_filters", "upscale"]:
             with self.subTest(tool=name):
                 response = self.client.get(reverse(f"remover:{name}"))
                 self.assertContains(response, "data-batch-zip")

@@ -58,10 +58,11 @@ The AI upscaler was removed in an earlier release (client-side super-resolution 
 tab) and its URL 301'd to home; `/upscale/` is now back as the safe Lanczos resampler
 above, reclaiming the indexed URL.
 
-**Batch** is supported by the remover, convert, compress, eCommerce, GIF and PDF
-tools, plus resize, watermark and EXIF — for those three the first file is the one
-you tune on screen and the rest are exported with the same settings as a ZIP
-(queued images keep their own aspect ratio).
+**Batch** is supported by the remover, convert, compress, eCommerce, GIF, PDF and
+HEIC tools, plus resize, watermark, EXIF, photo-filters and upscale — for the
+"tune one, apply to all" set the first file is the one you tune on screen and the
+rest are exported with the same settings as a ZIP (queued images keep their own
+aspect ratio).
 
 ### Cross-tool features
 
@@ -353,7 +354,7 @@ DJANGO_SETTINGS_MODULE=config.settings.production \
 ## 🔎 SEO & content architecture
 
 Everything is generated from data in `remover/views.py`, so adding a page is a data edit
-that automatically extends the nav, the internal links and the sitemap (**74 paths; the 12
+that automatically extends the nav, the internal links and the sitemap (**77 paths; the 19
 with a real Portuguese translation are listed in both languages**).
 
 | Set | Route | Source |
@@ -361,6 +362,7 @@ with a real Portuguese translation are listed in both languages**).
 | Use-case landings (11) | `/remove-background/<slug>/` | `USE_CASES` |
 | Passport sizes by country (22) | `/passport-photo/<country>/` | `passport_data.COUNTRIES` |
 | Privacy-angle landings (3) | `/private-image-tools/`, `/remove-background-without-uploading/`, `/offline-image-editor/` | `PRIVACY_PAGES` |
+| Tool intent landings (3) | `/open-heic-on-windows/`, `/convert-iphone-photos-to-jpg/`, `/extract-text-from-image/` | `TOOL_LANDINGS` (each `cta.url_name` funnels to its tool) |
 | Compress intent variants (10) | `/compress-png/`, `/compress-image-under-500kb/`, `/compress-video/`, … | `COMPRESS_PAGES` (`/compress-video/` carries `cta_url_name` and funnels to the video converter) |
 | Competitor comparisons (4 + 1) | `/tinypng-alternative/`, `/canva-alternative/`, `/adobe-express-alternative/`, `/photoroom-alternative/`, `/remove-bg-alternative/` | `COMPARISONS`, `alternative()` |
 | Info | `/about/`, `/privacy/`, `/terms/` | templates |
@@ -379,7 +381,7 @@ Also:
 - **Contextual internal links**: a related-tools row is injected into every page by
   `base.html` (same-group tools first — see `_related_tools()`).
 - `robots.txt` and `sitemap.xml` are generated from the page list with per-page
-  `priority` and `lastmod` (86 URLs: 74 English paths + the 12 translated Portuguese ones).
+  `priority` and `lastmod` (96 URLs: 77 English paths + the 19 translated Portuguese ones).
 
 ---
 
@@ -403,8 +405,10 @@ if a string is wrapped in `t()` without a catalogue entry, if a raw literal is p
 `Toast.show`, or if a `{placeholder}` is dropped in translation.
 
 **Page coverage is partial, and that is now declared rather than implied.** The shared
-chrome, the home page and all 11 use-case landing pages are translated; the tool editor
-UIs, passport/country pages and legal pages still render English under `/pt/`.
+chrome, the home page, all 11 use-case landing pages and the seven newest tool pages
+(remove-object, photo-filters, upscale, HEIC, PDF-to-images, OCR, SVG-to-PNG — body copy,
+demo labels and FAQ, the last via `translations.localize_faqs`) are translated; the older
+tool editor UIs, passport/country and legal pages still render English under `/pt/`.
 
 `views.TRANSLATED_PATHS` lists the pages that are really translated, and it gates three
 things: `hreflang` alternates, sitemap entries, and the canonical. An untranslated `/pt/`

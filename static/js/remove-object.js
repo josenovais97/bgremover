@@ -20,6 +20,12 @@ const MAX_DIM = 4096;
 const FILL_DIM = 420;
 const UNDO_DEPTH = 3;
 
+// The heavy fill loops run off-thread (remove-object-worker.js) so a big brush
+// area can't jank the page; the inline fallback below covers no-Worker
+// browsers. Resolved relative to this module so the sibling file is found in
+// production, where the module itself is served from a hashed URL.
+const FILL_WORKER_URL = new URL('./remove-object-worker.js', import.meta.url).href;
+
 const App = {
   brush: 40,
   fmt: 'png',
@@ -174,7 +180,7 @@ const App = {
     await new Promise((r) => setTimeout(r, 30));
     try {
       this.snapshot();
-      const filled = this.inpaint();
+      const filled = await this.inpaint();
       // Feathered mask: the fill fades over a few pixels so its edge never
       // prints a hard seam into the photo.
       const W = this.canvas.width, H = this.canvas.height;
@@ -188,6 +194,7 @@ const App = {
       sctx.drawImage(filled, 0, 0, W, H);
       this.ctx.drawImage(soft, 0, 0);
       this.clearStrokes();
+      window.__clearbgReport?.(1);
       Toast.show(t('Object erased — download or keep brushing'));
     } catch {
       Toast.show(t('Erase failed'), 'error');
@@ -203,8 +210,13 @@ const App = {
    * layer averages its already-known neighbours), then the whole masked region
    * is relaxed with Jacobi iterations so the fill becomes a smooth membrane
    * stretched across the hole.
+   *
+   * Canvas work (downscale, upscale) stays here; the per-pixel loops run in
+   * remove-object-worker.js so they can't jank the page. If Workers are
+   * unavailable the same algorithm runs inline (fillPixels below) — the two
+   * must stay in lockstep.
    */
-  inpaint() {
+  async inpaint() {
     const scale = Math.min(1, FILL_DIM / Math.max(this.canvas.width, this.canvas.height));
     const w = Math.max(2, Math.round(this.canvas.width * scale));
     const h = Math.max(2, Math.round(this.canvas.height * scale));
@@ -221,16 +233,47 @@ const App = {
     mctx.drawImage(this.mask, 0, 0, w, h);
     const maskData = mctx.getImageData(0, 0, w, h).data;
 
-    const d = img.data;
     const n = w * h;
-    const unknown = new Uint8Array(n);       // 1 = needs filling
-    const masked = new Uint8Array(n);        // original mask, for the relax pass
+    const masked = new Uint8Array(n);        // 1 = needs filling
     for (let i = 0; i < n; i++) {
-      if (maskData[i * 4 + 3] > 32) { unknown[i] = 1; masked[i] = 1; }
+      if (maskData[i * 4 + 3] > 32) masked[i] = 1;
     }
 
-    // Onion peel: fill unknown pixels that touch a known one, layer by layer.
+    let filledPixels;
+    if (window.Worker) {
+      filledPixels = await new Promise((resolve, reject) => {
+        const worker = new Worker(FILL_WORKER_URL);
+        worker.onmessage = (e) => { worker.terminate(); resolve(new Uint8ClampedArray(e.data.pixels)); };
+        worker.onerror = (e) => { worker.terminate(); reject(e); };
+        const pixels = img.data.slice().buffer;
+        worker.postMessage({ pixels, mask: masked.buffer.slice(0), w, h }, [pixels]);
+      }).catch(() => null);
+    }
+    if (!filledPixels) {
+      // No Worker (or it failed to spawn) — same algorithm, inline.
+      filledPixels = img.data;
+      this.fillPixels(filledPixels, masked, w, h);
+    }
+    ictx.putImageData(new ImageData(filledPixels, w, h), 0, 0);
+
+    // Upscale the small fill back to photo resolution.
+    const full = document.createElement('canvas');
+    full.width = this.canvas.width; full.height = this.canvas.height;
+    const fctx = full.getContext('2d');
+    fctx.imageSmoothingEnabled = true;
+    fctx.imageSmoothingQuality = 'high';
+    fctx.drawImage(imgC, 0, 0, full.width, full.height);
+    return full;
+  },
+
+  /** Inline fallback fill — mirrors diffusionFill in remove-object-worker.js. */
+  fillPixels(d, maskArr, w, h) {
+    const n = w * h;
+    const unknown = new Uint8Array(maskArr);
+    const masked = maskArr;
     const idx = (x, y) => y * w + x;
+
+    // Onion peel: fill unknown pixels that touch a known one, layer by layer.
     let remaining = true;
     let guard = 0;
     while (remaining && guard++ < Math.max(w, h)) {
@@ -291,22 +334,13 @@ const App = {
       d[i * 4] = out[i * 3]; d[i * 4 + 1] = out[i * 3 + 1]; d[i * 4 + 2] = out[i * 3 + 2];
       d[i * 4 + 3] = 255;
     }
-    ictx.putImageData(img, 0, 0);
-
-    // Upscale the small fill back to photo resolution.
-    const full = document.createElement('canvas');
-    full.width = this.canvas.width; full.height = this.canvas.height;
-    const fctx = full.getContext('2d');
-    fctx.imageSmoothingEnabled = true;
-    fctx.imageSmoothingQuality = 'high';
-    fctx.drawImage(imgC, 0, 0, full.width, full.height);
-    return full;
   },
 
   export() {
     const mime = this.fmt === 'jpg' ? 'image/jpeg' : 'image/png';
     this.canvas.toBlob((blob) => {
       if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+      window.__clearbgReport?.(1, 'downloaded');
       download(blob, `${this.name || 'photo'}-clean.${this.fmt}`);
     }, mime, 0.92);
   },

@@ -92,6 +92,7 @@ const App = {
       card.node.querySelector('.thumb').src = card.url;
       meta.textContent = `${humanSize(card.file.size)} → ${humanSize(card.blob.size)} · ${this.ext.toUpperCase()}`;
       card.node.querySelector('.download-btn').disabled = false;
+      window.__clearbgReport?.(1);
       this.refreshZip();
     } catch {
       meta.textContent = t('Could not convert {name}', { name: card.file.name });
@@ -102,6 +103,7 @@ const App = {
 
   save(card) {
     if (!card.blob) return;
+    window.__clearbgReport?.(1, 'downloaded');
     download(card.blob, `${baseName(card.file.name)}.${this.ext}`);
   },
 

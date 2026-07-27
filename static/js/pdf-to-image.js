@@ -121,7 +121,9 @@ const App = {
           t('Page {n} failed', { n: page.num });
       }
     }
-    $('#p2i-zip').classList.toggle('hidden', this.pages.filter((p) => p.blob).length < 2);
+    const done = this.pages.filter((p) => p.blob).length;
+    $('#p2i-zip').classList.toggle('hidden', done < 2);
+    if (done) window.__clearbgReport?.(done);
   },
 
   encode(page) {
@@ -148,6 +150,7 @@ const App = {
 
   save(page) {
     if (!page.blob) return;
+    window.__clearbgReport?.(1, 'downloaded');
     download(page.blob, `${this.name || 'page'}-${page.num}.${this.ext}`);
   },
 

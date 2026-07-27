@@ -11,7 +11,7 @@
  * The preview runs on a downscaled canvas for speed; export re-applies the
  * exact settings at full resolution. Nothing is uploaded. Helpers: window.CBG.
  */
-const { $, $$, Toast, loadImage, dropzone, download, baseName, t } = CBG;
+const { $, $$, Toast, loadImage, dropzone, download, zipDownload, baseName, plural, t } = CBG;
 
 const PREVIEW_DIM = 1400;
 
@@ -33,6 +33,7 @@ const LOOKS = [
 const App = {
   state: { ...DEFAULTS },
   fmt: 'jpg',
+  queue: [],   // extra files exported with the same look + sliders
 
   init() {
     this.hero = $('#pf-hero');
@@ -40,14 +41,15 @@ const App = {
     this.canvas = $('#pf-canvas');
     this.ctx = this.canvas.getContext('2d');
     this.noise = this.makeNoise();
+    this.batch = $('[data-batch]');
 
     dropzone($('#pf-dropzone'), {
       input: $('#pf-input'),
       icon: $('#pf-icon'),
       browse: $('#pf-browse'),
-      multiple: false,
-      onFiles: (files) => this.load(files[0]),
+      onFiles: (files) => { this.queue = files.slice(1); this.syncBatch(); this.load(files[0]); },
     });
+    $('[data-batch-zip]').addEventListener('click', () => this.downloadAll());
 
     // Looks strip.
     const holder = $('#pf-looks');
@@ -195,17 +197,52 @@ const App = {
     this.paint(this.ctx, this.preview);
   },
 
-  export() {
-    if (!this.img) return;
+  syncBatch() {
+    const n = this.queue.length + (this.queue.length ? 1 : 0);
+    this.batch.classList.toggle('hidden', n < 2);
+    this.batch.querySelector('[data-batch-count]').textContent = n;
+  },
+
+  /** Render `img` at full resolution with the current settings, as a blob. */
+  renderFull(img) {
     const full = document.createElement('canvas');
-    full.width = this.img.naturalWidth;
-    full.height = this.img.naturalHeight;
-    this.paint(full.getContext('2d'), this.img);
+    full.width = img.naturalWidth;
+    full.height = img.naturalHeight;
+    this.paint(full.getContext('2d'), img);
     const mime = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }[this.fmt];
-    full.toBlob((blob) => {
-      if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
-      download(blob, `${this.name || 'photo'}-edited.${this.fmt}`);
-    }, mime, 0.92);
+    return new Promise((resolve) => full.toBlob(resolve, mime, 0.92));
+  },
+
+  async export() {
+    if (!this.img) return;
+    const blob = await this.renderFull(this.img);
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+    window.__clearbgReport?.(1, 'downloaded');
+    download(blob, `${this.name || 'photo'}-edited.${this.fmt}`);
+  },
+
+  async downloadAll() {
+    if (!this.img) return;
+    const btn = $('[data-batch-zip]');
+    btn.disabled = true;
+    try {
+      const entries = [{ name: `${this.name || 'photo'}-edited.${this.fmt}`, blob: await this.renderFull(this.img) }];
+      for (const f of this.queue) {
+        const url = URL.createObjectURL(f);
+        try {
+          const img = await loadImage(url);
+          entries.push({ name: `${baseName(f.name)}-edited.${this.fmt}`, blob: await this.renderFull(img) });
+        } catch { /* skip an unreadable file rather than sinking the batch */ }
+        URL.revokeObjectURL(url);
+      }
+      await zipDownload(entries.filter((e) => e.blob), 'clearbg-filtered.zip');
+      window.__clearbgReport?.(entries.length, 'downloaded');
+      Toast.show(plural(entries.length, 'Exported {n} photo', 'Exported {n} photos'));
+    } catch {
+      Toast.show(t('Could not build the ZIP'), 'error');
+    } finally {
+      btn.disabled = false;
+    }
   },
 
   reset() {
@@ -214,6 +251,8 @@ const App = {
     if (this.url) { URL.revokeObjectURL(this.url); this.url = null; }
     this.img = null;
     this.preview = null;
+    this.queue = [];
+    this.syncBatch();
     this.state = { ...DEFAULTS };
     this.syncSliders();
   },

@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static i18n_extras %}
 
-{% block title %}Upscale an Image 2× or 4× — Free, Sharp &amp; In Your Browser{% endblock %}
-{% block description %}Enlarge images 2× or 4× with high-quality Lanczos resampling and detail sharpening — free and instant, right in your browser. No upload, no watermark, no sign-up.{% endblock %}
+{% block title %}{% t "Upscale an Image 2× or 4× — Free, Sharp & In Your Browser" %}{% endblock %}
+{% block description %}{% t "Enlarge images 2× or 4× with high-quality Lanczos resampling and detail sharpening — free and instant, right in your browser. No upload, no watermark, no sign-up." %}{% endblock %}
 {% block og_title %}Free Image Upscaler — Enlarge 2× / 4× Privately{% endblock %}
 
 {% block extra_seo %}
@@ -26,34 +26,34 @@
     <section id="up-hero" class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i> Enlarged locally — nothing is uploaded
+                <i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i> {% t "Enlarged locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Upscale an Image
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">2× or 4×</span>
+                {% t "Upscale an Image" %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "2× or 4×" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                High-quality <strong>Lanczos resampling</strong> with a gentle sharpening pass — edges stay clean
-                instead of going soft or blocky. Instant, free and 100% private.
+                {% t "High-quality" %} <strong>{% t "Lanczos resampling" %}</strong> {% t "with a gentle sharpening pass — edges stay clean instead of going soft or blocky. Instant, free and 100% private." %}
             </p>
         </div>
 
-        <div class="max-w-2xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
             <div id="up-dropzone" role="button" tabindex="0" aria-label="Upload an image to upscale. Drag and drop, click to browse, or paste."
                  class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <input type="file" id="up-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp">
+                <input type="file" id="up-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp" multiple>
                 <div class="flex flex-col items-center justify-center space-y-4 text-center">
                     <div id="up-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                         <i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i>
                     </div>
-                    <h2 class="text-2xl font-semibold">Drop an image</h2>
-                    <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                    <h2 class="text-2xl font-semibold">{% t "Drop an image" %}</h2>
+                    <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — JPG, PNG or WEBP" %}</p>
                     <button id="up-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select an image
+                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select an image" %}
                     </button>
-                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">Great for logos, small photos and web images headed for print</p>
+                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">{% t "Great for logos, small photos and web images headed for print" %}</p>
                 </div>
             </div>
+            {% include 'remover/partials/demo.html' with before='img/demo-upscale-before.webp' after='img/demo-upscale-after.webp' before_label='Plain stretch' after_label='Lanczos + sharpen' caption='The same small image, stretched vs resampled — drag to compare' initial=40 %}
         </div>
     </section>
 
@@ -62,13 +62,13 @@
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 relative">
             <img id="up-preview" alt="Preview" class="w-full max-h-[52vh] object-contain rounded-lg shadow checkerboard">
             <div id="up-busy" class="hidden absolute inset-0 grid place-items-center bg-white/60 dark:bg-gray-950/60 rounded-2xl z-10">
-                <span class="flex items-center gap-2 text-sm font-semibold"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Upscaling…</span>
+                <span class="flex items-center gap-2 text-sm font-semibold"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> {% t "Upscaling…" %}</span>
             </div>
         </div>
 
         <div class="space-y-4">
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
-                <span class="text-gray-500 dark:text-gray-400">Scale</span>
+                <span class="text-gray-500 dark:text-gray-400">{% t "Scale" %}</span>
                 <div class="grid grid-cols-2 gap-1.5 text-sm font-medium">
                     <button type="button" class="up-scale px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-primary text-white" data-scale="2">2×</button>
                     <button type="button" class="up-scale px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700" data-scale="4">4×</button>
@@ -76,11 +76,11 @@
                 <p id="up-size" class="text-gray-500 dark:text-gray-400"></p>
                 <div class="space-y-2 pt-1">
                     <label for="up-sharpen" class="flex justify-between font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        <span>Sharpen</span><span id="up-sharpen-value" class="text-primaryText">40</span>
+                        <span>{% t "Sharpen" %}</span><span id="up-sharpen-value" class="text-primaryText">40</span>
                     </label>
                     <input id="up-sharpen" type="range" min="0" max="100" value="40" class="w-full accent-primary">
                 </div>
-                <span class="text-gray-500 dark:text-gray-400">Format</span>
+                <span class="text-gray-500 dark:text-gray-400">{% t "Format" %}</span>
                 <div class="grid grid-cols-2 gap-1.5 text-sm font-medium">
                     <button type="button" class="up-fmt px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-primary text-white" data-fmt="png">PNG</button>
                     <button type="button" class="up-fmt px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700" data-fmt="jpg">JPG</button>
@@ -88,24 +88,25 @@
             </div>
 
             <button id="up-run" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <i class="fa-solid fa-magnifying-glass-plus mr-1.5" aria-hidden="true"></i>Upscale
+                <i class="fa-solid fa-magnifying-glass-plus mr-1.5" aria-hidden="true"></i>{% t "Upscale" %}
             </button>
             <button id="up-download" type="button" disabled class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download
+                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>{% t "Download" %}
             </button>
+            {% include 'remover/partials/batch_bar.html' with note='The other images are upscaled with the same factor and sharpening.' %}
             <button id="up-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New image
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "New image" %}
             </button>
         </div>
     </section>
 
     <!-- SEO / help -->
     <section aria-labelledby="up-how" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="up-how" class="text-2xl font-bold text-center">Upscale an image in three steps</h2>
+        <h2 id="up-how" class="text-2xl font-bold text-center">{% t "Upscale an image in three steps" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop an image</div><p class="text-sm text-gray-500 dark:text-gray-400">Any JPG, PNG or WEBP — it's read straight in your browser, never uploaded.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Pick 2× or 4×</div><p class="text-sm text-gray-500 dark:text-gray-400">Lanczos resampling enlarges cleanly, and the sharpen slider brings detail forward.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Export as lossless PNG or a high-quality JPG — no watermark, no limits.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>{% t "Drop an image" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Any JPG, PNG or WEBP — it's read straight in your browser, never uploaded." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>{% t "Pick 2× or 4×" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Lanczos resampling enlarges cleanly, and the sharpen slider brings detail forward." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>{% t "Download" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Export as lossless PNG or a high-quality JPG — no watermark, no limits." %}</p></div>
         </div>
     </section>
 

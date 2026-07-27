@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static i18n_extras %}
 
-{% block title %}PDF to Images — Convert PDF Pages to PNG or JPG, Free{% endblock %}
-{% block description %}Turn every page of a PDF into a sharp PNG or JPG image, free and in your browser — the PDF is never uploaded. Download single pages or all pages as a ZIP. No watermark, no limits.{% endblock %}
+{% block title %}{% t "PDF to Images — Convert PDF Pages to PNG or JPG, Free" %}{% endblock %}
+{% block description %}{% t "Turn every page of a PDF into a sharp PNG or JPG image, free and in your browser — the PDF is never uploaded. Download single pages or all pages as a ZIP. No watermark, no limits." %}{% endblock %}
 {% block og_title %}PDF to Images — Free &amp; Private Converter{% endblock %}
 
 {% block extra_seo %}
@@ -26,19 +26,18 @@
     <section id="p2i-hero" class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i> Rendered locally — nothing is uploaded
+                <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i> {% t "Rendered locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                PDF to
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Images</span>
+                {% t "PDF to" %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Images" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                Every page of your PDF as a sharp <strong>PNG or JPG</strong> — rendered from the vector source,
-                so text stays crisp. Free, private, no page limits.
+                {% t "Every page of your PDF as a sharp" %} <strong>{% t "PNG or JPG" %}</strong> {% t "— rendered from the vector source, so text stays crisp. Free, private, no page limits." %}
             </p>
         </div>
 
-        <div class="max-w-2xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
             <div id="p2i-dropzone" role="button" tabindex="0" aria-label="Upload a PDF. Drag and drop or click to browse."
                  class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <input type="file" id="p2i-input" class="sr-only" accept="application/pdf,.pdf">
@@ -46,14 +45,22 @@
                     <div id="p2i-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                         <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
                     </div>
-                    <h2 class="text-2xl font-semibold">Drop a PDF</h2>
-                    <p class="text-gray-500 dark:text-gray-400">or click to browse — contracts, scans, slides, forms</p>
+                    <h2 class="text-2xl font-semibold">{% t "Drop a PDF" %}</h2>
+                    <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — contracts, scans, slides, forms" %}</p>
                     <button id="p2i-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                        <i class="fa-solid fa-file-arrow-up mr-2" aria-hidden="true"></i>Select a PDF
+                        <i class="fa-solid fa-file-arrow-up mr-2" aria-hidden="true"></i>{% t "Select a PDF" %}
                     </button>
-                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">Your document is parsed on your device — it never leaves the browser</p>
+                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">{% t "Your document is parsed on your device — it never leaves the browser" %}</p>
                 </div>
             </div>
+            <figure class="flex flex-col gap-3 w-full">
+                <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70">
+                    <img src="{% static 'img/demo-pdf-to-image.webp' %}" width="820" height="616" alt="A PDF document turning into three separate page images, each with a PNG badge" class="absolute inset-0 w-full h-full object-cover">
+                </div>
+                <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+                    <i class="fa-solid fa-file-arrow-up mr-1" aria-hidden="true"></i>{% t "One PDF in, every page out as its own sharp image" %}
+                </figcaption>
+            </figure>
         </div>
     </section>
 
@@ -61,14 +68,14 @@
     <section id="p2i-controls" class="hidden max-w-5xl mx-auto glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-4">
         <div class="flex flex-wrap items-end gap-5">
             <div class="space-y-2">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Format</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Format" %}</span>
                 <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
                     <button type="button" data-fmt="image/png" data-ext="png" class="p2i-fmt px-4 py-2 bg-primary text-white">PNG</button>
                     <button type="button" data-fmt="image/jpeg" data-ext="jpg" class="p2i-fmt px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">JPG</button>
                 </div>
             </div>
             <div class="space-y-2">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Resolution</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Resolution" %}</span>
                 <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
                     <button type="button" data-scale="1" class="p2i-scale px-4 py-2 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Screen quality (~75 DPI)">1×</button>
                     <button type="button" data-scale="2" class="p2i-scale px-4 py-2 border-l border-gray-300 dark:border-gray-700 bg-primary text-white" title="Sharp (~150 DPI)">2×</button>
@@ -78,10 +85,10 @@
             <p id="p2i-summary" class="text-sm text-gray-500 dark:text-gray-400"></p>
             <div class="flex flex-wrap items-center gap-2 ml-auto">
                 <button id="p2i-zip" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>Download all (ZIP)
+                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>{% t "Download all (ZIP)" %}
                 </button>
                 <button id="p2i-clear" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>New PDF
+                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>{% t "New PDF" %}
                 </button>
             </div>
         </div>
@@ -91,11 +98,11 @@
 
     <!-- SEO / help -->
     <section aria-labelledby="p2i-how" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="p2i-how" class="text-2xl font-bold text-center">PDF to images in three steps</h2>
+        <h2 id="p2i-how" class="text-2xl font-bold text-center">{% t "PDF to images in three steps" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop a PDF</div><p class="text-sm text-gray-500 dark:text-gray-400">It's parsed right in your browser — private documents stay private.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Pick quality</div><p class="text-sm text-gray-500 dark:text-gray-400">2× is sharp for screens; 4× is print quality. Pages render from the vector source.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Save the pages you need, or every page at once as a ZIP.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>{% t "Drop a PDF" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "It's parsed right in your browser — private documents stay private." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>{% t "Pick quality" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "2× is sharp for screens; 4× is print quality. Pages render from the vector source." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>{% t "Download" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Save the pages you need, or every page at once as a ZIP." %}</p></div>
         </div>
     </section>
 

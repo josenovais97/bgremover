@@ -50,6 +50,12 @@ const App = {
     if (this.worker) { await this.worker.terminate(); this.worker = null; }
     const { createWorker } = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/+esm');
     this.worker = await createWorker(lang, 1, {
+      // Language data from jsDelivr rather than tesseract.js's default host:
+      // the service worker already caches cdn.jsdelivr.net into its long-lived
+      // cache, so the pack downloads once and OCR keeps working offline. The
+      // packages are per-language, so the path is built per worker — fine,
+      // since a language change recreates the worker anyway.
+      langPath: `https://cdn.jsdelivr.net/npm/@tesseract.js-data/${lang}@1.0.0/4.0.0_best_int`,
       logger: (m) => {
         if (m.status === 'recognizing text') {
           $('#oc-bar').style.width = `${Math.round(m.progress * 100)}%`;
@@ -79,6 +85,7 @@ const App = {
       }
       box.value = text;
       $('#oc-words').textContent = t('{n} words', { n: text.split(/\s+/).length });
+      window.__clearbgReport?.(1);
     } catch {
       box.placeholder = t('Could not read the text');
       Toast.show(t('Could not read the text'), 'error');

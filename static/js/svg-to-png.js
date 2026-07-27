@@ -119,6 +119,7 @@ const App = {
     const mime = this.fmt === 'jpg' ? 'image/jpeg' : 'image/png';
     canvas.toBlob((blob) => {
       if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+      window.__clearbgReport?.(1, 'downloaded');
       download(blob, `${this.name || 'image'}-${w}x${h}.${this.fmt}`);
     }, mime, 0.92);
   },
