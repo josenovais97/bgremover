@@ -7,6 +7,27 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **The refine brush can finally see what it's restoring.** A "Show original"
+  toggle (`O`) ghosts the whole photo at 35% under the cut-out, so Restore stops
+  being an act of memory — the erased background is right there under the brush.
+  The masked result is composited off-screen first, because `destination-in`
+  against the ghost would punch through it.
+- **Redo in the refine editor** (`Ctrl+Shift+Z` / `Ctrl+Y`, plus a button). Undo
+  existed; a slip past the stroke you wanted was unrecoverable. A new stroke
+  clears the redo stack (history branches), and both buttons disable when their
+  stack is empty so the state is visible.
+- **A Straighten slider on the crop tool** (`/crop/`, ±15° in 0.5° steps). The
+  90° buttons couldn't fix a crooked horizon. The fine angle is baked into the
+  same oriented-source canvas the rotate buttons use, scaled up just enough that
+  the tilted image still covers its frame — so straightening never exposes blank
+  corners, and batch exports pick it up for free. The crop geometry (and its
+  Node test suite) is untouched.
+- **A full-size quality compare on the compressor** (`/compress/`). Quality was
+  chosen blind: artifacts are invisible on a card-sized thumbnail, which is
+  exactly where "how low can I go" gets decided. Each card gets a Compare button
+  opening a full-screen wipe between the original and the compressed encode,
+  with the two file sizes in the corner badges. Disabled when the original was
+  kept ("already optimized") — comparing a file against itself shows nothing.
 - **Screenshot Beautifier** (`/screenshot-beautifier/`) — the "launch post" look:
   a screenshot centred on a curated gradient (or solid, or transparent) backdrop
   with padding, rounded corners, a soft drop shadow and an optional macOS-style

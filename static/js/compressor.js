@@ -60,6 +60,8 @@ class CompressCard {
     name.title = this.file.name;
     this.el.querySelector('.remove-btn').addEventListener('click', () => this.destroy());
     this.el.querySelector('.download-btn').addEventListener('click', () => this.download());
+    this.compareBtn = this.el.querySelector('.compare-btn');
+    this.compareBtn.addEventListener('click', () => Compare.open(this));
     $('#cmp-grid').appendChild(this.el);
   }
 
@@ -78,6 +80,7 @@ class CompressCard {
     const dl = this.el.querySelector('.download-btn');
     dl.disabled = true;
     dl.classList.add('opacity-50', 'cursor-not-allowed');
+    this.compareBtn.disabled = true;
   }
 
   async compress(token) {
@@ -142,6 +145,8 @@ class CompressCard {
     const dl = this.el.querySelector('.download-btn');
     dl.disabled = false;
     dl.classList.remove('opacity-50', 'cursor-not-allowed');
+    // Comparing "kept the original" against itself would show nothing.
+    this.compareBtn.disabled = grew;
   }
 
   download() {
@@ -157,12 +162,58 @@ class CompressCard {
   }
 }
 
+/* ---------------------------------------------------------- quality compare */
+/* Full-screen wipe between a card's original and its compressed encode. The
+ * card thumbnail is far too small to judge artifacts on — this is where the
+ * "how low can I go" question actually gets answered. */
+const Compare = {
+  url: null, // object URL of the compressed blob shown, revoked on close
+
+  init() {
+    this.modal = $('#cmp-compare');
+    if (!this.modal) return;
+    this.range = $('#cmp-cmp-range');
+    $('#cmp-compare-close').addEventListener('click', () => this.close());
+    this.modal.addEventListener('click', (e) => { if (e.target === this.modal) this.close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') this.close(); });
+    this.range.addEventListener('input', () => this.update());
+  },
+
+  open(card) {
+    if (!card.out) return;
+    if (this.url) URL.revokeObjectURL(this.url);
+    this.url = URL.createObjectURL(card.out.blob);
+    $('#cmp-cmp-before').src = card.url;
+    $('#cmp-cmp-after').src = this.url;
+    $('#cmp-cmp-lbl-before').textContent = `${t('Original')} · ${humanSize(card.file.size)}`;
+    $('#cmp-cmp-lbl-after').textContent = `${card.out.label} · ${humanSize(card.out.blob.size)}`;
+    this.range.value = 50;
+    this.update();
+    this.modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  },
+
+  close() {
+    if (this.modal.classList.contains('hidden')) return;
+    this.modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    if (this.url) { URL.revokeObjectURL(this.url); this.url = null; }
+  },
+
+  update() {
+    const v = +this.range.value;
+    $('#cmp-cmp-beforeclip').style.clipPath = `inset(0 ${100 - v}% 0 0)`;
+    $('#cmp-cmp-line').style.left = `${v}%`;
+  },
+};
+
 /* --------------------------------------------------------------------- app */
 const App = {
   cards: [],
   gen: 0,
 
   init() {
+    Compare.init();
     this.dropzone = $('#cmp-dropzone');
     this.input = $('#cmp-input');
     this.controls = $('#cmp-controls');

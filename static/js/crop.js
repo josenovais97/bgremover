@@ -47,6 +47,7 @@ const App = {
   customW: 4,
   customH: 3,
   rot: 0, // 0/90/180/270
+  fine: 0, // straighten, in degrees (-15..15)
   flipH: false,
   flipV: false,
   zoom: 1,
@@ -92,6 +93,9 @@ const App = {
 
     $('#cr-rotate-l').addEventListener('click', () => this.rotate(-90));
     $('#cr-rotate-r').addEventListener('click', () => this.rotate(90));
+    const straighten = $('#cr-straighten');
+    straighten.addEventListener('input', () => this.setFine(+straighten.value));
+    $('#cr-straighten-reset').addEventListener('click', () => { straighten.value = 0; this.setFine(0); });
     $('#cr-flip-h').addEventListener('click', () => { this.flipH = !this.flipH; this.buildOriented(); this.render(); });
     $('#cr-flip-v').addEventListener('click', () => { this.flipV = !this.flipV; this.buildOriented(); this.render(); });
 
@@ -128,12 +132,15 @@ const App = {
       return;
     }
     this.rot = 0;
+    this.fine = 0;
     this.flipH = false;
     this.flipV = false;
     this.zoom = 1;
     this.u = 0.5;
     this.v = 0.5;
     $('#cr-zoom').value = 1;
+    $('#cr-straighten').value = 0;
+    $('#cr-straighten-reset').classList.add('hidden');
     this.buildOriented();
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
@@ -149,8 +156,15 @@ const App = {
     batch.querySelector('[data-batch-count]').textContent = n;
   },
 
-  // Bake rotation + flip into an offscreen canvas for an arbitrary image (used by
-  // the batch export, which never puts the queued image on screen).
+  setFine(deg) {
+    this.fine = deg;
+    $('#cr-straighten-reset').classList.toggle('hidden', deg === 0);
+    this.buildOriented();
+    this.render();
+  },
+
+  // Bake rotation + straighten + flip into an offscreen canvas for an arbitrary
+  // image (used by the batch export, which never puts the queued image on screen).
   orientedOf(img) {
     const iw = img.naturalWidth || img.width;
     const ih = img.naturalHeight || img.height;
@@ -161,8 +175,14 @@ const App = {
     c.width = ow; c.height = oh;
     const x = c.getContext('2d');
     x.translate(ow / 2, oh / 2);
-    x.rotate((this.rot * Math.PI) / 180);
-    x.scale(this.flipH ? -1 : 1, this.flipV ? -1 : 1);
+    x.rotate(((this.rot + this.fine) * Math.PI) / 180);
+    // Straightening zooms in just enough that the tilted image still covers the
+    // frame (the ow×oh frame's bounding box in the image's rotated axes must
+    // fit inside it), so a fine angle never exposes blank corners.
+    const phi = Math.abs((this.fine * Math.PI) / 180);
+    const cs = Math.cos(phi), sn = Math.sin(phi);
+    const s = Math.max((ow * cs + oh * sn) / ow, (ow * sn + oh * cs) / oh);
+    x.scale((this.flipH ? -1 : 1) * s, (this.flipV ? -1 : 1) * s);
     x.drawImage(img, -iw / 2, -ih / 2);
     return c;
   },
@@ -215,24 +235,10 @@ const App = {
     }
   },
 
-  // Bake rotation + flip into an offscreen canvas that becomes the crop source.
+  // Bake rotation + straighten + flip into the offscreen canvas that becomes
+  // the crop source. Shares orientedOf so batch exports match the screen.
   buildOriented() {
-    const img = this.raw;
-    if (!img) return;
-    const iw = img.naturalWidth || img.width;
-    const ih = img.naturalHeight || img.height;
-    const swap = this.rot === 90 || this.rot === 270;
-    const ow = swap ? ih : iw;
-    const oh = swap ? iw : ih;
-    const c = document.createElement('canvas');
-    c.width = ow;
-    c.height = oh;
-    const x = c.getContext('2d');
-    x.translate(ow / 2, oh / 2);
-    x.rotate((this.rot * Math.PI) / 180);
-    x.scale(this.flipH ? -1 : 1, this.flipV ? -1 : 1);
-    x.drawImage(img, -iw / 2, -ih / 2);
-    this.oriented = c;
+    if (this.raw) this.oriented = this.orientedOf(this.raw);
   },
 
   rotate(delta) {

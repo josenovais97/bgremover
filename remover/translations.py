@@ -219,7 +219,12 @@ UI = {
     "Smooth edges": "Suavizar contornos",
     "Zoom": "Zoom",
     "Undo": "Anular",
+    "Redo": "Refazer",
     "Reset": "Repor",
+    "Show original": "Mostrar original",
+    "ghosts the photo underneath so you can see what to paint back.":
+        "mostra a foto por baixo, esbatida, para ver o que pode repor.",
+    "size,": "tamanho,",
     "paints back the original;": "repõe o original;",
     "wipes leftover background.": "apaga o fundo que sobrou.",
     "Scroll to zoom, or use the": "Faça scroll para ampliar, ou use a ferramenta",
@@ -375,6 +380,8 @@ JS_UI = {
     # --- Errors ---
     "Error: {message}": "Erro: {message}",
     "Failed: {detail}": "Falhou: {detail}",
+    # --- Compressor quality compare ---
+    "Original": "Original",
     # --- Base64 / palette / collage / border ---
     "That is not a valid image data URI": "Isso não é um URI de dados de imagem válido",
     "Click to copy": "Clique para copiar",

@@ -109,6 +109,28 @@
     <!-- Results -->
     <section id="cmp-grid" class="results-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
 
+    <!-- Quality compare: full-size wipe between the original and the compressed
+         encode, because artifacts are invisible on a card-sized thumbnail. -->
+    <div id="cmp-compare" class="hidden fixed inset-0 z-50 bg-gray-950/85 backdrop-blur-sm p-4 sm:p-8" role="dialog" aria-modal="true" aria-label="Compare original and compressed">
+        <button id="cmp-compare-close" type="button" class="absolute top-4 right-4 z-30 w-10 h-10 grid place-items-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Close">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+        <div class="relative w-full h-full select-none overflow-hidden rounded-2xl">
+            <img id="cmp-cmp-after" class="absolute inset-0 w-full h-full object-contain" alt="Compressed" draggable="false">
+            <div id="cmp-cmp-beforeclip" class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
+                <img id="cmp-cmp-before" class="w-full h-full object-contain" alt="Original" draggable="false">
+            </div>
+            <div id="cmp-cmp-line" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.6)] -translate-x-1/2 pointer-events-none z-10" style="left:50%">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg grid place-items-center text-gray-700">
+                    <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
+                </div>
+            </div>
+            <input id="cmp-cmp-range" type="range" min="0" max="100" value="50" class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20" aria-label="Drag to compare the original and the compressed image">
+            <span id="cmp-cmp-lbl-before" class="absolute top-3 left-3 z-10 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none"></span>
+            <span id="cmp-cmp-lbl-after" class="absolute top-3 right-3 z-10 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none"></span>
+        </div>
+    </div>
+
     <!-- SEO / help content -->
     <section aria-labelledby="cmp-how" class="max-w-4xl mx-auto space-y-6">
         <h2 id="cmp-how" class="text-2xl font-bold text-center">How to compress an image</h2>
@@ -138,6 +160,9 @@
             <div class="flex items-center gap-2">
                 <button type="button" class="remove-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove this image">
                     <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
+                </button>
+                <button type="button" disabled class="compare-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-40 disabled:cursor-not-allowed" aria-label="Compare original and compressed at full size">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i> Compare
                 </button>
                 <button type="button" class="download-btn inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow ml-auto transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Download compressed image">
                     <i class="fa-solid fa-download" aria-hidden="true"></i> Download

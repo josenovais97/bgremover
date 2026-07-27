@@ -22,9 +22,9 @@ Every tool is 100% client-side, free, unlimited, and watermark-free.
 |------|-----|--------------|
 | **Background remover** | `/` | AI cut-out to a transparent PNG. Batch, refine brush, crop, backgrounds, effects, export sizes. |
 | **Image converter** | `/convert/` | PNG / JPG / WEBP / **AVIF**, format auto-detected, batch + ZIP. |
-| **Image compressor** | `/compress/` | Quality slider **or a target file size** (binary-searches quality to hit it), optional max-dimension downscale. |
+| **Image compressor** | `/compress/` | Quality slider **or a target file size** (binary-searches quality to hit it), optional max-dimension downscale, full-size before/after quality compare. |
 | **Image resizer** | `/resize-image/` | Exact pixels or a percentage, aspect lock, export JPG/PNG/WEBP. |
-| **Crop tool** | `/crop/` | Rectangle / rounded / circle at 1:1, 4:5, 3:4, 16:9, 9:16, custom or original ratio; rotate + flip. |
+| **Crop tool** | `/crop/` | Rectangle / rounded / circle at 1:1, 4:5, 3:4, 16:9, 9:16, custom or original ratio; rotate, straighten (±15°) + flip. |
 | **Instagram editor** | `/instagram/` | Exact IG sizes, fill-or-fit, 12 looks, adjustments, text layers, logo, carousel splitter. |
 | **Sticker maker** | `/sticker-maker/` | Removes the background, adds a die-cut outline + caption, exports a 512×512 WebP for WhatsApp/Telegram. |
 | **Text behind image** | `/text-behind-image/` | The viral effect: text layered between the photo and the subject cut-out. |
@@ -100,8 +100,10 @@ uploaded image**, or one of **17 preset photo backgrounds** grouped into Studio 
 stay in sync in both directions.
 
 **Refine brush editor** — erase leftover background or restore over-trimmed areas by hand,
-with zoom/pan (wheel, Move tool, hold-Space), soft brushes, edge smoothing, undo, and
-`R`/`E`/`M` + `[`/`]` shortcuts.
+with zoom/pan (wheel, Move tool, hold-Space), soft brushes, edge smoothing, undo/redo, and
+a **"Show original" ghost** that dims the full photo under the cut-out so you can see
+exactly what Restore will bring back. Shortcuts: `R`/`E`/`M`/`O`, `[`/`]`,
+`Ctrl+Z`/`Ctrl+Y`.
 
 **Crop dialog** — circle, square, rounded square, 4:5 / 16:9 / 9:16 or any custom W:H, with
 zoom, drag-to-reposition and rotate/flip. Choose the **source**: the transparent cut-out,

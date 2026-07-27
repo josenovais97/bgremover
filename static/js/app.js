@@ -467,6 +467,8 @@ const Editor = {
   panY: 0,
   pointers: new Map(),
   undoStack: [],
+  redoStack: [],
+  ghost: false, // show the original photo dimmed under the cut-out
 
   init() {
     this.modal = $('#editor-modal');
@@ -482,7 +484,9 @@ const Editor = {
     $('#editor-cancel').addEventListener('click', () => this.close());
     $('#editor-apply').addEventListener('click', () => this.apply());
     $('#editor-undo').addEventListener('click', () => this.undo());
+    $('#editor-redo').addEventListener('click', () => this.redo());
     $('#editor-reset').addEventListener('click', () => this.reset());
+    $('#editor-ghost').addEventListener('click', () => this.toggleGhost());
     $('#editor-zoom-in').addEventListener('click', () => this.zoomButton(1.25));
     $('#editor-zoom-out').addEventListener('click', () => this.zoomButton(1 / 1.25));
     $('#editor-zoom-fit').addEventListener('click', () => this.fit());
@@ -509,10 +513,12 @@ const Editor = {
       if (e.code === 'Space') { e.preventDefault(); if (!this.spaceHeld) { this.spaceHeld = true; this.updateCursor(); } return; }
       if (e.target.tagName === 'INPUT') return;
       const k = e.key.toLowerCase();
-      if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); this.undo(); }
+      if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); e.shiftKey ? this.redo() : this.undo(); }
+      else if ((e.ctrlKey || e.metaKey) && k === 'y') { e.preventDefault(); this.redo(); }
       else if (k === 'r') this.setTool('restore');
       else if (k === 'e') this.setTool('erase');
       else if (k === 'm' || k === 'h') this.setTool('move');
+      else if (k === 'o') this.toggleGhost();
       else if (k === ']' || k === '+' || k === '=') this.setBrush(this.brush + 6);
       else if (k === '[' || k === '-' || k === '_') this.setBrush(this.brush - 6);
     });
@@ -535,12 +541,15 @@ const Editor = {
     this.mask.getContext('2d').drawImage(proc, 0, 0); // proc's alpha is the subject mask
     this.initial.getContext('2d').drawImage(proc, 0, 0);
     this.undoStack = [];
+    this.redoStack = [];
     this.spaceHeld = false;
     this.pinching = false;
     this.pointers.clear();
     this.feather = 0;
     $('#editor-smooth').value = 0;
+    if (this.ghost) this.toggleGhost(); // predictable start: ghost off
     this.setTool('restore');
+    this.syncHistoryButtons();
     this.render();
 
     this.modal.classList.remove('hidden');
@@ -644,11 +653,36 @@ const Editor = {
     return c;
   },
 
+  /** Show the original photo dimmed under the cut-out, so Restore isn't blind. */
+  toggleGhost() {
+    this.ghost = !this.ghost;
+    const b = $('#editor-ghost');
+    b.classList.toggle('bg-primary', this.ghost);
+    b.setAttribute('aria-pressed', this.ghost);
+    this.render();
+  },
+
   /** Composite original × mask onto the visible canvas. */
   render() {
     const { ctx, canvas } = this;
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (this.ghost) {
+      // The masked result can't be composited in place over the ghost —
+      // destination-in would punch through it — so build it off-screen first.
+      const c = this._comp || (this._comp = document.createElement('canvas'));
+      c.width = canvas.width;
+      c.height = canvas.height;
+      const cx = c.getContext('2d');
+      cx.drawImage(this.orig, 0, 0);
+      cx.globalCompositeOperation = 'destination-in';
+      cx.drawImage(this.featheredMask(), 0, 0);
+      ctx.globalAlpha = 0.35;
+      ctx.drawImage(this.orig, 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.drawImage(c, 0, 0);
+      return;
+    }
     ctx.drawImage(this.orig, 0, 0);
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(this.featheredMask(), 0, 0);
@@ -666,13 +700,20 @@ const Editor = {
     };
   },
 
-  pushUndo() {
+  snapshotMask() {
     const snap = document.createElement('canvas');
     snap.width = this.mask.width;
     snap.height = this.mask.height;
     snap.getContext('2d').drawImage(this.mask, 0, 0);
-    this.undoStack.push(snap);
+    return snap;
+  },
+
+  pushUndo() {
+    this.undoStack.push(this.snapshotMask());
     if (this.undoStack.length > 12) this.undoStack.shift();
+    // A new stroke branches history — whatever was redoable is gone.
+    this.redoStack.length = 0;
+    this.syncHistoryButtons();
   },
 
   restoreSnap(snap) {
@@ -685,7 +726,23 @@ const Editor = {
 
   undo() {
     const snap = this.undoStack.pop();
-    if (snap) this.restoreSnap(snap);
+    if (!snap) return;
+    this.redoStack.push(this.snapshotMask());
+    this.restoreSnap(snap);
+    this.syncHistoryButtons();
+  },
+
+  redo() {
+    const snap = this.redoStack.pop();
+    if (!snap) return;
+    this.undoStack.push(this.snapshotMask());
+    this.restoreSnap(snap);
+    this.syncHistoryButtons();
+  },
+
+  syncHistoryButtons() {
+    $('#editor-undo').disabled = !this.undoStack.length;
+    $('#editor-redo').disabled = !this.redoStack.length;
   },
 
   reset() {

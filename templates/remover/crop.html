@@ -98,6 +98,15 @@
                     <button id="cr-flip-h" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-arrows-left-right mr-1" aria-hidden="true"></i>Flip H</button>
                     <button id="cr-flip-v" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fa-solid fa-arrows-up-down mr-1" aria-hidden="true"></i>Flip V</button>
                 </div>
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label for="cr-straighten" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Straighten</label>
+                        <button id="cr-straighten-reset" type="button" class="hidden text-xs font-medium text-primaryText hover:underline">0°</button>
+                    </div>
+                    {% comment %}Fine rotation for crooked horizons. The image is scaled just
+                    enough to keep the frame covered, so no blank corners appear.{% endcomment %}
+                    <input id="cr-straighten" type="range" min="-15" max="15" step="0.5" value="0" data-range="deg" class="w-full accent-primary" aria-label="Straighten (fine rotation in degrees)">
+                </div>
             </div>
 
             <!-- Export format -->

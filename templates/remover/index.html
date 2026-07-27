@@ -484,14 +484,21 @@
                     <button id="editor-zoom-fit" type="button" class="tip w-9 h-9 grid place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition-colors" data-tooltip="Fit to screen" aria-label="Fit to screen"><i class="fa-solid fa-expand" aria-hidden="true"></i></button>
                 </div>
             </div>
+            <button id="editor-ghost" type="button" aria-pressed="false" class="w-full px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-eye mr-1.5" aria-hidden="true"></i>{% t "Show original" %}
+            </button>
             <div class="flex lg:flex-col gap-2 w-full">
-                <button id="editor-undo" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "Undo" %}</button>
+                <div class="flex gap-2 flex-1">
+                    <button id="editor-undo" type="button" disabled class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"><i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "Undo" %}</button>
+                    <button id="editor-redo" type="button" disabled class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"><i class="fa-solid fa-arrow-rotate-left inline-block -scale-x-100 mr-1.5" aria-hidden="true"></i>{% t "Redo" %}</button>
+                </div>
                 <button id="editor-reset" type="button" class="flex-1 px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20 transition-colors"><i class="fa-solid fa-arrows-rotate mr-1.5" aria-hidden="true"></i>{% t "Reset" %}</button>
             </div>
             <p class="hidden lg:block text-xs text-gray-400 leading-relaxed">
                 <b class="text-gray-200">{% t "Restore" %}</b> {% t "paints back the original;" %} <b class="text-gray-200">{% t "Erase" %}</b> {% t "wipes leftover background." %}
+                <b class="text-gray-200">{% t "Show original" %}</b> {% t "ghosts the photo underneath so you can see what to paint back." %}
                 {% t "Scroll to zoom, or use the" %} <b class="text-gray-200">{% t "Move" %}</b> {% t "tool / hold" %} <kbd class="px-1 rounded bg-white/10">Space</kbd> {% t "to pan." %}
-                {% t "Shortcuts:" %} <kbd class="px-1 rounded bg-white/10">R</kbd>/<kbd class="px-1 rounded bg-white/10">E</kbd>/<kbd class="px-1 rounded bg-white/10">M</kbd>, <kbd class="px-1 rounded bg-white/10">[</kbd> <kbd class="px-1 rounded bg-white/10">]</kbd> {% t "size." %}
+                {% t "Shortcuts:" %} <kbd class="px-1 rounded bg-white/10">R</kbd>/<kbd class="px-1 rounded bg-white/10">E</kbd>/<kbd class="px-1 rounded bg-white/10">M</kbd>/<kbd class="px-1 rounded bg-white/10">O</kbd>, <kbd class="px-1 rounded bg-white/10">[</kbd> <kbd class="px-1 rounded bg-white/10">]</kbd> {% t "size," %} <kbd class="px-1 rounded bg-white/10">Ctrl+Z</kbd>/<kbd class="px-1 rounded bg-white/10">Ctrl+Y</kbd>.
             </p>
         </div>
 
