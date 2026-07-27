@@ -181,6 +181,8 @@ const App = {
     const files = [...fileList].filter((f) => f.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|avif|tiff?)$/i.test(f.name));
     this.input.value = '';
     if (!files.length) { Toast.show(t('Please choose image files'), 'error'); return; }
+    // Landing hero yields to the workspace so results land above the fold.
+    $('#convert-dropzone').closest('section').classList.add('hidden');
     this.controls.classList.remove('hidden');
     for (const file of files) this.cards.push(new ConvertCard(file));
     this.refresh();
@@ -209,7 +211,10 @@ const App = {
 
   refresh() {
     $('#convert-download-all').classList.toggle('hidden', this.cards.length < 2);
-    if (!this.cards.length) this.controls.classList.add('hidden');
+    if (!this.cards.length) {
+      this.controls.classList.add('hidden');
+      $('#convert-dropzone').closest('section').classList.remove('hidden');
+    }
   },
 
   clear() {

@@ -259,6 +259,10 @@ const App = {
     const files = [...fileList].filter((f) => f.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name));
     this.input.value = '';
     if (!files.length) { Toast.show(t('Please choose image files'), 'error'); return; }
+    // The landing hero (headline + dropzone + demo) yields to the workspace,
+    // so the first result is on screen instead of below the fold. "Add more"
+    // keeps accepting files; clearing everything brings the hero back.
+    $('#cmp-dropzone').closest('section').classList.add('hidden');
     this.controls.classList.remove('hidden');
     for (const file of files) this.cards.push(new CompressCard(file));
     this.refresh();
@@ -304,12 +308,20 @@ const App = {
   refresh() {
     const ready = this.cards.filter((c) => c.out);
     $('#cmp-download-all').classList.toggle('hidden', ready.length < 2);
-    if (!this.cards.length) { this.controls.classList.add('hidden'); $('#cmp-summary').textContent = ''; return; }
+    if (!this.cards.length) {
+      this.controls.classList.add('hidden');
+      $('#cmp-dropzone').closest('section').classList.remove('hidden');
+      $('#cmp-summary').textContent = '';
+      return;
+    }
     const orig = ready.reduce((s, c) => s + c.file.size, 0);
     const now = ready.reduce((s, c) => s + c.out.blob.size, 0);
     if (ready.length && orig > 0) {
       const pct = Math.round((1 - now / orig) * 100);
-      $('#cmp-summary').textContent = `${ready.length} image${ready.length > 1 ? 's' : ''} · ${humanSize(orig)} → ${humanSize(now)} · saved ${pct}%`;
+      let summary = `${ready.length} image${ready.length > 1 ? 's' : ''} · ${humanSize(orig)} → ${humanSize(now)} · saved ${pct}%`;
+      // "saved 0%" is a dead end unless it says what to try next.
+      if (pct <= 0) summary += ` — ${t('already optimized: try WEBP or AVIF, or lower the quality')}`;
+      $('#cmp-summary').textContent = summary;
     } else {
       $('#cmp-summary').textContent = '';
     }

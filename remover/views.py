@@ -48,6 +48,13 @@ from .seo_content import (
     STICKER_FAQS,
     WATERMARK_FAQS,
     TEXTBEHIND_FAQS,
+    REMOVE_OBJECT_FAQS,
+    UPSCALE_FAQS,
+    HEIC_FAQS,
+    PDF_TO_IMAGE_FAQS,
+    OCR_FAQS,
+    SVG_TO_PNG_FAQS,
+    PHOTO_FILTERS_FAQS,
     faq_jsonld,
 )
 from .translations import localize_use_case
@@ -630,6 +637,35 @@ COMPRESS_PAGES = [
              "a": "Yes — free and unlimited, with no watermark and nothing uploaded."},
         ],
     },
+    {
+        # The only entry whose CTA points at the video converter rather than the
+        # image compressor: "compress video online" is a far bigger query than
+        # "video converter", and the converter's Small-file quality tier IS a
+        # video compressor — this page just says so in the words people search.
+        "slug": "compress-video", "url_name": "compress_video", "nav": "Compress Video",
+        "cta_url_name": "video_converter",
+        "title": "Compress Video Online — Free, Private &amp; No Watermark",
+        "description": "Compress an MP4 or WebM video to a smaller file in your browser, free — pick the Small-file quality, trim the clip, and nothing is uploaded. No watermark, no sign-up.",
+        "h1": "Compress a video to a smaller size",
+        "tagline": "Shrink an MP4 or WebM for chat, email or the web — re-encoded entirely on your device, with nothing uploaded.",
+        "intro": [
+            "Video files balloon fast — a one-minute phone clip can be a hundred megabytes, far past what chat apps and email accept. This tool re-encodes the clip at a lower bitrate and, if you want, a smaller resolution, cutting the file down to a fraction of its size.",
+            "Pick the Small-file quality tier for the biggest saving, cap the size at 720p, and trim away the seconds you don't need — every step runs in your browser, so the video is never uploaded anywhere.",
+        ],
+        "benefits": [
+            {"icon": "fa-compress", "title": "Small-file mode", "text": "A dedicated low-bitrate tier roughly halves the balanced size — made for sharing in chat."},
+            {"icon": "fa-crop-simple", "title": "Resize & trim", "text": "Cap the resolution at 720p or 480p and trim to just the part you need before encoding."},
+            {"icon": "fa-shield-halved", "title": "Nothing uploaded", "text": "The whole re-encode runs on your device — private, free and watermark-free."},
+        ],
+        "faqs": [
+            {"q": "How do I compress a video without uploading it?",
+             "a": "Open the video tool, drop in your MP4, WebM or MOV, choose the Small-file quality tier and convert. The re-encoding runs in your browser — the clip never leaves your device."},
+            {"q": "How much smaller will my video get?",
+             "a": "The Small-file tier targets roughly half the bitrate of a typical phone recording, and capping the resolution at 720p shrinks it further — together they commonly cut a clip to a quarter of its size or less."},
+            {"q": "Will there be a watermark or a time limit?",
+             "a": "No watermark and no arbitrary clip limit — it's free and unlimited. Long clips simply take about as long as the trimmed clip runs, because the browser re-encodes in real time."},
+        ],
+    },
 ]
 
 COMPRESS_PAGES_BY_SLUG = {p["slug"]: p for p in COMPRESS_PAGES}
@@ -784,7 +820,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/", "/screenshot-beautifier/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/", "/screenshot-beautifier/", "/remove-object/", "/photo-filters/", "/upscale/", "/heic-to-jpg/", "/pdf-to-image/", "/image-to-text/", "/svg-to-png/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
@@ -920,12 +956,14 @@ def compress_page(request, slug):
                  "tools_title": "Related free tools",
                  "tools_subtitle": "Convert, resize or strip metadata — all on your device.",
                  "tools": ["convert", "resize", "exif", "index"],
-                 "cta": {"label": "Compress an image now"},
+                 "cta": {"label": "Compress a video now" if page.get("cta_url_name") else "Compress an image now"},
                  "cta_icon": "fa-compress",
                  "cta_title": "Compress your images — free and private",
                  "cta_text": "No upload, no watermark, no sign-up — everything runs in your browser."},
         "siblings": siblings,
-        "cta_url": reverse("remover:compress"),
+        # Most entries funnel to the image compressor; an entry may name another
+        # tool (compress-video → the video converter).
+        "cta_url": reverse(f"remover:{page.get('cta_url_name', 'compress')}"),
         "faqs": page["faqs"],
         "faq_jsonld": faq_jsonld(page["faqs"]),
     })
@@ -1177,6 +1215,69 @@ def collage(request):
     return render(request, "remover/collage.html", {
         "faqs": COLLAGE_FAQS,
         "faq_jsonld": faq_jsonld(COLLAGE_FAQS),
+    })
+
+
+@require_GET
+def remove_object(request):
+    """Render the client-side object remover (brush + content-aware fill)."""
+    return render(request, "remover/remove_object.html", {
+        "faqs": REMOVE_OBJECT_FAQS,
+        "faq_jsonld": faq_jsonld(REMOVE_OBJECT_FAQS),
+    })
+
+
+@require_GET
+def upscale(request):
+    """Render the client-side image upscaler (Lanczos resample + sharpen)."""
+    return render(request, "remover/upscale.html", {
+        "faqs": UPSCALE_FAQS,
+        "faq_jsonld": faq_jsonld(UPSCALE_FAQS),
+    })
+
+
+@require_GET
+def heic(request):
+    """Render the client-side HEIC → JPG/PNG/WEBP converter."""
+    return render(request, "remover/heic.html", {
+        "faqs": HEIC_FAQS,
+        "faq_jsonld": faq_jsonld(HEIC_FAQS),
+    })
+
+
+@require_GET
+def pdf_to_image(request):
+    """Render the client-side PDF → images extractor."""
+    return render(request, "remover/pdf_to_image.html", {
+        "faqs": PDF_TO_IMAGE_FAQS,
+        "faq_jsonld": faq_jsonld(PDF_TO_IMAGE_FAQS),
+    })
+
+
+@require_GET
+def ocr(request):
+    """Render the client-side OCR (copy text from an image) tool."""
+    return render(request, "remover/ocr.html", {
+        "faqs": OCR_FAQS,
+        "faq_jsonld": faq_jsonld(OCR_FAQS),
+    })
+
+
+@require_GET
+def svg_to_png(request):
+    """Render the client-side SVG → PNG rasteriser."""
+    return render(request, "remover/svg_to_png.html", {
+        "faqs": SVG_TO_PNG_FAQS,
+        "faq_jsonld": faq_jsonld(SVG_TO_PNG_FAQS),
+    })
+
+
+@require_GET
+def photo_filters(request):
+    """Render the client-side photo filters / adjustments editor."""
+    return render(request, "remover/photo_filters.html", {
+        "faqs": PHOTO_FILTERS_FAQS,
+        "faq_jsonld": faq_jsonld(PHOTO_FILTERS_FAQS),
     })
 
 

@@ -38,7 +38,7 @@
             </p>
         </div>
 
-        <div class="max-w-2xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
         <div id="bd-dropzone" role="button" tabindex="0" aria-label="Upload a photo. Drag and drop, click to browse, or paste."
              class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
             <input type="file" id="bd-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp">
@@ -53,6 +53,15 @@
                 </button>
             </div>
         </div>
+        <figure class="flex flex-col gap-3 w-full">
+            <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70">
+                <img src="{% static 'img/demo-border-after.webp' %}" width="820" height="616" alt="A photo of a dog inside a white Polaroid frame with a handwritten-style caption, tilted on a neutral backdrop" class="absolute inset-0 w-full h-full object-cover">
+                <span class="absolute top-3 right-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">Polaroid</span>
+            </div>
+            <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+                <i class="fa-solid fa-image-portrait mr-1" aria-hidden="true"></i>Solid or gradient border, rounded corners, or a captioned Polaroid
+            </figcaption>
+        </figure>
         </div>
     </section>
 

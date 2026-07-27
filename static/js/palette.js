@@ -51,7 +51,7 @@ const App = {
       });
       this.render();
     }));
-    $('#pl-copy-all').addEventListener('click', () => this.copyAll());
+    $$('.pl-export').forEach((b) => b.addEventListener('click', () => this.copyAll(b.dataset.export)));
     $('#pl-new').addEventListener('click', () => this.reset());
 
     const preview = $('#pl-preview');
@@ -149,13 +149,25 @@ const App = {
     catch { Toast.show(t('Copy failed'), 'error'); }
   },
 
-  async copyAll() {
+  /** Copy the whole palette in a developer-ready shape: CSS vars, a Tailwind
+   *  colors block, or plain JSON — dominant colours are only useful once they
+   *  leave the page. */
+  async copyAll(kind = 'css') {
     if (!this.colors.length) return;
-    const lines = this.colors.map(([r, g, b], i) =>
-      `  --color-${i + 1}: ${this.format === 'rgb' ? `rgb(${r}, ${g}, ${b})` : hex(r, g, b)};`);
+    const val = ([r, g, b]) => (this.format === 'rgb' ? `rgb(${r}, ${g}, ${b})` : hex(r, g, b));
+    let text;
+    if (kind === 'tailwind') {
+      const lines = this.colors.map((c, i) => `        'palette-${i + 1}': '${val(c)}',`);
+      text = `// tailwind.config.js → theme.extend.colors\ncolors: {\n${lines.join('\n')}\n},`;
+    } else if (kind === 'json') {
+      text = JSON.stringify(this.colors.map(val), null, 2);
+    } else {
+      const lines = this.colors.map((c, i) => `  --color-${i + 1}: ${val(c)};`);
+      text = `:root {\n${lines.join('\n')}\n}`;
+    }
     try {
-      await navigator.clipboard.writeText(`:root {\n${lines.join('\n')}\n}`);
-      Toast.show(t('Palette copied as CSS'));
+      await navigator.clipboard.writeText(text);
+      Toast.show(kind === 'css' ? t('Palette copied as CSS') : t('Palette copied as {kind}', { kind }));
     } catch { Toast.show(t('Copy failed'), 'error'); }
   },
 

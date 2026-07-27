@@ -38,9 +38,9 @@
             </p>
         </div>
 
-        <div class="max-w-2xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
             <div id="cl-dropzone" role="button" tabindex="0" aria-label="Upload photos. Drag and drop, click to browse, or paste."
-                 class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                 class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
                 <input type="file" id="cl-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp" multiple>
                 <div class="flex flex-col items-center justify-center space-y-4 text-center">
                     <div id="cl-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
@@ -53,6 +53,15 @@
                     </button>
                 </div>
             </div>
+            <figure class="flex flex-col gap-3 w-full">
+                <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 bg-white">
+                    <img src="{% static 'img/demo-collage-after.webp' %}" width="820" height="616" alt="Four photos arranged into a two-by-two collage grid with white gaps and rounded corners" class="absolute inset-0 w-full h-full object-cover">
+                    <span class="absolute top-3 right-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">2×2 grid</span>
+                </div>
+                <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+                    <i class="fa-solid fa-table-columns mr-1" aria-hidden="true"></i>Pick the columns, gap, corners and background — all on your device
+                </figcaption>
+            </figure>
         </div>
     </section>
 
@@ -95,7 +104,7 @@
                     <input id="cl-radius" type="range" min="0" max="60" value="8" class="w-full accent-primary" data-range aria-label="Corner radius"></label>
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-gray-500 dark:text-gray-400">Background</span>
-                    <input id="cl-bg" type="color" value="#ffffff" class="h-8 w-14 rounded cursor-pointer bg-transparent" aria-label="Background colour">
+                    <input id="cl-bg" type="color" value="#ffffff" class="h-8 w-14 rounded cursor-pointer bg-transparent border border-gray-300 dark:border-gray-600" aria-label="Background colour">
                 </div>
             </div>
 

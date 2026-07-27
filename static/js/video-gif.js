@@ -87,6 +87,7 @@ const App = {
     $('#vg-loop').addEventListener('change', (e) => { this.loop = e.target.checked; this.invalidate(); });
     $('#vg-create').addEventListener('click', () => this.create());
     $('#vg-download').addEventListener('click', () => this.save());
+    $('#vg-grab').addEventListener('click', () => this.grabFrame());
     $('#vg-new').addEventListener('click', () => this.reset());
   },
 
@@ -96,6 +97,21 @@ const App = {
       x.classList.toggle('ring-2', a); x.classList.toggle('ring-primary', a);
       x.classList.toggle('hover:bg-gray-100', !a); x.classList.toggle('dark:hover:bg-gray-800', !a);
     });
+  },
+
+  /** Capture the paused frame as a PNG and offer it to the cross-tool chain —
+   *  this tool can't receive an image, but a frame is a fine one to send on. */
+  grabFrame() {
+    if (!this.url || !this.video.videoWidth) return;
+    const c = document.createElement('canvas');
+    c.width = this.video.videoWidth;
+    c.height = this.video.videoHeight;
+    c.getContext('2d').drawImage(this.video, 0, 0);
+    c.toBlob((blob) => {
+      if (!blob) { Toast.show(t('Could not capture that frame'), 'error'); return; }
+      CBG.Chain.offer(blob, `frame-${fmtTime(this.video.currentTime).replace(':', 'm')}s.png`);
+      Toast.show(t('Frame captured — pick a tool below to edit it'), 'info');
+    }, 'image/png');
   },
 
   async load(fileList) {

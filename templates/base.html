@@ -138,8 +138,11 @@
                             </a>
                             {% endfor %}
                             <button id="tool-more-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="tool-more-panel" class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white/70 dark:hover:bg-gray-800 transition-colors">
+                                {% comment %}The label stays visible on mobile: the pill row collapses
+                                to one or two tools there, so an unlabelled grid icon was the only
+                                door to the other thirty and nothing said so.{% endcomment %}
                                 <i class="fa-solid fa-table-cells-large text-[11px]" aria-hidden="true"></i>
-                                <span class="hidden sm:inline">{% t "All tools" %}</span>
+                                <span>{% t "All tools" %}</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform" data-chevron aria-hidden="true"></i>
                             </button>
                         </nav>

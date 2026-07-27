@@ -27,6 +27,7 @@ const App = {
   end: 0,
   speed: 1,
   size: 'original',   // 'original' | 720 | 480 (max dimension)
+  quality: 'balanced', // 'high' | 'balanced' | 'small' — video bitrate tier
   format: 'mp4',      // 'mp4' | 'webm'
   mute: false,
   busy: false,
@@ -74,12 +75,17 @@ const App = {
       this.size = b.dataset.size === 'original' ? 'original' : +b.dataset.size;
       this.segment($$('.vc-size'), b);
     }));
+    $$('.vc-quality').forEach((b) => b.addEventListener('click', () => {
+      this.quality = b.dataset.quality;
+      this.segment($$('.vc-quality'), b);
+    }));
     $$('.vc-format').forEach((b) => b.addEventListener('click', () => {
       if (b.disabled) return;
       this.format = b.dataset.format;
       this.segment($$('.vc-format'), b);
     }));
     $('#vc-mute').addEventListener('change', (e) => { this.mute = e.target.checked; });
+    $('#vc-grab').addEventListener('click', () => this.grabFrame());
     $('#vc-convert').addEventListener('click', () => this.convert());
     $('#vc-download').addEventListener('click', () => this.save());
     $('#vc-new').addEventListener('click', () => this.reset());
@@ -213,6 +219,25 @@ const App = {
     return this.audioTrack;
   },
 
+  /**
+   * Capture the paused frame as a full-resolution PNG and offer it to the
+   * cross-tool chain. The video tools can't RECEIVE a chained image (their
+   * input is a video), but a frame is a perfectly good image to send onwards —
+   * pause on the moment you want and continue in any image tool.
+   */
+  grabFrame() {
+    if (!this.url || !this.video.videoWidth) return;
+    const c = document.createElement('canvas');
+    c.width = this.video.videoWidth;
+    c.height = this.video.videoHeight;
+    c.getContext('2d').drawImage(this.video, 0, 0);
+    c.toBlob((blob) => {
+      if (!blob) { Toast.show(t('Could not capture that frame'), 'error'); return; }
+      CBG.Chain.offer(blob, `frame-${fmtTime(this.video.currentTime).replace(':', 'm')}s.png`);
+      Toast.show(t('Frame captured — pick a tool below to edit it'), 'info');
+    }, 'image/png');
+  },
+
   setProgress(p) {
     const pct = Math.max(0, Math.min(100, Math.round(p * 100)));
     $('#vc-bar').style.width = `${pct}%`;
@@ -243,9 +268,17 @@ const App = {
     const chunks = [];
     let rec;
     try {
+      // Bits per pixel per frame + a cap, per quality tier. "Small file" is
+      // the compress-a-video use case: roughly half the balanced bitrate.
+      const tiers = {
+        high: [0.15, 12_000_000],
+        balanced: [0.1, 8_000_000],
+        small: [0.05, 3_000_000],
+      };
+      const [bpp, cap] = tiers[this.quality] || tiers.balanced;
       rec = new MediaRecorder(stream, {
         mimeType: mime,
-        videoBitsPerSecond: Math.min(8_000_000, Math.round(w * h * 30 * 0.1)),
+        videoBitsPerSecond: Math.min(cap, Math.round(w * h * 30 * bpp)),
       });
     } catch {
       this.fail(t('Could not convert the video'));

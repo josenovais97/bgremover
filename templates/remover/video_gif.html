@@ -70,6 +70,9 @@
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
             <video id="vg-video" class="max-w-full max-h-[52vh] rounded-lg shadow-md bg-black" muted playsinline controls aria-label="Video preview"></video>
             <canvas id="vg-canvas" class="hidden" aria-hidden="true"></canvas>
+            <button id="vg-grab" type="button" class="px-3 py-2 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Capture the paused frame as an image and edit it in any tool">
+                <i class="fa-solid fa-camera mr-1.5" aria-hidden="true"></i>Grab this frame as an image
+            </button>
             <p id="vg-status" class="text-xs text-gray-500 dark:text-gray-400 text-center" role="status" aria-live="polite">Trim, set the speed, then hit Create</p>
         </div>
 

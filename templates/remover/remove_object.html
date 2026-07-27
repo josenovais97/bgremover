@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static i18n_extras %}
+
+{% block title %}Remove Objects from Photos — Free, Private &amp; In Your Browser{% endblock %}
+{% block description %}Erase unwanted objects, people or blemishes from a photo: brush over them and a content-aware fill blends them away. Free, no watermark, and nothing is uploaded — it all runs in your browser.{% endblock %}
+{% block og_title %}Remove Objects from Photos — Free &amp; Private{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Object Remover",
+  "applicationCategory": "DesignApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Brush over an unwanted object and erase it with a content-aware fill, entirely in your browser — no upload, no watermark.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero -->
+    <section id="ro-hero" class="max-w-5xl mx-auto space-y-8">
+        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
+                <i class="fa-solid fa-eraser" aria-hidden="true"></i> Erased locally — nothing is uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Remove
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Objects</span>
+                from Photos
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Brush over the thing you want gone — a stranger, a sign, a blemish — and a
+                <strong>content-aware fill</strong> blends it away. Free, private and instant.
+            </p>
+        </div>
+
+        <div class="max-w-2xl mx-auto">
+            <div id="ro-dropzone" role="button" tabindex="0" aria-label="Upload a photo. Drag and drop, click to browse, or paste."
+                 class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <input type="file" id="ro-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp">
+                <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                    <div id="ro-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-eraser" aria-hidden="true"></i>
+                    </div>
+                    <h2 class="text-2xl font-semibold">Drop a photo</h2>
+                    <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                    <button id="ro-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                    </button>
+                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">Works best on even backgrounds — sky, grass, walls, sand</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="ro-editor" class="hidden max-w-6xl mx-auto grid lg:grid-cols-[1fr_18rem] gap-6 items-start">
+        <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 relative">
+            <div id="ro-stage" class="relative mx-auto max-w-full touch-none select-none" style="line-height:0">
+                <canvas id="ro-canvas" class="max-w-full rounded-lg shadow"></canvas>
+                <canvas id="ro-overlay" class="absolute inset-0 max-w-full rounded-lg cursor-crosshair"></canvas>
+                <div id="ro-cursor" class="hidden absolute pointer-events-none rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.6)]" aria-hidden="true"></div>
+            </div>
+            <div id="ro-busy" class="hidden absolute inset-0 grid place-items-center bg-white/60 dark:bg-gray-950/60 rounded-2xl z-10">
+                <span class="flex items-center gap-2 text-sm font-semibold"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> Erasing…</span>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-4 text-sm">
+                <div class="space-y-2">
+                    <label for="ro-brush" class="flex justify-between text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        <span>Brush size</span><span id="ro-brush-value" class="text-primaryText">40</span>
+                    </label>
+                    <input id="ro-brush" type="range" min="8" max="120" value="40" class="w-full accent-primary">
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Brush over the object, then press <strong>Erase</strong>. Repeat in smaller passes for tricky areas.</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="ro-undo" type="button" disabled class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40 transition">
+                        <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>Undo
+                    </button>
+                    <button id="ro-clear" type="button" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                        <i class="fa-solid fa-xmark mr-1.5" aria-hidden="true"></i>Clear brush
+                    </button>
+                </div>
+            </div>
+
+            <button id="ro-apply" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <i class="fa-solid fa-eraser mr-1.5" aria-hidden="true"></i>Erase selection
+            </button>
+
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3 text-xs">
+                <span class="text-gray-500 dark:text-gray-400">Format</span>
+                <div class="grid grid-cols-2 gap-1.5 font-medium">
+                    <button type="button" class="ro-fmt px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-primary text-white" data-fmt="png">PNG</button>
+                    <button type="button" class="ro-fmt px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700" data-fmt="jpg">JPG</button>
+                </div>
+            </div>
+
+            <button id="ro-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>Download
+            </button>
+            <button id="ro-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New photo
+            </button>
+        </div>
+    </section>
+
+    <!-- SEO / help -->
+    <section aria-labelledby="ro-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="ro-how" class="text-2xl font-bold text-center">Erase an object in three steps</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">Any JPG, PNG or WEBP — it's read straight in your browser, never uploaded.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Brush the object</div><p class="text-sm text-gray-500 dark:text-gray-400">Paint over the thing you want gone and press Erase — the fill blends the area away.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Export full resolution as PNG or JPG — free and watermark-free.</p></div>
+        </div>
+    </section>
+
+    {% include 'remover/partials/faq.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/remove-object.js' %}"></script>
+{% endblock %}

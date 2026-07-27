@@ -110,12 +110,16 @@
    * Wire a dropzone: click, keyboard, drag & drop, and clipboard paste.
    *
    * `onFiles` receives an array of image Files (already filtered). Pass
-   * `multiple: false` to hand over only the first one.
+   * `multiple: false` to hand over only the first one. Pass `accept` (a
+   * file => bool predicate) for tools whose input is not a plain raster image:
+   * HEIC files sometimes arrive with an empty MIME type and PDFs are
+   * `application/pdf`, so the default `image/*` filter would reject them.
    */
-  function dropzone(el, { input, icon, browse, multiple = true, onFiles }) {
+  function dropzone(el, { input, icon, browse, multiple = true, accept, onFiles }) {
     if (!el || !input) return;
+    const ok = accept || ((f) => /^image\//.test(f.type));
     const deliver = (list) => {
-      const files = [...(list || [])].filter((f) => f && /^image\//.test(f.type));
+      const files = [...(list || [])].filter((f) => f && ok(f));
       if (!files.length) { Toast.show(t('Please choose an image'), 'error'); return; }
       onFiles(multiple ? files : [files[0]]);
     };

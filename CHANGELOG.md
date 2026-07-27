@@ -7,6 +7,68 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Seven new tools** (26 → 33), all 100% client-side and wired into the nav,
+  grid, palette, sitemap, PWA shell and chaining automatically by existing:
+  - **Remove Object** (`/remove-object/`) — brush over anything and a
+    content-aware fill blends it away. No model and no dependency: a
+    multi-scale diffusion (onion-peel init + Jacobi relaxation at low
+    resolution, feather-blended back at full resolution), so it's instant and
+    shines on even backgrounds.
+  - **HEIC to JPG** (`/heic-to-jpg/`) — iPhones shoot HEIC by default and the
+    rest of the world can't open it; the search volume is enormous and the
+    privacy angle ("your camera roll doesn't transit a server to change
+    format") is real. Decodes via heic2any/libheif WASM, lazy-loaded from the
+    CDN on first convert; batch + ZIP; JPG/PNG/WEBP out.
+  - **PDF to Images** (`/pdf-to-image/`) — every page rendered from the vector
+    source at 1×/2×/4× via pdf.js. The pdf.js worker is cross-origin on the
+    CDN and the Worker constructor refuses that, so its source is fetched and
+    started from a blob: URL (allowed by `worker-src blob:`).
+  - **Image to Text** (`/image-to-text/`) — on-device Tesseract OCR in five
+    languages, with progress, an editable result box, copy and save-as-.txt.
+  - **SVG to PNG** (`/svg-to-png/`) — rasterised at the exact output size, so
+    4× has 4× the real detail; transparency kept, viewBox fallback for
+    dimension-less SVGs.
+  - **Photo Filters** (`/photo-filters/`) — the Instagram editor's looks idea
+    as a standalone, general tool: ten presets that are just slider states
+    (so a look and a manual nudge always compose), hold-to-compare, and a
+    full-resolution re-render on export.
+  - **Upscale** (`/upscale/`) — the removed AI upscaler's URL returns as a
+    Lanczos resample + unsharp mask (pica), honestly positioned as non-AI:
+    instant, dependable, and incapable of freezing the tab. The 301 to home
+    is gone; the indexed URL serves a real page again.
+- **Compress Video landing page** (`/compress-video/`) — the video converter
+  gained High/Balanced/**Small file** bitrate tiers, and the landing page says
+  so in the words people actually search. First `COMPRESS_PAGES` entry with a
+  `cta_url_name`, funnelling to the converter instead of the image compressor.
+- **Grab a frame from a video.** The two video tools are chain sources now:
+  pause on a moment, press "Grab this frame as an image", and the full-res
+  frame is offered to every image tool through the existing chain bar. The
+  video tools still can't *receive* a chained image — their input is a video —
+  but a frame is a perfectly good image to send onwards.
+- **Palette exports** — copy the extracted palette as CSS variables, a
+  Tailwind `colors` block, or JSON. Dominant colours are only useful once they
+  leave the page.
+- **Compress zero-savings hint** — "saved 0%" now appends what to try next
+  (WEBP/AVIF or a lower quality) instead of dead-ending.
+
+### Changed
+- **The landing hero yields to the workspace.** On compress and convert the
+  first result used to render below the fold, under a full-height hero that
+  stayed put; collage already collapsed its hero and now they match it.
+- **Demo honesty pass.** The video converter's demo was a film-countdown GIF
+  that showed nothing about the tool; it's now a paused frame with a real trim
+  timeline (handles, playhead, kept-range label) drawn at the same geometry
+  the tool uses. Collage and Border finally got demo panes (a real 2×2 grid
+  and a captioned Polaroid, both generated from existing demo photos).
+- The mobile header now labels the "All tools" button instead of showing a
+  bare grid icon — on phones the pill row collapses to one or two tools, so
+  that button is the door to the other thirty and nothing said so.
+- The collage background-colour swatch has a border, so a white swatch no
+  longer reads as an empty input in light mode.
+- `CBG.dropzone` accepts an `accept` predicate for tools whose input is not a
+  plain raster image (HEIC arrives with an empty MIME type on some systems,
+  PDFs are `application/pdf`).
+
 - **The refine brush can finally see what it's restoring.** A "Show original"
   toggle (`O`) ghosts the whole photo at 35% under the cut-out, so Restore stops
   being an act of memory — the erased background is right there under the brush.

@@ -1,6 +1,6 @@
 # ClearBG — a free, private image toolkit that runs in your browser
 
-**26 image & video tools that never upload your files.** Background removal, conversion,
+**33 image & video tools that never upload your files.** Background removal, conversion,
 compression, resizing, image-to-PDF, passport photos, stickers, QR codes, metadata
 stripping and more — all of it executes on the visitor's device. Django serves fast, SEO-optimised
 HTML; the pixels never touch the server.
@@ -44,11 +44,19 @@ Every tool is 100% client-side, free, unlimited, and watermark-free.
 | **Video converter** | `/video-converter/` | Trim, change speed and convert video to MP4. |
 | **Collage** | `/collage/` | Arrange several photos into a grid. |
 | **Border & Polaroid** | `/add-border/` | Solid/gradient border, rounded corners, or a captioned Polaroid frame. |
-| **Colour palette** | `/color-palette/` | Pull the dominant colours out of any photo. |
+| **Colour palette** | `/color-palette/` | Pull the dominant colours out of any photo. Copy as CSS variables, Tailwind config or JSON. |
 | **Base64** | `/base64-image/` | Encode or decode an image data URI. |
+| **Remove object** | `/remove-object/` | Brush over an object and a content-aware fill (multi-scale diffusion, no model) blends it away. |
+| **Photo filters** | `/photo-filters/` | Ten one-tap looks + brightness/contrast/saturation/warmth/vignette/grain sliders; full-res export. |
+| **Upscaler** | `/upscale/` | 2×/4× Lanczos resample + unsharp mask (pica). Honest non-AI positioning — instant, can't freeze the tab. |
+| **HEIC to JPG** | `/heic-to-jpg/` | Decode iPhone HEIC photos in the browser (heic2any/libheif WASM), batch + ZIP, JPG/PNG/WEBP out. |
+| **PDF to images** | `/pdf-to-image/` | Render every PDF page as PNG/JPG at 1×/2×/4× (pdf.js; worker fetched to a blob URL for the CSP). |
+| **Image to text (OCR)** | `/image-to-text/` | On-device Tesseract OCR (5 languages); copy or save the recognised text. |
+| **SVG to PNG** | `/svg-to-png/` | Rasterise vector art at 1×/2×/4× or an exact width — sharp at any size, transparency kept. |
 
-Removed: the AI upscaler (`/upscale/`) — client-side super-resolution froze the tab. The
-URL 301s to home so the indexed page never 404s.
+The AI upscaler was removed in an earlier release (client-side super-resolution froze the
+tab) and its URL 301'd to home; `/upscale/` is now back as the safe Lanczos resampler
+above, reclaiming the indexed URL.
 
 **Batch** is supported by the remover, convert, compress, eCommerce, GIF and PDF
 tools, plus resize, watermark and EXIF — for those three the first file is the one
@@ -345,7 +353,7 @@ DJANGO_SETTINGS_MODULE=config.settings.production \
 ## 🔎 SEO & content architecture
 
 Everything is generated from data in `remover/views.py`, so adding a page is a data edit
-that automatically extends the nav, the internal links and the sitemap (**72 paths; the 12
+that automatically extends the nav, the internal links and the sitemap (**74 paths; the 12
 with a real Portuguese translation are listed in both languages**).
 
 | Set | Route | Source |
@@ -353,7 +361,7 @@ with a real Portuguese translation are listed in both languages**).
 | Use-case landings (11) | `/remove-background/<slug>/` | `USE_CASES` |
 | Passport sizes by country (22) | `/passport-photo/<country>/` | `passport_data.COUNTRIES` |
 | Privacy-angle landings (3) | `/private-image-tools/`, `/remove-background-without-uploading/`, `/offline-image-editor/` | `PRIVACY_PAGES` |
-| Compress intent variants (9) | `/compress-png/`, `/compress-image-under-500kb/`, `/compress-image-for-discord/`, … | `COMPRESS_PAGES` |
+| Compress intent variants (10) | `/compress-png/`, `/compress-image-under-500kb/`, `/compress-video/`, … | `COMPRESS_PAGES` (`/compress-video/` carries `cta_url_name` and funnels to the video converter) |
 | Competitor comparisons (4 + 1) | `/tinypng-alternative/`, `/canva-alternative/`, `/adobe-express-alternative/`, `/photoroom-alternative/`, `/remove-bg-alternative/` | `COMPARISONS`, `alternative()` |
 | Info | `/about/`, `/privacy/`, `/terms/` | templates |
 
@@ -371,7 +379,7 @@ Also:
 - **Contextual internal links**: a related-tools row is injected into every page by
   `base.html` (same-group tools first — see `_related_tools()`).
 - `robots.txt` and `sitemap.xml` are generated from the page list with per-page
-  `priority` and `lastmod` (84 URLs: 72 English paths + the 12 translated Portuguese ones).
+  `priority` and `lastmod` (86 URLs: 74 English paths + the 12 translated Portuguese ones).
 
 ---
 

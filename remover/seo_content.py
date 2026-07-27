@@ -371,3 +371,94 @@ MEME_FAQS = [
     {"q": "What size does the meme export at?",
      "a": "The meme is exported at the resolution of your source image, so it stays sharp when you share it or post it online."},
 ]
+
+REMOVE_OBJECT_FAQS = [
+    {"q": "How do I remove an object from a photo?",
+     "a": "Drop in a photo, brush over the object you want gone, and click Erase. The tool fills the brushed area from the surrounding pixels — all in your browser, in seconds."},
+    {"q": "Does it use AI? How good is the result?",
+     "a": "It uses a fast content-aware fill that blends the surrounding colours and texture into the erased area. It shines on skies, walls, grass, sand and other even backgrounds; very detailed or patterned backgrounds may need a second, smaller pass."},
+    {"q": "Is my photo uploaded anywhere?",
+     "a": "No. The whole fill runs on your device — the photo never leaves your browser, which is exactly what you want when editing personal pictures."},
+    {"q": "Can I remove people from photos?",
+     "a": "Yes — brush over the person and erase. Results are best when the person stands against a relatively even background such as sky, sea, grass or a wall."},
+    {"q": "Is it free, and is there a watermark?",
+     "a": "Completely free and unlimited, with no watermark and no sign-up — like every ClearBG tool."},
+]
+
+UPSCALE_FAQS = [
+    {"q": "How does the upscaler enlarge my image?",
+     "a": "It resamples the image at 2× or 4× using a high-quality Lanczos filter, then applies a gentle detail-sharpening pass — the same approach professional photo software uses for resizing. It runs instantly in your browser."},
+    {"q": "Is this AI super-resolution?",
+     "a": "No — and that's deliberate. In-browser AI upscaling models are slow and can freeze the tab on large photos. This tool trades a little of that magic for instant, dependable results at any size, with nothing uploaded."},
+    {"q": "What sizes can I upscale to?",
+     "a": "Double or quadruple the original, up to a safety cap of 8000 pixels on the longest side so the browser never runs out of memory. Exports are PNG (lossless) or JPG."},
+    {"q": "Will an upscaled photo look better than the original?",
+     "a": "Upscaling can't invent detail that was never captured, but a well-resampled, lightly sharpened enlargement looks dramatically better than a browser or editor doing a plain stretch — edges stay clean instead of going soft or blocky."},
+    {"q": "Is it private and free?",
+     "a": "Yes. The resampling runs entirely on your device — nothing is uploaded — and it's free, unlimited and watermark-free."},
+]
+
+HEIC_FAQS = [
+    {"q": "Why can't I open my iPhone's HEIC photos?",
+     "a": "iPhones save photos in HEIC (High Efficiency Image Container) by default. It halves file sizes, but Windows, Android and most websites can't open it — which is why the photo works on your phone and nowhere else. Converting to JPG fixes that instantly."},
+    {"q": "How do I convert HEIC to JPG for free?",
+     "a": "Drop your .heic files here and download them as JPG (or PNG / WEBP). The conversion happens in your browser — no software to install, no upload, no watermark, no limit."},
+    {"q": "Are my photos uploaded to a server?",
+     "a": "No. The HEIC decoder runs on your device, so your photos never leave your browser. That matters — personal photos shouldn't have to pass through someone's server just to change format."},
+    {"q": "Does converting HEIC lose quality?",
+     "a": "The photo is decoded at full resolution and re-encoded at high quality. JPG is slightly lossy by nature, but at this setting the difference is not visible; choose PNG for a lossless export."},
+    {"q": "Can I convert many HEIC photos at once?",
+     "a": "Yes — drop in a whole batch and download them individually or together as a ZIP."},
+]
+
+PDF_TO_IMAGE_FAQS = [
+    {"q": "How do I turn a PDF into images?",
+     "a": "Drop a PDF here and every page is rendered as a high-resolution image right in your browser. Download single pages as PNG or JPG, or grab all pages at once as a ZIP."},
+    {"q": "Is my PDF uploaded anywhere?",
+     "a": "No. The PDF is parsed and rendered entirely on your device — important, since PDFs are often contracts, IDs, statements and other private documents."},
+    {"q": "What resolution are the exported images?",
+     "a": "Pages render at twice their nominal size (roughly 150 DPI) by default, and you can raise it for print-quality output. Text stays sharp because the page is rendered from the vector source, not stretched from a preview."},
+    {"q": "Can I extract just one page?",
+     "a": "Yes — every page gets its own download button, so you can save exactly the pages you need, or all of them as a ZIP."},
+    {"q": "Is it free, with no watermark?",
+     "a": "Completely free, unlimited and watermark-free — no sign-up, no page limits, no trial."},
+]
+
+OCR_FAQS = [
+    {"q": "How do I copy text out of an image?",
+     "a": "Drop in a photo or screenshot and the text recogniser reads it right in your browser. The recognised text appears in an editable box — copy it all with one click."},
+    {"q": "Is my image uploaded for the text recognition?",
+     "a": "No. The OCR engine (Tesseract, the same open-source engine many scanners use) runs on your device via WebAssembly. Screenshots often contain private conversations and documents — they never leave your browser here."},
+    {"q": "Which languages does it recognise?",
+     "a": "English and Portuguese are built in, and the engine downloads the selected language pack on first use — after that it's cached and works offline."},
+    {"q": "How accurate is it?",
+     "a": "Very good on clean screenshots and printed documents; harder photos (angles, handwriting, low light) reduce accuracy. Sharp, straight-on images with good contrast recognise best."},
+    {"q": "Is it free and unlimited?",
+     "a": "Yes — free, unlimited, no watermark, no sign-up. Recognise as many images as you like."},
+]
+
+SVG_TO_PNG_FAQS = [
+    {"q": "How do I convert an SVG to PNG?",
+     "a": "Drop an .svg file here, pick a size (1×, 2×, 4× or an exact pixel width) and download a crisp PNG. The browser rasterises the vector directly, so edges stay perfectly sharp at any scale."},
+    {"q": "Why does my SVG export blurry from other tools?",
+     "a": "Because they rasterise at the SVG's nominal size and then stretch the bitmap. This tool renders the vector at the exact output size you choose, so a 4× export has 4× the real detail."},
+    {"q": "Does it keep transparency?",
+     "a": "Yes — PNG exports keep a fully transparent background by default, or you can fill it with any colour. JPG export fills with white automatically."},
+    {"q": "Is my SVG uploaded?",
+     "a": "No. The file is read and rendered entirely in your browser — nothing is sent to a server."},
+    {"q": "What about fonts and embedded images inside the SVG?",
+     "a": "SVGs that embed their images and use standard system fonts render exactly. An SVG that references external files or webfonts may render with fallback fonts, since the browser rasterises it in isolation."},
+]
+
+PHOTO_FILTERS_FAQS = [
+    {"q": "What can I adjust in this photo editor?",
+     "a": "One-tap looks (vivid, warm, moody, film, black & white and more) plus manual sliders for brightness, contrast, saturation, warmth, vignette and grain. Hold the compare button any time to check against the original."},
+    {"q": "Are the filters applied to the full-quality photo?",
+     "a": "Yes. The preview is scaled for speed, but the export re-applies your exact settings to the original at full resolution — no quality loss beyond your chosen format."},
+    {"q": "Is my photo uploaded to apply filters?",
+     "a": "No. Every adjustment is drawn on a canvas on your device — the photo never leaves your browser."},
+    {"q": "Can I fine-tune a preset look?",
+     "a": "Yes — tap a look, then adjust any slider on top of it. The look sets a starting point; the sliders always stay in your control."},
+    {"q": "Is it free, with no watermark?",
+     "a": "Completely free and unlimited with no watermark or sign-up — export as PNG, JPG or WEBP."},
+]

@@ -15,7 +15,9 @@ from .views import USE_CASES, is_translated_path
 # and dropping someone's photo there would be nonsense.
 # The video → GIF tool takes a video file, so an image handed over from another
 # tool can't be its input either — like the QR generator, it's a source-only hop.
-CHAIN_EXCLUDED = {"qr", "video_gif", "video_converter"}
+# HEIC / PDF / SVG conversion tools take a specific source format that no other
+# tool can produce (a chained raster PNG is not a .heic, a PDF or an .svg).
+CHAIN_EXCLUDED = {"qr", "video_gif", "video_converter", "heic", "pdf_to_image", "svg_to_png"}
 
 # The tool switcher in the header. Defined once here so every item renders with
 # identical markup (no per-link drift in sizing/wrapping) and adding a tool is a
@@ -77,6 +79,20 @@ TOOL_NAV = [
      "blurb": "Pull the colours out of any photo"},
     {"name": "base64", "icon": "fa-solid fa-code", "label": "Base64", "group": "optimize",
      "blurb": "Encode or decode an image data URI"},
+    {"name": "remove_object", "icon": "fa-solid fa-eraser", "label": "Remove Object", "group": "edit",
+     "blurb": "Brush over anything and erase it from the photo"},
+    {"name": "photo_filters", "icon": "fa-solid fa-sliders", "label": "Filters", "group": "edit",
+     "blurb": "One-tap looks plus fine adjustment sliders"},
+    {"name": "upscale", "icon": "fa-solid fa-magnifying-glass-plus", "label": "Upscale", "group": "optimize",
+     "blurb": "Enlarge 2× or 4× with clean, sharp edges"},
+    {"name": "heic", "icon": "fa-brands fa-apple", "label": "HEIC to JPG", "group": "optimize",
+     "blurb": "Open iPhone HEIC photos anywhere as JPG"},
+    {"name": "pdf_to_image", "icon": "fa-solid fa-file-arrow-up", "label": "PDF to Images", "group": "optimize",
+     "blurb": "Save every PDF page as a sharp image"},
+    {"name": "ocr", "icon": "fa-solid fa-align-left", "label": "Image to Text", "group": "optimize",
+     "blurb": "Copy the text out of any photo or screenshot"},
+    {"name": "svg_to_png", "icon": "fa-solid fa-vector-square", "label": "SVG to PNG", "group": "optimize",
+     "blurb": "Rasterise vector art at any size, pixel-sharp"},
 ]
 
 # Categories for the "All tools" mega-menu, in display order. Each groups the
@@ -149,6 +165,13 @@ TOOL_ACCENTS = {
     # A shade apart from crop's blue 600/700 (like collage vs gif in purple), so
     # the two blue tools still read as different tools.
     "screenshot": ("29 78 216", "30 64 175", "59 130 246", "96 165 250"),    # blue 700/800/500/400
+    "remove_object": ("225 29 72", "190 18 60", "244 63 94", "251 113 133"),  # rose 600/700/500/400 (redact family)
+    "photo_filters": ("219 39 119", "190 24 93", "236 72 153", "244 114 182"),  # pink 600/700/500/400 (instagram family)
+    "upscale": ("4 120 87", "6 95 70", "5 150 105", "16 185 129"),           # emerald 700/800/600/500
+    "heic": ("124 58 237", "109 40 217", "167 139 250", "196 181 253"),      # violet 600/700/400/300 (converter family)
+    "pdf_to_image": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),  # stone 600/700/400/300 (PDF family)
+    "ocr": ("14 116 144", "21 94 117", "8 145 178", "6 182 212"),            # cyan 700/800/600/500
+    "svg_to_png": ("77 124 15", "63 98 18", "101 163 13", "132 204 22"),     # lime 700/800/600/500
 }
 _DEFAULT_ACCENT = TOOL_ACCENTS["index"]
 

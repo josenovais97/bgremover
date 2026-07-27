@@ -88,6 +88,21 @@ UI = {
     "Every icon size a site or app needs": "Todos os tamanhos de ícone para site ou app",
     "Generate a scannable code from a link": "Gere um código legível a partir de um link",
     "Strip GPS and camera data from photos": "Remova dados de GPS e da câmara das fotos",
+    # New tools (1.10)
+    "Remove Object": "Remover Objeto",
+    "Brush over anything and erase it from the photo": "Pinte sobre qualquer coisa e apague-a da foto",
+    "Filters": "Filtros",
+    "One-tap looks plus fine adjustment sliders": "Estilos de um toque e ajustes finos",
+    "Upscale": "Ampliar",
+    "Enlarge 2× or 4× with clean, sharp edges": "Amplie 2× ou 4× com contornos nítidos",
+    "HEIC to JPG": "HEIC para JPG",
+    "Open iPhone HEIC photos anywhere as JPG": "Abra fotos HEIC do iPhone em qualquer lado como JPG",
+    "PDF to Images": "PDF para Imagens",
+    "Save every PDF page as a sharp image": "Guarde cada página do PDF como imagem nítida",
+    "Image to Text": "Imagem para Texto",
+    "Copy the text out of any photo or screenshot": "Copie o texto de qualquer foto ou captura",
+    "SVG to PNG": "SVG para PNG",
+    "Rasterise vector art at any size, pixel-sharp": "Converta vetores em qualquer tamanho, sem perda",
     # Footer
     "Background Remover": "Removedor de Fundo",
     "Image Converter": "Conversor de Imagens",
@@ -387,6 +402,7 @@ JS_UI = {
     "Click to copy": "Clique para copiar",
     "Copied {value}": "{value} copiado",
     "Palette copied as CSS": "Paleta copiada como CSS",
+    "Palette copied as {kind}": "Paleta copiada como {kind}",
     "Remove": "Remover",
     "{n} photo": "{n} fotografia",
     "{n} photos": "{n} fotografias",
@@ -394,6 +410,43 @@ JS_UI = {
     "Keep editing this image:": "Continue a editar esta imagem:",
     "— keep going:": "— continue:",
     "Carried over from {tool}": "Trazido de {tool}",
+    # --- Remove object ---
+    "Brush over the object first": "Pinte primeiro sobre o objeto",
+    "Object erased — download or keep brushing": "Objeto apagado — descarregue ou continue a pintar",
+    "Erase failed": "Não foi possível apagar",
+    # --- Upscale ---
+    "capped": "limitado",
+    "Upscaled to {w}×{h}": "Ampliado para {w}×{h}",
+    "Could not upscale that image": "Não foi possível ampliar essa imagem",
+    # --- HEIC ---
+    "Those are not HEIC files — drop .heic photos": "Esses ficheiros não são HEIC — largue fotos .heic",
+    "Converting…": "A converter…",
+    "Could not convert {name}": "Não foi possível converter {name}",
+    "Converted {n} photo": "{n} fotografia convertida",
+    "Converted {n} photos": "{n} fotografias convertidas",
+    # --- PDF to images ---
+    "That is not a PDF file": "Isso não é um ficheiro PDF",
+    "Reading PDF…": "A ler o PDF…",
+    "Could not read that PDF": "Não foi possível ler esse PDF",
+    "{n} page": "{n} página",
+    "{n} pages": "{n} páginas",
+    "Page": "Página",
+    "Page {n} failed": "A página {n} falhou",
+    # --- OCR ---
+    "Reading…": "A ler…",
+    "No text found in that image": "Nenhum texto encontrado nessa imagem",
+    "{n} words": "{n} palavras",
+    "Could not read the text": "Não foi possível ler o texto",
+    # --- SVG to PNG ---
+    "That is not an SVG file": "Isso não é um ficheiro SVG",
+    "Could not render that SVG": "Não foi possível processar esse SVG",
+    # --- Video frame grab ---
+    "Could not capture that frame": "Não foi possível capturar esse fotograma",
+    "Frame captured — pick a tool below to edit it":
+        "Fotograma capturado — escolha abaixo uma ferramenta para o editar",
+    # --- Compressor zero-savings hint ---
+    "already optimized: try WEBP or AVIF, or lower the quality":
+        "já otimizada: experimente WEBP ou AVIF, ou reduza a qualidade",
 }
 
 

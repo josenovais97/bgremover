@@ -111,16 +111,18 @@ class NewToolTests(SimpleTestCase):
         self.assertContains(response, "pp-dropzone")
         self.assertContains(response, "Passport")
 
-    def test_upscale_redirects_to_home(self):
-        # The upscaler was removed (client-side super-resolution froze the tab);
-        # its indexed URL 301-redirects to home so it never 404s.
+    def test_upscale_is_back(self):
+        # The AI upscaler was removed (super-resolution froze the tab) and the
+        # URL 301'd home; it has since returned as a safe Lanczos resampler, so
+        # the indexed URL serves a real page again.
         response = self.client.get("/upscale/")
-        self.assertRedirects(response, "/", status_code=301, target_status_code=200)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "remover/upscale.html")
 
     def test_new_tools_in_sitemap(self):
         response = self.client.get(reverse("remover:sitemap"))
         self.assertContains(response, "/passport-photo/")
-        self.assertNotContains(response, "/upscale/")
+        self.assertContains(response, "/upscale/")
 
     def test_new_tools_in_nav(self):
         response = self.client.get(reverse("remover:index"))

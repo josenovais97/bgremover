@@ -14,10 +14,16 @@ urlpatterns = [
     path("meme-maker/", views.meme, name="meme"),
     path("passport-photo/", views.passport, name="passport"),
     path("passport-photo/<slug:country>/", views.passport_country, name="passport_country"),
-    # The AI upscaler was removed (client-side super-resolution froze the tab).
-    # Keep the indexed URL alive with a 301 to home so it never 404s — for search
-    # engines and for old service-worker caches that still request it.
-    path("upscale/", RedirectView.as_view(pattern_name="remover:index", permanent=True)),
+    # The AI upscaler once lived here, was removed (super-resolution froze the
+    # tab), and the URL 301'd to home. It is now back as a safe Lanczos-resample
+    # upscaler, reclaiming the indexed URL.
+    path("upscale/", views.upscale, name="upscale"),
+    path("remove-object/", views.remove_object, name="remove_object"),
+    path("photo-filters/", views.photo_filters, name="photo_filters"),
+    path("heic-to-jpg/", views.heic, name="heic"),
+    path("pdf-to-image/", views.pdf_to_image, name="pdf_to_image"),
+    path("image-to-text/", views.ocr, name="ocr"),
+    path("svg-to-png/", views.svg_to_png, name="svg_to_png"),
     path("ecommerce/", views.ecommerce, name="ecommerce"),
     path("blur-background/", views.blur, name="blur"),
     # /portrait-mode/ was merged into /blur-background/ (same tool). 301 so the
