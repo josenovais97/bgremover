@@ -70,6 +70,65 @@
         {% if country.note %}<p class="text-sm text-gray-500 dark:text-gray-400 text-center">{{ country.note }}</p>{% endif %}
     </section>
 
+    {% comment %}Everything from here to the FAQ is country-SPECIFIC copy (passport_data.py).
+    Without it these nine pages were ~124 unique words each and 79% identical to one
+    another — the shape of thin, scaled content. Each block below must say something
+    that is only true of this country.{% endcomment %}
+
+    <!-- What makes this country's photo different -->
+    <section aria-labelledby="intro-title" class="max-w-3xl mx-auto space-y-4">
+        <h2 id="intro-title" class="text-2xl font-bold">What's different about a {{ country.name }} photo</h2>
+        {% for p in country.intro %}
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ p }}</p>
+        {% endfor %}
+    </section>
+
+    <!-- Country-specific rules -->
+    <section aria-labelledby="rules-title" class="max-w-3xl mx-auto space-y-5">
+        <h2 id="rules-title" class="text-2xl font-bold">{{ country.name }} photo rules in detail</h2>
+        <dl class="space-y-4">
+            {% for rule in country.rules %}
+            <div class="glass rounded-2xl p-5 border border-gray-200/70 dark:border-gray-800/70">
+                <dt class="font-semibold text-primaryText mb-1.5">{{ rule.label }}</dt>
+                <dd class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{{ rule.text }}</dd>
+            </div>
+            {% endfor %}
+        </dl>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+            Photos must have been taken within {{ country.recency }}. The authority for these rules is the
+            <a href="{{ country.authority_url }}" rel="nofollow noopener" target="_blank"
+               class="text-primaryText hover:underline">{{ country.authority }}</a> — check there before you apply,
+            since requirements do change.
+        </p>
+    </section>
+
+    <!-- Babies and children -->
+    <section aria-labelledby="children-title" class="max-w-3xl mx-auto space-y-4">
+        <h2 id="children-title" class="text-2xl font-bold">Babies and children</h2>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ country.children }}</p>
+    </section>
+
+    <!-- How the application actually works -->
+    <section aria-labelledby="process-title" class="max-w-3xl mx-auto space-y-4">
+        <h2 id="process-title" class="text-2xl font-bold">How the {{ country.name }} application works</h2>
+        {% for p in country.process %}
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ p }}</p>
+        {% endfor %}
+    </section>
+
+    <!-- Why photos get rejected -->
+    <section aria-labelledby="reject-title" class="max-w-3xl mx-auto space-y-4">
+        <h2 id="reject-title" class="text-2xl font-bold">Why {{ country.name }} photos get rejected</h2>
+        <ul class="space-y-3">
+            {% for r in country.rejections %}
+            <li class="flex items-start gap-3 text-gray-600 dark:text-gray-300">
+                <i class="fa-solid fa-xmark mt-1 text-red-500 shrink-0" aria-hidden="true"></i>
+                <span class="leading-relaxed">{{ r }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+
     <!-- How it works -->
     <section aria-labelledby="how-title" class="max-w-5xl mx-auto space-y-8">
         <h2 id="how-title" class="text-2xl font-bold text-center">How to make your {{ country.name }} photo</h2>

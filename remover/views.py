@@ -19,6 +19,7 @@ from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
+from .guides import GUIDES, GUIDES_BY_SLUG, guides_by_category, related_guides
 from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, FOLDED_COUNTRY_SLUGS, country_faqs
 from .seo_content import (
     ALTERNATIVE_FAQS,
@@ -960,11 +961,13 @@ COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
 COMPARISON_PATHS = [f"/{p['slug']}/" for p in COMPARISONS]
 TOOL_LANDING_PATHS = [f"/{p['slug']}/" for p in TOOL_LANDINGS]
 LANDING_PATHS = ["/remove-bg-alternative/"] + PRIVACY_PATHS + COMPRESS_LANDING_PATHS + COMPARISON_PATHS + TOOL_LANDING_PATHS
+GUIDE_PATHS = ["/guides/"] + [f"/guides/{g['slug']}/" for g in GUIDES]
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
     + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
     + [f"/passport-photo/{c['slug']}/" for c in COUNTRIES]
     + LANDING_PATHS
+    + GUIDE_PATHS
     + INFO_PATHS
 )
 
@@ -1034,9 +1037,11 @@ def _sitemap_priority(path):
         return "1.0"
     if path in TOOL_PATHS:
         return "0.9"
+    if path == "/guides/":
+        return "0.8"  # the editorial hub, second only to the tools themselves
     if path in INFO_PATHS:
         return "0.4"
-    return "0.7"  # keyword landing + country pages
+    return "0.7"  # keyword landing + country + guide pages
 
 
 @require_GET
@@ -1219,6 +1224,67 @@ def passport_country(request, country):
         "others": others,
         "faqs": faqs,
         "faq_jsonld": faq_jsonld(faqs),
+    })
+
+
+def _guide_tool_links(names):
+    """Resolve a guide's `tools` url_names into renderable links.
+
+    Imported lazily: context_processors imports from this module at import time,
+    so a module-level import here would be circular. By the time a request is
+    served both modules are loaded, and the cost is a dict lookup.
+
+    A name may be a tool (in TOOL_NAV) or one of the privacy landing pages, which
+    have their own nav labels; anything else is a typo and `GuideContentTests`
+    fails on it rather than silently dropping the link.
+    """
+    from .context_processors import FOOTER_LABELS, TOOL_NAV
+
+    by_name = {t["name"]: t for t in TOOL_NAV}
+    landings = {p["url_name"]: p for p in PRIVACY_PAGES}
+    links = []
+    for name in names:
+        tool = by_name.get(name)
+        if tool is not None:
+            links.append({
+                "url": reverse(f"remover:{name}"),
+                "label": FOOTER_LABELS.get(name, tool["label"]),
+                "icon": tool["icon"],
+                "blurb": tool["blurb"],
+            })
+            continue
+        page = landings.get(name)
+        if page is not None:
+            links.append({
+                "url": reverse(f"remover:{name}"),
+                "label": page["nav"],
+                "icon": "fa-solid fa-shield-halved",
+                "blurb": page["h1"],
+            })
+    return links
+
+
+@require_GET
+def guides_index(request):
+    """Render the guides hub — the site's editorial index, grouped by topic."""
+    return render(request, "remover/guides.html", {
+        "groups": guides_by_category(),
+        "guide_count": len(GUIDES),
+    })
+
+
+@require_GET
+def guide_detail(request, slug):
+    """Render one guide article."""
+    guide = GUIDES_BY_SLUG.get(slug)
+    if guide is None:
+        raise Http404("Unknown guide")
+    return render(request, "remover/guide.html", {
+        "guide": guide,
+        "guide_tools": _guide_tool_links(guide["tools"]),
+        "related_guides": related_guides(slug),
+        "faqs": guide["faqs"],
+        "faq_jsonld": faq_jsonld(guide["faqs"]),
     })
 
 

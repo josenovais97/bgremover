@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% comment %}
+One editorial article. Content is entirely from remover/guides.py — this template
+holds no copy of its own beyond labels, so an article can never be half-written in
+Python and half-written in HTML.
+
+Ads: this is one of the few templates where an in-content unit is allowed
+(context_processors.seo gates it on url_name). It sits after the article body and
+before the cross-links, so it never separates a heading from its own text.
+{% endcomment %}
+
+{% block title %}{{ guide.title }}{% endblock %}
+{% block description %}{{ guide.description }}{% endblock %}
+{% block og_title %}{{ guide.h1 }}{% endblock %}
+
+{% block extra_seo %}
+{# Article + Breadcrumb. FAQPage comes from the shared faq.html partial. #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ guide.h1|escapejs }}",
+  "description": "{{ guide.description|escapejs }}",
+  "articleSection": "{{ guide.category|escapejs }}",
+  "wordCount": {{ guide.words }},
+  "inLanguage": "en",
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ canonical_url }}" },
+  "author": { "@type": "Organization", "name": "ClearBG", "url": "{{ site_url }}/" },
+  "publisher": { "@type": "Organization", "name": "ClearBG", "url": "{{ site_url }}/" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "ClearBG", "item": "{{ site_url }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Guides", "item": "{{ site_url }}{% url 'remover:guides' %}" },
+    { "@type": "ListItem", "position": 3, "name": "{{ guide.h1|escapejs }}", "item": "{{ canonical_url }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-14">
+
+    <!-- Header -->
+    <header class="max-w-3xl mx-auto space-y-5 animate-fade-in-up">
+        <nav class="text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+            <a href="{% url 'remover:index' %}" class="hover:text-primaryText transition-colors">ClearBG</a>
+            <i class="fa-solid fa-chevron-right text-xs mx-1.5" aria-hidden="true"></i>
+            <a href="{% url 'remover:guides' %}" class="hover:text-primaryText transition-colors">Guides</a>
+            <i class="fa-solid fa-chevron-right text-xs mx-1.5" aria-hidden="true"></i>
+            <span class="text-gray-700 dark:text-gray-300">{{ guide.category }}</span>
+        </nav>
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">{{ guide.h1 }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span><i class="fa-solid fa-clock mr-1.5" aria-hidden="true"></i>{{ guide.minutes }} min read</span>
+            <span aria-hidden="true">·</span>
+            <span>{{ guide.category }}</span>
+            <span aria-hidden="true">·</span>
+            <span>Updated {{ guide.updated }}</span>
+        </p>
+    </header>
+
+    <!-- Intro -->
+    <section class="max-w-3xl mx-auto space-y-4 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+        {% for p in guide.intro %}<p>{{ p }}</p>{% endfor %}
+    </section>
+
+    <!-- Contents -->
+    <nav aria-labelledby="toc-title" class="max-w-3xl mx-auto glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-6 space-y-3">
+        <h2 id="toc-title" class="text-sm font-semibold uppercase tracking-wide text-gray-400">Contents</h2>
+        <ol class="space-y-2 list-decimal list-inside marker:text-gray-400">
+            {% for s in guide.sections %}
+            <li><a href="#{{ s.id }}" class="text-primaryText hover:underline">{{ s.h }}</a></li>
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <!-- Body -->
+    <article class="max-w-3xl mx-auto space-y-12">
+        {% for s in guide.sections %}
+        <section aria-labelledby="{{ s.id }}" class="space-y-4 scroll-mt-24" id="{{ s.id }}">
+            <h2 class="text-2xl font-bold tracking-tight">{{ s.h }}</h2>
+            {% for p in s.p %}
+            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ p }}</p>
+            {% endfor %}
+            {% if s.list %}
+            <ul class="space-y-2.5 pt-1">
+                {% for item in s.list %}
+                <li class="flex items-start gap-3 text-gray-600 dark:text-gray-300">
+                    <i class="fa-solid fa-circle-check mt-1.5 text-primaryText text-xs shrink-0" aria-hidden="true"></i>
+                    <span class="leading-relaxed">{{ item }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </section>
+        {% endfor %}
+    </article>
+
+    <!-- Key takeaways -->
+    <aside aria-labelledby="takeaways-title" class="max-w-3xl mx-auto glass rounded-2xl border border-primary/30 bg-primary/5 p-7 space-y-4">
+        <h2 id="takeaways-title" class="text-lg font-bold inline-flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-primaryText" aria-hidden="true"></i> Key takeaways
+        </h2>
+        <ul class="space-y-2.5">
+            {% for t in guide.takeaways %}
+            <li class="flex items-start gap-3 text-gray-600 dark:text-gray-300">
+                <i class="fa-solid fa-circle-check mt-1.5 text-primaryText text-xs shrink-0" aria-hidden="true"></i>
+                <span class="leading-relaxed">{{ t }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    {% include 'remover/partials/ad_slot.html' %}
+
+    {% include 'remover/partials/faq.html' %}
+
+    <!-- Tools this guide refers to -->
+    {% if guide_tools %}
+    <section aria-labelledby="tools-title" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="tools-title" class="text-xl font-bold text-center">Tools mentioned in this guide</h2>
+        <ul role="list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for t in guide_tools %}
+            <li>
+                <a href="{{ t.url }}" class="card glass group h-full flex flex-col gap-2 p-5 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="w-11 h-11 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText text-lg group-hover:scale-110 transition-transform duration-300">
+                        <i class="{{ t.icon }}" aria-hidden="true"></i>
+                    </span>
+                    <span class="font-semibold">{{ t.label }}</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 leading-snug">{{ t.blurb }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <!-- Keep reading -->
+    {% if related_guides %}
+    <section aria-labelledby="more-title" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="more-title" class="text-xl font-bold text-center">Keep reading</h2>
+        <ul role="list" class="grid gap-4 sm:grid-cols-3">
+            {% for g in related_guides %}
+            <li>
+                <a href="{% url 'remover:guide' g.slug %}" class="card glass group h-full flex flex-col gap-2 p-5 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="text-xs font-medium uppercase tracking-wide text-primaryText">{{ g.category }} · {{ g.minutes }} min</span>
+                    <span class="font-semibold leading-snug group-hover:text-primaryText transition-colors">{{ g.h1 }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{# The guide curates its own tool cross-links above; suppress the generic block. #}
+{% block related_tools %}{% endblock %}

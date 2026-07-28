@@ -376,6 +376,11 @@ UI = {
     "images processed": "imagens processadas",
     "Tools": "Ferramentas",
     "Use cases": "Casos de uso",
+    # The footer heading is translated but the guide titles under it are not — the
+    # articles themselves are English-only, and a Portuguese label over English
+    # content is the mismatch the hreflang gate exists to prevent.
+    "Guides": "Guias",
+    "All guides": "Todos os guias",
     "Company": "Empresa",
     "About": "Sobre",
     "Privacy Policy": "Política de Privacidade",

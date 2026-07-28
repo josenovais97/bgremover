@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% comment %}
+The editorial hub. Grouped by topic rather than by date: these are evergreen
+reference articles, so "newest first" would bury the ones people actually search
+for. Content comes from remover/guides.py via views.guides_index.
+{% endcomment %}
+
+{% block title %}Image Guides — Formats, Compression, Privacy &amp; Photography | ClearBG{% endblock %}
+{% block description %}Practical guides to working with images: which format to use, how compression really works, what metadata reveals about you, how to shoot for clean cut-outs, and why photos look different on every screen.{% endblock %}
+{% block og_title %}Image Guides — Formats, Compression, Privacy &amp; Photography{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "ClearBG Image Guides",
+  "description": "Practical, in-depth guides to image formats, compression, privacy and photography.",
+  "url": "{{ canonical_url }}",
+  "hasPart": [
+    {% for cat, items in groups %}{% for g in items %}{
+      "@type": "Article",
+      "headline": "{{ g.h1|escapejs }}",
+      "description": "{{ g.description|escapejs }}",
+      "url": "{{ site_url }}{% url 'remover:guide' g.slug %}"
+    }{% if not forloop.last %},{% endif %}{% endfor %}{% if not forloop.last %},{% endif %}{% endfor %}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "ClearBG", "item": "{{ site_url }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Guides", "item": "{{ canonical_url }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-16">
+
+    <!-- Hero -->
+    <section class="max-w-3xl mx-auto text-center space-y-6 animate-fade-in-up">
+        <nav class="text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
+            <a href="{% url 'remover:index' %}" class="hover:text-primaryText transition-colors">ClearBG</a>
+            <i class="fa-solid fa-chevron-right text-xs mx-1.5" aria-hidden="true"></i>
+            <span class="text-gray-700 dark:text-gray-300">Guides</span>
+        </nav>
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
+            <i class="fa-solid fa-bookmark" aria-hidden="true"></i> {{ guide_count }} in-depth guides
+        </span>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Image guides</span>
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300">
+            How image formats, compression, colour and metadata actually work — written to be useful whether or not
+            you ever use a tool on this site.
+        </p>
+    </section>
+
+    <!-- Grouped index -->
+    {% for cat, items in groups %}
+    <section aria-labelledby="cat-{{ forloop.counter }}" class="max-w-5xl mx-auto space-y-6">
+        <div class="flex items-center gap-4">
+            <h2 id="cat-{{ forloop.counter }}" class="text-2xl font-bold whitespace-nowrap">{{ cat }}</h2>
+            <span class="h-px flex-1 bg-gray-200 dark:bg-gray-800"></span>
+            <span class="text-sm text-gray-400 whitespace-nowrap">{{ items|length }} guide{{ items|length|pluralize }}</span>
+        </div>
+        <ul role="list" class="grid gap-5 sm:grid-cols-2">
+            {% for g in items %}
+            <li>
+                <a href="{% url 'remover:guide' g.slug %}"
+                   class="card glass group h-full flex flex-col gap-2 p-6 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="text-xs font-medium uppercase tracking-wide text-primaryText">{{ g.category }} · {{ g.minutes }} min read</span>
+                    <span class="font-semibold text-lg leading-snug group-hover:text-primaryText transition-colors">{{ g.h1 }}</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{{ g.description }}</span>
+                    <span class="mt-auto pt-3 text-sm font-medium text-primaryText inline-flex items-center gap-1.5">
+                        Read the guide <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-0.5 transition-transform" aria-hidden="true"></i>
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endfor %}
+
+    <!-- CTA -->
+    <section class="max-w-3xl mx-auto text-center glass rounded-3xl border border-gray-200/70 dark:border-gray-800/70 p-10 space-y-4">
+        <h2 class="text-2xl font-bold">Every tool here runs on your device</h2>
+        <p class="text-gray-600 dark:text-gray-300">Free and unlimited, with nothing uploaded to a server.</p>
+        <a href="{% url 'remover:index' %}" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Try the background remover
+        </a>
+    </section>
+</div>
+{% endblock %}

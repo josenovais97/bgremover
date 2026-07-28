@@ -4,11 +4,13 @@ import re
 from pathlib import Path
 from unittest import mock
 
+from django.conf import settings
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils import translation
 
 from remover.context_processors import CHAIN_EXCLUDED, TOOL_ACCENTS, TOOL_NAV
+from remover.guides import GUIDES
 from remover.translations import JS_UI
 from remover.views import (
     SHELL_ASSETS,
@@ -17,6 +19,7 @@ from remover.views import (
     TOOL_PATHS,
     TRANSLATED_PATHS,
     USE_CASES,
+    is_translated_path,
 )
 
 
@@ -51,6 +54,22 @@ class PageTests(SimpleTestCase):
         self.assertIn("Content-Security-Policy", response)
         self.assertIn("Permissions-Policy", response)
         self.assertIn("wasm-unsafe-eval", response["Content-Security-Policy"])
+
+    def test_csp_allows_the_hosts_adsense_actually_loads(self):
+        """A blocked ad host is silent in tests and throws in the browser.
+
+        adtrafficquality.google (Sodar) was missing, so every ad-bearing page
+        raised an uncaught rejection and Google's invalid-traffic check could not
+        run — invisible server-side, which is why this is pinned here.
+        """
+        csp = self.client.get(reverse("remover:index"))["Content-Security-Policy"]
+        directives = dict(
+            (d.split(" ", 1) + [""])[:2] for d in (x.strip() for x in csp.split(";")) if d
+        )
+        for host in ("https://pagead2.googlesyndication.com", "https://*.adtrafficquality.google"):
+            with self.subTest(host=host):
+                self.assertIn(host, directives["script-src"])
+        self.assertIn("https://*.adtrafficquality.google", directives["frame-src"])
 
 
 class UseCaseTests(SimpleTestCase):
@@ -285,6 +304,248 @@ class PassportCountryTests(SimpleTestCase):
     def test_passport_tool_links_countries(self):
         response = self.client.get(reverse("remover:passport"))
         self.assertContains(response, reverse("remover:passport_country", args=["united-states"]))
+
+
+class PassportContentTests(SimpleTestCase):
+    """These pages have to earn their place, not just interpolate a spec.
+
+    Built from the shared table alone they were ~124 unique words each and 79%
+    identical to one another — indistinguishable from scaled content, and the
+    reason most of them sat in "Discovered — currently not indexed". The floors
+    below are what separates a page worth indexing from a template fill.
+    """
+
+    def _country_paths(self):
+        from remover.passport_data import COUNTRIES
+        return [(c, reverse("remover:passport_country", args=[c["slug"]])) for c in COUNTRIES]
+
+    @staticmethod
+    def _visible_text(html):
+        html = re.sub(r"(?is)<(script|style|svg|noscript|nav|footer|header).*?</\1>", " ", html)
+        return " ".join(re.sub(r"(?s)<[^>]+>", " ", html).split())
+
+    def test_every_country_carries_its_own_editorial_content(self):
+        for c, _ in self._country_paths():
+            with self.subTest(country=c["slug"]):
+                self.assertTrue(c["intro"], "no intro paragraphs")
+                self.assertGreaterEqual(len(c["rules"]), 4, "fewer than 4 specific rules")
+                self.assertGreaterEqual(len(c["rejections"]), 4, "fewer than 4 rejection reasons")
+                self.assertTrue(c["children"], "no children/infant guidance")
+                self.assertTrue(c["process"], "no application-process copy")
+                self.assertTrue(c["authority"] and c["authority_url"], "no cited authority")
+
+    def test_pages_clear_a_real_word_count(self):
+        for c, url in self._country_paths():
+            with self.subTest(country=c["slug"]):
+                words = len(self._visible_text(self.client.get(url).content.decode()).split())
+                self.assertGreater(words, 900, f"{c['slug']}: only {words} visible words")
+
+    def test_sibling_pages_are_not_near_duplicates(self):
+        """The measurement that drove this work: pairwise similarity across siblings.
+
+        Two country pages sharing the same 35×45 mm spec will always overlap on the
+        shared chrome and the spec table; what must differ is the prose. 65% is set
+        above the ~56% the pages currently measure and well below the 79% they
+        started at, so it catches a regression without being brittle.
+        """
+        import difflib
+        import itertools
+
+        pages = {
+            c["slug"]: self._visible_text(self.client.get(url).content.decode())
+            for c, url in self._country_paths()
+        }
+        for a, b in itertools.combinations(sorted(pages), 2):
+            ratio = difflib.SequenceMatcher(None, pages[a], pages[b]).ratio()
+            with self.subTest(pair=f"{a}/{b}"):
+                self.assertLess(ratio, 0.65, f"{a} and {b} are {ratio:.0%} identical")
+
+    def test_country_specific_facts_reach_the_page(self):
+        """Spot-check that the differentiating detail actually renders."""
+        cases = {
+            "canada": "commercial photographer",       # Canada's studio-annotation rule
+            "united-states": "1 November 2016",        # the US glasses ban
+            "united-kingdom": "light grey or cream",   # not the usual white
+            "china": "15–22 mm",                  # China's head-width window
+            "india": "Passport Seva Kendra",           # photo taken at the centre
+            "brazil": "Polícia Federal",          # photo taken at the appointment
+        }
+        for slug, needle in cases.items():
+            with self.subTest(country=slug):
+                url = reverse("remover:passport_country", args=[slug])
+                self.assertContains(self.client.get(url), needle)
+
+    def test_every_page_cites_its_official_authority(self):
+        for c, url in self._country_paths():
+            with self.subTest(country=c["slug"]):
+                response = self.client.get(url)
+                self.assertContains(response, c["authority_url"])
+                # Outbound links to government sites carry no endorsement weight.
+                self.assertContains(response, 'rel="nofollow noopener"')
+
+
+class GuideTests(SimpleTestCase):
+    """Routing, rendering and structured data for the editorial section."""
+
+    def test_hub_renders_and_lists_every_guide(self):
+        response = self.client.get(reverse("remover:guides"))
+        self.assertEqual(response.status_code, 200)
+        for guide in GUIDES:
+            self.assertContains(response, reverse("remover:guide", args=[guide["slug"]]))
+            self.assertContains(response, guide["h1"])
+
+    def test_every_guide_renders(self):
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                response = self.client.get(reverse("remover:guide", args=[guide["slug"]]))
+                self.assertEqual(response.status_code, 200)
+                self.assertTemplateUsed(response, "remover/guide.html")
+                self.assertContains(response, guide["h1"])
+
+    def test_unknown_guide_is_404(self):
+        response = self.client.get(reverse("remover:guide", args=["not-a-real-guide"]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_guides_are_in_the_sitemap(self):
+        sitemap = self.client.get(reverse("remover:sitemap")).content.decode()
+        self.assertIn("/guides/</loc>", sitemap)
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                self.assertIn(f"/guides/{guide['slug']}/</loc>", sitemap)
+
+    def test_every_section_heading_has_a_working_anchor(self):
+        """The contents box is only useful if its targets exist."""
+        for guide in GUIDES:
+            body = self.client.get(reverse("remover:guide", args=[guide["slug"]])).content.decode()
+            for section in guide["sections"]:
+                with self.subTest(guide=guide["slug"], section=section["id"]):
+                    self.assertIn(f'href="#{section["id"]}"', body)
+                    self.assertIn(f'id="{section["id"]}"', body)
+
+    def test_articles_emit_valid_article_jsonld(self):
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                body = self.client.get(reverse("remover:guide", args=[guide["slug"]])).content.decode()
+                blocks = [
+                    json.loads(m)
+                    for m in re.findall(
+                        r'<script type="application/ld\+json">(.*?)</script>', body, re.S
+                    )
+                ]
+                types = {b.get("@type") for b in blocks}
+                self.assertIn("Article", types)
+                self.assertIn("BreadcrumbList", types)
+                self.assertIn("FAQPage", types)
+                article = next(b for b in blocks if b.get("@type") == "Article")
+                self.assertEqual(article["wordCount"], guide["words"])
+
+    def test_guides_are_linked_from_the_footer_of_every_page(self):
+        """A new section is crawled at the speed its internal links allow."""
+        for path in ("/", "/crop/", "/about/", "/passport-photo/canada/"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertContains(response, reverse("remover:guides"))
+                self.assertContains(
+                    response, reverse("remover:guide", args=[GUIDES[0]["slug"]])
+                )
+
+    def test_ads_run_on_guides_but_not_on_tool_pages(self):
+        # The guides are the long-form editorial an ad unit belongs on; the
+        # interactive tools stay ad-free (and the isolated ones would block frames).
+        with override_settings(ADSENSE_CLIENT="ca-pub-test", ADSENSE_SLOT_LANDING="123"):
+            guide = self.client.get(reverse("remover:guide", args=[GUIDES[0]["slug"]]))
+            self.assertContains(guide, "ca-pub-test")
+            for name in ("index", "crop", "compress"):
+                with self.subTest(tool=name):
+                    self.assertNotContains(self.client.get(reverse(f"remover:{name}")), "ca-pub-test")
+
+
+class GuideContentTests(SimpleTestCase):
+    """The guides only do their job if they stay substantial and distinct.
+
+    This section exists because the rest of the site is tool pages: ~130 unique
+    words of supporting copy wrapped around an interface. That is what a search or
+    ad-network quality review calls thin. An article that decayed into another
+    landing page would put the problem straight back, so the floors are pinned.
+    """
+
+    @staticmethod
+    def _visible_text(html):
+        html = re.sub(r"(?is)<(script|style|svg|noscript|nav|footer|header).*?</\1>", " ", html)
+        return " ".join(re.sub(r"(?s)<[^>]+>", " ", html).split())
+
+    def test_every_guide_clears_the_length_floor(self):
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                self.assertGreater(
+                    guide["words"], 800,
+                    f"{guide['slug']} is {guide['words']} words — too short to be worth indexing",
+                )
+
+    def test_every_guide_has_the_structural_pieces(self):
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                self.assertGreaterEqual(len(guide["sections"]), 5, "fewer than 5 sections")
+                self.assertGreaterEqual(len(guide["takeaways"]), 4, "fewer than 4 takeaways")
+                self.assertGreaterEqual(len(guide["faqs"]), 3, "fewer than 3 FAQs")
+                self.assertTrue(guide["intro"], "no intro")
+                self.assertTrue(all(s.get("p") for s in guide["sections"]),
+                                "a section has a heading but no prose")
+
+    def test_guides_are_not_near_duplicates_of_each_other(self):
+        import difflib
+        import itertools
+
+        pages = {
+            g["slug"]: self._visible_text(
+                self.client.get(reverse("remover:guide", args=[g["slug"]])).content.decode()
+            )
+            for g in GUIDES
+        }
+        for a, b in itertools.combinations(sorted(pages), 2):
+            ratio = difflib.SequenceMatcher(None, pages[a], pages[b]).ratio()
+            with self.subTest(pair=f"{a}/{b}"):
+                self.assertLess(ratio, 0.5, f"{a} and {b} are {ratio:.0%} identical")
+
+    def test_guides_are_not_rewrites_of_the_tool_pages(self):
+        """An article that restates its tool page adds a near-duplicate, not content."""
+        import difflib
+
+        for guide in GUIDES:
+            article = self._visible_text(
+                self.client.get(reverse("remover:guide", args=[guide["slug"]])).content.decode()
+            )
+            for tool in guide["tools"]:
+                tool_page = self._visible_text(
+                    self.client.get(reverse(f"remover:{tool}")).content.decode()
+                )
+                ratio = difflib.SequenceMatcher(None, article, tool_page).ratio()
+                with self.subTest(guide=guide["slug"], tool=tool):
+                    self.assertLess(ratio, 0.5, f"{guide['slug']} reads like /{tool}/")
+
+    def test_every_referenced_tool_resolves(self):
+        """A typo in `tools` would silently drop the cross-link, so fail on it."""
+        from remover.views import _guide_tool_links
+
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                links = _guide_tool_links(guide["tools"])
+                self.assertEqual(
+                    len(links), len(guide["tools"]),
+                    f"{guide['slug']} names a tool that does not resolve: {guide['tools']}",
+                )
+
+    def test_every_guide_has_a_footer_label(self):
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                self.assertTrue(guide["nav"])
+                self.assertLess(len(guide["nav"]), 30, "footer label too long for the column")
+
+    def test_slugs_and_titles_are_unique(self):
+        for field in ("slug", "title", "h1", "nav"):
+            values = [g[field] for g in GUIDES]
+            with self.subTest(field=field):
+                self.assertEqual(len(values), len(set(values)), f"duplicate {field}")
 
 
 class InfoPageTests(SimpleTestCase):
@@ -695,6 +956,53 @@ class HreflangGateTests(SimpleTestCase):
                 response = self.client.get(path)
                 self.assertContains(response, 'hreflang="pt"', html=False)
                 self.assertContains(response, "Portugu")
+
+
+class RobotsMetaTests(SimpleTestCase):
+    """A /pt/ URL that still renders English must not be indexable.
+
+    The canonical already points these at their English twin, but a canonical is
+    a hint. Left indexable, 59 English-bodied Portuguese URLs form the largest
+    block of near-duplicates on the site — the kind of crawlable surface that
+    reads as low-value content to a search or ad-network quality review.
+    """
+
+    def _robots(self, path):
+        response = self.client.get(path).content.decode()
+        return re.search(r'name="robots" content="([^"]+)"', response).group(1)
+
+    def test_untranslated_pt_page_is_noindex(self):
+        for path in ("/pt/crop/", "/pt/qr-code-generator/", "/pt/about/"):
+            with self.subTest(path=path):
+                self.assertEqual(self._robots(path), "noindex, follow")
+
+    def test_translated_pt_page_stays_indexable(self):
+        # These have real Portuguese bodies (TRANSLATED_PATHS) and must keep
+        # ranking — a blanket /pt/ noindex would have thrown them away too.
+        for path in ("/pt/", "/pt/remove-background/logo/", "/pt/heic-to-jpg/"):
+            with self.subTest(path=path):
+                self.assertEqual(self._robots(path), "index, follow")
+
+    def test_english_pages_are_untouched(self):
+        for path in ("/", "/crop/", "/about/", "/passport-photo/canada/"):
+            with self.subTest(path=path):
+                self.assertEqual(self._robots(path), "index, follow")
+
+    def test_noindexed_pt_urls_are_absent_from_the_sitemap(self):
+        # Submitting a URL we tell Google not to index is a contradictory signal.
+        sitemap = self.client.get(reverse("remover:sitemap")).content.decode()
+        for path in ("/pt/crop/", "/pt/qr-code-generator/"):
+            with self.subTest(path=path):
+                self.assertNotIn(f"<loc>{settings.SITE_URL.rstrip('/')}{path}</loc>", sitemap)
+
+    def test_every_pt_url_is_either_translated_or_noindexed(self):
+        # The invariant, checked across the whole site rather than on samples:
+        # no /pt/ URL may serve English while remaining indexable.
+        for path in SITEMAP_PATHS:
+            pt = "/pt/" if path == "/" else f"/pt{path}"
+            with self.subTest(path=pt):
+                expected = "index, follow" if is_translated_path(pt) else "noindex, follow"
+                self.assertEqual(self._robots(pt), expected)
 
 
 class JsTranslationTests(SimpleTestCase):

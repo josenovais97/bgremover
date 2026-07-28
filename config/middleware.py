@@ -21,10 +21,22 @@ JS_CDN = "https://cdn.jsdelivr.net"
 # Google AdSense hosts. Ads only run on non-isolated marketing pages (the loader
 # is gated in the template), but the CSP is global, so these allowances are
 # listed once here; they load nothing on their own.
-ADS_SCRIPT = "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://adservice.google.com https://*.googleadservices.com"
+#
+# adtrafficquality.google serves Sodar, the invalid-traffic verification script
+# AdSense loads alongside every unit. It was missing here, so the browser blocked
+# it and each ad-bearing page threw an uncaught rejection — meaning Google could
+# not run the traffic-quality check it expects to run on an ad-serving site.
+ADS_SCRIPT = (
+    "https://pagead2.googlesyndication.com https://*.googlesyndication.com "
+    "https://adservice.google.com https://*.googleadservices.com "
+    "https://*.adtrafficquality.google"
+)
 # AdSense renders creatives inside frames from these hosts (the wildcard covers
-# pagead2 / tpc.googlesyndication.com).
-ADS_FRAME = "https://*.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com"
+# pagead2 / tpc.googlesyndication.com). Sodar renders into a frame of its own.
+ADS_FRAME = (
+    "https://*.googlesyndication.com https://googleads.g.doubleclick.net "
+    "https://www.google.com https://*.adtrafficquality.google"
+)
 
 CSP = "; ".join(
     [

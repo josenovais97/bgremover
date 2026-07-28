@@ -12,7 +12,10 @@
     <title>{% block title %}Free AI Background Remover — High Quality, No Watermark{% endblock %}</title>
     <meta name="description" content="{% block description %}Remove image backgrounds instantly and 100% free. AI runs in your browser — no uploads, no watermarks, no quality loss. Export transparent PNGs in full resolution.{% endblock %}">
     <link rel="canonical" href="{{ canonical_url }}">
-    <meta name="robots" content="index, follow">
+    {% comment %}"noindex, follow" on a /pt/ URL that still renders English — the canonical
+    below already points at the English twin, and this says the same thing without
+    leaving it to Google's discretion. See context_processors._robots_meta.{% endcomment %}
+    <meta name="robots" content="{{ robots_meta|default:'index, follow' }}">
     {% comment %}Only pages whose body is really translated advertise a Portuguese
     alternate — see views.TRANSLATED_PATHS. The footer switcher below is separate and
     stays on every page; this is the crawler-facing claim, and it has to be true.{% endcomment %}
@@ -204,7 +207,7 @@
 
     <footer class="mt-auto border-t border-gray-200/60 dark:border-gray-800/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid gap-8 sm:gap-10 grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+            <div class="grid gap-8 sm:gap-10 grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
                 <!-- Brand -->
                 <div class="col-span-2 lg:col-span-1 space-y-4">
                     <a href="{% url 'remover:index' %}" class="inline-flex items-center gap-2">
@@ -255,6 +258,20 @@
                         {% for c in use_cases %}
                         <a href="{% url 'remover:use_case' c.slug %}" class="hover:text-primaryText transition-colors">{{ c.nav }}</a>
                         {% endfor %}
+                    </nav>
+                </div>
+                <!-- Guides -->
+                {% comment %}The only editorial section on the site. Linked from every page
+                because a new section is crawled at the speed its internal links allow, and
+                the footer is the one block that appears everywhere. Labels come from
+                guides._NAV_LABELS via the context processor.{% endcomment %}
+                <div class="space-y-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "Guides" %}</h3>
+                    <nav class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400" aria-label="Guides">
+                        {% for g in footer_guides %}
+                        <a href="{% url 'remover:guide' g.slug %}" class="hover:text-primaryText transition-colors">{{ g.nav }}</a>
+                        {% endfor %}
+                        <a href="{% url 'remover:guides' %}" class="font-medium text-primaryText hover:underline">{% t "All guides" %} →</a>
                     </nav>
                 </div>
                 <!-- Company -->

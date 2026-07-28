@@ -72,6 +72,10 @@ urlpatterns = [
         for p in TOOL_LANDINGS
     ],
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
+    # Editorial guides (see remover/guides.py). Unlike every other route here,
+    # these do not front a tool — they are the site's only standalone content.
+    path("guides/", views.guides_index, name="guides"),
+    path("guides/<slug:slug>/", views.guide_detail, name="guide"),
     path("about/", views.about, name="about"),
     path("privacy/", views.privacy, name="privacy"),
     path("terms/", views.terms, name="terms"),

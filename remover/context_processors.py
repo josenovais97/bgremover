@@ -5,6 +5,7 @@ from django.utils.translation import get_language
 
 from config.middleware import ISOLATED_VIEWS
 
+from .guides import GUIDES
 from .translations import js_catalogue
 from .translations import t as tr
 from .views import USE_CASES, is_translated_path
@@ -294,6 +295,27 @@ def _canonical_url(request):
     return settings.SITE_URL.rstrip("/") + path
 
 
+def _robots_meta(request):
+    """Value for <meta name="robots"> on the current page.
+
+    A ``/pt/`` URL whose template is NOT translated (see `views.TRANSLATED_PATHS`)
+    serves the same English body as its root twin. `_canonical_url` already points
+    it at that twin, but a canonical is only a hint: Google still crawls all 59 of
+    them, and an ad-network or quality reviewer walking the site sees 59 English
+    pages sitting on Portuguese URLs. `noindex` is the unambiguous version of the
+    same statement.
+
+    `follow` is deliberate — these pages carry the full footer and tool nav, so we
+    still want their outgoing links crawled. A robots.txt `Disallow` would have
+    been worse on both counts: it blocks the fetch, so the crawler never sees the
+    canonical OR the noindex, and the URL can still surface in results.
+    """
+    path = request.path
+    if path.startswith("/pt/") and not is_translated_path(path):
+        return "noindex, follow"
+    return "index, follow"
+
+
 def _alternate_urls(request):
     """Absolute English + Portuguese URLs for the current page (for hreflang).
 
@@ -321,7 +343,10 @@ def seo(request):
     # stays visibly tied to the middleware's isolation logic.
     match = getattr(request, "resolver_match", None)
     url_name = match.url_name if match is not None else None
-    ads_allowed = url_name == "use_case" and url_name not in ISOLATED_VIEWS
+    # The guides are long-form editorial, which is both the best place on the site
+    # for an in-content unit and the kind of page an ad network expects to see one
+    # on. The interactive tool pages stay ad-free.
+    ads_allowed = url_name in {"use_case", "guide", "guides"} and url_name not in ISOLATED_VIEWS
     alternates = _alternate_urls(request)
     canonical_url = _canonical_url(request)
     accent, accent_hover, accent_text_dark, accent_text_dark_alt = TOOL_ACCENTS.get(
@@ -364,6 +389,12 @@ def seo(request):
         # Landing pages are surfaced in the footer of every page; the nav label is
         # translated so the footer localises too.
         "use_cases": [{"slug": c["slug"], "nav": tr(c["nav"])} for c in USE_CASES],
+        # The guides get a footer column of their own. A new section needs internal
+        # links from established pages before it will be crawled at any speed, and
+        # the footer is the only block that appears on all of them. Not translated:
+        # the articles are English-only, so a Portuguese label would promise a
+        # translation that does not exist (the same mistake hreflang used to make).
+        "footer_guides": [{"slug": g["slug"], "nav": g["nav"]} for g in GUIDES],
         # Header tool switcher: flat list (pill row) + grouped (mega-menu).
         "tool_nav": tool_nav,
         "tool_groups": tool_groups,
@@ -387,6 +418,8 @@ def seo(request):
         "hreflang_alternates": bool(alternates) and is_translated_path(request.path),
         # Canonical URL built from SITE_URL (host/query-stable) for <link rel=canonical> + og:url.
         "canonical_url": canonical_url,
+        # "noindex, follow" on the /pt/ URLs that still render English.
+        "robots_meta": _robots_meta(request),
         "site_url": settings.SITE_URL.rstrip("/"),
         # Contextual internal linking: a few related tools for the current page.
         "related_tools": _related_tools(tool_nav, url_name),
