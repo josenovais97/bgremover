@@ -111,21 +111,21 @@ COUNTRIES = [
         ],
     ),
     _entry(
-        "united-kingdom", "United Kingdom", "🇬🇧", 35, 45, bg="plain light grey or cream",
+        "united-kingdom", "United Kingdom", "🇬🇧", 35, 45, bg="plain light-coloured (white, cream or light grey)",
         note="Used for the UK passport and most UK visa applications.",
         authority="HM Passport Office (GOV.UK)",
         authority_url="https://www.gov.uk/photos-for-passports",
         recency="the last month",
         intro=[
-            "The UK uses the 35 × 45 mm international size, but two details catch people out. The first is the background: HM Passport Office asks for a plain light grey or cream backdrop, not the pure white that most countries want. A stark white background is a common reason for a UK photo to come back.",
-            "The second is recency. Where most countries accept a photo taken within six months, the UK asks for one taken within the last month. If you are digging out photos from an application earlier in the year, they are already too old.",
+            "The UK uses the 35 × 45 mm international size on a plain light-coloured background. GOV.UK does not name a single required shade — white, cream and light grey are all acceptable — but it does require clear contrast between you and the background, which is the part that actually catches people out. Pale hair or a light top against a white wall gives the checker nothing to find an edge in.",
+            "The detail that genuinely differs from most countries is recency. Where the international norm is six months, the UK asks for a photo taken within the last month. If you are digging out prints from an application earlier in the year, they are already too old.",
         ],
         rules=[
             ("Glasses", "Strongly discouraged. If you must wear them, the frames must not cover your eyes, there must be no glare on the lenses, and tinted or reflective lenses are refused outright. Removing them is the safer choice."),
             ("Expression", "Neutral with the mouth closed. The UK is explicit that you must not smile — a natural smile that is fine for a US photo will fail here."),
             ("Headwear", "Not permitted unless worn for religious or medical reasons, and your facial features from chin to crown must be clearly visible with no shadow cast by the covering."),
-            ("Head size", "The face from chin to crown must measure between 29 mm and 34 mm. That is a tighter window than the general 32–36 mm guidance used across Europe, so it is worth checking against the guides rather than eyeballing it."),
-            ("Digital uploads", "Applying online needs a digital photo at least 600 × 750 pixels and under 10 MB. The GOV.UK service runs an automatic quality check and tells you immediately if it fails."),
+            ("Head size", "For printed photos, HM Passport Office specifies 29 mm to 34 mm from chin to crown. That is a tighter window than the 32–36 mm used across much of Europe, so a photo cut for a Schengen application will usually be over."),
+            ("Digital uploads", "Applying online needs a digital photo at least 600 × 750 pixels, between 50 KB and 10 MB. The GOV.UK service runs an automatic quality check and tells you immediately if it fails, which is faster than finding out by post."),
         ],
         children="Children under 6 do not have to hold a neutral expression or look straight at the camera, and babies under 1 may have their eyes closed. For any child, nobody else may be visible in the shot — that includes a supporting hand — and a baby must not be holding a toy or using a dummy. Photographing a baby on a plain light-grey sheet from directly above is the usual way round this.",
         process=[
@@ -133,11 +133,11 @@ COUNTRIES = [
             "Paper applications still exist and need two identical printed photos, one of which must be signed on the back by someone who can confirm your identity. If you are applying for a first child passport by post, that countersignature is mandatory.",
         ],
         rejections=[
-            "A pure white background instead of the required light grey or cream.",
-            "Smiling — the UK enforces the neutral expression more strictly than most.",
+            "Too little contrast between you and the background — pale hair or a light top against a white wall.",
+            "A photo more than a month old, which is stricter than most countries expect.",
             "A shadow behind the head from standing too close to the wall.",
             "Hair falling across the eyes, or a fringe that obscures the eyebrows.",
-            "Glare on glasses, or thick frames covering any part of the eyes.",
+            "Glare on glasses, or frames covering any part of the eyes.",
         ],
     ),
     _entry(
@@ -153,9 +153,9 @@ COUNTRIES = [
         rules=[
             ("Copies", "Two identical prints are required. One is left blank; the other must be annotated on the back by the photographer with the studio name, the full address, and the date the photo was taken."),
             ("Photographer", "The photo must come from a commercial establishment. This is the requirement that most distinguishes Canada — self-taken photos, however technically perfect, do not satisfy it for a passport application."),
-            ("Glasses", "Permitted, provided your eyes are clearly visible with no glare, no tint, and no frames obscuring them. Canada is more relaxed here than the US or China, both of which ban glasses outright."),
-            ("Expression", "Neutral, with the mouth closed and both eyes open and looking straight at the camera."),
-            ("Head size", "The face from chin to crown must measure 31 mm to 36 mm. The overall photo is larger than a European one but the head is a similar size, so there is more margin around it."),
+            ("Glasses", "Not permitted. Canada removed the glasses allowance and now asks for them to be taken off, with an exception only for documented medical necessity supported by a note from a doctor — the same position as the United States."),
+            ("Expression", "Neutral, with the mouth closed and both eyes open and looking straight at the camera. No tilting or rotating the head."),
+            ("Head size", "31 mm to 36 mm measured from the chin to the natural top of the head — the skull, not the top of your hair. The overall photo is larger than a European one but the head is a similar size, so there is more margin around it."),
         ],
         children="Newborns and infants may have their eyes partly closed and do not need a neutral expression, but the rest of the rules still apply — including the commercial-photographer requirement. No other person may appear in the photo, so the usual approach is to lay the baby on a plain white sheet. A child's photo still needs the studio annotation on the back.",
         process=[
@@ -167,7 +167,7 @@ COUNTRIES = [
             "Head measuring outside the 31–36 mm chin-to-crown window.",
             "Photos printed at the wrong size — 35×45 mm brought over from a European application.",
             "Any retouching, including removing blemishes or softening skin.",
-            "Glare on glasses, or shadows across the face from overhead lighting.",
+            "Wearing glasses, which are no longer accepted without a documented medical reason.",
         ],
     ),
     _entry(
@@ -181,7 +181,7 @@ COUNTRIES = [
             "Two identical prints are required for a paper application, and one of them has to be endorsed on the back by your guarantor — the person who confirms your identity on the form. That endorsement is part of the application, not an optional extra.",
         ],
         rules=[
-            ("Glasses", "Remove them. The APO asks for photos without glasses, and does not treat a prescription as a reason to keep them on."),
+            ("Glasses", "Remove them. The APO asks for photos without glasses and a prescription on its own is not a reason to keep them on; only a medical reason you cannot work around is, and then the lenses must be untinted."),
             ("Copies", "Two identical prints. Your guarantor writes a declaration on the back of one confirming it is a true likeness of you, and signs it."),
             ("Expression", "Neutral, mouth closed, eyes open and looking straight at the lens. No smiling."),
             ("Headwear", "Only for religious or medical reasons, and the covering must not cast a shadow or obscure any part of the face from the bottom of the chin to the top of the forehead."),
@@ -217,13 +217,13 @@ COUNTRIES = [
             ("Expression", "Neutral, facing the camera directly, with both eyes open and the mouth closed."),
             ("Minors", "For a minor's application, the photo requirements are applied to the child, and one parent's details are recorded on the form. The 4.5 × 3.5 cm size is standard across minor categories."),
         ],
-        children="A minor's passport application still requires the child to attend the appointment in person, where the photo is captured. For the paper categories that do need prints, an infant may be photographed against a plain white sheet with the eyes open if possible; nobody else may appear in the frame. Parents' documents are verified separately and do not affect the photo itself.",
+        children="There is one clear exception to the rule that you do not bring photos: children under four. Passport Seva asks for a recent 4.5 × 3.5 cm colour photograph on a white background to be carried to the appointment for them, because capturing a small child reliably at the counter is not practical. Older minors still attend in person and are photographed there. In either case nobody else may appear in the frame, and a parent's documents are verified separately from the photo itself.",
         process=[
             "The normal route is to register on the Passport Seva portal, fill the form online, pay, and book an appointment at your nearest PSK. Everything biometric — photograph, fingerprints, signature — happens at the centre.",
             "Because of that, the most useful thing an online tool does for an Indian applicant is prepare 35 × 45 mm photos for the surrounding paperwork: visa applications to other countries, PAN and bank forms, university admissions and employment records, which do all need supplied prints.",
         ],
         rejections=[
-            "Supplying photos for an appointment-based application, where they are not used.",
+            "Bringing photos to a PSK appointment for an adult, where they are not used at all.",
             "A background that is off-white, cream or shows shadow gradients.",
             "Photos smaller than 35 × 45 mm, trimmed down from a larger print.",
             "Low-resolution prints where the face is soft or pixelated.",
@@ -302,7 +302,7 @@ COUNTRIES = [
         ],
         rules=[
             ("Head dimensions", "Head width 15–22 mm and height 28–33 mm, measured within the 33 × 48 mm frame. These are checked, not estimated."),
-            ("Glasses", "Not permitted for Chinese visa photos. This has been enforced since 2016 and is not subject to a medical exception in the way the US rule is."),
+            ("Glasses", "Not permitted for Chinese visa photos, and enforced since 2016 across every visa category — tourist, business and work alike. A medical exception exists but requires a doctor's letter submitted with the application, so for practical purposes take them off."),
             ("Background", "Pure white, with no shadow and no gradient. Unlike the Schengen preference for light grey, China wants white and refuses off-white."),
             ("Expression", "Neutral, mouth closed, ears visible where hair permits, and the face square to the camera with no tilt."),
             ("Digital uploads", "The online visa application takes a digital file, typically 354 × 472 to 420 × 560 pixels, in JPEG and under 100 KB — a much tighter file-size ceiling than most systems impose."),
@@ -337,14 +337,15 @@ COUNTRIES = [
             ("Glasses", "Generally permitted where the eyes are clearly visible without glare, though individual offices vary. Removing them avoids the argument."),
             ("Expression", "Neutral, facing forward, both eyes open, mouth closed, with the ears visible where the hairstyle allows."),
         ],
-        children="A child's passport also requires attendance at the Polícia Federal with both parents or a legal guardian, and the photo is captured there. For the documents that do need supplied prints, an infant may be photographed lying on a plain white sheet with nobody else visible in the frame; the 3 × 4 cm size is the one most commonly requested for a child's records.",
+        children="This is the one case where you do bring a photo to a Brazilian passport appointment. For a child under five, the Polícia Federal asks for a printed 5 × 7 cm colour photo on a white background, taken within the last six months and printed on photographic paper — specifically 5 × 7, not the 3 × 4 used elsewhere in Brazilian paperwork. Anyone aged five or over is photographed at the counter. A child's application also requires attendance with both parents or a legal guardian, and nobody else may appear in the frame.",
         process=[
             "Passport applications start on the gov.br portal: fill the form, pay the GRU fee, and book an appointment at a Polícia Federal unit. Everything biometric happens at that appointment.",
             "For the surrounding paperwork, exporting both a 5 × 7 cm and a 3 × 4 cm version from the same portrait covers nearly every Brazilian form you are likely to meet, and the 6×4 inch print sheet tiles copies for a photo counter.",
         ],
         rejections=[
-            "Bringing photos to a Polícia Federal passport appointment, where they are not used.",
-            "Supplying 5 × 7 cm where a form specifically asks for 3 × 4 cm.",
+            "Bringing photos to a Polícia Federal appointment for anyone aged five or over, where they are not used.",
+            "Bringing a 3 × 4 cm photo for a child under five, where 5 × 7 cm is required.",
+            "Supplying 5 × 7 cm where another Brazilian form specifically asks for 3 × 4 cm.",
             "Backgrounds that are cream or grey where the office requires white.",
             "Prints on plain paper rather than photographic stock.",
             "Photos older than six months, or predating a significant change in appearance.",

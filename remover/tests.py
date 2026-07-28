@@ -363,13 +363,16 @@ class PassportContentTests(SimpleTestCase):
 
     def test_country_specific_facts_reach_the_page(self):
         """Spot-check that the differentiating detail actually renders."""
+        # Each string was checked against the country's own authority in July 2026.
+        # If one of these ever has to be deleted rather than updated, the page it
+        # came from has lost the thing that made it worth having.
         cases = {
             "canada": "commercial photographer",       # Canada's studio-annotation rule
             "united-states": "1 November 2016",        # the US glasses ban
-            "united-kingdom": "light grey or cream",   # not the usual white
+            "united-kingdom": "the last month",        # 1-month recency, vs 6 elsewhere
             "china": "15–22 mm",                  # China's head-width window
-            "india": "Passport Seva Kendra",           # photo taken at the centre
-            "brazil": "Polícia Federal",          # photo taken at the appointment
+            "india": "under four",                     # the one case photos ARE needed
+            "brazil": "aged five or over",             # ditto, and 5×7 not 3×4
         }
         for slug, needle in cases.items():
             with self.subTest(country=slug):
@@ -443,10 +446,13 @@ class ThinPageTests(SimpleTestCase):
 
         for key, content in DEEP.items():
             slug = key.split(":", 1)[1] if key.startswith("use_case:") else None
-            url = (
-                reverse("remover:use_case", args=[slug]) if slug
-                else reverse(f"remover:{key}")
-            )
+            # Pin the locale: another test may have left Portuguese active, and
+            # reverse() would then hand back the /pt/ twin of every URL.
+            with translation.override("en"):
+                url = (
+                    reverse("remover:use_case", args=[slug]) if slug
+                    else reverse(f"remover:{key}")
+                )
             with self.subTest(page=key):
                 # escape(): the copy contains apostrophes, which Django renders as
                 # &#x27; — comparing the raw string would fail on correct output.

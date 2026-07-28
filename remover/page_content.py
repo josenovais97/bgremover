@@ -865,6 +865,540 @@ DEEP = {
             },
         ],
     },
+    "blur": {
+        "title": "How background blur actually works",
+        "sections": [
+            {
+                "h": "Depth of field, and why phones fake it",
+                "p": [
+                    "Optical background blur — bokeh — comes from a wide aperture and a large sensor. Only one plane is truly in focus, and everything in front of or behind it falls off progressively. A full-frame camera at f/1.8 produces it naturally.",
+                    "Phone sensors are tiny and their lenses have deep depth of field, so almost everything is sharp whether you want it or not. Portrait mode fakes the effect: the phone estimates a depth map, then blurs by an amount that varies with estimated distance. This tool does the same thing on any photo, after the fact.",
+                ],
+            },
+            {
+                "h": "Why the edges are the hard part",
+                "p": [
+                    "Simulated blur lives or dies on the boundary between subject and background. Real optical blur transitions gradually because the falloff follows actual distance; a naive mask blurs everything outside a hard outline by the same amount, which produces the cut-out look that gives portrait mode away.",
+                    "The specific artefacts to check for: a halo of sharp background hugging the subject's outline, hair that has been blurred away with the background, and a foreground object at the same distance as the subject that got blurred anyway because it was outside the mask.",
+                ],
+            },
+            {
+                "h": "How much blur to apply",
+                "p": [
+                    "Less than feels right. The instinct is to push the slider until the background is unrecognisable, which reads as artificial immediately — real lenses rarely obliterate a background that completely at portrait distances.",
+                    "A useful target is enough blur that background detail stops competing for attention but the setting is still legible. Somewhere around the point where you can tell it is a kitchen, but cannot read the labels.",
+                ],
+            },
+            {
+                "h": "What blur is good for",
+                "p": [
+                    "Beyond aesthetics, it solves practical problems: a cluttered room behind a video-call headshot, a distracting sign behind a portrait, or a busy street behind a product.",
+                    "It is also a softer alternative to redaction when the background merely needs de-emphasising rather than hiding. If the background contains something that genuinely must not be readable — a screen, a document, a face — blur is the wrong tool, because it is reversible. Cover or crop those instead.",
+                ],
+            },
+        ],
+    },
+    "collage": {
+        "title": "Arranging photos into a grid",
+        "sections": [
+            {
+                "h": "Pick a layout for the number of photos",
+                "p": [
+                    "Some counts arrange more comfortably than others. Two, three, four, six and nine sit naturally in regular grids; five and seven do not, and usually need one cell given more weight than the rest.",
+                    "The reliable approach for an awkward count is a feature layout — one large image with the others in a column or strip beside it. That reads as deliberate, where a grid with one empty cell reads as a mistake.",
+                ],
+            },
+            {
+                "h": "Gutters and consistency",
+                "p": [
+                    "The space between images does more work than people expect. Zero gap makes a collage read as a single composite image, which suits a panorama or a sequence. A visible, even gutter separates the photos into distinct frames, which suits a set of unrelated shots.",
+                    "What matters most is that the gutter is even. Uneven spacing is one of those things nobody consciously notices and everybody registers as amateurish. The same applies to the outer margin: it should match the internal gutters, or be deliberately larger, but never slightly different.",
+                ],
+            },
+            {
+                "h": "Cropping inside cells",
+                "p": [
+                    "Photos in a grid must fill their cells, and unless your source images happen to match the cell ratio, something has to give. Filling the cell and cropping the overflow keeps the grid clean but can cut heads off; fitting the whole image inside leaves letterbox bars.",
+                    "Fill-and-crop is almost always the better choice, but it needs checking per cell. The common failure is a portrait photo dropped into a landscape cell, where a centre crop removes the top of someone's head.",
+                ],
+            },
+            {
+                "h": "Sizing the export",
+                "p": [
+                    "A collage's output resolution multiplies: a 3 × 3 grid at 1000 pixels per cell is a 3000-pixel image before gutters. That is often larger than needed and slow to upload.",
+                    "Decide the final display size first and work back. For a social post, 1080 pixels on the longest side is plenty regardless of how many photos are in it — each cell only needs a few hundred pixels. For print, work from the physical size at 300 DPI instead.",
+                ],
+            },
+        ],
+    },
+    "watermark": {
+        "title": "Watermarking that is worth doing",
+        "sections": [
+            {
+                "h": "Be honest about what it prevents",
+                "p": [
+                    "A watermark does not stop theft. Anyone determined can crop it, clone it out, or run an inpainting model over it in seconds, and the tools to do that are as free as this one.",
+                    "What a watermark actually does is raise the effort above casual, and attach attribution to an image that travels. Someone who would have right-clicked and reposted may not bother; someone who reposts anyway carries your name with them. Those are real benefits, and they are the honest reason to do it.",
+                ],
+            },
+            {
+                "h": "Placement and the trade-off",
+                "p": [
+                    "There is a straight trade between removability and intrusiveness, and where you sit on it depends on what the image is for:",
+                ],
+                "list": [
+                    "A corner mark is unobtrusive and trivially cropped out — fine for attribution on work you are happy to have shared.",
+                    "A mark across the subject is much harder to remove and much more damaging to the image — right for proofs and previews clients have not paid for.",
+                    "A large, low-opacity tiled pattern is the hardest to remove cleanly, and the standard for stock previews.",
+                    "A semi-transparent mark over a busy area survives inpainting better than one over flat colour, where a model can simply reconstruct the background.",
+                ],
+            },
+            {
+                "h": "Opacity and contrast",
+                "p": [
+                    "Around 30–50% opacity is the usual working range: visible enough to read, faint enough not to ruin the image. Below about 20% it disappears against busy areas; above 70% it dominates.",
+                    "Pure white or pure black marks vanish against matching areas of the photo. A mark with a subtle outline or drop shadow stays legible over both light and dark regions, which matters because you rarely control where in the frame it lands across a batch.",
+                ],
+            },
+            {
+                "h": "Keep the original clean",
+                "p": [
+                    "Watermark on export, never on your master. Once a mark is burned into the pixels it cannot be cleanly removed, and the version you will want in two years — for a portfolio, a print, a client who did pay — is the clean one.",
+                    "For batch work, that means keeping an unwatermarked archive and generating marked copies as needed. It is also worth keeping metadata authorship fields on the original: unlike a visible mark, they cost nothing and survive as long as nobody strips them.",
+                ],
+            },
+        ],
+    },
+    "photo_filters": {
+        "title": "Using filters and adjustments well",
+        "sections": [
+            {
+                "h": "Adjustments versus looks",
+                "p": [
+                    "Two different things get called filters. Adjustments — exposure, contrast, saturation, temperature — are corrections that move an image towards what it should have looked like. Looks are stylistic presets that move it somewhere deliberately different.",
+                    "The order matters. Correct first, then style. A preset applied to an underexposed, colour-cast photo bakes those problems in and makes them harder to fix, because the preset has already redistributed the tones you needed to work with.",
+                ],
+            },
+            {
+                "h": "What each slider actually does",
+                "p": [
+                    "Knowing the mechanism makes the results predictable:",
+                ],
+                "list": [
+                    "Exposure shifts every tone up or down together, and clips highlights or shadows once they hit the ends of the range.",
+                    "Contrast pushes tones away from the middle — brights brighter, darks darker — which also increases apparent saturation as a side effect.",
+                    "Saturation scales all colour intensity uniformly, so already-vivid colours clip first. Vibrance boosts the muted ones more than the vivid ones, which is why it is gentler on skin.",
+                    "Temperature and tint correct colour casts along the blue–orange and green–magenta axes respectively.",
+                    "Sharpening increases contrast at edges. It adds no detail, and overdone it produces bright halos along high-contrast boundaries.",
+                ],
+            },
+            {
+                "h": "Where over-editing shows first",
+                "p": [
+                    "Skin tones and skies are the two places that give away a heavy hand. Skin turns orange with too much saturation or warmth and grey-green with too much correction the other way; the eye is extremely well calibrated for this and forgiving of almost nothing.",
+                    "Skies band. A gradient pushed hard runs out of intermediate values, and the smooth transition becomes visible steps — made worse by any subsequent lossy compression, which handles gradients badly to begin with.",
+                ],
+            },
+            {
+                "h": "Edit non-destructively where you can",
+                "p": [
+                    "Every adjustment discards information: pushed highlights clip, crushed shadows merge, and neither comes back by moving the slider the other way. Doing it repeatedly on a saved JPEG compounds the loss with compression damage.",
+                    "Work from the highest-quality original each time rather than re-editing an export, and keep that original untouched. If you are producing several versions of one image, generate each from the master instead of editing one into the next.",
+                ],
+            },
+        ],
+    },
+    "text_behind": {
+        "title": "The text-behind-subject effect",
+        "sections": [
+            {
+                "h": "How the layering works",
+                "p": [
+                    "The effect is three layers. At the bottom, the original photo. In the middle, your text. On top, a cut-out of the subject with a transparent background, aligned exactly over its original position.",
+                    "Because the top layer is the same subject in the same place, the text appears to pass behind them while the photo looks untouched. Everything depends on that alignment — the cut-out must sit pixel-for-pixel where it came from, which is why the effect is built from one photo rather than composited from two.",
+                ],
+            },
+            {
+                "h": "Choosing a photo that works",
+                "p": [
+                    "Not every image suits it. What you need is a clear subject with visible space around them for the text to occupy:",
+                ],
+                "list": [
+                    "A subject that does not fill the frame — head-and-shoulders or full-body with room at the sides.",
+                    "A background that is relatively plain where the text will sit, so the words stay readable.",
+                    "Good separation between subject and background, since the whole effect rests on the quality of the cut-out.",
+                    "Ideally a subject whose outline is interesting — text disappearing behind a shoulder or between an arm and the body sells the depth far better than text behind a plain silhouette.",
+                ],
+            },
+            {
+                "h": "Typography choices",
+                "p": [
+                    "Heavy, wide letterforms work best, because you want a substantial amount of text area for the subject to overlap. Thin type passes behind a subject almost invisibly and the effect is lost.",
+                    "Set the text large — often larger than feels sensible, frequently spanning the full frame width. The most effective versions use one or two words at a scale that would be overwhelming if the subject were not breaking it up.",
+                ],
+            },
+            {
+                "h": "Selling the depth",
+                "p": [
+                    "Two touches make it convincing. Slightly reducing the text's opacity, or nudging its colour towards the background's, makes it read as further away rather than pasted between two layers — atmospheric perspective, the same reason distant hills look paler.",
+                    "The other is checking the cut-out edge at full zoom. Since the subject is composited back onto its own photo, a halo of leftover background is subtle rather than obvious — but the eye still registers it as a slightly wrong outline, which undercuts the illusion the whole effect depends on.",
+                ],
+            },
+        ],
+    },
+    "base64": {
+        "title": "When to use a data URI",
+        "sections": [
+            {
+                "h": "What Base64 encoding is",
+                "p": [
+                    "Base64 represents binary data using 64 printable ASCII characters, so an image can travel through anything that only handles text — HTML, CSS, JSON, email bodies, configuration files.",
+                    "A data URI wraps that in a scheme the browser understands: `data:image/png;base64,` followed by the encoded bytes. Used as an img src or a CSS background, it embeds the image directly in the document rather than pointing at a separate file.",
+                ],
+            },
+            {
+                "h": "The 33% cost",
+                "p": [
+                    "Base64 encodes three bytes into four characters, so the result is about 33% larger than the original, plus padding. That penalty is unavoidable and applies every time the containing document is served.",
+                    "Which is the crux: an external image is cached separately and downloaded once, while an embedded one is re-sent with every copy of the page that contains it. Inlining a large image can make a page slower rather than faster, and inlining it into a document that changes often is worse still, because it defeats caching for both.",
+                ],
+            },
+            {
+                "h": "When it is the right call",
+                "p": [
+                    "It genuinely wins in a few situations:",
+                ],
+                "list": [
+                    "Very small images — icons, a 1×1 tracking pixel, a tiny placeholder — where one round trip costs more than 33% of a few hundred bytes.",
+                    "Single-file deliverables: an HTML email, a self-contained report, a page that must work with no external requests.",
+                    "Avoiding a flash of missing content for something critical above the fold.",
+                    "Embedding an image in JSON, YAML or a database field that only accepts text.",
+                    "Environments with a strict content policy that blocks external image hosts.",
+                ],
+            },
+            {
+                "h": "Where it goes wrong",
+                "p": [
+                    "The common mistake is inlining photographs. A 500 KB photo becomes about 665 KB of text sitting in your HTML, downloaded in full before the page can render and re-downloaded on every visit because it cannot be cached independently.",
+                    "The rough threshold most people settle on is a few kilobytes: below that, inlining is usually a win; above it, an external file with proper caching almost always beats it. SVG is worth a special mention — it is already text, so it can be embedded directly with no Base64 step and no size penalty at all.",
+                ],
+            },
+        ],
+    },
+    # --- Compress intent variants (all rendered by landing.html) -------------
+    "compress_png": {
+        "title": "Why PNGs get so large",
+        "sections": [
+            {
+                "h": "PNG compresses patterns, not photographs",
+                "p": [
+                    "PNG is lossless: it reconstructs your pixels exactly. It achieves that by finding repetition — runs of identical colour, rows that resemble the row above — and encoding those patterns compactly.",
+                    "A screenshot of a code editor is full of such repetition and compresses beautifully. A photograph has almost none: sensor noise means adjacent pixels differ slightly everywhere, so PNG ends up storing something close to raw pixel data. This is why a photo saved as PNG is routinely five to ten times larger than a visually identical JPG.",
+                ],
+            },
+            {
+                "h": "The fix depends on the content",
+                "p": [
+                    "Before compressing, decide which kind of PNG you have. If it is a photograph, the format is the problem and no amount of PNG optimisation will fix it — convert to JPG or WebP and expect an 80–90% reduction with no visible change.",
+                    "If it is a screenshot, logo, diagram or anything with sharp edges and flat colour, PNG is the right format and should stay. Lossy compression would put visible haloing around text and edges.",
+                ],
+            },
+            {
+                "h": "Compressing a PNG that should stay a PNG",
+                "p": [
+                    "Two levers work without changing format. The first is dimensions: a screenshot from a high-density display is often twice the resolution it needs to be, and halving it cuts the file to roughly a quarter.",
+                    "The second is colour depth. A PNG storing 16 million colours for an image that only uses forty is wasting most of its palette. Reducing to an indexed palette is technically lossy but often visually identical on flat-colour graphics, and can cut the file dramatically. On photographs it produces obvious banding, so it is a graphics technique only.",
+                ],
+            },
+            {
+                "h": "Keep the transparency in mind",
+                "p": [
+                    "The one thing that must survive is the alpha channel. Converting a transparent PNG to JPG discards it entirely and the background comes back as solid white or black.",
+                    "If you need both small size and transparency, lossy WebP is the answer — it carries a full alpha channel at a fraction of PNG's size, and every current browser supports it. Keep the PNG as your master for anything you will hand to someone else.",
+                ],
+            },
+        ],
+    },
+    "compress_jpeg": {
+        "title": "Compressing JPEGs without compounding damage",
+        "sections": [
+            {
+                "h": "Your JPEG is already compressed",
+                "p": [
+                    "This is what makes JPEGs different from other compression jobs: the file has already been through a lossy pass. Re-saving it applies a second, and the second pass works on data that already contains artefacts, which it treats as real detail worth preserving while discarding something else.",
+                    "The damage accumulates and never comes back. Ten saves at quality 90 produce a visibly worse image than one save at quality 60, despite the higher nominal setting each time.",
+                ],
+            },
+            {
+                "h": "So compress once, from the best source",
+                "p": [
+                    "If you still have the original — the camera file, the export from your editor, a PNG master — compress from that rather than from a JPEG that has already been through the mill.",
+                    "When the JPEG is all you have, make one pass and accept the result rather than nudging the slider repeatedly and re-saving. Each attempt costs quality even if the number goes up.",
+                ],
+            },
+            {
+                "h": "Where the quality scale bites",
+                "p": [
+                    "For photographic content: 90–80 is visually indistinguishable at roughly half the file size, 80–70 softens fine texture slightly, 70–60 makes artefacts visible in skies and skin, and below 60 blockiness is obvious.",
+                    "The scale is non-linear because the quality number scales a quantisation table rather than removing a fixed fraction of data. That is why dropping from 100 to 85 costs almost nothing visible and dropping from 70 to 55 costs a great deal.",
+                ],
+            },
+            {
+                "h": "Resize first, and consider switching",
+                "p": [
+                    "Reducing dimensions is more powerful than reducing quality, because file size scales with pixel count. Bringing a 4000-pixel photo down to 1600 usually clears a size target on its own, at no perceptible cost.",
+                    "And if the destination accepts it, converting to WebP typically saves another 25–35% at matched visual quality — often enough to avoid lowering the quality setting at all. Keep JPEG when the file is going somewhere you do not control, since it is the format that always works.",
+                ],
+            },
+        ],
+    },
+    "compress_webp": {
+        "title": "Getting the most out of WebP",
+        "sections": [
+            {
+                "h": "Two modes, two different jobs",
+                "p": [
+                    "WebP is unusual in offering both lossy and lossless compression in one format, and choosing the wrong mode is the main way people fail to get the benefit.",
+                    "Lossy WebP is for photographs, where it typically produces files 25–35% smaller than a JPEG of equivalent visual quality. Lossless WebP is for screenshots, logos and flat-colour graphics, where it beats PNG by roughly 20–25% while preserving every pixel.",
+                ],
+            },
+            {
+                "h": "The capability nothing before it had",
+                "p": [
+                    "WebP's genuinely new trick is lossy compression with an alpha channel. Before it, a cut-out with a transparent background had to be PNG, and was therefore large.",
+                    "As lossy WebP the same cut-out can be a fraction of the size while looking identical, which makes it the correct format for transparent images on the web. This matters most for product cut-outs, logos and any image composited over a page background.",
+                ],
+            },
+            {
+                "h": "Where WebP is the wrong answer",
+                "p": [
+                    "Browser support has been universal since 2020, so for anything you serve on a website WebP is safe. Outside the browser it is patchier than people assume.",
+                    "Plenty of desktop software, print workflows, older content systems and upload forms still reject it. The rule that avoids trouble: WebP for images you serve, JPG or PNG for images you hand to someone else.",
+                ],
+            },
+            {
+                "h": "Converting to WebP without losing twice",
+                "p": [
+                    "Converting an existing JPEG to lossy WebP means two lossy passes, and the second one inherits the first one's artefacts. The saving is usually still worth it, but the result is never as good as encoding WebP from an original.",
+                    "Where you have the master — a PNG, a camera file, an editor export — convert from that instead. And if the source is a PNG of a graphic rather than a photo, use lossless WebP: converting it to lossy will put haloing around exactly the sharp edges PNG was protecting.",
+                ],
+            },
+        ],
+    },
+    "compress_under_1mb": {
+        "title": "Getting under 1 MB",
+        "sections": [
+            {
+                "h": "A generous limit, usually met by resizing alone",
+                "p": [
+                    "1 MB is a common ceiling on job portals, CMS uploads, forum attachments and government forms, and it is roomy enough that most images clear it without touching quality.",
+                    "A modern phone photo is often 3–6 MB at 4000 pixels wide. Reducing it to 1600 pixels — still larger than most screens display — typically lands somewhere around 300–500 KB at good quality. That single step solves the problem for the majority of images.",
+                ],
+            },
+            {
+                "h": "The order that wastes the least quality",
+                "p": [
+                    "Work down this list and stop as soon as you are under:",
+                ],
+                "list": [
+                    "Resize to the largest dimension the image will actually be shown at.",
+                    "Export at quality 85, which is visually indistinguishable from the original on most photographs.",
+                    "Switch to WebP if the destination accepts it, for another 25–35%.",
+                    "Only then drop quality further, checking the result at full size.",
+                ],
+            },
+            {
+                "h": "When 1 MB is genuinely tight",
+                "p": [
+                    "Some content resists. Screenshots and images containing text have sharp edges that lossy compression handles badly, so they stay large at any acceptable quality — keep those as PNG and reduce dimensions instead, which often beats a high-quality JPEG of the same content.",
+                    "Scanned documents are the other awkward case. They are usually text on white, which means they behave like graphics rather than photographs: PNG or a high-quality JPEG at reduced dimensions will look far better at the same size than an aggressively compressed full-resolution scan.",
+                ],
+            },
+            {
+                "h": "Check what the limit actually applies to",
+                "p": [
+                    "Some forms cap each file at 1 MB; others cap the whole submission, which is a different problem if you are uploading several documents. Reading which one you are facing before compressing saves doing the work twice.",
+                    "It is also worth checking whether the limit comes with a dimension or format restriction. Portals that specify 1 MB frequently also specify JPEG only, or a maximum pixel width, and an image that meets the size limit in the wrong format is rejected just as firmly as an oversized one.",
+                ],
+            },
+        ],
+    },
+    "compress_under_100kb": {
+        "title": "Getting under 100 KB",
+        "sections": [
+            {
+                "h": "An aggressive target that changes the approach",
+                "p": [
+                    "100 KB is tight. It appears on older government portals, some exam and visa application systems, forum avatars and legacy content systems, and unlike a 1 MB limit it cannot usually be met by resizing alone.",
+                    "At this budget you are deciding what to sacrifice rather than finding a free win, and the right answer depends entirely on what the image is.",
+                ],
+            },
+            {
+                "h": "Dimensions first, and be ruthless",
+                "p": [
+                    "File size scales with pixel count, so this is still the most powerful lever by a wide margin. For a 100 KB target, something in the range of 600–1000 pixels on the longest side is usually where you need to be.",
+                    "That is smaller than feels comfortable, but a clean 800-pixel image at quality 80 looks considerably better than a 2000-pixel image mangled down to the same file size. Resolution you cannot afford to keep is worth giving up before quality is.",
+                ],
+            },
+            {
+                "h": "Then format, then quality",
+                "p": [
+                    "Switching format is the next lever and often decisive at this size. WebP saves 25–35% over JPEG at matched quality, and AVIF more again — at 100 KB that difference is the whole margin.",
+                    "Quality comes last, and 70–75 is about as low as photographic content goes before artefacts become distracting. Below 60 you get visible blockiness in smooth areas and haloing around edges.",
+                ],
+            },
+            {
+                "h": "Know when the content will not cooperate",
+                "p": [
+                    "Some images cannot reach 100 KB while remaining useful. A detailed scanned document, a screenshot full of small text, or a photograph with fine repeating texture will either stay large or become unreadable.",
+                    "When a form demands 100 KB for a document scan, the answer is usually to crop to just the region that matters and reduce to grayscale rather than compress the whole page harder. Both cut size substantially without touching legibility, which is the thing that actually has to survive.",
+                ],
+            },
+        ],
+    },
+    "compress_email": {
+        "title": "Sending images by email",
+        "sections": [
+            {
+                "h": "The limits are lower than the headline number",
+                "p": [
+                    "Most providers advertise around 25 MB per message — Gmail and Outlook both do — but that is the size of the encoded message, not of your files. Attachments are Base64-encoded in transit, which inflates them by about 33%.",
+                    "So a 25 MB ceiling is really about 18 MB of actual attachments. And the recipient's server has its own limit, which may be lower: corporate mail systems commonly cap at 10 MB and some still at 5 MB. A message that leaves your outbox fine can bounce at the other end.",
+                ],
+            },
+            {
+                "h": "Nobody needs the full resolution",
+                "p": [
+                    "Photos sent by email are almost always viewed on a screen, often on a phone, and usually just looked at rather than edited or printed. A 4000-pixel original is serving no purpose in that journey.",
+                    "Resizing to 1600 pixels on the longest side keeps an image that looks perfect on any screen and is typically a tenth of the size. For a batch of holiday photos, that is the difference between one message and five.",
+                ],
+            },
+            {
+                "h": "When to send full quality anyway",
+                "p": [
+                    "Sometimes the recipient does need the original — a designer who will edit it, a printer, a client who commissioned the shoot, anyone who will crop into it.",
+                    "In that case do not compress; use a file-sharing link instead. Compressing an image someone is going to edit hands them a file with baked-in artefacts that every subsequent edit will amplify.",
+                ],
+            },
+            {
+                "h": "Inline images and metadata",
+                "p": [
+                    "Images pasted into the message body rather than attached are usually not compressed by the client, and are frequently the reason a message is unexpectedly large. They are also not always downloadable as files by the recipient, which is a common frustration.",
+                    "One thing worth remembering: email attachments preserve metadata. Unlike social platforms, which strip it, a photo emailed straight from your phone carries its GPS coordinates and timestamp intact. If the picture was taken at home, strip that before sending it to someone you do not know.",
+                ],
+            },
+        ],
+    },
+    "compress_web": {
+        "title": "Images and page speed",
+        "sections": [
+            {
+                "h": "Images are usually most of the page",
+                "p": [
+                    "On a typical page, images account for the majority of transferred bytes — far more than scripts or stylesheets. That makes them the highest-leverage thing to optimise, and the one most often left untouched.",
+                    "They also tend to be the Largest Contentful Paint element, the metric Google uses to judge loading performance. A slow hero image does not just make the page feel sluggish; it is literally what the score measures.",
+                ],
+            },
+            {
+                "h": "Serve the size you display",
+                "p": [
+                    "The most common waste on the web is a 3000-pixel image displayed in a 600-pixel slot. The browser downloads all of it and throws most away.",
+                    "Export at the size it will actually be shown at, allowing for high-density screens — roughly twice the CSS pixel width is a sensible ceiling, beyond which the difference is imperceptible. For images whose display size varies with viewport, serve several sizes and let the browser choose with srcset.",
+                ],
+            },
+            {
+                "h": "Format and quality for the web",
+                "p": [
+                    "WebP is the sensible default: universally supported in browsers and 25–35% smaller than JPEG at matched quality. AVIF is smaller again and worth the slower encode for large hero images.",
+                    "Quality 80–85 is right for almost everything. Above 90 is wasted bytes on an image nobody will inspect at full size, and the difference is invisible once the image is scaled into its slot.",
+                ],
+            },
+            {
+                "h": "Beyond the file itself",
+                "p": [
+                    "A few things matter as much as size:",
+                ],
+                "list": [
+                    "Set explicit width and height so the browser reserves space — otherwise content jumps as images load, which is what Cumulative Layout Shift measures.",
+                    "Lazy-load images below the fold, but never the hero image, which needs to load as early as possible.",
+                    "Strip metadata from web images: it is a few kilobytes per file with no benefit to a visitor, and it may contain location data.",
+                    "Keep the colour profile, though — removing it can make a wide-gamut image render flat and washed out.",
+                ],
+            },
+        ],
+    },
+    # --- Comparison pages (rendered by landing.html) -------------------------
+    "cmp_adobe": {
+        "title": "An honest comparison",
+        "sections": [
+            {
+                "h": "They are aimed at different jobs",
+                "p": [
+                    "Adobe Express is a design tool. Its centre of gravity is templates, layouts, brand kits, typography and multi-element compositions — making a social post, a flyer, a presentation slide. Background removal is one feature inside that.",
+                    "ClearBG is a set of single-purpose image utilities. There are no templates, no canvas, no brand kit and no design surface. You bring an image, do one thing to it, and leave with the result.",
+                ],
+            },
+            {
+                "h": "Where Adobe Express is the better choice",
+                "p": [
+                    "If the job is design rather than image processing, use it. Nothing here competes with a template library, a layout canvas, collaborative editing, or an asset library shared across a team.",
+                    "It also fits naturally if you are already in the Adobe ecosystem, since files move between Express and the rest of Creative Cloud without friction. And its generative features — text-to-image, generative fill — have no equivalent that runs in a browser tab.",
+                ],
+            },
+            {
+                "h": "Where this is the better choice",
+                "p": [
+                    "Three situations. First, privacy: Adobe Express uploads your files to Adobe's servers to process them, which is a problem for identity documents, medical images, unreleased work and anything under a confidentiality obligation. Here the processing happens on your device and nothing is transmitted.",
+                    "Second, friction: there is no account, no sign-in and no export limit. Third, bulk: because there is no per-image cost to us, batch work has no quota attached to it.",
+                ],
+            },
+            {
+                "h": "The honest trade-off",
+                "p": [
+                    "Running in a browser tab imposes real limits. A server can run a model hundreds of times larger than one that fits in a page, so on the hardest cut-outs — fine hair against a busy background, semi-transparent fabric — a cloud service can still produce a better edge.",
+                    "Speed also depends on your hardware rather than ours, so an older phone will be slower than a recent laptop, and very large files can exceed what a tab can hold in memory. Where maximum quality on a difficult image matters more than privacy, the cloud tool is the right recommendation.",
+                ],
+            },
+        ],
+    },
+    "cmp_photoroom": {
+        "title": "An honest comparison",
+        "sections": [
+            {
+                "h": "Where PhotoRoom is strongest",
+                "p": [
+                    "PhotoRoom is built specifically for product and e-commerce photography, and it does more than remove backgrounds. Generative backgrounds, AI-suggested scenes, shadow generation and batch templates are genuinely useful for a seller producing a catalogue, and there is no equivalent here.",
+                    "Its cut-out quality on hard subjects is also very good, because it runs large models on its own servers rather than in your browser — the structural advantage no on-device tool can match.",
+                ],
+            },
+            {
+                "h": "The differences that usually decide it",
+                "p": [
+                    "Three things separate them in practice:",
+                ],
+                "list": [
+                    "Processing location. PhotoRoom uploads your images; here they never leave your device, which you can verify in the Network tab.",
+                    "Cost model. PhotoRoom's free tier is limited, with full-resolution export and batch features on a paid plan. There are no limits here because there is no per-image cost to impose them for.",
+                    "Watermarks and resolution caps. Free tiers commonly restrict one or both; exports here are always full resolution and never watermarked.",
+                    "Account requirement. No sign-up here, which matters if you want to use a tool once without creating an account.",
+                ],
+            },
+            {
+                "h": "Which to use when",
+                "p": [
+                    "For a seller building a catalogue who wants generated backdrops and scene templates and does not mind the images going to a server, PhotoRoom does more.",
+                    "For cut-outs on white for marketplace listings, for high volumes without a quota, or for anything you would rather not upload, on-device processing covers the job and removes the privacy question entirely.",
+                ],
+            },
+            {
+                "h": "What we cannot do",
+                "p": [
+                    "It is worth stating the limits plainly. There is no generative fill here, no AI-invented backgrounds, and no automatic shadow synthesis — those need models far larger than a browser tab can hold.",
+                    "On the hardest edges, a large server-side model still wins. If your product photography is dominated by fur, glass, mesh or semi-transparent packaging, and the images are not sensitive, a cloud service will give you a cleaner result than anything running locally.",
+                ],
+            },
+        ],
+    },
     # --- Info pages ----------------------------------------------------------
     "about": {
         "title": "How ClearBG works, and why it is built this way",
