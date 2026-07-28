@@ -6,6 +6,7 @@ from django.utils.translation import get_language
 from config.middleware import ISOLATED_VIEWS
 
 from .guides import GUIDES
+from .page_content import deep_for
 from .translations import js_catalogue
 from .translations import t as tr
 from .views import USE_CASES, is_translated_path
@@ -420,6 +421,10 @@ def seo(request):
         "canonical_url": canonical_url,
         # "noindex, follow" on the /pt/ URLs that still render English.
         "robots_meta": _robots_meta(request),
+        # Long-form copy for the pages that were too thin to rank (page_content.py).
+        # Resolved here rather than per-view so a template opts in by including
+        # partials/deep_dive.html, with no view change.
+        "deep_content": deep_for(url_name, match.kwargs if match is not None else {}),
         "site_url": settings.SITE_URL.rstrip("/"),
         # Contextual internal linking: a few related tools for the current page.
         "related_tools": _related_tools(tool_nav, url_name),

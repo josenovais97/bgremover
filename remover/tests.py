@@ -8,6 +8,7 @@ from django.conf import settings
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils import translation
+from django.utils.html import escape
 
 from remover.context_processors import CHAIN_EXCLUDED, TOOL_ACCENTS, TOOL_NAV
 from remover.guides import GUIDES
@@ -382,6 +383,143 @@ class PassportContentTests(SimpleTestCase):
                 self.assertContains(response, c["authority_url"])
                 # Outbound links to government sites carry no endorsement weight.
                 self.assertContains(response, 'rel="nofollow noopener"')
+
+
+class ThinPageTests(SimpleTestCase):
+    """No page may go back to being 130 words of copy around an interface.
+
+    The tool and use-case pages each carried ~65–190 unique words, which is what
+    a search or ad-network quality review reads as thin. They are now backed by
+    page_content.DEEP, rendered through partials/deep_dive.html. These tests pin
+    the floor sitewide rather than per-page, so a NEW thin page fails too.
+    """
+
+    @staticmethod
+    def _visible_text(html):
+        html = re.sub(r"(?is)<(script|style|svg|noscript|nav|footer|header).*?</\1>", " ", html)
+        return " ".join(re.sub(r"(?s)<[^>]+>", " ", html).split())
+
+    def _unique_words(self):
+        """Words in blocks that appear on this page and no other. Cached per call."""
+        from collections import Counter
+
+        def blocks(path):
+            html = self.client.get(path).content.decode()
+            html = re.sub(r"(?is)<(script|style|svg|noscript).*?</\1>", " ", html)
+            text = " ".join(re.sub(r"(?s)<[^>]+>", "|", html).split())
+            return {s.strip() for s in text.split("|") if len(s.strip().split()) > 4}
+
+        per = {p: blocks(p) for p in SITEMAP_PATHS}
+        seen = Counter()
+        for group in per.values():
+            seen.update(group)
+        return {
+            path: sum(len(b.split()) for b in group if seen[b] == 1)
+            for path, group in per.items()
+        }
+
+    def test_no_page_is_thin(self):
+        for path, words in sorted(self._unique_words().items(), key=lambda kv: kv[1]):
+            with self.subTest(path=path):
+                self.assertGreaterEqual(
+                    words, 200,
+                    f"{path} has only {words} words that appear nowhere else on the site",
+                )
+
+    @staticmethod
+    def _rendered_html(response):
+        """Response HTML minus <template> contents, which the browser never renders.
+
+        Two tool pages define a card <template> for cloning at runtime. An include
+        that lands inside one is present in the source and invisible on the page —
+        which a plain assertContains happily passes, because it only sees a string.
+        Strip those blocks so the assertion means what it appears to mean.
+        """
+        return re.sub(r"(?is)<template\b.*?</template>", " ", response.content.decode())
+
+    def test_every_deep_entry_actually_renders(self):
+        """A DEEP entry whose template forgot the include is invisible work."""
+        from remover.page_content import DEEP
+
+        for key, content in DEEP.items():
+            slug = key.split(":", 1)[1] if key.startswith("use_case:") else None
+            url = (
+                reverse("remover:use_case", args=[slug]) if slug
+                else reverse(f"remover:{key}")
+            )
+            with self.subTest(page=key):
+                # escape(): the copy contains apostrophes, which Django renders as
+                # &#x27; — comparing the raw string would fail on correct output.
+                html = self._rendered_html(self.client.get(url))
+                self.assertIn(escape(content["title"]), html)
+                self.assertIn(escape(content["sections"][0]["h"]), html)
+
+    def test_deep_sections_are_page_specific(self):
+        """Copy that would read the same on a sibling belongs in the template."""
+        from remover.page_content import DEEP
+
+        headings = [s["h"] for c in DEEP.values() for s in c["sections"]]
+        duplicates = {h for h in headings if headings.count(h) > 1}
+        self.assertFalse(duplicates, f"section headings reused across pages: {duplicates}")
+
+        paragraphs = [p for c in DEEP.values() for s in c["sections"] for p in s.get("p", [])]
+        repeated = {p[:60] for p in paragraphs if paragraphs.count(p) > 1}
+        self.assertFalse(repeated, f"paragraphs copy-pasted between pages: {repeated}")
+
+    def test_every_deep_page_has_real_substance(self):
+        from remover.page_content import DEEP
+
+        for key, content in DEEP.items():
+            with self.subTest(page=key):
+                self.assertGreaterEqual(len(content["sections"]), 3, "fewer than 3 sections")
+                words = sum(
+                    len(p.split())
+                    for s in content["sections"]
+                    for p in s.get("p", []) + s.get("list", [])
+                )
+                self.assertGreater(words, 250, f"{key}: only {words} words of deep copy")
+
+
+class OrphanedFaqTests(SimpleTestCase):
+    """A view that computes FAQs its template never renders is wasted work.
+
+    Seven tool views passed `faqs` and `faq_jsonld` into templates with no FAQ
+    include, so the copy AND the FAQPage structured data were built and thrown
+    away on every request — silent, and invisible in any per-page test.
+    """
+
+    FAQ_PAGES = [
+        "convert", "compress", "instagram", "crop", "favicon", "sticker", "meme",
+        "resize", "border", "palette", "passport", "index",
+    ]
+
+    def test_pages_that_build_faqs_render_them(self):
+        for name in self.FAQ_PAGES:
+            with self.subTest(tool=name):
+                response = self.client.get(reverse(f"remover:{name}"))
+                # Strip <template> blocks: markup inside one is inert, so an
+                # accordion that lands there is in the source and off the page.
+                html = re.sub(r"(?is)<template\b.*?</template>", " ", response.content.decode())
+                self.assertIn("FAQPage", html)
+                self.assertIn("Frequently asked questions", html)
+
+    def test_use_case_pages_have_their_own_faqs(self):
+        from remover.page_content import USE_CASE_FAQS
+
+        for case in USE_CASES:
+            with self.subTest(case=case["slug"]):
+                self.assertIn(case["slug"], USE_CASE_FAQS, "no FAQ set for this use case")
+                response = self.client.get(reverse("remover:use_case", args=[case["slug"]]))
+                self.assertContains(response, "FAQPage")
+                self.assertContains(response, USE_CASE_FAQS[case["slug"]][0]["q"])
+
+    def test_use_case_faqs_are_not_a_shared_template(self):
+        """FAQPage markup is compared sitewide; eleven identical sets is worse than none."""
+        from remover.page_content import USE_CASE_FAQS
+
+        questions = [f["q"] for faqs in USE_CASE_FAQS.values() for f in faqs]
+        repeated = {q for q in questions if questions.count(q) > 1}
+        self.assertFalse(repeated, f"the same question appears on several pages: {repeated}")
 
 
 class GuideTests(SimpleTestCase):

@@ -1,0 +1,32 @@
+{% comment %}
+Long-form section for pages that were too thin on their own. Content comes from
+remover/page_content.py, resolved by url_name (and slug, for use-case pages) in
+context_processors.seo — so a template gains this block by including the partial
+and the page gains substance by acquiring a DEEP entry.
+
+Renders nothing when the current page has no entry, so it is safe to include from
+a shared template (landing.html) that serves both covered and uncovered pages.
+{% endcomment %}
+{% if deep_content %}
+<section aria-labelledby="deep-title" class="max-w-3xl mx-auto space-y-10">
+    <h2 id="deep-title" class="text-2xl font-bold tracking-tight">{{ deep_content.title }}</h2>
+    {% for s in deep_content.sections %}
+    <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-primaryText">{{ s.h }}</h3>
+        {% for p in s.p %}
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ p }}</p>
+        {% endfor %}
+        {% if s.list %}
+        <ul class="space-y-2.5 pt-1">
+            {% for item in s.list %}
+            <li class="flex items-start gap-3 text-gray-600 dark:text-gray-300">
+                <i class="fa-solid fa-circle-check mt-1.5 text-primaryText text-xs shrink-0" aria-hidden="true"></i>
+                <span class="leading-relaxed">{{ item }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endfor %}
+</section>
+{% endif %}

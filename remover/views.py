@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
 from .guides import GUIDES, GUIDES_BY_SLUG, guides_by_category, related_guides
+from .page_content import USE_CASE_FAQS
 from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, FOLDED_COUNTRY_SLUGS, country_faqs
 from .seo_content import (
     ALTERNATIVE_FAQS,
@@ -1060,7 +1061,12 @@ def use_case(request, slug):
     case = USE_CASES_BY_SLUG.get(slug)
     if case is None:
         raise Http404("Unknown use case")
-    return render(request, "remover/use_case.html", {"case": localize_use_case(case)})
+    faqs = USE_CASE_FAQS.get(slug, [])
+    return render(request, "remover/use_case.html", {
+        "case": localize_use_case(case),
+        "faqs": faqs,
+        "faq_jsonld": faq_jsonld(faqs) if faqs else "",
+    })
 
 
 @require_GET
