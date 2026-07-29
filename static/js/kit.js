@@ -633,82 +633,67 @@
   }
 
   /**
-   * Ambient twinkle over `canvas`, running until the returned function is
-   * called. This is the WAIT, not the payoff: removal takes ~30 seconds against
-   * a spinner, and a celebration with nothing leading up to it is a long blank
-   * pause followed by a flash.
+   * Ambient twinkle inside `host` (which must be a positioned element),
+   * running until the returned function is called. This is the WAIT, not the
+   * payoff: removal takes ~30 seconds against a spinner, and a celebration with
+   * nothing leading up to it is a long blank pause followed by a flash.
    *
-   * So it is deliberately quieter than the finish — fewer sparkles, smaller,
-   * dimmed, no halo, scattered rather than tracing anything (there is no
-   * cut-out yet to trace). The burst has to stay the moment that reads as
-   * "done", so this one must not compete with it.
+   * Deliberately quieter than the finish — fewer, dimmer, no halo, scattered
+   * rather than tracing anything (there is no cut-out yet to trace). The burst
+   * has to stay the moment that reads as "done".
+   *
+   * DOM + CSS rather than canvas, unlike the burst. WASM inference blocks the
+   * main thread for several seconds, which starves requestAnimationFrame — a
+   * canvas loop simply freezes for the entire removal, which is exactly the
+   * phase the animation exists to cover. CSS animations of transform/opacity
+   * run on the compositor and keep going regardless.
    */
-  function sparkleLoop(canvas, opts = {}) {
+  function sparkleLoop(host, opts = {}) {
     const stop = () => {};
-    if (!canvas) return stop;
+    if (!host) return stop;
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return stop;
-    let box;
-    let cx;
-    let sparks = null;
-    // Re-fit rather than trusting the box we started with: tools call setBusy()
-    // before their first render, so the canvas is often still at its default
-    // 300x150 when the loop starts and gets its real size a tick later.
-    const refit = () => {
-      const f = fitCanvas(canvas);
-      if (!f) return;
-      box = f.box;
-      cx = f.cx;
-      sparks = null; // positions were in the old box; respawn into the new one
-    };
-    refit();
-    if (!cx) return stop;
-    const ro = window.ResizeObserver ? new window.ResizeObserver(refit) : null;
-    ro?.observe(canvas);
 
     const color = opts.color || accentColour();
     const count = opts.count || 16;
-    const life = 1150;
-    const clear = () => cx.clearRect(0, 0, box.width, box.height);
 
-    const spawn = (now) => ({
-      x: Math.random() * box.width,
-      y: Math.random() * box.height,
-      r: 2.5 + Math.random() * 4,
-      spin: Math.random() * Math.PI,
-      rise: -4 - Math.random() * 8,
-      born: now + Math.random() * life, // staggered, so they never pulse in unison
-      // Still dimmer and sparser than the finish — the wait must not upstage
-      // the payoff — but solid enough to read over a frosted-glass overlay.
-      dim: 0.65 + Math.random() * 0.35,
-      white: Math.random() < 0.5,
-    });
+    // The star is a background image rather than a clip-path: clip-path can
+    // disqualify an element from compositor-driven animation, which would put
+    // the twinkle back on the blocked main thread and defeat the whole point.
+    // A background paints once and leaves transform/opacity free to composite.
+    const star = (fill) =>
+      `url("data:image/svg+xml,${encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+        `<path fill="${fill}" d="M50 0Q57 43 100 50Q57 57 50 100Q43 57 0 50Q43 43 50 0Z"/></svg>`,
+      )}")`;
 
-    let raf = 0;
-    const frame = (now) => {
-      if (!sparks) sparks = Array.from({ length: count }, () => spawn(now));
-      clear();
-      for (const s of sparks) {
-        const age = now - s.born;
-        if (age < 0) continue;
-        const p = age / life;
-        // Recycle rather than allocate: this runs for the whole wait.
-        if (p >= 1) { Object.assign(s, spawn(now)); continue; }
-        drawSpark(cx, s, p, color);
-      }
-      raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-    return () => { ro?.disconnect(); cancelAnimationFrame(raf); clear(); };
+    const layer = document.createElement('div');
+    layer.className = 'sparkle-idle';
+    layer.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('span');
+      const hero = Math.random() < 0.18;
+      const size = hero ? 16 + Math.random() * 10 : 7 + Math.random() * 7;
+      s.style.cssText =
+        `left:${(Math.random() * 100).toFixed(2)}%;top:${(Math.random() * 100).toFixed(2)}%;` +
+        `width:${size.toFixed(1)}px;height:${size.toFixed(1)}px;` +
+        `background-image:${star(Math.random() < 0.5 ? '#ffffff' : color)};` +
+        `--sparkle-dur:${(950 + Math.random() * 850).toFixed(0)}ms;` +
+        `--sparkle-delay:${(Math.random() * 1500).toFixed(0)}ms;` +
+        `--sparkle-peak:${(0.65 + Math.random() * 0.35).toFixed(2)};`;
+      layer.appendChild(s);
+    }
+    host.appendChild(layer);
+    return () => layer.remove();
   }
 
   /**
    * Position a throwaway canvas over `target`'s page box. Absolute at page
    * coordinates (not fixed) so it tracks the content if the page scrolls.
    */
-  function overlayFor(target) {
+  function overlayFor(target, tag = 'canvas') {
     const box = target.getBoundingClientRect();
     if (!box.width || !box.height) return null;
-    const layer = document.createElement('canvas');
+    const layer = document.createElement(tag);
     layer.setAttribute('aria-hidden', 'true');
     const place = () => {
       const b = target.getBoundingClientRect();
@@ -729,8 +714,10 @@
   function sparkleLoopOver(target, opts = {}) {
     const stop = () => {};
     if (!target) return stop;
-    const o = overlayFor(target);
+    // A div, not a canvas: the loop builds CSS-animated children inside it.
+    const o = overlayFor(target, 'div');
     if (!o) return stop;
+    o.layer.style.overflow = 'hidden';
     const cancel = sparkleLoop(o.layer, opts);
     // Callers do setBusy(true) then render() in one synchronous run, so the box
     // measured above is the pre-render one. Re-place after that run completes,

@@ -1533,9 +1533,9 @@ class Card {
     const label = this.el.querySelector('.progress-label');
     const started = performance.now();
     // Twinkle for the whole wait, so the finishing burst has a build-up rather
-    // than arriving out of a static spinner. Drawn into the card's own overlay
-    // (not a floating one) so it cannot drift when the grid reflows.
-    const stopIdle = window.CBG?.sparkleLoop?.(this.el.querySelector('.sparkle-layer')) ?? (() => {});
+    // than arriving out of a static spinner. Hosted in the card's own preview
+    // box (not a floating overlay) so it cannot drift when the grid reflows.
+    const stopIdle = window.CBG?.sparkleLoop?.(this.el.querySelector('.preview')) ?? (() => {});
 
     try {
       // Two honest phases. While the model downloads we have real byte counts,

@@ -93,6 +93,37 @@
   .dark ::selection { background: rgb(var(--color-primary) / 0.30); }
 }
 
+/* Ambient sparkles during the wait -----------------------------------------
+   CSS rather than canvas on purpose. WASM inference blocks the main thread for
+   several seconds, starving requestAnimationFrame, so a canvas loop freezes for
+   the whole removal — the exact phase this is meant to cover. Animating only
+   transform and opacity keeps it on the compositor, which keeps running. */
+.sparkle-idle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+.sparkle-idle > span {
+  position: absolute;
+  opacity: 0;
+  /* The four-point star comes from an inline SVG background set in JS, NOT a
+     clip-path: clip-path can disqualify the element from compositor animation,
+     which is the one property this effect depends on. */
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  animation: sparkle-idle-twinkle var(--sparkle-dur, 1200ms) ease-in-out var(--sparkle-delay, 0ms) infinite;
+  will-change: transform, opacity;
+}
+@keyframes sparkle-idle-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  25%      { opacity: var(--sparkle-peak, 1); transform: scale(1) rotate(22deg); }
+  70%      { opacity: calc(var(--sparkle-peak, 1) * 0.45); transform: scale(0.82) rotate(42deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sparkle-idle { display: none; }
+}
+
 /* Indeterminate progress ---------------------------------------------------
    Used for the inference phase, where the library reports only four coarse
    steps and the WASM run blocks the main thread for several seconds. A
