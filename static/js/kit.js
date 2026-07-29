@@ -429,6 +429,10 @@
    * The edge comes from the result's own alpha channel — opaque pixels that
    * touch a transparent neighbour — sampled at 96px, which is coarse enough to
    * be free and detailed enough to read as the subject's outline.
+   *
+   * Two layers, because sparkles alone were too easy to miss after a 30-second
+   * wait: a halo pulse that traces the whole silhouette at once (the
+   * announcement) and the sparkles on top of it (the detail).
    */
 
   /** Normalised (0..1) points along the alpha edge of `src`. Empty if unreadable. */
@@ -482,9 +486,13 @@
   /**
    * Twinkle a burst of sparkles over `canvas`, along the silhouette of `src`.
    *
-   * `canvas` must overlay the same box `src` is painted into; `src` is assumed
-   * to be `object-contain` within it, which is how every result view here lays
-   * its image out. Returns a cancel function.
+   * `canvas` must overlay the same box `src` is painted into. By default `src`
+   * is assumed to be `object-contain` within that box; a tool that places its
+   * cut-out itself (a zoom/pan view, a fitted product frame) passes the actual
+   * destination as `opts.rect` — {x, y, w, h} in CSS pixels of the overlay —
+   * so the sparkles land on the edge the user is actually looking at.
+   *
+   * Returns a cancel function.
    */
   function sparkle(canvas, src, opts = {}) {
     const stop = () => {};
@@ -505,21 +513,40 @@
     if (!cx) return stop;
     cx.scale(dpr, dpr);
 
-    // Where object-contain actually places the image inside the box.
+    // Where the cut-out actually sits inside the box: the caller's rect if it
+    // placed the image itself, otherwise object-contain.
     const fit = Math.min(box.width / nw, box.height / nh);
-    const dw = nw * fit;
-    const dh = nh * fit;
-    const dx = (box.width - dw) / 2;
-    const dy = (box.height - dh) / 2;
+    const r = opts.rect;
+    const dw = r ? r.w : nw * fit;
+    const dh = r ? r.h : nh * fit;
+    const dx = r ? r.x : (box.width - dw) / 2;
+    const dy = r ? r.y : (box.height - dh) / 2;
 
     let pts = silhouette(src);
     if (!pts.length) pts = Array.from({ length: 48 }, () => [Math.random(), Math.random()]);
 
     const accent = getComputedStyle(document.body).getPropertyValue('--color-primary').trim();
     const color = opts.color || (accent ? `rgb(${accent})` : '#6366f1');
-    const count = opts.count || 44;
-    const life = 620;   // one sparkle, birth to gone
-    const spread = 540; // stagger across the burst, so they twinkle on in waves
+    const count = opts.count || 52;
+    const life = 820;   // one sparkle, birth to gone
+    const spread = 760; // stagger across the burst, so they twinkle on in waves
+    const glowLife = 950;
+
+    // A halo hugging the silhouette: draw the cut-out with a coloured shadow a
+    // few times to build up intensity, then punch the subject itself back out,
+    // which leaves only the glow that was spilling past its edge.
+    const halo = document.createElement('canvas');
+    halo.width = canvas.width;
+    halo.height = canvas.height;
+    const hx = halo.getContext('2d');
+    if (hx) {
+      hx.scale(dpr, dpr);
+      hx.shadowColor = color;
+      hx.shadowBlur = 16;
+      for (let i = 0; i < 3; i++) hx.drawImage(src, dx, dy, dw, dh);
+      hx.globalCompositeOperation = 'destination-out';
+      hx.drawImage(src, dx, dy, dw, dh);
+    }
 
     const sparks = Array.from({ length: count }, () => {
       const [px, py] = pts[(Math.random() * pts.length) | 0];
@@ -529,7 +556,7 @@
       return {
         x: dx + px * dw + (Math.random() - 0.5) * 10,
         y: dy + py * dh + (Math.random() - 0.5) * 10,
-        r: hero ? 7 + Math.random() * 4 : 2.5 + Math.random() * 3,
+        r: hero ? 8 + Math.random() * 5 : 3 + Math.random() * 3.5,
         spin: Math.random() * Math.PI,
         rise: -6 - Math.random() * 14,
         delay: Math.random() * spread,
@@ -544,6 +571,18 @@
       const t = now - t0;
       clear();
       let alive = false;
+
+      // Halo first, so the sparkles read as sitting on top of the glow.
+      const gp = t / glowLife;
+      if (hx && gp < 1) {
+        alive = true;
+        const ga = gp < 0.28 ? gp / 0.28 : 1 - (gp - 0.28) / 0.72;
+        cx.save();
+        cx.globalAlpha = Math.max(0, ga) * 0.9;
+        cx.drawImage(halo, 0, 0, box.width, box.height);
+        cx.restore();
+      }
+
       for (const s of sparks) {
         const age = t - s.delay;
         if (age < 0) { alive = true; continue; }
@@ -575,9 +614,48 @@
     return () => { cancelAnimationFrame(raf); clear(); };
   }
 
+  /**
+   * Run the burst over an existing canvas without needing an overlay in the
+   * markup: position a throwaway canvas at the target's page box, sparkle, then
+   * remove it. Every tool here previews into a canvas that is intrinsically
+   * sized (`max-w-full max-h-[60vh]`), so an `inset-0` overlay in the template
+   * would cover the wrapper rather than the image.
+   *
+   * `opts.rect` is in the target's own drawing-buffer pixels — the coordinates a
+   * tool already has from its render pass — and is scaled to the displayed box
+   * here, so callers never deal with devicePixelRatio or CSS sizing.
+   */
+  function sparkleOver(target, src, opts = {}) {
+    const stop = () => {};
+    if (!target || !src) return stop;
+    const box = target.getBoundingClientRect();
+    if (!box.width || !box.height) return stop;
+
+    const layer = document.createElement('canvas');
+    layer.setAttribute('aria-hidden', 'true');
+    // Absolute at page coordinates (not fixed) so it tracks the content if the
+    // page scrolls while the burst is still running.
+    layer.style.cssText =
+      `position:absolute;left:${box.left + window.scrollX}px;top:${box.top + window.scrollY}px;` +
+      `width:${box.width}px;height:${box.height}px;pointer-events:none;z-index:40;`;
+    document.body.appendChild(layer);
+
+    let rect = opts.rect;
+    if (rect && target.width && target.height) {
+      const sx = box.width / target.width;
+      const sy = box.height / target.height;
+      rect = { x: rect.x * sx, y: rect.y * sy, w: rect.w * sx, h: rect.h * sy };
+    }
+
+    const cancel = sparkle(layer, src, { ...opts, rect });
+    const remove = () => layer.remove();
+    const timer = window.setTimeout(remove, 2200); // outlives the longest burst
+    return () => { cancel(); window.clearTimeout(timer); remove(); };
+  }
+
   window.CBG = {
     $, $$, t, plural, Toast, loadImage, humanSize, baseName,
-    download, dropzone, zipDownload, remember, Chain, sparkle,
+    download, dropzone, zipDownload, remember, Chain, sparkle, sparkleOver,
   };
 
   // Deliver any chained image once the tool's own module has wired its input.

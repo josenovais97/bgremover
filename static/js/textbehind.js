@@ -136,6 +136,9 @@ const App = {
       window.__clearbgReport?.(1);
       this.setBusy(false);
       this.render();
+      // paint() draws the cut-out across the whole canvas, so the default
+      // contain-fit already lands on the subject's edge.
+      CBG.sparkleOver(this.canvas, this.cutout);
       Toast.show(t('Type your text and drag it behind the subject'), 'success');
     } catch (err) {
       console.error('[textbehind] bg removal failed:', err);

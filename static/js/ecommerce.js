@@ -193,6 +193,11 @@ const App = {
         this.setItemStatus(it, false);
         it.dlBtn.disabled = false;
         this.paintItem(it);
+        // Batch runs sequentially, so each product gets its own moment as it lands.
+        CBG.sparkleOver(it.canvas, it.cutout, {
+          rect: this.productRect(it.canvas.width, it),
+          count: 34, // the batch cards are small; a full burst would swamp them
+        });
       } catch (err) {
         console.error('[ecommerce] bg removal failed:', err);
         it.status = 'error';
@@ -234,6 +239,18 @@ const App = {
   },
 
   /** Compose one product's cut-out into `canvas` at `size` px. */
+  /** Where `item`'s cut-out lands inside a `size`×`size` marketplace frame. */
+  productRect(size, item) {
+    const target = size * this.fill();
+    const scale = target / Math.max(item.bbox.w, item.bbox.h);
+    const w = item.cutout.naturalWidth * scale;
+    const h = item.cutout.naturalHeight * scale;
+    // Centre the product's bounding box within the frame.
+    const bcx = (item.bbox.x + item.bbox.w / 2) * scale;
+    const bcy = (item.bbox.y + item.bbox.h / 2) * scale;
+    return { x: size / 2 - bcx, y: size / 2 - bcy, w, h };
+  },
+
   paint(canvas, size, item) {
     canvas.width = size; canvas.height = size;
     const ctx = canvas.getContext('2d');
@@ -241,15 +258,7 @@ const App = {
     if (this.bg) { ctx.fillStyle = this.bg; ctx.fillRect(0, 0, size, size); }
     if (!item || !item.cutout || !item.bbox) return;
 
-    const target = size * this.fill();
-    const scale = target / Math.max(item.bbox.w, item.bbox.h);
-    const dw = item.cutout.naturalWidth * scale;
-    const dh = item.cutout.naturalHeight * scale;
-    // Centre the product's bounding box within the frame.
-    const bcx = (item.bbox.x + item.bbox.w / 2) * scale;
-    const bcy = (item.bbox.y + item.bbox.h / 2) * scale;
-    const dx = size / 2 - bcx;
-    const dy = size / 2 - bcy;
+    const { x: dx, y: dy, w: dw, h: dh } = this.productRect(size, item);
 
     if (this.shadow) {
       ctx.save();

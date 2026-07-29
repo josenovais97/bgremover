@@ -1149,6 +1149,7 @@ const App = {
       this.rebuildSource();
       $('#ig-restore-bg').classList.remove('hidden');
       this.render();
+      this.sparkleCutout();
       Toast.show(t('Background removed'), 'success');
     } catch (err) {
       console.error('[instagram] bg removal failed:', err);
@@ -1157,6 +1158,42 @@ const App = {
       btn.disabled = false;
       btn.innerHTML = original;
     }
+  },
+
+  /**
+   * Sparkle along the cut-out the model just found.
+   *
+   * Unlike the other tools, the photo here is cover-cropped: `frameGeometry`
+   * picks a source rect that is drawn to fill the frame, so only part of the
+   * image is on screen. The burst wants the rect the WHOLE image would occupy,
+   * which is that same mapping extended past the crop — hence the division by
+   * the source rect rather than a plain contain-fit.
+   *
+   * Skipped for a carousel, where the preview is a multi-tile panorama and the
+   * subject appears in one tile at a different scale.
+   */
+  sparkleCutout() {
+    if (!this.cutout || !this.img || this.carousel > 1) return;
+    const siw = this.img.naturalWidth || this.img.width;
+    const sih = this.img.naturalHeight || this.img.height;
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    const m = Math.round((this.border / 100) * Math.min(W, H));
+    const dw = W - 2 * m;
+    const dh = H - 2 * m;
+    if (!siw || !sih || dw <= 0 || dh <= 0) return;
+    // Removing the background forces cover mode (see paintContent), so this is
+    // the branch that just ran.
+    const geo = frameGeometry(siw, sih, dw / dh, this.zoom, this.u, this.v);
+    if (!geo.sw || !geo.sh) return;
+    CBG.sparkleOver(this.canvas, this.cutout, {
+      rect: {
+        x: m - (geo.sx / geo.sw) * dw,
+        y: m - (geo.sy / geo.sh) * dh,
+        w: (siw / geo.sw) * dw,
+        h: (sih / geo.sh) * dh,
+      },
+    });
   },
 
   saveBlob(blob, name) {

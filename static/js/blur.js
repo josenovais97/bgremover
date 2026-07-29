@@ -91,6 +91,9 @@ const App = {
       window.__clearbgReport?.(1);
       this.setBusy(false);
       this.render();
+      // paint() draws the cut-out across the whole canvas, so the default
+      // contain-fit already lands on the subject's edge.
+      CBG.sparkleOver(this.canvas, this.cutout);
       Toast.show(t('Portrait blur applied — adjust the strength'), 'success');
     } catch (err) {
       console.error('[blur] bg removal failed:', err);

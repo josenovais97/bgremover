@@ -208,6 +208,16 @@ const App = {
       this.setBusy(false);
       this.autoFit();
       this.render();
+      // autoFit places the head deliberately, so hand over the real rect rather
+      // than letting the burst assume a contained image.
+      CBG.sparkleOver(this.canvas, this.cutout, {
+        rect: {
+          x: this.place.dx,
+          y: this.place.dy,
+          w: this.cutout.naturalWidth * this.place.s,
+          h: this.cutout.naturalHeight * this.place.s,
+        },
+      });
       window.__clearbgReport?.(1);
       Toast.show(t('Background removed — position the head inside the guides'), 'success');
     } catch (err) {

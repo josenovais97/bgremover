@@ -131,6 +131,10 @@ const App = {
       this.setBusy(false);
       this.ensureFont();
       this.render();
+      // The sticker frame insets and centres the cut-out, so pass that rect.
+      CBG.sparkleOver(this.canvas, this.cutout, {
+        rect: this.spriteRect(this.canvas.width),
+      });
       window.__clearbgReport?.(1);
       Toast.show(t('Background removed — add your outline & text'), 'success');
     } catch (err) {
@@ -148,6 +152,19 @@ const App = {
   /* ------------------------------------------------------------ drawing */
   outlinePx(size) { return this.outline.on ? (this.outline.width / 100) * size : 0; },
 
+  /** Where the cut-out lands inside a `size`×`size` sticker frame. */
+  spriteRect(size) {
+    const margin = size * 0.06; // transparent margin WhatsApp expects
+    const ow = this.outlinePx(size);
+    const box = size - 2 * margin - 2 * ow;
+    const cw = this.cutout.naturalWidth || this.cutout.width;
+    const ch = this.cutout.naturalHeight || this.cutout.height;
+    const scale = Math.min(box / cw, box / ch);
+    const w = cw * scale;
+    const h = ch * scale;
+    return { x: (size - w) / 2, y: (size - h) / 2, w, h };
+  },
+
   /** Composite the sticker (cut-out + outline + text) into `canvas` at `size`. */
   paint(canvas, size) {
     canvas.width = size; canvas.height = size;
@@ -155,16 +172,8 @@ const App = {
     ctx.clearRect(0, 0, size, size);
     if (!this.cutout) return;
 
-    const margin = size * 0.06; // transparent margin WhatsApp expects
     const ow = this.outlinePx(size);
-    const box = size - 2 * margin - 2 * ow;
-    const cw = this.cutout.naturalWidth || this.cutout.width;
-    const ch = this.cutout.naturalHeight || this.cutout.height;
-    const scale = Math.min(box / cw, box / ch);
-    const dw = cw * scale;
-    const dh = ch * scale;
-    const dx = (size - dw) / 2;
-    const dy = (size - dh) / 2;
+    const { x: dx, y: dy, w: dw, h: dh } = this.spriteRect(size);
 
     // Scaled sprite of the cut-out (outline is stamped from its silhouette).
     const sprite = document.createElement('canvas');
