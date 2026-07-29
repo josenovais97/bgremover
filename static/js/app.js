@@ -395,6 +395,46 @@ const Stats = {
   },
 };
 
+/* -------------------------------------------------------------- removal ETA
+ * How long the removal phase (not the model download) takes on THIS device.
+ *
+ * The library exposes only four coarse compute steps and blocks the main thread
+ * throughout, so there is no live signal to drive a progress bar from. What
+ * there is, is a duration that is remarkably stable for a given device and
+ * model — inference is a fixed-size job, independent of the photo's dimensions.
+ * So we measure it and fill the bar against the measurement.
+ *
+ * It is an estimate, and the bar is shaped to admit that: it eases out and
+ * stops short of full, so being wrong reads as "nearly there" rather than as a
+ * bar that hit 100% and lied.
+ */
+const RemovalEta = {
+  key: 'bgr_removal_ms',
+  fallbackMs: 9000, // first run on a device, before we have measured anything
+  keep: 5,
+  samples() {
+    try {
+      const v = JSON.parse(localStorage.getItem(this.key) || '[]');
+      return Array.isArray(v) ? v.filter((n) => typeof n === 'number' && n > 0) : [];
+    } catch {
+      return [];
+    }
+  },
+  /** Median of recent runs — one slow outlier should not skew every later bar. */
+  get() {
+    const s = this.samples().sort((a, b) => a - b);
+    if (!s.length) return this.fallbackMs;
+    const mid = s[Math.floor(s.length / 2)];
+    return clamp(Math.round(mid), 1200, 90000);
+  },
+  record(ms) {
+    if (!(ms > 0) || ms > 180000) return; // a tab left in the background, not a measurement
+    try {
+      localStorage.setItem(this.key, JSON.stringify([...this.samples(), Math.round(ms)].slice(-this.keep)));
+    } catch { /* private mode: fall back to the default next time */ }
+  },
+};
+
 /* ------------------------------------------------------------------ history */
 const History = {
   key: 'bgr_history',
@@ -1538,21 +1578,37 @@ class Card {
     const stopIdle = window.CBG?.sparkleLoop?.(this.el.querySelector('.preview')) ?? (() => {});
 
     try {
-      // Two honest phases. While the model downloads we have real byte counts,
-      // so the bar is determinate. Once inference starts we have four coarse
-      // steps AND the WASM run blocks the main thread for several seconds — a
-      // determinate bar could not repaint through that even if we had numbers.
-      // So it hands over to a CSS sweep, which the compositor keeps animating
-      // while the main thread is stuck.
+      // One bar, two phases, never going backwards: the model download fills the
+      // first 60% from real byte counts, removal fills the rest against this
+      // device's measured time (RemovalEta). When the model is already cached
+      // there is no download, so removal gets the whole bar.
+      const DOWNLOAD_SHARE = 0.6;
+      let downloading = false;
+      let removalFrom = 0;
+      let removalStarted = 0;
+
+      let downloadPeak = 0;
       const offProgress = Progress.on((key, current, total) => {
         if (key.startsWith('fetch')) {
-          const pct = total ? Math.round((current / total) * 100) : 0;
-          bar.classList.remove('indeterminate');
-          bar.style.width = `${pct}%`;
+          downloading = true;
+          // Each fetched asset reports its own current/total, so a fresh key
+          // restarts near zero. Only ever move forward — a bar that jumps back
+          // is worse than one that pauses.
+          downloadPeak = Math.max(downloadPeak, total ? current / total : 0);
+          const pct = Math.round(downloadPeak * 100);
+          bar.style.width = `${(downloadPeak * DOWNLOAD_SHARE * 100).toFixed(1)}%`;
           label.textContent = t('Downloading AI model… {pct}%', { pct });
-        } else {
-          bar.style.width = '';
-          bar.classList.add('indeterminate');
+        } else if (!removalStarted) {
+          // First compute step: hand the bar over to the timed fill. Width goes
+          // to 100% and scaleX continues from where the download left it, so
+          // the handover is seamless rather than a reset.
+          removalStarted = performance.now();
+          removalFrom = downloading ? DOWNLOAD_SHARE : 0;
+          bar.style.width = '100%';
+          bar.style.setProperty('--fill-from', String(removalFrom));
+          bar.style.setProperty('--fill-to', '0.96');
+          bar.style.setProperty('--fill-dur', `${RemovalEta.get()}ms`);
+          bar.classList.add('estimating');
           label.textContent = t('Removing background…');
         }
       });
@@ -1561,9 +1617,13 @@ class Card {
       let blob;
       try {
         blob = await removeBackground(this.file, CONFIG.removalOptions);
+        // Only a clean run is a valid timing sample.
+        if (removalStarted) RemovalEta.record(performance.now() - removalStarted);
       } finally {
         offProgress();
-        bar.classList.remove('indeterminate');
+        bar.classList.remove('estimating');
+        bar.style.transform = '';
+        bar.style.width = '100%';
       }
 
       stopIdle(); // the burst takes over the same canvas
