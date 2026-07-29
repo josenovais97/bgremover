@@ -62,6 +62,10 @@ const App = {
   },
 
   setBusy(busy, text) {
+    // Twinkle over the preview for the whole wait; hooked in here so every exit
+    // path — success, failure, a future caller — stops it.
+    if (busy && !this._stopIdle) this._stopIdle = CBG.sparkleLoopOver(this.canvas);
+    if (!busy && this._stopIdle) { this._stopIdle(); this._stopIdle = null; }
     $('#bl-status').classList.toggle('hidden', !busy);
     if (text) $('#bl-status-text').textContent = text;
     $('#bl-download').disabled = busy || !this.cutout;

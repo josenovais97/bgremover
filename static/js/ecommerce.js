@@ -183,6 +183,9 @@ const App = {
       if (it.status !== 'queued') continue;
       it.status = 'processing';
       this.setItemStatus(it, true, 'Removing…');
+      // Only the item currently being worked on twinkles, so the batch shows
+      // you where it is rather than shimmering all at once.
+      const stopIdle = CBG.sparkleLoopOver(it.canvas, { count: 7 });
       try {
         const blob = await removeBackground(it.file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
         it.cutoutUrl = URL.createObjectURL(blob);
@@ -193,12 +196,14 @@ const App = {
         this.setItemStatus(it, false);
         it.dlBtn.disabled = false;
         this.paintItem(it);
+        stopIdle();
         // Batch runs sequentially, so each product gets its own moment as it lands.
         CBG.sparkleOver(it.canvas, it.cutout, {
           rect: this.productRect(it.canvas.width, it),
           count: 34, // the batch cards are small; a full burst would swamp them
         });
       } catch (err) {
+        stopIdle();
         console.error('[ecommerce] bg removal failed:', err);
         it.status = 'error';
         this.setItemStatus(it, true, 'Failed', true);

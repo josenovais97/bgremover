@@ -1137,6 +1137,8 @@ const App = {
     const original = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i>Removing…';
+    // Twinkle over the photo for the wait; the finishing burst replaces it.
+    const stopIdle = CBG.sparkleLoopOver(this.canvas);
     try {
       const { removeBackground } = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm');
       // Full 'isnet' when cross-origin isolated (threaded WASM); quantized
@@ -1155,6 +1157,7 @@ const App = {
       console.error('[instagram] bg removal failed:', err);
       Toast.show(t('Background removal failed'), 'error');
     } finally {
+      stopIdle();
       btn.disabled = false;
       btn.innerHTML = original;
     }

@@ -471,6 +471,46 @@
     return pts;
   }
 
+  /** The page's current tool accent, as a canvas-usable colour. */
+  function accentColour() {
+    const accent = getComputedStyle(document.body).getPropertyValue('--color-primary').trim();
+    return accent ? `rgb(${accent})` : '#6366f1';
+  }
+
+  /** Paint one spark at `p` (0 = born, 1 = gone). Shared by both modes. */
+  function drawSpark(cx, s, p, color) {
+    // Pop to full size quickly, then ease back slightly; fade in, fade out.
+    const scale = p < 0.35 ? p / 0.35 : 1 - ((p - 0.35) / 0.65) * 0.35;
+    const alpha = p < 0.25 ? p / 0.25 : 1 - (p - 0.25) / 0.75;
+    cx.save();
+    cx.globalAlpha = Math.max(0, alpha) * (s.dim || 1);
+    cx.translate(s.x, s.y + s.rise * p);
+    cx.rotate(s.spin + p * 0.9);
+    cx.scale(scale, scale);
+    cx.fillStyle = s.white ? '#ffffff' : color;
+    // The halo is always the accent, including under a white sparkle: the
+    // result sits on a light checkerboard as often as on a dark photo, and
+    // a white glow on white leaves nothing to see.
+    cx.shadowColor = color;
+    cx.shadowBlur = s.white ? 10 : 8;
+    starPath(cx, s.r);
+    cx.fill();
+    cx.restore();
+  }
+
+  /** Size a canvas to its own CSS box at capped DPR. Returns the box, or null. */
+  function fitCanvas(canvas) {
+    const box = canvas.getBoundingClientRect();
+    if (!box.width || !box.height) return null;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(box.width * dpr);
+    canvas.height = Math.round(box.height * dpr);
+    const cx = canvas.getContext('2d');
+    if (!cx) return null;
+    cx.scale(dpr, dpr);
+    return { box, cx, dpr };
+  }
+
   /** Trace a four-point star of radius `r`, centred on the current origin. */
   function starPath(cx, r) {
     const waist = r * 0.26;
@@ -501,17 +541,12 @@
     // than substituting a static version.
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return stop;
 
-    const box = canvas.getBoundingClientRect();
     const nw = src.naturalWidth || src.width;
     const nh = src.naturalHeight || src.height;
-    if (!box.width || !box.height || !nw || !nh) return stop;
-
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.round(box.width * dpr);
-    canvas.height = Math.round(box.height * dpr);
-    const cx = canvas.getContext('2d');
-    if (!cx) return stop;
-    cx.scale(dpr, dpr);
+    if (!nw || !nh) return stop;
+    const fitted = fitCanvas(canvas);
+    if (!fitted) return stop;
+    const { box, cx, dpr } = fitted;
 
     // Where the cut-out actually sits inside the box: the caller's rect if it
     // placed the image itself, otherwise object-contain.
@@ -525,8 +560,7 @@
     let pts = silhouette(src);
     if (!pts.length) pts = Array.from({ length: 48 }, () => [Math.random(), Math.random()]);
 
-    const accent = getComputedStyle(document.body).getPropertyValue('--color-primary').trim();
-    const color = opts.color || (accent ? `rgb(${accent})` : '#6366f1');
+    const color = opts.color || accentColour();
     const count = opts.count || 52;
     const life = 820;   // one sparkle, birth to gone
     const spread = 760; // stagger across the burst, so they twinkle on in waves
@@ -589,29 +623,130 @@
         const p = age / life;
         if (p >= 1) continue;
         alive = true;
-        // Pop to full size quickly, then ease back slightly; fade in, fade out.
-        const scale = p < 0.35 ? p / 0.35 : 1 - ((p - 0.35) / 0.65) * 0.35;
-        const alpha = p < 0.25 ? p / 0.25 : 1 - (p - 0.25) / 0.75;
-        cx.save();
-        cx.globalAlpha = Math.max(0, alpha);
-        cx.translate(s.x, s.y + s.rise * p);
-        cx.rotate(s.spin + p * 0.9);
-        cx.scale(scale, scale);
-        cx.fillStyle = s.white ? '#ffffff' : color;
-        // The halo is always the accent, including under a white sparkle: the
-        // result sits on a light checkerboard as often as on a dark photo, and
-        // a white glow on white leaves nothing to see.
-        cx.shadowColor = color;
-        cx.shadowBlur = s.white ? 10 : 8;
-        starPath(cx, s.r);
-        cx.fill();
-        cx.restore();
+        drawSpark(cx, s, p, color);
       }
       if (alive) raf = requestAnimationFrame(frame);
       else clear();
     };
     raf = requestAnimationFrame(frame);
     return () => { cancelAnimationFrame(raf); clear(); };
+  }
+
+  /**
+   * Ambient twinkle over `canvas`, running until the returned function is
+   * called. This is the WAIT, not the payoff: removal takes ~30 seconds against
+   * a spinner, and a celebration with nothing leading up to it is a long blank
+   * pause followed by a flash.
+   *
+   * So it is deliberately quieter than the finish — fewer sparkles, smaller,
+   * dimmed, no halo, scattered rather than tracing anything (there is no
+   * cut-out yet to trace). The burst has to stay the moment that reads as
+   * "done", so this one must not compete with it.
+   */
+  function sparkleLoop(canvas, opts = {}) {
+    const stop = () => {};
+    if (!canvas) return stop;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return stop;
+    let box;
+    let cx;
+    let sparks = null;
+    // Re-fit rather than trusting the box we started with: tools call setBusy()
+    // before their first render, so the canvas is often still at its default
+    // 300x150 when the loop starts and gets its real size a tick later.
+    const refit = () => {
+      const f = fitCanvas(canvas);
+      if (!f) return;
+      box = f.box;
+      cx = f.cx;
+      sparks = null; // positions were in the old box; respawn into the new one
+    };
+    refit();
+    if (!cx) return stop;
+    const ro = window.ResizeObserver ? new window.ResizeObserver(refit) : null;
+    ro?.observe(canvas);
+
+    const color = opts.color || accentColour();
+    const count = opts.count || 16;
+    const life = 1150;
+    const clear = () => cx.clearRect(0, 0, box.width, box.height);
+
+    const spawn = (now) => ({
+      x: Math.random() * box.width,
+      y: Math.random() * box.height,
+      r: 2.5 + Math.random() * 4,
+      spin: Math.random() * Math.PI,
+      rise: -4 - Math.random() * 8,
+      born: now + Math.random() * life, // staggered, so they never pulse in unison
+      // Still dimmer and sparser than the finish — the wait must not upstage
+      // the payoff — but solid enough to read over a frosted-glass overlay.
+      dim: 0.65 + Math.random() * 0.35,
+      white: Math.random() < 0.5,
+    });
+
+    let raf = 0;
+    const frame = (now) => {
+      if (!sparks) sparks = Array.from({ length: count }, () => spawn(now));
+      clear();
+      for (const s of sparks) {
+        const age = now - s.born;
+        if (age < 0) continue;
+        const p = age / life;
+        // Recycle rather than allocate: this runs for the whole wait.
+        if (p >= 1) { Object.assign(s, spawn(now)); continue; }
+        drawSpark(cx, s, p, color);
+      }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => { ro?.disconnect(); cancelAnimationFrame(raf); clear(); };
+  }
+
+  /**
+   * Position a throwaway canvas over `target`'s page box. Absolute at page
+   * coordinates (not fixed) so it tracks the content if the page scrolls.
+   */
+  function overlayFor(target) {
+    const box = target.getBoundingClientRect();
+    if (!box.width || !box.height) return null;
+    const layer = document.createElement('canvas');
+    layer.setAttribute('aria-hidden', 'true');
+    const place = () => {
+      const b = target.getBoundingClientRect();
+      layer.style.cssText =
+        `position:absolute;left:${b.left + window.scrollX}px;top:${b.top + window.scrollY}px;` +
+        `width:${b.width}px;height:${b.height}px;pointer-events:none;z-index:40;`;
+    };
+    place();
+    document.body.appendChild(layer);
+    return { layer, box, place, remove: () => layer.remove() };
+  }
+
+  /**
+   * Ambient twinkle over any element, for tools that preview into their own
+   * canvas. Re-anchors periodically because this runs for the length of the
+   * wait, during which the page can scroll or reflow under it.
+   */
+  function sparkleLoopOver(target, opts = {}) {
+    const stop = () => {};
+    if (!target) return stop;
+    const o = overlayFor(target);
+    if (!o) return stop;
+    const cancel = sparkleLoop(o.layer, opts);
+    // Callers do setBusy(true) then render() in one synchronous run, so the box
+    // measured above is the pre-render one. Re-place after that run completes,
+    // before the first paint, or the opening frame lands at the canvas default.
+    requestAnimationFrame(o.place);
+    // The target is typically sized by the render that follows setBusy(), so
+    // track it directly; the interval only covers reflow the observer misses.
+    const ro = window.ResizeObserver ? new window.ResizeObserver(o.place) : null;
+    ro?.observe(target);
+    const anchor = window.setInterval(o.place, 500);
+    return () => {
+      ro?.disconnect();
+      window.clearInterval(anchor);
+      cancel();
+      o.remove();
+    };
   }
 
   /**
@@ -628,34 +763,25 @@
   function sparkleOver(target, src, opts = {}) {
     const stop = () => {};
     if (!target || !src) return stop;
-    const box = target.getBoundingClientRect();
-    if (!box.width || !box.height) return stop;
-
-    const layer = document.createElement('canvas');
-    layer.setAttribute('aria-hidden', 'true');
-    // Absolute at page coordinates (not fixed) so it tracks the content if the
-    // page scrolls while the burst is still running.
-    layer.style.cssText =
-      `position:absolute;left:${box.left + window.scrollX}px;top:${box.top + window.scrollY}px;` +
-      `width:${box.width}px;height:${box.height}px;pointer-events:none;z-index:40;`;
-    document.body.appendChild(layer);
+    const o = overlayFor(target);
+    if (!o) return stop;
 
     let rect = opts.rect;
     if (rect && target.width && target.height) {
-      const sx = box.width / target.width;
-      const sy = box.height / target.height;
+      const sx = o.box.width / target.width;
+      const sy = o.box.height / target.height;
       rect = { x: rect.x * sx, y: rect.y * sy, w: rect.w * sx, h: rect.h * sy };
     }
 
-    const cancel = sparkle(layer, src, { ...opts, rect });
-    const remove = () => layer.remove();
-    const timer = window.setTimeout(remove, 2200); // outlives the longest burst
-    return () => { cancel(); window.clearTimeout(timer); remove(); };
+    const cancel = sparkle(o.layer, src, { ...opts, rect });
+    const timer = window.setTimeout(o.remove, 2200); // outlives the longest burst
+    return () => { cancel(); window.clearTimeout(timer); o.remove(); };
   }
 
   window.CBG = {
     $, $$, t, plural, Toast, loadImage, humanSize, baseName,
-    download, dropzone, zipDownload, remember, Chain, sparkle, sparkleOver,
+    download, dropzone, zipDownload, remember, Chain,
+    sparkle, sparkleOver, sparkleLoop, sparkleLoopOver,
   };
 
   // Deliver any chained image once the tool's own module has wired its input.
