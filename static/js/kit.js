@@ -418,9 +418,166 @@
       barEl.firstElementChild.classList.remove('translate-y-3', 'opacity-0'));
   }
 
+  /* ---------------------------------------------------------------- sparkle
+   * The reward moment for a finished cut-out.
+   *
+   * The sparkles trace the SILHOUETTE rather than scattering over the card:
+   * every tool here spends its effort finding one edge, so the celebration is
+   * that edge, drawn back to you. A random confetti burst would cost the same
+   * and say nothing about the result.
+   *
+   * The edge comes from the result's own alpha channel — opaque pixels that
+   * touch a transparent neighbour — sampled at 96px, which is coarse enough to
+   * be free and detailed enough to read as the subject's outline.
+   */
+
+  /** Normalised (0..1) points along the alpha edge of `src`. Empty if unreadable. */
+  function silhouette(src) {
+    const nw = src.naturalWidth || src.width;
+    const nh = src.naturalHeight || src.height;
+    if (!nw || !nh) return [];
+    const scale = Math.min(1, 96 / Math.max(nw, nh));
+    const w = Math.max(1, Math.round(nw * scale));
+    const h = Math.max(1, Math.round(nh * scale));
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const cx = c.getContext('2d', { willReadFrequently: true });
+    let data;
+    try {
+      cx.drawImage(src, 0, 0, w, h);
+      data = cx.getImageData(0, 0, w, h).data;
+    } catch {
+      return []; // cross-origin source tainted the canvas; caller scatters instead
+    }
+    const opaque = (x, y) => data[(y * w + x) * 4 + 3] >= 128;
+    const pts = [];
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (!opaque(x, y)) continue;
+        // A pixel on the frame edge counts: a full-bleed result has no interior
+        // boundary, and tracing its rectangle still beats tracing nothing.
+        if (
+          x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
+          !opaque(x - 1, y) || !opaque(x + 1, y) ||
+          !opaque(x, y - 1) || !opaque(x, y + 1)
+        ) pts.push([x / w, y / h]);
+      }
+    }
+    return pts;
+  }
+
+  /** Trace a four-point star of radius `r`, centred on the current origin. */
+  function starPath(cx, r) {
+    const waist = r * 0.26;
+    cx.beginPath();
+    cx.moveTo(0, -r);
+    cx.quadraticCurveTo(waist, -waist, r, 0);
+    cx.quadraticCurveTo(waist, waist, 0, r);
+    cx.quadraticCurveTo(-waist, waist, -r, 0);
+    cx.quadraticCurveTo(-waist, -waist, 0, -r);
+    cx.closePath();
+  }
+
+  /**
+   * Twinkle a burst of sparkles over `canvas`, along the silhouette of `src`.
+   *
+   * `canvas` must overlay the same box `src` is painted into; `src` is assumed
+   * to be `object-contain` within it, which is how every result view here lays
+   * its image out. Returns a cancel function.
+   */
+  function sparkle(canvas, src, opts = {}) {
+    const stop = () => {};
+    if (!canvas || !src) return stop;
+    // The effect is pure decoration, so reduced-motion drops it entirely rather
+    // than substituting a static version.
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return stop;
+
+    const box = canvas.getBoundingClientRect();
+    const nw = src.naturalWidth || src.width;
+    const nh = src.naturalHeight || src.height;
+    if (!box.width || !box.height || !nw || !nh) return stop;
+
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(box.width * dpr);
+    canvas.height = Math.round(box.height * dpr);
+    const cx = canvas.getContext('2d');
+    if (!cx) return stop;
+    cx.scale(dpr, dpr);
+
+    // Where object-contain actually places the image inside the box.
+    const fit = Math.min(box.width / nw, box.height / nh);
+    const dw = nw * fit;
+    const dh = nh * fit;
+    const dx = (box.width - dw) / 2;
+    const dy = (box.height - dh) / 2;
+
+    let pts = silhouette(src);
+    if (!pts.length) pts = Array.from({ length: 48 }, () => [Math.random(), Math.random()]);
+
+    const accent = getComputedStyle(document.body).getPropertyValue('--color-primary').trim();
+    const color = opts.color || (accent ? `rgb(${accent})` : '#6366f1');
+    const count = opts.count || 44;
+    const life = 620;   // one sparkle, birth to gone
+    const spread = 540; // stagger across the burst, so they twinkle on in waves
+
+    const sparks = Array.from({ length: count }, () => {
+      const [px, py] = pts[(Math.random() * pts.length) | 0];
+      // Mostly small with a few hero sparkles: a uniform size reads mechanical,
+      // an uneven one reads like light catching an edge.
+      const hero = Math.random() < 0.18;
+      return {
+        x: dx + px * dw + (Math.random() - 0.5) * 10,
+        y: dy + py * dh + (Math.random() - 0.5) * 10,
+        r: hero ? 7 + Math.random() * 4 : 2.5 + Math.random() * 3,
+        spin: Math.random() * Math.PI,
+        rise: -6 - Math.random() * 14,
+        delay: Math.random() * spread,
+        white: Math.random() < 0.5, // mixing in white keeps it from reading as one flat colour
+      };
+    });
+
+    let raf = 0;
+    const t0 = performance.now();
+    const clear = () => cx.clearRect(0, 0, box.width, box.height);
+    const frame = (now) => {
+      const t = now - t0;
+      clear();
+      let alive = false;
+      for (const s of sparks) {
+        const age = t - s.delay;
+        if (age < 0) { alive = true; continue; }
+        const p = age / life;
+        if (p >= 1) continue;
+        alive = true;
+        // Pop to full size quickly, then ease back slightly; fade in, fade out.
+        const scale = p < 0.35 ? p / 0.35 : 1 - ((p - 0.35) / 0.65) * 0.35;
+        const alpha = p < 0.25 ? p / 0.25 : 1 - (p - 0.25) / 0.75;
+        cx.save();
+        cx.globalAlpha = Math.max(0, alpha);
+        cx.translate(s.x, s.y + s.rise * p);
+        cx.rotate(s.spin + p * 0.9);
+        cx.scale(scale, scale);
+        cx.fillStyle = s.white ? '#ffffff' : color;
+        // The halo is always the accent, including under a white sparkle: the
+        // result sits on a light checkerboard as often as on a dark photo, and
+        // a white glow on white leaves nothing to see.
+        cx.shadowColor = color;
+        cx.shadowBlur = s.white ? 10 : 8;
+        starPath(cx, s.r);
+        cx.fill();
+        cx.restore();
+      }
+      if (alive) raf = requestAnimationFrame(frame);
+      else clear();
+    };
+    raf = requestAnimationFrame(frame);
+    return () => { cancelAnimationFrame(raf); clear(); };
+  }
+
   window.CBG = {
     $, $$, t, plural, Toast, loadImage, humanSize, baseName,
-    download, dropzone, zipDownload, remember, Chain,
+    download, dropzone, zipDownload, remember, Chain, sparkle,
   };
 
   // Deliver any chained image once the tool's own module has wired its input.

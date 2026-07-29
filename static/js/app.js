@@ -1526,9 +1526,11 @@ class Card {
       this.setState('done');
       // Count this cut-out toward the global "images processed" counter.
       window.__clearbgReport?.(1);
-      // Reward the moment: pop a check-mark over the fresh cut-out.
+      // Reward the moment: pop a check-mark over the fresh cut-out, and twinkle
+      // along the edge the model just found.
       this.el.classList.add('just-done');
       window.setTimeout(() => this.el.classList.remove('just-done'), 1400);
+      this.sparkle();
       this.refreshPreview(); // apply any remembered background now the image exists
       this.revealFlourish();  // wipe-reveal + surface the styling options (once)
       Stats.record(performance.now() - started);
@@ -1542,6 +1544,24 @@ class Card {
       this.setState('error');
       Toast.show(t('Failed: {detail}', { detail }).slice(0, 140), 'error');
     }
+  }
+
+  /** Twinkle along the cut-out's silhouette (see CBG.sparkle).
+   *
+   *  Deferred until the <img> has decoded, because the effect reads the alpha
+   *  channel off it — setting `src` above does not mean the pixels are there
+   *  yet, and a cached blob can land either side of this call.
+   */
+  sparkle() {
+    const canvas = this.el.querySelector('.sparkle-layer');
+    const img = this.el.querySelector('.processed-img');
+    if (!canvas || !img || !window.CBG?.sparkle) return;
+    const run = () => {
+      this._cancelSparkle?.(); // a re-run mid-burst replaces it rather than stacking
+      this._cancelSparkle = window.CBG.sparkle(canvas, img);
+    };
+    if (img.complete && img.naturalWidth) run();
+    else img.addEventListener('load', run, { once: true });
   }
 
   /** First-cut-out flourish: sweep the compare slider so the background visibly
