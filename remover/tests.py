@@ -1,6 +1,7 @@
 """Tests for the remover views and SEO endpoints."""
 import json
 import re
+from datetime import date
 from pathlib import Path
 from unittest import mock
 
@@ -14,6 +15,8 @@ from remover.context_processors import CHAIN_EXCLUDED, TOOL_ACCENTS, TOOL_NAV
 from remover.guides import GUIDES
 from remover.translations import JS_UI
 from remover.views import (
+    CONTENT_UPDATED,
+    LEGAL_UPDATED,
     SHELL_ASSETS,
     SHELL_PAGES,
     SITEMAP_PATHS,
@@ -719,6 +722,51 @@ class InfoPageTests(SimpleTestCase):
         self.assertContains(response, "<lastmod>")
         self.assertContains(response, "<priority>1.0</priority>")  # home
         self.assertContains(response, "<priority>0.9</priority>")  # a tool
+
+    def test_every_sitemap_url_has_a_lastmod(self):
+        """A URL without one is a page whose freshness we can no longer signal."""
+        body = self.client.get(reverse("remover:sitemap")).content.decode()
+        self.assertEqual(body.count("<loc>"), body.count("<lastmod>"))
+
+    def test_lastmod_reflects_content_not_the_clock(self):
+        """
+        `lastmod` used to be `date.today()` for every URL, which told crawlers the
+        whole site changed daily and made the field worthless. It has to vary by
+        page, and it cannot silently drift forward with the calendar.
+        """
+        body = self.client.get(reverse("remover:sitemap")).content.decode()
+        dates = set(re.findall(r"<lastmod>(.*?)</lastmod>", body))
+        self.assertGreater(len(dates), 1, "all pages claiming the same date is the old bug")
+        today = date.today().isoformat()
+        for value in sorted(dates):
+            # ISO dates sort chronologically, so this also catches a malformed one.
+            self.assertLessEqual(value, today, "a future lastmod is not a real revision date")
+
+    def test_content_updated_dates_are_well_formed(self):
+        """Hand-maintained strings; a typo would ship silently into the sitemap."""
+        for key, value in CONTENT_UPDATED.items():
+            with self.subTest(key=key):
+                self.assertLessEqual(date.fromisoformat(value), date.today())
+
+    def test_guides_carry_their_own_lastmod(self):
+        """Guides are individually revised, so they date themselves."""
+        body = self.client.get(reverse("remover:sitemap")).content.decode()
+        entries = re.findall(r"<url>(.*?)</url>", body, re.S)
+        for guide in GUIDES:
+            with self.subTest(guide=guide["slug"]):
+                entry = next(e for e in entries if f"/guides/{guide['slug']}/</loc>" in e)
+                self.assertIn(f"<lastmod>{guide['updated_iso']}</lastmod>", entry)
+
+    def test_legal_pages_show_their_real_revision_date(self):
+        """
+        The privacy policy states that the printed date is the latest revision,
+        so it must not be today's date on a day nothing was revised.
+        """
+        self.assertNotEqual(LEGAL_UPDATED, f"{date.today():%B %-d, %Y}")
+        for name in ("privacy", "terms"):
+            with self.subTest(page=name):
+                response = self.client.get(reverse(f"remover:{name}"))
+                self.assertContains(response, f"Last updated {LEGAL_UPDATED}")
 
     def test_organization_schema_present(self):
         response = self.client.get(reverse("remover:index"))

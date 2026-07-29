@@ -9,18 +9,19 @@ import json
 import logging
 import time
 import urllib.request
+from datetime import date as _date
 from pathlib import Path
 
 from django.conf import settings
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse
+from django.urls import Resolver404, resolve, reverse
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
 from .guides import GUIDES, GUIDES_BY_SLUG, guides_by_category, related_guides
-from .page_content import USE_CASE_FAQS
+from .page_content import USE_CASE_FAQS, deep_for
 from .passport_data import COUNTRIES, COUNTRIES_BY_SLUG, FOLDED_COUNTRY_SLUGS, country_faqs
 from .seo_content import (
     ALTERNATIVE_FAQS,
@@ -1032,6 +1033,64 @@ SHELL_ASSETS = (
 )
 
 
+# --- Sitemap freshness -------------------------------------------------------
+# `lastmod` is only worth emitting if it is true. This used to be `date.today()`
+# for all 110 URLs on every request, which tells Google the entire site changes
+# daily. Google's response to a sitemap it cannot trust is to ignore the field —
+# and then a genuine edit can no longer be signalled, which is exactly when you
+# need it.
+#
+# So these are hand-maintained: when you change a section's COPY, bump its date.
+# Chrome changes — nav, footer, a new tool pill — do not count. What a crawler is
+# being told about is the page's own content.
+#
+# Guides are the exception and carry their own date (guides.py `updated`), since
+# they are individually authored and individually revised.
+CONTENT_UPDATED = {
+    "passport": "2026-07-28",      # passport_data.py — country facts verified and corrected
+    "use_case": "2026-07-28",      # USE_CASES long-form copy + per-case FAQs
+    "deep": "2026-07-28",          # page_content.DEEP — tool and landing long-form copy
+    "tool_landing": "2026-07-27",  # TOOL_LANDINGS data, untouched since
+    "legal": "2026-07-14",         # privacy + terms prose (dd2e958); later edits were CSS only
+    "default": "2026-07-20",       # anything with no content change more recent than this
+}
+
+# The legal pages print their own revision date, and the privacy policy states
+# that the date "reflects the latest revision" — so it has to be the real one.
+# It was `{% now %}`, which claimed a fresh revision every single day.
+#
+# Formatted here rather than in the template: these pages are English on /pt/
+# too, and a template `date` filter localises the month name against the active
+# locale, which produced "Julho 14, 2026" in otherwise-English prose.
+LEGAL_UPDATED = f"{_date.fromisoformat(CONTENT_UPDATED['legal']):%B %-d, %Y}"
+
+
+def _sitemap_lastmod(path):
+    """The date this page's own content last changed (see CONTENT_UPDATED)."""
+    if path.startswith("/guides/") and path != "/guides/":
+        guide = GUIDES_BY_SLUG.get(path.strip("/").split("/")[-1])
+        if guide is not None:
+            return guide["updated_iso"]
+    if path.startswith("/passport-photo/") and path != "/passport-photo/":
+        return CONTENT_UPDATED["passport"]
+    if path.startswith("/remove-background/"):
+        return CONTENT_UPDATED["use_case"]
+    if path in TOOL_LANDING_PATHS:
+        return CONTENT_UPDATED["tool_landing"]
+    if path in ("/privacy/", "/terms/"):
+        return CONTENT_UPDATED["legal"]
+    # A page carrying a long-form block changed when that block was written.
+    # Derived from the content itself rather than a parallel list, so the two
+    # cannot drift apart.
+    try:
+        match = resolve(path)
+    except Resolver404:
+        return CONTENT_UPDATED["default"]
+    if deep_for(match.url_name, match.kwargs) is not None:
+        return CONTENT_UPDATED["deep"]
+    return CONTENT_UPDATED["default"]
+
+
 def _sitemap_priority(path):
     """Relative importance hint for crawlers (home > tools > landing > info)."""
     if path == "/":
@@ -1561,13 +1620,13 @@ def about(request):
 @require_GET
 def privacy(request):
     """Render the privacy policy."""
-    return render(request, "remover/privacy.html")
+    return render(request, "remover/privacy.html", {"updated": LEGAL_UPDATED})
 
 
 @require_GET
 def terms(request):
     """Render the terms of use."""
-    return render(request, "remover/terms.html")
+    return render(request, "remover/terms.html", {"updated": LEGAL_UPDATED})
 
 
 def _upstash(path):
@@ -1792,15 +1851,13 @@ def sitemap_xml(request):
     Listing it twice submitted a near-duplicate for indexing and claimed a
     translation that does not exist.
     """
-    from datetime import date
-
     site_url = settings.SITE_URL.rstrip("/")
-    lastmod = date.today().isoformat()
     urls = []
     for path in SITEMAP_PATHS:
         alt_en = f"{site_url}{path}"
         alt_pt = f"{site_url}/pt{path}"
         priority = _sitemap_priority(path)
+        lastmod = _sitemap_lastmod(path)
         translated = path in TRANSLATED_PATHS
         for loc in ((alt_en, alt_pt) if translated else (alt_en,)):
             urls.append({

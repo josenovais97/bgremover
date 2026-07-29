@@ -24,6 +24,7 @@ pages:
 * ``GuideContentTests`` enforces the word floor, the uniqueness floor and the
   cross-link integrity, so a thin article cannot quietly ship.
 """
+from datetime import date as _date
 
 _WORDS_PER_MINUTE = 225
 
@@ -57,6 +58,9 @@ def _guide(slug, title, h1, description, category, updated, intro, sections,
     takeaways  the summary box; must be genuinely substantive, not a recap
     tools      url_names of tools the article legitimately points at
     """
+    # `updated` is an ISO date so the sitemap can use it directly; the human label
+    # is derived rather than stored twice, so the two can never disagree.
+    updated_date = _date.fromisoformat(updated)
     body = " ".join(
         intro
         + [s["h"] for s in sections]
@@ -73,7 +77,8 @@ def _guide(slug, title, h1, description, category, updated, intro, sections,
         "h1": h1,
         "description": description,
         "category": category,
-        "updated": updated,
+        "updated": f"{updated_date:%B %Y}",
+        "updated_iso": updated,
         "intro": intro,
         "sections": [{**s, "id": _anchor(s["h"])} for s in sections],
         "takeaways": takeaways,
@@ -100,7 +105,7 @@ GUIDES = [
         h1="PNG vs JPG vs WebP vs AVIF: which format should you actually use?",
         description="A practical comparison of the four image formats that matter in 2026 — what each one is good at, what it costs you, real file-size numbers, and which to pick for photos, logos, screenshots and transparency.",
         category="Formats",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Most advice about image formats is a decade out of date. It tells you PNG for graphics and JPG for photos, which was excellent guidance in 2010 and leaves a lot of bandwidth on the table now. WebP has been supported in every major browser since 2020, AVIF since 2024, and between them they have changed which answer is right for most images on the web.",
             "This guide covers the four formats worth considering, what each is actually doing to your pixels, and how to pick between them without guessing.",
@@ -201,7 +206,7 @@ GUIDES = [
         h1="How to photograph products for Amazon, eBay and Etsy",
         description="What marketplace image rules actually require, how to light a product with two lamps and a sheet of paper, and the shot list that converts — written for sellers photographing at home without a studio.",
         category="Photography",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Marketplace product photography is a constrained problem, which is good news: there is a right answer, and it does not require expensive equipment. The main image rules are strict and published, buyers respond to a predictable set of shots, and the difference between a listing that converts and one that does not is usually lighting rather than camera.",
             "This guide covers what the platforms require, how to build a workable setup at home, and the shot list worth photographing once you have one.",
@@ -297,7 +302,7 @@ GUIDES = [
         h1="Why passport photos get rejected, and how to avoid it",
         description="The real reasons passport and visa photos come back — head size, shadows, glasses, expression — plus how biometric checks work, what differs by country, and how to shoot a compliant photo at home.",
         category="Documents",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "A rejected passport photo costs weeks, and the reasons are more mechanical than most applicants expect. Modern passport photos are not judged by eye in the first instance; they are checked against a biometric standard by software, and the software cares about a specific and slightly unintuitive list of things.",
             "This guide covers what that standard is, the failures that actually happen, and how to shoot something compliant without a studio.",
@@ -396,7 +401,7 @@ GUIDES = [
         h1="What EXIF data reveals about you, and how to remove it",
         description="Every photo carries hidden metadata: GPS coordinates, device serial numbers, timestamps and more. What is actually in there, which platforms strip it, and how to remove it before you share.",
         category="Privacy",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Every photograph your phone or camera takes carries a block of metadata alongside the pixels. Most of it is mundane — exposure settings, the lens used. Some of it is a precise record of where you were and when, attached to a file you may be about to send to a stranger.",
             "This guide covers what is actually stored, who can read it, which platforms remove it and which do not, and how to strip it yourself.",
@@ -484,7 +489,7 @@ GUIDES = [
         h1="How image compression actually works",
         description="What lossy compression is really doing to your pixels, why quality 80 looks identical to 100, where artefacts come from, and how to hit a target file size without visible damage.",
         category="Formats",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Compression is the one image operation almost everyone performs and almost nobody understands. The quality slider goes from 0 to 100, the file gets smaller, and somewhere along the way it starts looking bad — but where, and why, is usually left as a mystery.",
             "It is worth understanding, because the relationship between the number and the result is deeply non-linear, and knowing the shape of that curve is the difference between files that are three times larger than they need to be and files that visibly fall apart.",
@@ -573,7 +578,7 @@ GUIDES = [
         h1="How to redact a screenshot safely",
         description="Blur and pixelation have both been reversed in real cases. What actually works, why mosaic filters fail against known fonts, and the one method that cannot be undone.",
         category="Privacy",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Redaction failures are one of the most reliably repeated mistakes in computing, and they keep happening because the intuitive methods look convincing while being reversible. A blurred password looks unreadable to you. It is not necessarily unreadable to someone who wants it.",
             "This guide covers what actually fails, why, and the small number of techniques that genuinely work.",
@@ -662,7 +667,7 @@ GUIDES = [
         h1="How transparent backgrounds actually work",
         description="What an alpha channel is, why cut-outs get white or black fringes, the difference between straight and premultiplied alpha, and which formats can carry transparency at all.",
         category="Formats",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Transparency is the source of more confusion than any other image concept. A cut-out looks perfect in one program and has a white halo in another. A logo saved as JPG mysteriously gains a black background. A PNG with a transparent background prints as a solid white rectangle.",
             "All of these have the same underlying explanation, and it is worth understanding, because the fixes are simple once you know what is happening.",
@@ -757,7 +762,7 @@ GUIDES = [
         h1="How to resize images without losing quality",
         description="What resampling actually does, why downscaling is safe and upscaling is not, which algorithm to pick, and the honest limits of AI upscalers.",
         category="Editing",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Resizing looks like the simplest possible image operation and is in fact one of the easiest to do badly. The reason is that changing an image's dimensions requires inventing information that was not measured — and how a program invents it determines whether the result looks sharp, soft or wrong.",
             "This guide covers what is really happening, why one direction is safe and the other is not, and how far modern upscaling can actually take you.",
@@ -840,7 +845,7 @@ GUIDES = [
         h1="The right image size for every social platform",
         description="Current dimensions and aspect ratios for Instagram, X, LinkedIn, Facebook, YouTube, TikTok and Pinterest — plus why platforms recompress your images and how to lose the least quality.",
         category="Editing",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Every platform resizes and recompresses what you upload, and each one does it differently. Upload something at the wrong dimensions and it gets cropped in a way you did not choose; upload it at the wrong quality and the platform's own compression makes it worse than it needed to be.",
             "This guide covers the sizes that matter, the aspect ratios behind them, and — more usefully — the general rules that stay true when the numbers change.",
@@ -926,7 +931,7 @@ GUIDES = [
         h1="On-device vs cloud image tools: what happens to your photo",
         description="What 'free online image tool' usually means for your file, what browser-based processing changes, and an honest account of where each approach wins and loses.",
         category="Privacy",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Most free online image tools work the same way: you upload a file to a server, it is processed there, and you download the result. That model is so standard that people rarely think about what it implies — which is that a copy of your photo now exists on a computer you do not control.",
             "Browser-based processing is a genuine alternative, not a marketing claim, but it comes with real limitations. This guide covers how each actually works and when each is the right choice. We build on-device tools, so read the trade-offs section with that in mind — it is the part where we say what we are worse at.",
@@ -1009,7 +1014,7 @@ GUIDES = [
         h1="How to photograph anything for a clean cut-out",
         description="Background removal quality is decided when you take the photo. What separates edges cleanly, why hair and glass are hard, and how to shoot so the cut-out works the first time.",
         category="Photography",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "Background removal is treated as a post-processing problem, and it mostly is not. Whether a cut-out looks clean or looks cut out is largely determined at the moment of capture, by decisions that cost nothing at the time and are impossible to fix afterwards.",
             "This guide covers what makes a subject separable, why certain materials are genuinely hard for every tool, and how to shoot so that the removal step becomes trivial.",
@@ -1103,7 +1108,7 @@ GUIDES = [
         h1="Why your photo looks different on every screen",
         description="sRGB, Display P3 and Adobe RGB, what an embedded colour profile does, why exported images sometimes look washed out or oversaturated, and what to use where.",
         category="Formats",
-        updated="July 2026",
+        updated="2026-07-28",
         intro=[
             "You edit a photo until the colours are right, export it, and it looks wrong — flat and washed out on one screen, garish on another. Nothing is broken. What has happened is that the numbers in your file were interpreted against a different definition of what those numbers mean.",
             "Colour management is genuinely confusing, but the practical part is small, and understanding it fixes an entire category of frustrating problems.",
