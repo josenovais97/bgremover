@@ -93,6 +93,27 @@
   .dark ::selection { background: rgb(var(--color-primary) / 0.30); }
 }
 
+/* Indeterminate progress ---------------------------------------------------
+   Used for the inference phase, where the library reports only four coarse
+   steps and the WASM run blocks the main thread for several seconds. A
+   determinate bar could not repaint through that block even with real numbers.
+
+   This animates `transform` only, so it runs on the compositor and keeps
+   sweeping while the main thread is stuck — the one thing that can still move
+   during inference. The track already has overflow-hidden, which clips it. */
+@keyframes progress-sweep {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(320%); }
+}
+.progress-bar.indeterminate {
+  width: 32%;
+  animation: progress-sweep 1.15s cubic-bezier(.65,.05,.36,1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* No sweep; a dimmed full track still reads as "busy, duration unknown". */
+  .progress-bar.indeterminate { width: 100%; animation: none; opacity: 0.45; }
+}
+
 /* Success flourish when a cut-out finishes (the "magic moment") ----------- */
 .done-check > span { opacity: 0; }
 @keyframes check-pop {

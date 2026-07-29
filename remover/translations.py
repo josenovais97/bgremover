@@ -614,6 +614,9 @@ JS_UI = {
     # --- Background removal ---
     "Background removal failed": "A remoção do fundo falhou",
     "Background removed": "Fundo removido",
+    # Live status on the result card while a cut-out is being made.
+    "Removing background…": "A remover o fundo…",
+    "Downloading AI model… {pct}%": "A descarregar o modelo de IA… {pct}%",
     "Background removed — add your outline & text":
         "Fundo removido — adicione o contorno e o texto",
     "Background removed — position the head inside the guides":

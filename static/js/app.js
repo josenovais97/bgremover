@@ -14,6 +14,31 @@ import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 
 const { $, $$, Toast, loadImage, t, download, Chain } = CBG;
 
+/* ---------------------------------------------------------------- progress
+ * The removal library memoises its parsed config keyed on JSON.stringify(config),
+ * and JSON.stringify silently drops functions. So whichever call reaches it
+ * FIRST owns the `progress` callback for every later call sharing the same
+ * output/model — warming the model on page load quietly stole the per-card one,
+ * and the card's progress bar sat at 0% for the entire job.
+ *
+ * Fix: one stable callback, installed once in CONFIG.removalOptions below, that
+ * fans out to whoever is currently listening. Identical across every call, so
+ * it does not matter which one populates the memo.
+ *
+ * Broadcast rather than last-one-wins because cards process concurrently and
+ * the model download they are all waiting on is genuinely shared.
+ */
+const Progress = {
+  listeners: new Set(),
+  /** Subscribe for the duration of a job; returns an unsubscribe. */
+  on(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); },
+  emit(key, current, total) {
+    for (const fn of [...this.listeners]) {
+      try { fn(String(key), current, total); } catch { /* one bad listener must not stall the job */ }
+    }
+  },
+};
+
 /* ------------------------------------------------------------------ config */
 const CONFIG = {
   maxFileSize: 25 * 1024 * 1024, // 25 MB
@@ -29,6 +54,9 @@ const CONFIG = {
     // we fall back to the quantized 'isnet_quint8': smaller and faster, avoiding
     // the browser's "page not responding" prompt at a small edge-quality cost.
     model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8',
+    // Must be defined here, once — see the Progress note above. Callers subscribe
+    // via Progress.on() instead of passing their own, which the memo would drop.
+    progress: (key, current, total) => Progress.emit(key, current, total),
   },
 };
 
@@ -329,12 +357,14 @@ const ModelStatus = {
       if (typeof preload === 'function') {
         // Surface real download progress in the badge instead of an
         // indeterminate spinner — the first-run wait then feels informative.
-        await preload({
-          ...CONFIG.removalOptions,
-          progress: (key, current, total) => {
-            if (total && String(key).startsWith('fetch')) label(` — ${Math.round((current / total) * 100)}%`);
-          },
+        const off = Progress.on((key, current, total) => {
+          if (total && key.startsWith('fetch')) label(` — ${Math.round((current / total) * 100)}%`);
         });
+        try {
+          await preload(CONFIG.removalOptions);
+        } finally {
+          off();
+        }
       }
       this.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI ready — runs 100% on your device', 'bg-green-500/10 text-green-600 dark:text-green-400');
     } catch {
@@ -1508,17 +1538,33 @@ class Card {
     const stopIdle = window.CBG?.sparkleLoop?.(this.el.querySelector('.sparkle-layer')) ?? (() => {});
 
     try {
-      // Pass the File/Blob directly (more robust than a blob: URL fetch).
-      const blob = await removeBackground(this.file, {
-        ...CONFIG.removalOptions,
-        progress: (key, current, total) => {
+      // Two honest phases. While the model downloads we have real byte counts,
+      // so the bar is determinate. Once inference starts we have four coarse
+      // steps AND the WASM run blocks the main thread for several seconds — a
+      // determinate bar could not repaint through that even if we had numbers.
+      // So it hands over to a CSS sweep, which the compositor keeps animating
+      // while the main thread is stuck.
+      const offProgress = Progress.on((key, current, total) => {
+        if (key.startsWith('fetch')) {
           const pct = total ? Math.round((current / total) * 100) : 0;
+          bar.classList.remove('indeterminate');
           bar.style.width = `${pct}%`;
-          label.textContent = key.startsWith('fetch')
-            ? `Downloading AI model… ${pct}%`
-            : 'Removing background…';
-        },
+          label.textContent = t('Downloading AI model… {pct}%', { pct });
+        } else {
+          bar.style.width = '';
+          bar.classList.add('indeterminate');
+          label.textContent = t('Removing background…');
+        }
       });
+
+      // Pass the File/Blob directly (more robust than a blob: URL fetch).
+      let blob;
+      try {
+        blob = await removeBackground(this.file, CONFIG.removalOptions);
+      } finally {
+        offProgress();
+        bar.classList.remove('indeterminate');
+      }
 
       stopIdle(); // the burst takes over the same canvas
       this.processedBlob = blob;
