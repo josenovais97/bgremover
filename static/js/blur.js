@@ -14,6 +14,7 @@
 
 const { $, Toast, loadImage, download, t } = CBG;
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
+import { removalConfig } from './accel.js';
 
 /* --------------------------------------------------------------- helpers */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -88,7 +89,7 @@ const App = {
     this.setBusy(true, 'Finding the subject…');
     this.render();
     try {
-      const blob = await removeBackground(file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
+      const blob = await removeBackground(file, await removalConfig());
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);

@@ -195,14 +195,23 @@
                 </div>
             </div>
 
-            <!-- Processing overlay -->
+            <!-- Processing overlay. Doubles as the queued state: a card waiting
+                 its turn shows the clock + its place in line instead of the
+                 spinner and bar, so taking its turn re-words one panel rather
+                 than swapping two. -->
             <div class="processing-overlay absolute inset-0 glass backdrop-blur-md flex flex-col items-center justify-center gap-3 text-center px-6">
-                <div class="relative w-16 h-16">
+                <div class="spin-wrap relative w-16 h-16">
                     <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
                     <div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 </div>
+                <div class="queue-wrap hidden w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <!-- Solid weight on purpose: fa-clock is in the committed
+                         solid subset; the regular subset does not carry it. -->
+                    <i class="fa-solid fa-clock text-2xl text-primary"></i>
+                </div>
                 <p class="progress-label text-sm font-medium">{% t "Removing background…" %}</p>
-                <div class="w-40 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <p class="queue-eta hidden text-xs text-gray-500 dark:text-gray-400"></p>
+                <div class="progress-track w-40 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div class="progress-bar h-full bg-primary transition-all duration-200" style="width: 0%"></div>
                 </div>
             </div>

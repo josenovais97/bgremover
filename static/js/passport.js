@@ -14,6 +14,7 @@
 
 const { $, $$, Toast, loadImage, download, t } = CBG;
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
+import { removalConfig } from './accel.js';
 
 /* --------------------------------------------------------------- helpers */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -202,9 +203,9 @@ const App = {
     this.editor.classList.remove('hidden');
     this.setBusy(true, 'Removing background…');
     try {
-      // Full 'isnet' when cross-origin isolated (threaded WASM); quantized
-      // fallback otherwise. See config/middleware.py ISOLATED_VIEWS.
-      const blob = await removeBackground(file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
+      // Model + CPU/GPU backend are chosen once in accel.js, shared with
+      // every tool page that cuts out a subject.
+      const blob = await removeBackground(file, await removalConfig());
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);

@@ -6,11 +6,14 @@
  * model assets are loaded from a CDN and cached by the browser after first use.
  *
  * To swap the model later, replace the `removeBackground` import and the call
- * inside `Card.process()` — the rest of the UI is model-agnostic.
+ * inside `Card.runRemoval()` — the rest of the UI is model-agnostic. The model
+ * name and the CPU/GPU backend choice live in accel.js, shared with every other
+ * tool page that cuts out a subject.
  */
 
 import { removeBackground, preload } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
+import { removalConfig, markGpuFailed, isGpu } from './accel.js';
 
 const { $, $$, Toast, loadImage, t, download, Chain } = CBG;
 
@@ -21,7 +24,7 @@ const { $, $$, Toast, loadImage, t, download, Chain } = CBG;
  * output/model — warming the model on page load quietly stole the per-card one,
  * and the card's progress bar sat at 0% for the entire job.
  *
- * Fix: one stable callback, installed once in CONFIG.removalOptions below, that
+ * Fix: one stable callback, installed once in CONFIG.removalExtras below, that
  * fans out to whoever is currently listening. Identical across every call, so
  * it does not matter which one populates the memo.
  *
@@ -45,20 +48,18 @@ const CONFIG = {
   acceptedTypes: ['image/jpeg', 'image/png', 'image/webp'],
   maxHistory: 12,
   encodeQuality: 0.92, // for JPG/WEBP output
-  removalOptions: {
+  // Extras layered onto the shared config from accel.js (which owns the model
+  // and the CPU/GPU backend choice). Resolved once, via removalOptions().
+  removalExtras: {
     output: { format: 'image/png', quality: 1 }, // lossless cut-out, full resolution
-    // Adaptive model quality. When the page is cross-origin isolated (COOP+COEP
-    // set by the server for this route) the WASM runtime can use its
-    // multi-threaded + SIMD backend, so the full-quality 'isnet' model runs fast
-    // enough to keep the main thread responsive. Without isolation (e.g. Safari)
-    // we fall back to the quantized 'isnet_quint8': smaller and faster, avoiding
-    // the browser's "page not responding" prompt at a small edge-quality cost.
-    model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8',
     // Must be defined here, once — see the Progress note above. Callers subscribe
     // via Progress.on() instead of passing their own, which the memo would drop.
     progress: (key, current, total) => Progress.emit(key, current, total),
   },
 };
+
+/** The resolved removal config for this page. Await before every library call. */
+const removalOptions = () => removalConfig(CONFIG.removalExtras);
 
 const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 const LABEL = { 'image/png': 'PNG', 'image/jpeg': 'JPG', 'image/webp': 'WEBP' };
@@ -354,6 +355,7 @@ const ModelStatus = {
     );
     label('');
     try {
+      const options = await removalOptions();
       if (typeof preload === 'function') {
         // Surface real download progress in the badge instead of an
         // indeterminate spinner — the first-run wait then feels informative.
@@ -361,14 +363,20 @@ const ModelStatus = {
           if (total && key.startsWith('fetch')) label(` — ${Math.round((current / total) * 100)}%`);
         });
         try {
-          await preload(CONFIG.removalOptions);
+          await preload(options);
         } finally {
           off();
         }
       }
-      this.render('<i class="fa-solid fa-circle-check text-green-500"></i> AI ready — runs 100% on your device', 'bg-green-500/10 text-green-600 dark:text-green-400');
-    } catch {
-      // Warm-up is best-effort; real processing will still download on demand.
+      const how = isGpu() ? 'GPU-accelerated, ' : '';
+      this.render(`<i class="fa-solid fa-circle-check text-green-500"></i> AI ready — ${how}runs 100% on your device`, 'bg-green-500/10 text-green-600 dark:text-green-400');
+    } catch (err) {
+      // Building the session is where an unusable WebGPU adapter shows itself.
+      // Warm-up runs before any upload, so this is the cheap place to find out:
+      // the reload drops us into the CPU path and the user sees only a blink.
+      if (markGpuFailed(App.cards.length > 0)) return;
+      console.warn('[bg-remover] model warm-up failed:', err);
+      // Otherwise warm-up is best-effort; real processing still downloads on demand.
       this.started = false;
       this.el.classList.add('hidden');
     }
@@ -432,6 +440,98 @@ const RemovalEta = {
     try {
       localStorage.setItem(this.key, JSON.stringify([...this.samples(), Math.round(ms)].slice(-this.keep)));
     } catch { /* private mode: fall back to the default next time */ }
+  },
+};
+
+/** "about 25s" / "about 1m 20s" — coarse on purpose, it is an estimate. */
+function humanEta(ms) {
+  const s = Math.max(1, Math.round(ms / 1000));
+  if (s < 60) return t('about {n}s', { n: s <= 10 ? s : Math.round(s / 5) * 5 });
+  const m = Math.floor(s / 60);
+  const rest = Math.round((s % 60) / 15) * 15;
+  return rest && rest < 60
+    ? t('about {m}m {s}s', { m, s: rest })
+    : t('about {m}m', { m: m + (rest ? 1 : 0) });
+}
+
+/* -------------------------------------------------------------- work queue
+ * Dropping twenty photos used to call Card.process() twenty times in the same
+ * tick. That never ran twenty removals at once in any useful sense — every card
+ * shares one memoised ONNX session, and on the WASM backend the run blocks the
+ * main thread — so the jobs interleaved only at await points. What it did do was
+ * hold twenty full-resolution RGBA tensors, masks and output canvases alive
+ * simultaneously (~120 MB apiece for a 12 MP photo, enough to kill a phone tab),
+ * and push the FIRST result all the way to the end of the batch.
+ *
+ * Running them in order costs nothing in total time and gives the user a
+ * finished cut-out roughly N times sooner. There is no cap on how many files
+ * they may add — the queue just tells each waiting card where it stands and
+ * roughly how long it has, using this device's own measured pace (RemovalEta).
+ */
+const Queue = {
+  active: 0,
+  waiting: [],
+  startedAt: 0,
+  timer: null,
+
+  /**
+   * One at a time, always — this is a hard constraint, not a tuning choice.
+   * Every card shares one memoised ONNX session, and onnxruntime rejects a
+   * second run() on a session that is already running with "Session already
+   * started". On the WASM backend that never surfaced because the run blocks
+   * the main thread, so overlapping calls could not actually interleave; on the
+   * GPU path (which runs in a worker) two cards overlap for real and the second
+   * one throws. Raising this needs a session per worker, not a bigger number.
+   */
+  concurrency: 1,
+
+  add(card) {
+    this.waiting.push(card);
+    card.setState('queued');
+    this.pump();
+  },
+
+  /** Remove a card that was deleted (or retried) before its turn came up. */
+  drop(card) {
+    const i = this.waiting.indexOf(card);
+    if (i >= 0) this.waiting.splice(i, 1);
+    this.render();
+  },
+
+  pump() {
+    while (this.active < this.concurrency && this.waiting.length) {
+      const card = this.waiting.shift();
+      this.active += 1;
+      if (this.active === 1) this.startedAt = performance.now();
+      card.runRemoval().finally(() => {
+        this.active -= 1;
+        if (!this.active) this.startedAt = 0;
+        this.pump();
+      });
+    }
+    this.render();
+  },
+
+  /** Milliseconds until the card at 0-based waiting index `i` is finished. */
+  etaFor(i) {
+    const per = RemovalEta.get();
+    // Never claim the running job is about to finish just because we guessed
+    // low — hold a floor under it so the number keeps counting down credibly.
+    const elapsed = this.startedAt ? performance.now() - this.startedAt : 0;
+    const currentLeft = this.active ? Math.max(per - elapsed, per * 0.15) : 0;
+    const rounds = Math.floor(i / this.concurrency);
+    return currentLeft + rounds * per + per;
+  },
+
+  render() {
+    this.waiting.forEach((card, i) => card.renderQueued(i, this.etaFor(i)));
+    // Tick so the estimate visibly counts down. On the WASM path the callback
+    // simply cannot fire while inference holds the thread, and the queue
+    // re-renders at every job boundary anyway — so this costs nothing there and
+    // keeps the number live on the GPU path.
+    const wanted = this.waiting.length > 0;
+    if (wanted && !this.timer) this.timer = setInterval(() => this.render(), 1000);
+    else if (!wanted && this.timer) { clearInterval(this.timer); this.timer = null; }
   },
 };
 
@@ -1567,7 +1667,22 @@ class Card {
     }
   }
 
-  async process() {
+  /** Public entry point (also the Retry button): take a place in the queue. */
+  process() {
+    Queue.drop(this); // a retry must not leave a stale entry behind
+    Queue.add(this);
+  }
+
+  /** Paint this card's place in line. `i` is 0-based among the waiting cards. */
+  renderQueued(i, etaMs) {
+    if (this.el.dataset.state !== 'queued') return;
+    const label = this.el.querySelector('.progress-label');
+    const eta = this.el.querySelector('.queue-eta');
+    label.textContent = i === 0 ? t('Next up') : t('#{n} in line', { n: i + 1 });
+    eta.textContent = humanEta(etaMs);
+  }
+
+  async runRemoval() {
     this.setState('processing');
     const bar = this.el.querySelector('.progress-bar');
     const label = this.el.querySelector('.progress-label');
@@ -1616,7 +1731,7 @@ class Card {
       // Pass the File/Blob directly (more robust than a blob: URL fetch).
       let blob;
       try {
-        blob = await removeBackground(this.file, CONFIG.removalOptions);
+        blob = await removeBackground(this.file, await removalOptions());
         // Only a clean run is a valid timing sample.
         if (removalStarted) RemovalEta.record(performance.now() - removalStarted);
       } finally {
@@ -1651,6 +1766,13 @@ class Card {
     } catch (err) {
       stopIdle();
       console.error('[bg-remover] processing failed:', err);
+      // A GPU session that dies mid-batch cannot be retried on the CPU in this
+      // page (see accel.js), and the user has work on screen we must not
+      // discard. Record it so the next load is CPU, and say so rather than
+      // letting Retry fail the same way forever.
+      if (isGpu() && markGpuFailed(true) === false) {
+        Toast.show(t('GPU acceleration failed — reload the page to switch to CPU mode'), 'error');
+      }
       const detail = (err && (err.message || err.name)) || 'Unknown error';
       this.el.querySelector('.error-msg').textContent = detail.slice(0, 180);
       this.setState('error');
@@ -1715,8 +1837,17 @@ class Card {
 
   setState(state) {
     this.el.dataset.state = state;
-    this.el.querySelector('.processing-overlay').classList.toggle('hidden', state !== 'processing');
+    // 'queued' reuses the processing overlay — same frame, same position, so a
+    // card taking its turn changes wording rather than swapping panels.
+    const busy = state === 'processing' || state === 'queued';
+    const queued = state === 'queued';
+    this.el.querySelector('.processing-overlay').classList.toggle('hidden', !busy);
     this.el.querySelector('.error-overlay').classList.toggle('hidden', state !== 'error');
+    this.el.querySelector('.spin-wrap').classList.toggle('hidden', queued);
+    this.el.querySelector('.queue-wrap').classList.toggle('hidden', !queued);
+    this.el.querySelector('.progress-track').classList.toggle('hidden', queued);
+    this.el.querySelector('.queue-eta').classList.toggle('hidden', !queued);
+    if (state === 'processing') this.el.querySelector('.progress-label').textContent = t('Removing background…');
   }
 
   toggleView() {
@@ -2264,6 +2395,7 @@ class Card {
   }
 
   destroy() {
+    Queue.drop(this); // giving up on a card must free its slot in the line
     URL.revokeObjectURL(this.originalUrl);
     if (this.processedUrl) URL.revokeObjectURL(this.processedUrl);
     if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);

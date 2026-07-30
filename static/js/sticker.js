@@ -125,10 +125,13 @@ const App = {
     this.setBusy(true, 'Removing background…');
     this.render();
     try {
-      const { removeBackground } = await import(MODEL_CDN);
-      // Full 'isnet' when the page is cross-origin isolated (threaded WASM);
-      // quantized fallback otherwise. See config/middleware.py ISOLATED_VIEWS.
-      const blob = await removeBackground(file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
+      const [{ removeBackground }, { removalConfig }] = await Promise.all([
+        import(MODEL_CDN),
+        import('./accel.js'),
+      ]);
+      // Model + CPU/GPU backend are chosen once in accel.js, shared with
+      // every tool page that cuts out a subject.
+      const blob = await removeBackground(file, await removalConfig());
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);

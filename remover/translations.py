@@ -617,6 +617,15 @@ JS_UI = {
     # Live status on the result card while a cut-out is being made.
     "Removing background…": "A remover o fundo…",
     "Downloading AI model… {pct}%": "A descarregar o modelo de IA… {pct}%",
+    # Shown on cards waiting their turn in the batch queue, with a rough ETA
+    # measured from how fast this device actually works.
+    "Next up": "A seguir",
+    "#{n} in line": "{n}.º na fila",
+    "about {n}s": "cerca de {n}s",
+    "about {m}m": "cerca de {m}min",
+    "about {m}m {s}s": "cerca de {m}min {s}s",
+    "GPU acceleration failed — reload the page to switch to CPU mode":
+        "A aceleração por GPU falhou — recarregue a página para mudar para o modo CPU",
     "Background removed — add your outline & text":
         "Fundo removido — adicione o contorno e o texto",
     "Background removed — position the head inside the guides":

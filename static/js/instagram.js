@@ -1140,10 +1140,13 @@ const App = {
     // Twinkle over the photo for the wait; the finishing burst replaces it.
     const stopIdle = CBG.sparkleLoopOver(this.canvas);
     try {
-      const { removeBackground } = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm');
-      // Full 'isnet' when cross-origin isolated (threaded WASM); quantized
-      // fallback otherwise. See config/middleware.py ISOLATED_VIEWS.
-      const blob = await removeBackground(this.file, { model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8' });
+      const [{ removeBackground }, { removalConfig }] = await Promise.all([
+        import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm'),
+        import('./accel.js'),
+      ]);
+      // Model + CPU/GPU backend are chosen once in accel.js, shared with
+      // every tool page that cuts out a subject.
+      const blob = await removeBackground(this.file, await removalConfig());
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);
