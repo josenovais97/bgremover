@@ -1,14 +1,19 @@
 /**
  * Global "images processed" social-proof counter (client side).
  *
- * Reads the live total from /api/stats/ and shows it in the hero badge (if the
- * page has one). Exposes window.__clearbgReport(n) so the tools can increment
- * the counter after a real cut-out. If the server reports the counter disabled
- * (Upstash not configured), nothing is shown — no fabricated numbers.
+ * Reads the live totals from /api/stats/ — all-time and this ISO week — and
+ * shows them in the hero badge (if the page has one). Exposes
+ * window.__clearbgReport(n) so the tools can increment the counter after a real
+ * cut-out. If the server reports the counter disabled (Upstash not configured),
+ * nothing is shown — no fabricated numbers.
  */
 (function () {
   const el = document.getElementById('social-proof');
   const numEl = document.getElementById('social-proof-count');
+  const weekEl = document.getElementById('social-proof-week');
+  const weekNumEl = document.getElementById('social-proof-week-count');
+  const totalLong = document.getElementById('social-proof-total-long');
+  const totalShort = document.getElementById('social-proof-total-short');
   const lang = document.documentElement.lang || 'en';
 
   // Only show the badge once the count is worth showing. 1 = always show.
@@ -41,8 +46,24 @@
     requestAnimationFrame(step);
   }
 
+  // "N this week" is the number that shows the site is alive; the all-time total
+  // is the one that shows it is established. Right after the Monday rollover the
+  // weekly count is 0, which reads worse than no claim, so it stays hidden until
+  // there is something to report — and the all-time label shortens to "all time"
+  // only while both are on screen, so the badge never says "processed" twice.
+  function showWeek(week) {
+    if (!weekEl || !weekNumEl || typeof week !== 'number' || week < 1) return;
+    weekNumEl.textContent = fmt(week);
+    weekEl.classList.remove('hidden');
+    if (totalLong && totalShort) {
+      totalLong.classList.add('hidden');
+      totalShort.classList.remove('hidden');
+    }
+  }
+
   let revealed = false;
-  function show(count) {
+  function show(count, week) {
+    showWeek(week);
     if (!el || !numEl || typeof count !== 'number' || count < MIN_DISPLAY) return;
     if (revealed) { numEl.textContent = fmt(count); return; }
     revealed = true;
@@ -88,7 +109,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ n: n || 1, tool: toolId(), event: event || 'processed' }),
         keepalive: true,
-      }).then((r) => r.json()).then((d) => { if (d && d.enabled) show(d.count); }).catch(() => {});
+      }).then((r) => r.json()).then((d) => { if (d && d.enabled) show(d.count, d.week); }).catch(() => {});
     } catch (e) { /* ignore */ }
   };
 
@@ -96,7 +117,7 @@
   if (el) {
     fetch('/api/stats/')
       .then((r) => r.json())
-      .then((d) => { if (d && d.enabled) show(d.count); })
+      .then((d) => { if (d && d.enabled) show(d.count, d.week); })
       .catch(() => {});
   }
 })();

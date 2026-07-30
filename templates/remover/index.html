@@ -21,12 +21,18 @@
                     {% t "Drop an image and get a clean, transparent PNG in seconds. No sign-up, no watermarks, no quality loss — the AI runs entirely on your device." %}
                 </p>
                 <div id="social-proof" class="hidden animate-fade-in-up">
-                    <span class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 shadow-sm text-sm">
+                    <span class="inline-flex flex-wrap justify-center items-center gap-x-2.5 gap-y-1 px-4 py-2 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 shadow-sm text-sm">
                         <span class="relative flex h-2 w-2" aria-hidden="true">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500/60"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
-                        <span class="text-gray-600 dark:text-gray-300"><strong id="social-proof-count" class="font-bold text-gray-900 dark:text-white tabular-nums">0</strong> {% t "images processed" %}</span>
+                        {% comment %}Two numbers, because an all-time total alone says nothing about
+                        whether the site is still busy today. The weekly span is hidden until the
+                        count is non-zero — right after the Monday rollover "0 this week" is worse
+                        social proof than no claim at all. stats.js fills both.{% endcomment %}
+                        <span id="social-proof-week" class="hidden text-gray-600 dark:text-gray-300"><strong id="social-proof-week-count" class="font-bold text-gray-900 dark:text-white tabular-nums">0</strong> {% t "images processed this week" %}</span>
+                        <span class="text-gray-600 dark:text-gray-300"><strong id="social-proof-count" class="font-bold text-gray-900 dark:text-white tabular-nums">0</strong> {% comment %}Both labels ship in the markup and stats.js picks one, so neither
+                            has to exist as a translatable string inside the JS.{% endcomment %}<span id="social-proof-total-long">{% t "images processed" %}</span><span id="social-proof-total-short" class="hidden">{% t "all time" %}</span></span>
                         <span class="h-3.5 w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
                         <span class="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium">
                             <i class="fa-solid fa-shield-halved text-[11px]" aria-hidden="true"></i> {% t "nothing uploaded" %}
@@ -124,9 +130,21 @@
         anyone who didn't scroll past it.{% endcomment %}
         {% include 'remover/partials/tool_grid.html' with exclude='index' %}
 
-        <!-- How it works (compact) -->
-        <section aria-labelledby="how-title" class="max-w-4xl mx-auto">
-            <h2 id="how-title" class="sr-only">{% t "How it works" %}</h2>
+        <!-- How it works -->
+        {% comment %}
+        This used to be three generic steps (Add → AI removes → Download) and a
+        screen-reader-only heading. The steps are still the fastest way to explain
+        the flow, but on their own they ask a visitor to take "the AI runs on your
+        device" purely on faith — which is the site's entire claim. The panel below
+        them names the model, the runtime and the fallback path, so the claim is
+        checkable rather than just asserted, and gives the page real text on the
+        subject people actually search for.
+        {% endcomment %}
+        <section aria-labelledby="how-title" class="max-w-4xl mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h2 id="how-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "How it works" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "Three steps — with no server anywhere in them." %}</p>
+            </div>
             <ol class="grid gap-3 sm:grid-cols-3 text-sm">
                 <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
                     <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-upload" aria-hidden="true"></i></span>
@@ -141,9 +159,58 @@
                     <span><b class="font-semibold">{% t "Download" %}</b> {% t "a transparent PNG, full quality" %}</span>
                 </li>
             </ol>
-            <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 sm:p-6 space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                <h3 class="flex items-center gap-2.5 text-base font-semibold text-gray-900 dark:text-gray-100">
+                    <span class="w-8 h-8 shrink-0 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-code" aria-hidden="true"></i></span>
+                    {% t "What actually runs on your device" %}
+                </h3>
+                <p>{% t "The cut-out comes from IS-Net, a segmentation model that runs through ONNX Runtime Web inside this browser tab. Your browser downloads the model once, then keeps it — so the second image is instant, and the tool keeps working with no connection at all." %}</p>
+                <p>{% t "Where your browser exposes WebGPU, the model runs on your graphics card and off the main thread, which is why the page stays responsive while it works. Everywhere else it falls back to WebAssembly with SIMD and multiple threads on the CPU. Browsers that allow cross-origin isolation get the full-precision weights; the rest get a smaller quantised build of the same model." %}</p>
+                <p class="flex items-start gap-2.5">
+                    <i class="fa-solid fa-mobile-screen mt-0.5 text-primaryText" aria-hidden="true"></i>
+                    <span>{% t "What that means for your device: the first run is a real download and needs some memory, so it takes a few seconds on a recent laptop or phone and can take up to a minute on an older one. Every run after that is fast. If your browser can't run the model at all, the page says so plainly instead of hanging — and the editing tools that don't need AI (crop, convert, compress, resize) keep working regardless." %}</span>
+                </p>
+                <p class="text-gray-500 dark:text-gray-400">{% t "None of this involves an upload: there is no queue to wait in, no per-image limit to hit, and no copy of your photo on a server to trust anyone with." %}</p>
+            </div>
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
                 {% t "Coming from another tool?" %}
                 <a href="{% url 'remover:alternative' %}" class="text-primaryText font-medium hover:underline">{% t "See how we compare to remove.bg" %} →</a>
+            </p>
+        </section>
+
+        <!-- Why it's free -->
+        {% comment %}
+        "Free and unlimited" reads as bait unless the economics are stated. The
+        honest answer here is unusually good — the visitor's own device does the
+        expensive part — so saying it plainly turns the most suspicious thing about
+        the site into the most reassuring one. It also gives the "what's the catch"
+        search its answer on the page rather than in a review of us somewhere else.
+        {% endcomment %}
+        <section aria-labelledby="free-title" class="max-w-4xl mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h2 id="free-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Why is it free?" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "The usual catch is that you are the product. Here is the actual arrangement." %}</p>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-3 text-sm">
+                <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Your device does the work" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "Cloud removers rent GPUs by the second and bill you per image. Nothing here runs on a server, so there is no per-image cost to pass on — and no reason to cap you at five free photos." %}</p>
+                </div>
+                <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "There is nothing to sell" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "Your images never leave the browser, so we could not train on them, sell them or leak them even if we wanted to. There is no account, so there is no profile to build either." %}</p>
+                </div>
+                <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "What keeps it running" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "A domain and some cheap hosting — that is the whole bill. Ads on the written guides help cover it, the tool pages stay ad-free, and a coffee from anyone who finds this useful covers the rest." %}</p>
+                </div>
+            </div>
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                {% t "No trial, no credit card, no watermark, no “pro” tier holding the good export hostage." %}
+                <a href="https://buymeacoffee.com/josenovais" target="_blank" rel="noopener noreferrer" class="text-primaryText font-medium hover:underline">{% t "Buy me a coffee" %} →</a>
             </p>
         </section>
 

@@ -105,6 +105,10 @@
     URL.revokeObjectURL(url);
     a.remove();
     if (chain && /^image\//.test(blob.type || '')) Chain.offer(blob, name);
+    // Every tool downloads through here (SharedKitTests enforces it), so this is
+    // the one place that knows a visitor has actually got something out of the
+    // site — see showSupport().
+    noteDownload();
   }
 
   /**
@@ -417,6 +421,73 @@
     liftToasts(true);
     requestAnimationFrame(() =>
       barEl.firstElementChild.classList.remove('translate-y-3', 'opacity-0'));
+  }
+
+  /* ---------------------------------------------------------------- support
+   * The ask, kept to the one moment it is earned: after a few finished exports.
+   *
+   * Deliberately not a modal, not a timer, and not on arrival — someone who has
+   * downloaded three files has had the value already, and someone who hasn't
+   * owes nothing. It appears at most once per browser, remembers a dismissal
+   * forever, and never fights the chain bar for the same corner: if that bar is
+   * up, the ask simply waits for a later download. Nothing about the tools
+   * changes if it is ignored, which is the whole point of the promise it makes.
+   */
+  const SUPPORT_AFTER = 3;          // downloads before the ask is earned
+  const DL_KEY = 'bgr_dl_n';
+  const SUPPORT_KEY = 'bgr_support'; // 'done' once dismissed or clicked
+
+  function pref(key, value) {
+    try {
+      if (value === undefined) return localStorage.getItem(key);
+      localStorage.setItem(key, value);
+    } catch { /* private mode — the nudge just becomes per-session */ }
+    return value;
+  }
+
+  function noteDownload() {
+    let n = 0;
+    try { n = Number(pref(DL_KEY) || 0) + 1; } catch { return; }
+    pref(DL_KEY, String(n));
+    if (n >= SUPPORT_AFTER && pref(SUPPORT_KEY) !== 'done') showSupport();
+  }
+
+  function showSupport() {
+    if (barEl || document.getElementById('cbg-support')) return; // chain bar owns the corner
+    // One source of truth for the link: the footer's. No second URL to rot.
+    const href = document.querySelector('a[href*="buymeacoffee"]')?.href;
+    if (!href) return;
+
+    // The landing page's sticky "Remove a background" CTA owns the bottom-right
+    // corner; on a phone the two are the same corner, so lift the card clear of
+    // it rather than letting the CTA sit on top of the ask.
+    const cta = document.getElementById('sticky-cta');
+    const ctaUp = cta && !cta.classList.contains('hidden')
+      && getComputedStyle(cta).opacity !== '0';
+
+    const el = document.createElement('div');
+    el.id = 'cbg-support';
+    el.className = `fixed inset-x-0 bottom-0 z-40 px-4 ${ctaUp ? 'pb-24 sm:pb-20' : 'pb-4'} pointer-events-none print:hidden`;
+    el.innerHTML = `
+      <div class="pointer-events-auto mx-auto max-w-md glass border border-gray-200/70 dark:border-gray-800/70 rounded-2xl shadow-xl p-3 sm:p-4 flex flex-wrap items-center gap-x-3 gap-y-2 translate-y-3 opacity-0 transition-all duration-300">
+        <span class="w-9 h-9 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></span>
+        <span class="text-sm flex-1 min-w-[11rem]">${t('Everything here stays free. If it saved you some time, a coffee helps keep it that way.')}</span>
+        <a data-support href="${href}" target="_blank" rel="noopener noreferrer"
+           class="ml-auto shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border border-primary/40 bg-primary/5 text-primaryText hover:bg-primary/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">${t('Buy me a coffee')}</a>
+        <button type="button" data-dismiss aria-label="${t('Dismiss')}"
+                class="p-2 -m-1 shrink-0 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>`;
+
+    const close = () => { pref(SUPPORT_KEY, 'done'); el.remove(); };
+    el.querySelector('[data-dismiss]').addEventListener('click', close);
+    el.querySelector('[data-support]').addEventListener('click', close);
+    document.body.appendChild(el);
+    requestAnimationFrame(() =>
+      el.firstElementChild.classList.remove('translate-y-3', 'opacity-0'));
+    // Never becomes furniture: it lets itself out if nobody engages.
+    setTimeout(() => { if (document.body.contains(el)) el.remove(); }, 15000);
   }
 
   /* ---------------------------------------------------------------- sparkle

@@ -10,6 +10,7 @@ import logging
 import time
 import urllib.request
 from datetime import date as _date
+from datetime import datetime, timezone
 from pathlib import Path
 
 from django.conf import settings
@@ -18,7 +19,10 @@ from django.shortcuts import redirect, render
 from django.urls import Resolver404, resolve, reverse
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET
+# require_safe, not require_GET: the latter rejects HEAD, so every page on the
+# live site answered a HEAD with 405 — uptime monitors, link checkers and any
+# crawler that probes before fetching all saw the whole site as broken.
+from django.views.decorators.http import require_safe
 
 from .guides import GUIDES, GUIDES_BY_SLUG, guides_by_category, related_guides
 from .page_content import USE_CASE_FAQS, deep_for
@@ -1117,7 +1121,7 @@ def _sitemap_priority(path):
     return "0.7"  # keyword landing + country + guide pages
 
 
-@require_GET
+@require_safe
 def index(request):
     """Render the main single-page application."""
     return render(request, "remover/index.html", {
@@ -1127,7 +1131,7 @@ def index(request):
     })
 
 
-@require_GET
+@require_safe
 def use_case(request, slug):
     """Render a keyword-targeted landing page for a specific audience."""
     case = USE_CASES_BY_SLUG.get(slug)
@@ -1141,7 +1145,7 @@ def use_case(request, slug):
     })
 
 
-@require_GET
+@require_safe
 def privacy_page(request, slug):
     """Render a privacy-angle landing page (hub + 'without uploading' + offline)."""
     page = PRIVACY_PAGES_BY_SLUG.get(slug)
@@ -1160,7 +1164,7 @@ def privacy_page(request, slug):
     })
 
 
-@require_GET
+@require_safe
 def tool_landing(request, slug):
     """Render a tool intent-variant landing page (HEIC, OCR, …)."""
     page = TOOL_LANDINGS_BY_SLUG.get(slug)
@@ -1179,7 +1183,7 @@ def tool_landing(request, slug):
     })
 
 
-@require_GET
+@require_safe
 def compress_page(request, slug):
     """Render a compress intent-variant landing page (by format / size / use case)."""
     page = COMPRESS_PAGES_BY_SLUG.get(slug)
@@ -1209,7 +1213,7 @@ def compress_page(request, slug):
     })
 
 
-@require_GET
+@require_safe
 def convert(request):
     """Render the client-side image format converter."""
     return render(request, "remover/convert.html", {
@@ -1219,7 +1223,7 @@ def convert(request):
     })
 
 
-@require_GET
+@require_safe
 def instagram(request):
     """Render the client-side Instagram photo editor."""
     return render(request, "remover/instagram.html", {
@@ -1229,7 +1233,7 @@ def instagram(request):
     })
 
 
-@require_GET
+@require_safe
 def crop(request):
     """Render the standalone client-side crop tool (no background removal)."""
     return render(request, "remover/crop.html", {
@@ -1238,7 +1242,7 @@ def crop(request):
     })
 
 
-@require_GET
+@require_safe
 def favicon_generator(request):
     """Render the client-side favicon / app-icon generator."""
     return render(request, "remover/favicon.html", {
@@ -1247,7 +1251,7 @@ def favicon_generator(request):
     })
 
 
-@require_GET
+@require_safe
 def sticker(request):
     """Render the client-side WhatsApp sticker maker."""
     return render(request, "remover/sticker.html", {
@@ -1256,7 +1260,7 @@ def sticker(request):
     })
 
 
-@require_GET
+@require_safe
 def compress(request):
     """Render the client-side image compressor."""
     return render(request, "remover/compress.html", {
@@ -1265,7 +1269,7 @@ def compress(request):
     })
 
 
-@require_GET
+@require_safe
 def meme(request):
     """Render the client-side meme generator."""
     return render(request, "remover/meme.html", {
@@ -1274,7 +1278,7 @@ def meme(request):
     })
 
 
-@require_GET
+@require_safe
 def passport(request):
     """Render the client-side passport / ID photo maker."""
     return render(request, "remover/passport.html", {
@@ -1284,7 +1288,7 @@ def passport(request):
     })
 
 
-@require_GET
+@require_safe
 def passport_country(request, country):
     """Render a per-country passport-photo landing page (programmatic SEO)."""
     c = COUNTRIES_BY_SLUG.get(country)
@@ -1342,7 +1346,7 @@ def _guide_tool_links(names):
     return links
 
 
-@require_GET
+@require_safe
 def guides_index(request):
     """Render the guides hub — the site's editorial index, grouped by topic."""
     return render(request, "remover/guides.html", {
@@ -1351,7 +1355,7 @@ def guides_index(request):
     })
 
 
-@require_GET
+@require_safe
 def guide_detail(request, slug):
     """Render one guide article."""
     guide = GUIDES_BY_SLUG.get(slug)
@@ -1366,7 +1370,7 @@ def guide_detail(request, slug):
     })
 
 
-@require_GET
+@require_safe
 def ecommerce(request):
     """Render the client-side marketplace (Amazon/Etsy/Shopify) product-photo maker."""
     return render(request, "remover/ecommerce.html", {
@@ -1375,7 +1379,7 @@ def ecommerce(request):
     })
 
 
-@require_GET
+@require_safe
 def blur(request):
     """Render the client-side AI background-blur (portrait mode) tool."""
     return render(request, "remover/blur.html", {
@@ -1384,7 +1388,7 @@ def blur(request):
     })
 
 
-@require_GET
+@require_safe
 def text_behind(request):
     """Render the client-side text-behind-image effect tool."""
     return render(request, "remover/text_behind.html", {
@@ -1393,7 +1397,7 @@ def text_behind(request):
     })
 
 
-@require_GET
+@require_safe
 def qr(request):
     """Render the client-side QR code generator."""
     return render(request, "remover/qr.html", {
@@ -1402,7 +1406,7 @@ def qr(request):
     })
 
 
-@require_GET
+@require_safe
 def redact(request):
     """Render the client-side redact / blur (hide faces & info) tool."""
     return render(request, "remover/redact.html", {
@@ -1411,7 +1415,7 @@ def redact(request):
     })
 
 
-@require_GET
+@require_safe
 def watermark(request):
     """Render the client-side watermark tool."""
     return render(request, "remover/watermark.html", {
@@ -1420,7 +1424,7 @@ def watermark(request):
     })
 
 
-@require_GET
+@require_safe
 def gif(request):
     """Render the client-side animated GIF maker."""
     return render(request, "remover/gif.html", {
@@ -1429,7 +1433,7 @@ def gif(request):
     })
 
 
-@require_GET
+@require_safe
 def video_gif(request):
     """Render the client-side video → animated GIF converter."""
     return render(request, "remover/video_gif.html", {
@@ -1438,7 +1442,7 @@ def video_gif(request):
     })
 
 
-@require_GET
+@require_safe
 def video_converter(request):
     """Render the client-side video converter (trim / speed / mute / re-encode)."""
     return render(request, "remover/video_converter.html", {
@@ -1447,7 +1451,7 @@ def video_converter(request):
     })
 
 
-@require_GET
+@require_safe
 def resize(request):
     """Render the client-side image resizer."""
     return render(request, "remover/resize.html", {
@@ -1456,7 +1460,7 @@ def resize(request):
     })
 
 
-@require_GET
+@require_safe
 def image_to_pdf(request):
     """Render the client-side image → PDF builder."""
     return render(request, "remover/pdf.html", {
@@ -1465,7 +1469,7 @@ def image_to_pdf(request):
     })
 
 
-@require_GET
+@require_safe
 def exif(request):
     """Render the client-side EXIF / metadata viewer & remover."""
     return render(request, "remover/exif.html", {
@@ -1474,7 +1478,7 @@ def exif(request):
     })
 
 
-@require_GET
+@require_safe
 def base64_image(request):
     """Render the client-side image ⇄ Base64 data-URI converter."""
     return render(request, "remover/base64.html", {
@@ -1483,7 +1487,7 @@ def base64_image(request):
     })
 
 
-@require_GET
+@require_safe
 def palette(request):
     """Render the client-side colour palette extractor."""
     return render(request, "remover/palette.html", {
@@ -1492,7 +1496,7 @@ def palette(request):
     })
 
 
-@require_GET
+@require_safe
 def border(request):
     """Render the client-side border / Polaroid frame tool."""
     return render(request, "remover/border.html", {
@@ -1501,7 +1505,7 @@ def border(request):
     })
 
 
-@require_GET
+@require_safe
 def screenshot(request):
     """Render the client-side screenshot beautifier (backdrop / frame / shadow)."""
     return render(request, "remover/screenshot.html", {
@@ -1510,7 +1514,7 @@ def screenshot(request):
     })
 
 
-@require_GET
+@require_safe
 def collage(request):
     """Render the client-side collage / photo grid maker."""
     return render(request, "remover/collage.html", {
@@ -1519,7 +1523,7 @@ def collage(request):
     })
 
 
-@require_GET
+@require_safe
 def remove_object(request):
     """Render the client-side object remover (brush + content-aware fill)."""
     return render(request, "remover/remove_object.html", {
@@ -1528,7 +1532,7 @@ def remove_object(request):
     })
 
 
-@require_GET
+@require_safe
 def upscale(request):
     """Render the client-side image upscaler (Lanczos resample + sharpen)."""
     return render(request, "remover/upscale.html", {
@@ -1537,7 +1541,7 @@ def upscale(request):
     })
 
 
-@require_GET
+@require_safe
 def heic(request):
     """Render the client-side HEIC → JPG/PNG/WEBP converter."""
     return render(request, "remover/heic.html", {
@@ -1546,7 +1550,7 @@ def heic(request):
     })
 
 
-@require_GET
+@require_safe
 def pdf_to_image(request):
     """Render the client-side PDF → images extractor."""
     return render(request, "remover/pdf_to_image.html", {
@@ -1555,7 +1559,7 @@ def pdf_to_image(request):
     })
 
 
-@require_GET
+@require_safe
 def ocr(request):
     """Render the client-side OCR (copy text from an image) tool."""
     return render(request, "remover/ocr.html", {
@@ -1564,7 +1568,7 @@ def ocr(request):
     })
 
 
-@require_GET
+@require_safe
 def svg_to_png(request):
     """Render the client-side SVG → PNG rasteriser."""
     return render(request, "remover/svg_to_png.html", {
@@ -1573,7 +1577,7 @@ def svg_to_png(request):
     })
 
 
-@require_GET
+@require_safe
 def photo_filters(request):
     """Render the client-side photo filters / adjustments editor."""
     return render(request, "remover/photo_filters.html", {
@@ -1582,7 +1586,7 @@ def photo_filters(request):
     })
 
 
-@require_GET
+@require_safe
 def alternative(request):
     """SEO comparison landing page targeting 'free remove.bg alternative'."""
     # (feature, ClearBG, remove.bg) — based on each service's public free tier.
@@ -1603,7 +1607,7 @@ def alternative(request):
     })
 
 
-@require_GET
+@require_safe
 def comparison(request, slug):
     """Render a 'ClearBG vs <competitor>' comparison landing page."""
     page = COMPARISONS_BY_SLUG.get(slug)
@@ -1624,19 +1628,19 @@ def comparison(request, slug):
     })
 
 
-@require_GET
+@require_safe
 def about(request):
     """Render the About / contact page."""
     return render(request, "remover/about.html")
 
 
-@require_GET
+@require_safe
 def privacy(request):
     """Render the privacy policy."""
     return render(request, "remover/privacy.html", {"updated": LEGAL_UPDATED})
 
 
-@require_GET
+@require_safe
 def terms(request):
     """Render the terms of use."""
     return render(request, "remover/terms.html", {"updated": LEGAL_UPDATED})
@@ -1673,6 +1677,35 @@ STATS_TOOLS = {
 def _stats_ns():
     """Key namespace for the per-tool counters (derived from STATS_KEY)."""
     return (settings.STATS_KEY or "clearbg:processed").split(":", 1)[0]
+
+
+# How long a weekly bucket lives after its last write. Only the current week is
+# ever read, so this just stops old buckets accumulating in the store forever.
+STATS_WEEK_TTL = 60 * 60 * 24 * 45
+
+
+def _as_count(value):
+    """A store value as a display integer; a missing key is a count of 0."""
+    try:
+        return int(value) if value is not None else 0
+    except (ValueError, TypeError):
+        return 0
+
+
+def _upstash_counts():
+    """(all-time, this week) in ONE round trip — the badge always shows both."""
+    raw = _upstash(f"mget/{settings.STATS_KEY}/{_stats_week_key()}") or [None, None]
+    return (raw + [None, None])[:2]
+
+
+def _stats_week_key():
+    """Redis key for this week's counter, e.g. ``clearbg:processed:w:2026-W31``.
+
+    ISO week in UTC (Monday-based), so the bucket rolls over at the same instant
+    for everyone rather than following whoever happens to be looking at it.
+    """
+    year, week, _ = datetime.now(timezone.utc).isocalendar()
+    return f"{settings.STATS_KEY}:w:{year}-W{week:02d}"
 
 
 # Abuse guard for the only public, unauthenticated write endpoint. Without it a
@@ -1727,11 +1760,12 @@ def _stats_rate_limited(request):
 def stats(request):
     """Global 'images processed' counter + per-tool conversion events (Upstash).
 
-    GET reads the total; ``GET ?breakdown=1`` returns the per-tool/per-event
-    counts; POST ``{"n": <int>, "tool": <str>, "event": <str>}`` increments the
-    global counter (for ``processed`` events) and the validated per-tool counter.
-    Returns ``{"enabled": bool, ...}`` — disabled (no number) when Upstash isn't
-    configured, so the UI never shows a fabricated figure.
+    GET reads the totals (``count`` all-time and ``week``, this ISO week);
+    ``GET ?breakdown=1`` returns the per-tool/per-event counts; POST
+    ``{"n": <int>, "tool": <str>, "event": <str>}`` increments the global and
+    weekly counters (for ``processed`` events) and the validated per-tool
+    counter. Returns ``{"enabled": bool, ...}`` — disabled (no number) when
+    Upstash isn't configured, so the UI never shows a fabricated figure.
     """
     # `enabled` reflects whether the store is CONFIGURED — not whether the counter
     # has a value yet. A brand-new database has no key, so a read returns nothing;
@@ -1784,29 +1818,35 @@ def stats(request):
         # incremented for 'processed' events (and legacy payloads with no event).
         if event == "processed":
             result = _upstash(f"incrby/{key}/{n}")
+            # Same increment against this week's bucket, so the badge can say
+            # what has happened recently as well as in total — an all-time number
+            # alone says nothing about whether the site is still alive.
+            week_key = _stats_week_key()
+            week = _upstash(f"incrby/{week_key}/{n}")
+            _upstash(f"expire/{week_key}/{STATS_WEEK_TTL}")
         else:
-            result = _upstash(f"get/{key}")
+            result, week = _upstash_counts()
         # Per-tool / per-event counter (whitelisted → safe key).
         if event in STATS_EVENTS and tool in STATS_TOOLS:
             _upstash(f"incrby/{_stats_ns()}:evt:{event}:{tool}/{n}")
     else:
-        result = _upstash(f"get/{key}")
-    try:
-        count = int(result) if result is not None else 0  # missing key = 0
-    except (ValueError, TypeError):
-        count = 0
-    response = JsonResponse({"enabled": True, "count": count})
+        result, week = _upstash_counts()
+    response = JsonResponse({
+        "enabled": True,
+        "count": _as_count(result),
+        "week": _as_count(week),
+    })
     response["Cache-Control"] = "no-store"
     return response
 
 
-@require_GET
+@require_safe
 def healthz(request):
     """Lightweight health check for load balancers and uptime monitors."""
     return HttpResponse("ok", content_type="text/plain")
 
 
-@require_GET
+@require_safe
 def service_worker(request):
     """Serve the PWA service worker from the site root so its scope is '/'."""
     response = render(
@@ -1824,14 +1864,14 @@ def service_worker(request):
     return response
 
 
-@require_GET
+@require_safe
 @cache_control(max_age=86400)
 def manifest(request):
     """Serve the web app manifest with the correct content type."""
     return render(request, "manifest.webmanifest", content_type="application/manifest+json")
 
 
-@require_GET
+@require_safe
 @cache_control(max_age=3600)
 def robots_txt(request):
     """Serve robots.txt, pointing crawlers at the sitemap."""
@@ -1843,7 +1883,7 @@ def robots_txt(request):
     )
 
 
-@require_GET
+@require_safe
 def yandex_verify(request):
     """Yandex Webmaster site-ownership verification file (served at the root)."""
     return HttpResponse(
@@ -1853,7 +1893,7 @@ def yandex_verify(request):
     )
 
 
-@require_GET
+@require_safe
 @cache_control(max_age=3600)
 def sitemap_xml(request):
     """Serve an XML sitemap for the static routes, with per-URL priority.

@@ -243,7 +243,51 @@ class StatsCounterTests(SimpleTestCase):
                 content_type="application/json",
             )
         self.assertEqual(post.status_code, 200)
-        self.assertJSONEqual(post.content, {"enabled": True, "count": 7})
+        self.assertJSONEqual(post.content, {"enabled": True, "count": 7, "week": 7})
+
+    @override_settings(**_UPSTASH)
+    def test_processed_post_also_counts_the_week(self):
+        # The badge claims "N this week" as well as a total, so the weekly bucket
+        # has to be incremented by the same amount and given a TTL — otherwise the
+        # weekly number is stale and every past week is kept forever.
+        from remover.views import STATS_WEEK_TTL, _stats_week_key
+
+        with mock.patch("remover.views._upstash", side_effect=lambda p: 1) as m:
+            self.client.post(
+                reverse("remover:stats"),
+                data='{"n": 3, "event": "processed"}',
+                content_type="application/json",
+            )
+        calls = [str(c.args[0]) for c in m.call_args_list]
+        week = _stats_week_key()
+        self.assertIn(f"incrby/{settings.STATS_KEY}/3", calls)
+        self.assertIn(f"incrby/{week}/3", calls)
+        self.assertIn(f"expire/{week}/{STATS_WEEK_TTL}", calls)
+
+    @override_settings(**_UPSTASH)
+    def test_get_reads_both_counters_in_one_round_trip(self):
+        # Upstash bills per request, and this endpoint is hit on every homepage
+        # load, so the two numbers must cost one call rather than two.
+        from remover.views import _stats_week_key
+
+        with mock.patch("remover.views._upstash", return_value=[41, 5]) as m:
+            response = self.client.get(reverse("remover:stats"))
+        self.assertJSONEqual(response.content, {"enabled": True, "count": 41, "week": 5})
+        self.assertEqual(len(m.call_args_list), 1)
+        self.assertEqual(
+            str(m.call_args_list[0].args[0]),
+            f"mget/{settings.STATS_KEY}/{_stats_week_key()}",
+        )
+
+    def test_week_key_is_the_iso_week_in_utc(self):
+        from remover.views import _stats_week_key
+
+        with mock.patch("remover.views.datetime") as dt:
+            # 2027-01-01 is a Friday — ISO week 53 of 2026, not week 1 of 2027.
+            dt.now.return_value.isocalendar.return_value = (2026, 53, 5)
+            self.assertTrue(_stats_week_key().endswith(":w:2026-W53"))
+            dt.now.return_value.isocalendar.return_value = (2026, 7, 1)
+            self.assertTrue(_stats_week_key().endswith(":w:2026-W07"))  # zero-padded
 
     def test_client_ip_reads_clean_forwarded_header(self):
         from django.test import RequestFactory
@@ -925,6 +969,54 @@ class PWATests(SimpleTestCase):
         self.assertEqual(on_disk - set(listed), set(), "a JS module is missing from the shell")
 
 
+class TrustCopyTests(SimpleTestCase):
+    """The homepage has to answer "why should I believe this?" on the page.
+
+    Three generic steps and the word "free" are the two things a visitor is most
+    likely to disbelieve, so the answers (what actually runs locally, and who
+    pays) are load-bearing copy rather than decoration.
+    """
+
+    def setUp(self):
+        # Fetching /pt/ activates Portuguese on this thread and it survives into
+        # the next test, so the English page would render in Portuguese.
+        translation.activate("en")
+        self.addCleanup(translation.activate, "en")
+        self.body = self.client.get(reverse("remover:index")).content.decode()
+
+    def test_how_it_works_names_the_technology(self):
+        for claim in ("IS-Net", "ONNX Runtime Web", "WebGPU", "WebAssembly"):
+            with self.subTest(claim=claim):
+                self.assertIn(claim, self.body)
+
+    def test_the_page_says_what_a_slow_device_can_expect(self):
+        # "any modern browser" alone leaves a 40-second first run looking broken.
+        self.assertIn("up to a minute on an older one", self.body)
+
+    def test_the_page_explains_why_it_is_free(self):
+        self.assertIn("Why is it free?", self.body)
+        for claim in ("Your device does the work", "There is nothing to sell", "What keeps it running"):
+            with self.subTest(claim=claim):
+                self.assertIn(claim, self.body)
+
+    def test_the_trust_answers_are_also_in_the_faq_structured_data(self):
+        # The FAQ block feeds FAQPage JSON-LD, so these answers can surface in
+        # search results — which is where the question usually gets asked.
+        blocks = re.findall(
+            r'<script type="application/ld\+json">(.*?)</script>', self.body, re.S
+        )
+        faq = next((json.loads(b) for b in blocks if '"FAQPage"' in b), None)
+        self.assertIsNotNone(faq, "the homepage no longer emits FAQPage structured data")
+        questions = [q["name"] for q in faq["mainEntity"]]
+        self.assertIn("What's the catch — how can it be free and unlimited?", questions)
+        self.assertIn("Which AI model does it use, and where does it run?", questions)
+
+    def test_portuguese_gets_the_same_answers(self):
+        pt = self.client.get("/pt/").content.decode()
+        self.assertIn("Porque é gratuito?", pt)
+        self.assertIn("O que corre mesmo no seu dispositivo", pt)
+
+
 class CacheHeaderTests(SimpleTestCase):
     """Page HTML is anonymous, so a shared cache should be able to serve it.
 
@@ -968,6 +1060,15 @@ class CacheHeaderTests(SimpleTestCase):
                 self.assertEqual(pt.status_code, 200)
                 self.assertEqual(pt.content, en.content)
                 self.assertNotIn("accept-language", (pt.get("Vary") or "").lower())
+
+    def test_pages_answer_head_requests(self):
+        # `require_GET` rejects HEAD, so the live site 405'd every monitor, link
+        # checker and crawler that probes with one. `require_safe` allows both.
+        for path in ("/", reverse("remover:blur"), reverse("remover:sw"), "/robots.txt"):
+            with self.subTest(path=path):
+                response = self.client.head(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.content, b"")  # HEAD sends no body
 
     def test_error_pages_are_not_cached(self):
         response = self.client.get("/remove-background/not-a-real-page/")

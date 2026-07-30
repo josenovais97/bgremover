@@ -353,7 +353,8 @@ const ModelStatus = {
     // drift apart, and the badge advertised 40 MB while isolated browsers pulled
     // the full-precision weights.
     const label = (extra) => this.render(
-      `<i class="fa-solid fa-circle-notch fa-spin"></i> Loading the AI${extra} <span class="opacity-70">· one-time ~${downloadMb()}&nbsp;MB</span>`,
+      `<i class="fa-solid fa-circle-notch fa-spin"></i> ${t('Loading the AI')}${extra}`
+      + ` <span class="opacity-70">· ${t('one-time')} ~${downloadMb()}&nbsp;MB</span>`,
       'bg-primary/10 text-primaryText',
     );
     label('');
@@ -371,20 +372,47 @@ const ModelStatus = {
           off();
         }
       }
-      const how = isGpu() ? 'GPU-accelerated, ' : '';
-      this.render(`<i class="fa-solid fa-circle-check text-green-500"></i> AI ready — ${how}runs 100% on your device`, 'bg-green-500/10 text-green-600 dark:text-green-400');
+      const ready = isGpu()
+        ? t('AI ready — GPU-accelerated, runs 100% on your device')
+        : t('AI ready — runs 100% on your device');
+      // On the CPU path a modest device can take tens of seconds on the first
+      // image, and an unexplained wait reads as "broken", not as "working hard".
+      // Saying it before the wait costs nothing; saying it after is an excuse.
+      const slow = !isGpu() && modestDevice();
+      this.render(
+        `<i class="fa-solid fa-circle-check text-green-500"></i> ${ready}`
+        + (slow ? ` <span class="opacity-70">· ${t('first image may take a little longer here')}</span>` : ''),
+        'bg-green-500/10 text-green-600 dark:text-green-400',
+      );
     } catch (err) {
       // Building the session is where an unusable WebGPU adapter shows itself.
       // Warm-up runs before any upload, so this is the cheap place to find out:
       // the reload drops us into the CPU path and the user sees only a blink.
       if (markGpuFailed(App.cards.length > 0)) return;
       console.warn('[bg-remover] model warm-up failed:', err);
-      // Otherwise warm-up is best-effort; real processing still downloads on demand.
+      // Warm-up is best-effort — an on-demand download can still succeed — but
+      // hiding the badge told the visitor nothing at all. Say what happened and
+      // what it means, so a device that genuinely cannot run the model does not
+      // just look like a page that ignored them.
       this.started = false;
-      this.el.classList.add('hidden');
+      this.render(
+        `<i class="fa-solid fa-circle-info"></i> ${t('Could not preload the AI here — it will try again when you add an image')}`,
+        'bg-gray-500/10 text-gray-600 dark:text-gray-400',
+      );
     }
   },
 };
+
+/**
+ * A rough "this will be slow" signal: few cores or little memory, on the CPU
+ * path. Both hints are advisory (Safari reports neither, and lies are possible),
+ * so this only ever adds a caveat to a message — nothing depends on it.
+ */
+function modestDevice() {
+  const cores = navigator.hardwareConcurrency || 0;
+  const mem = navigator.deviceMemory || 0;
+  return (cores > 0 && cores <= 4) || (mem > 0 && mem <= 4);
+}
 
 /* --------------------------------------------------------------- statistics */
 const Stats = {

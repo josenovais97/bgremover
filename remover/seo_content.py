@@ -43,6 +43,12 @@ INDEX_FAQS = [
      "a": "Yes. Drop in a batch of photos and download them together as a ZIP. You can also apply one image's background and export settings to the whole batch."},
     {"q": "Will I lose quality or get a watermark?",
      "a": "Neither. Exports are full-resolution and never watermarked. PNG output is lossless and keeps clean transparency around hair and soft edges."},
+    {"q": "What's the catch — how can it be free and unlimited?",
+     "a": "Your device does the expensive part. Cloud tools rent GPUs by the second and bill per image, so they have to meter you; here the model runs in your browser, so an extra image costs nobody anything. The whole bill is a domain and some cheap hosting, covered by ads on the written guides (the tool pages stay ad-free) and the occasional coffee. There is no account, no trial and no upsell, because there is nothing to upsell."},
+    {"q": "Which AI model does it use, and where does it run?",
+     "a": "IS-Net, a segmentation model, running through ONNX Runtime Web inside your browser tab. Where WebGPU is available it runs on your graphics card and off the main thread; otherwise it uses WebAssembly with SIMD and threads on the CPU. Browsers that support cross-origin isolation get the full-precision weights, others a smaller quantised build. The model downloads once and is then cached, so later runs work offline."},
+    {"q": "What does my device need, and why is the first image slow?",
+     "a": "Any modern browser on a device with a bit of memory to spare. The first run downloads the model once — that is the wait you notice — and everything after it is fast because the model is cached. A recent laptop or phone takes a few seconds per image; an older device can take up to a minute and uses the smaller model. If your browser cannot run the model at all, the page tells you instead of hanging, and the tools that need no AI (crop, convert, compress, resize) keep working."},
 ]
 
 PASSPORT_FAQS = [

@@ -374,6 +374,70 @@ UI = {
     "Coming from another tool?": "Vem de outra ferramenta?",
     "See how we compare to remove.bg": "Veja como nos comparamos ao remove.bg",
     "images processed": "imagens processadas",
+    "images processed this week": "imagens processadas esta semana",
+    "all time": "desde sempre",
+    # --- How it works: what actually runs on the device ---
+    "Three steps — with no server anywhere in them.":
+        "Três passos — sem qualquer servidor pelo meio.",
+    "What actually runs on your device": "O que corre mesmo no seu dispositivo",
+    "The cut-out comes from IS-Net, a segmentation model that runs through ONNX Runtime Web "
+    "inside this browser tab. Your browser downloads the model once, then keeps it — so the "
+    "second image is instant, and the tool keeps working with no connection at all.":
+        "O recorte vem do IS-Net, um modelo de segmentação que corre através do ONNX Runtime Web "
+        "dentro deste separador. O seu navegador transfere o modelo uma vez e guarda-o — por isso "
+        "a segunda imagem é instantânea e a ferramenta continua a funcionar sem qualquer ligação.",
+    "Where your browser exposes WebGPU, the model runs on your graphics card and off the main "
+    "thread, which is why the page stays responsive while it works. Everywhere else it falls "
+    "back to WebAssembly with SIMD and multiple threads on the CPU. Browsers that allow "
+    "cross-origin isolation get the full-precision weights; the rest get a smaller quantised "
+    "build of the same model.":
+        "Quando o navegador disponibiliza WebGPU, o modelo corre na placa gráfica e fora da "
+        "thread principal, e é por isso que a página continua a responder enquanto trabalha. Nos "
+        "restantes casos recorre a WebAssembly com SIMD e várias threads no CPU. Os navegadores "
+        "que permitem isolamento de origem recebem os pesos em precisão total; os outros recebem "
+        "uma versão quantizada, mais pequena, do mesmo modelo.",
+    "What that means for your device: the first run is a real download and needs some memory, "
+    "so it takes a few seconds on a recent laptop or phone and can take up to a minute on an "
+    "older one. Every run after that is fast. If your browser can't run the model at all, the "
+    "page says so plainly instead of hanging — and the editing tools that don't need AI (crop, "
+    "convert, compress, resize) keep working regardless.":
+        "O que isso significa para o seu dispositivo: a primeira utilização é mesmo uma "
+        "transferência e precisa de alguma memória, por isso demora alguns segundos num portátil "
+        "ou telemóvel recente e pode demorar até um minuto num mais antigo. Todas as seguintes "
+        "são rápidas. Se o seu navegador não conseguir mesmo correr o modelo, a página diz-lho "
+        "claramente em vez de ficar bloqueada — e as ferramentas que não precisam de IA (recortar, "
+        "converter, comprimir, redimensionar) continuam a funcionar.",
+    "None of this involves an upload: there is no queue to wait in, no per-image limit to hit, "
+    "and no copy of your photo on a server to trust anyone with.":
+        "Nada disto envolve um carregamento: não há fila de espera, não há limite por imagem e não "
+        "há nenhuma cópia da sua fotografia num servidor que tenha de confiar a alguém.",
+    # --- Why is it free? ---
+    "Why is it free?": "Porque é gratuito?",
+    "The usual catch is that you are the product. Here is the actual arrangement.":
+        "Normalmente, a armadilha é que o produto é você. Aqui fica o acordo real.",
+    "Your device does the work": "O trabalho é feito pelo seu dispositivo",
+    "Cloud removers rent GPUs by the second and bill you per image. Nothing here runs on a "
+    "server, so there is no per-image cost to pass on — and no reason to cap you at five free "
+    "photos.":
+        "Os serviços na nuvem alugam GPUs ao segundo e cobram por imagem. Aqui nada corre num "
+        "servidor, por isso não há custo por imagem para lhe passar — nem motivo para o limitar a "
+        "cinco fotografias grátis.",
+    "There is nothing to sell": "Não há nada para vender",
+    "Your images never leave the browser, so we could not train on them, sell them or leak them "
+    "even if we wanted to. There is no account, so there is no profile to build either.":
+        "As suas imagens nunca saem do navegador, por isso não poderíamos treinar com elas, "
+        "vendê-las ou deixá-las escapar mesmo que quiséssemos. Não há conta, por isso também não "
+        "há perfil para construir.",
+    "What keeps it running": "O que o mantém no ar",
+    "A domain and some cheap hosting — that is the whole bill. Ads on the written guides help "
+    "cover it, the tool pages stay ad-free, and a coffee from anyone who finds this useful "
+    "covers the rest.":
+        "Um domínio e alojamento barato — a conta é essa. Os anúncios nos guias escritos ajudam a "
+        "pagá-la, as páginas das ferramentas ficam sem anúncios, e um café de quem achar isto útil "
+        "cobre o resto.",
+    "No trial, no credit card, no watermark, no “pro” tier holding the good export hostage.":
+        "Sem período experimental, sem cartão de crédito, sem marca de água e sem versão “pro” a "
+        "reter a exportação boa como refém.",
     "Tools": "Ferramentas",
     "Use cases": "Casos de uso",
     # The footer heading is translated but the guide titles under it are not — the
@@ -617,6 +681,21 @@ JS_UI = {
     # Live status on the result card while a cut-out is being made.
     "Removing background…": "A remover o fundo…",
     "Downloading AI model… {pct}%": "A descarregar o modelo de IA… {pct}%",
+    # --- Model status badge (app.js ModelStatus) ---
+    "Loading the AI": "A carregar a IA",
+    "one-time": "uma única vez",
+    "AI ready — GPU-accelerated, runs 100% on your device":
+        "IA pronta — acelerada por GPU, corre 100% no seu dispositivo",
+    "AI ready — runs 100% on your device": "IA pronta — corre 100% no seu dispositivo",
+    "first image may take a little longer here":
+        "a primeira imagem pode demorar um pouco mais aqui",
+    "Could not preload the AI here — it will try again when you add an image":
+        "Não foi possível pré-carregar a IA aqui — tentará de novo quando adicionar uma imagem",
+    # --- Support nudge (kit.js showSupport) ---
+    "Everything here stays free. If it saved you some time, a coffee helps keep it that way.":
+        "Aqui tudo continua gratuito. Se lhe poupou tempo, um café ajuda a que assim continue.",
+    "Buy me a coffee": "Pague-me um café",
+    "Dismiss": "Dispensar",
     # Shown on cards waiting their turn in the batch queue, with a rough ETA
     # measured from how fast this device actually works.
     "Next up": "A seguir",
@@ -927,6 +1006,16 @@ def localize_use_case(case, lang=None):
 # /pt/ pages — for both the visible accordion and the FAQPage JSON-LD, which
 # render from the same list.
 FAQS_PT = {
+    # Home — trust questions ("what's the catch", the tech, the device)
+    "What's the catch — how can it be free and unlimited?":
+        ("Qual é a armadilha — como pode ser gratuito e ilimitado?",
+         "A parte cara é feita pelo seu dispositivo. As ferramentas na nuvem alugam GPUs ao segundo e cobram por imagem, por isso têm de o limitar; aqui o modelo corre no seu navegador, logo uma imagem extra não custa nada a ninguém. A conta toda é um domínio e alojamento barato, pagos pelos anúncios nos guias escritos (as páginas das ferramentas ficam sem anúncios) e por um café ocasional. Não há conta, período experimental nem venda adicional, porque não há nada para vender."),
+    "Which AI model does it use, and where does it run?":
+        ("Que modelo de IA usa e onde corre?",
+         "IS-Net, um modelo de segmentação, através do ONNX Runtime Web dentro do separador do seu navegador. Quando há WebGPU, corre na placa gráfica e fora da thread principal; caso contrário usa WebAssembly com SIMD e várias threads no CPU. Os navegadores com isolamento de origem recebem os pesos em precisão total, os outros uma versão quantizada mais pequena. O modelo é transferido uma vez e fica em cache, por isso as utilizações seguintes funcionam offline."),
+    "What does my device need, and why is the first image slow?":
+        ("De que precisa o meu dispositivo e porque é que a primeira imagem é lenta?",
+         "De qualquer navegador moderno num dispositivo com alguma memória livre. A primeira utilização transfere o modelo uma vez — é essa a espera que nota — e tudo o resto é rápido porque fica em cache. Um portátil ou telemóvel recente demora alguns segundos por imagem; um dispositivo mais antigo pode demorar até um minuto e usa o modelo mais pequeno. Se o seu navegador não conseguir correr o modelo, a página avisa-o em vez de ficar bloqueada, e as ferramentas que não precisam de IA (recortar, converter, comprimir, redimensionar) continuam a funcionar."),
     # Remove object
     "How do I remove an object from a photo?":
         ("Como removo um objeto de uma fotografia?",

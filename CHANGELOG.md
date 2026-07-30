@@ -155,6 +155,36 @@ work lands alongside.
   missing file falls back to its plain URL — so hashing costs nothing. Relative
   ES-module imports are rewritten too (`support_js_module_import_aggregation`),
   so a module's dependencies are cached as aggressively as its entry point.
+- **The social-proof badge counts the week as well as all time.** An all-time
+  total says the site has existed; it says nothing about whether anyone is using
+  it today. The stats endpoint now keeps a per-ISO-week bucket (UTC, 45-day TTL)
+  alongside the global counter and returns both in one `MGET`, so the badge reads
+  "1,274 images processed this week · 48,213 all time". The weekly half stays
+  hidden until it is non-zero — right after the Monday rollover "0 this week" is
+  worse than saying nothing.
+- **"How it works" says what actually runs on your device.** Three generic steps
+  asked visitors to take the site's entire claim on faith. The page now names the
+  model (IS-Net via ONNX Runtime Web), the backends (WebGPU with the work off the
+  main thread, else WebAssembly with SIMD and threads) and the full-precision vs
+  quantised split, so the claim is checkable — and the page finally has real text
+  on the subject people search for.
+- **A "Why is it free?" section, because "free and unlimited" reads as bait.**
+  The honest answer is unusually good — your device does the expensive part, so
+  there is no per-image cost to meter — and it is now on the page, along with what
+  actually pays the bill (ads on the written guides, tool pages ad-free, coffee)
+  and what there is to sell (nothing: the images never leave the browser). Also a
+  matching FAQ entry, so it can surface as structured data in search results.
+- **Honest performance messaging for slow devices.** The FAQ said "any modern
+  browser" and left a 40-second first run looking like a hang. The page now says
+  the first run is a real download, that an older device can take up to a minute,
+  and that the non-AI tools work regardless; the model badge adds "first image may
+  take a little longer here" on a CPU-path device with few cores or little memory,
+  and a failed warm-up now says so instead of silently hiding the badge.
+- **A support nudge that has to be earned.** After three finished downloads —
+  counted in `kit.js`, which every tool's export already funnels through — a small
+  dismissible card offers the coffee link. Once per browser, remembers a dismissal
+  forever, never shares a corner with the chain bar or the sticky CTA, and lets
+  itself out after 15 seconds. No modal, no timer, nothing gated.
 - **Page HTML is cacheable by a CDN.** It carried no `Cache-Control` at all, so
   every view of all ~90 pages booted the Python function, cold start included —
   even though the pages are anonymous and identical for everyone (no sessions, no
