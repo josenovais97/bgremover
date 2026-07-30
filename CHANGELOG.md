@@ -144,7 +144,36 @@ work lands alongside.
   white preview card, curated colour pairs, a live summary, a low-contrast
   warning, and size/EC/margin moved into a collapsed "Advanced" panel.
 
+- **Static assets are content-hashed in production**, which is what lets
+  WhiteNoise serve them `Cache-Control: immutable` for a year instead of
+  `max-age=60` — a repeat visitor was re-validating *every* file (the homepage
+  alone carries ~50 images plus the JS and CSS) a minute after their last visit.
+  The manifest storage this needs used to be off for a real reason: a missing
+  `staticfiles.json` 500s every page, and the static build ships separately from
+  the serverless function. `config.storage.LenientManifestStaticFilesStorage`
+  removes that failure mode — an unknown name is hashed from the file itself, a
+  missing file falls back to its plain URL — so hashing costs nothing. Relative
+  ES-module imports are rewritten too (`support_js_module_import_aggregation`),
+  so a module's dependencies are cached as aggressively as its entry point.
+- **The service worker prunes superseded builds.** Hashed URLs are new names
+  rather than replacements, so nothing evicted the old ones the way each deploy
+  used to overwrite `app.js`; `activate` now drops hashed assets the current
+  shell no longer references. The two Web Workers are resolved at runtime from
+  `import.meta.url` and so are still requested unhashed — `SHELL_RUNTIME_ASSETS`
+  precaches them under that name, and a test fails if a JS module falls out of
+  the shell entirely.
+- **The homepage grid and the related-tools footer render one shared card**
+  (`partials/tool_card.html`). They were near-copies, so the moment the grid grew
+  thumbnails the related block looked like a leftover from the previous design.
+
 ### Fixed
+- **The landing demo rotator no longer derives its own URLs.** It swapped
+  `demo1-` for `demo2-` inside the `src`, which 404s the instant filenames are
+  content-hashed — and its `onerror` path would have rotated the hero to broken
+  images every few seconds. The template passes the resolved pairs in
+  `data-subjects`, and the other subjects are warmed at idle instead of on load
+  (~245 KB off the critical path, where they had been competing with the hero and
+  the model warm-up for bandwidth 4.5s before anyone could see them).
 - **The object remover leaked one blob URL per run** through the result preview;
   it's revoked before each replacement now.
 - **`tests/smoke_crop.py` had been failing silently.** The options panel gained

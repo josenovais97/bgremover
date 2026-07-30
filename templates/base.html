@@ -347,8 +347,8 @@
     {{ chain_targets|json_script:"chain-targets" }}
 
     <!-- Shared helpers (window.CBG). A classic script so the type="module" tool
-         scripts, which are deferred, always see it — and so tools never need a
-         local ES import, which Django's static storage can't rewrite. -->
+         scripts, which are deferred, always see it — and so no tool waits on an
+         import of its own before it starts. -->
     <script src="{% static 'js/kit.js' %}"></script>
     <!-- Custom colour picker replacing the unreliable native <input type=color> dialog. -->
     <script src="{% static 'js/colorpicker.js' %}"></script>

@@ -1014,10 +1014,23 @@ def is_translated_path(path):
 # advertised them as working offline).
 SHELL_PAGES = ["/"] + TOOL_PATHS
 
+# Web Workers spawned from a URL the module derives itself — `new URL(
+# './compose-worker.js', import.meta.url)` — rather than from `{% static %}`.
+# Django's manifest storage rewrites `import` specifiers but not that string, so
+# these two are requested under their UNHASHED name; they are precached under
+# that name (see shell_runtime_assets in sw.js) and left out of the hashed list,
+# which nothing would ever ask for. Both have main-thread fallbacks, so a miss
+# only costs speed — but offline exports worked before hashing, and still do.
+SHELL_RUNTIME_ASSETS = ["js/compose-worker.js", "js/remove-object-worker.js"]
+
 # Every tool module, found on disk — adding static/js/<tool>.js is enough.
 _JS_DIR = Path(__file__).resolve().parent.parent / "static" / "js"
 SHELL_ASSETS = (
-    [f"js/{p.name}" for p in sorted(_JS_DIR.glob("*.js"))]
+    [
+        f"js/{p.name}"
+        for p in sorted(_JS_DIR.glob("*.js"))
+        if f"js/{p.name}" not in SHELL_RUNTIME_ASSETS
+    ]
     + [
         "css/tailwind.css",
         "css/fontawesome.css",
@@ -1799,7 +1812,11 @@ def service_worker(request):
     response = render(
         request,
         "sw.js",
-        {"shell_pages": SHELL_PAGES, "shell_assets": SHELL_ASSETS},
+        {
+            "shell_pages": SHELL_PAGES,
+            "shell_assets": SHELL_ASSETS,
+            "shell_runtime_assets": SHELL_RUNTIME_ASSETS,
+        },
         content_type="application/javascript",
     )
     response["Service-Worker-Allowed"] = "/"

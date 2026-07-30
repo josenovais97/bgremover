@@ -8,8 +8,8 @@
  * a JPG. Nothing is uploaded — the crop happens entirely in the browser.
  *
  * Helpers ($, Toast, loadImage, t, …) come from window.CBG (static/js/kit.js),
- * a classic script — a local ES import would break, since Django's hashed-manifest
- * static storage does not rewrite ES-module import paths.
+ * a classic script — it has already run by the time this deferred module does,
+ * so nothing here needs an import to reach them.
  */
 
 const { $, $$, Toast, loadImage, download, zipDownload, baseName, t } = CBG;

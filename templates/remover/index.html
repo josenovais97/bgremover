@@ -74,9 +74,23 @@
 
                     <!-- Interactive before/after demo (sample product photo — no upload) -->
                     <figure class="flex flex-col gap-3">
-                        <div id="demo" class="demo relative w-full flex-1 min-h-[16rem] aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none checkerboard">
+                        {% comment %}
+                        `data-subjects` carries the rotation set as resolved URLs.
+                        landing.js used to derive them by string-swapping "demo1-"
+                        for "demo2-" in the src, which silently 404s the moment
+                        static filenames are content-hashed — same hash, different
+                        name — and the rotator's onerror path would have swapped
+                        the hero to broken images every few seconds. Let {% templatetag openblock %} static {% templatetag closeblock %}
+                        name every file it is responsible for.
+                        {% endcomment %}
+                        <div id="demo" class="demo relative w-full flex-1 min-h-[16rem] aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none checkerboard"
+                             data-subjects='[
+                               ["{% static 'img/demo1-after.webp' %}", "{% static 'img/demo1-before.webp' %}"],
+                               ["{% static 'img/demo2-after.webp' %}", "{% static 'img/demo2-before.webp' %}"],
+                               ["{% static 'img/demo3-after.webp' %}", "{% static 'img/demo3-before.webp' %}"]
+                             ]'>
                             <!-- Real product photo → transparent cut-out (the handle reveals it;
-                                 landing.js rotates through demo1/2/3 subjects). -->
+                                 landing.js rotates through the data-subjects above). -->
                             <img id="demo-after-img" src="{% static 'img/demo1-after.webp' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500" alt="Product photo with the background removed" draggable="false">
                             <div id="demo-before" class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
                                 <img id="demo-before-img" src="{% static 'img/demo1-before.webp' %}" class="w-full h-full object-cover transition-opacity duration-500" alt="Original product photo on a studio background" draggable="false">

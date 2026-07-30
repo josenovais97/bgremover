@@ -48,25 +48,47 @@
   if (!after || !before || !demo) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const COUNT = 3;
-  let idx = 1;
+  // The rotation set is named by the template (see data-subjects there): each
+  // entry is an [after, before] pair of already-resolved URLs. Deriving them in
+  // here by rewriting the filename broke as soon as static assets were
+  // content-hashed, because the hash belongs to the file, not to the pattern.
+  let subjects;
+  try { subjects = JSON.parse(demo.dataset.subjects || '[]'); } catch (e) { subjects = []; }
+  if (subjects.length < 2) return;
+
+  let idx = 0; // subjects[0] is what the markup already shows
   let paused = false;
   demo.addEventListener('pointerenter', function () { paused = true; });
   demo.addEventListener('pointerleave', function () { paused = false; });
 
-  const swap = (src, i) => src.replace(/demo\d+-/, 'demo' + i + '-');
-
-  // Warm the other subjects so the first transition is instant.
-  for (let i = 2; i <= COUNT; i++) { new Image().src = swap(after.src, i); new Image().src = swap(before.src, i); }
+  // Warm the other subjects so the first transition is instant — but not during
+  // load. Fetching them eagerly put ~245 KB on the critical path for rotations
+  // the visitor does not see for another 4.5 and 9 seconds, competing with the
+  // hero itself and with the AI model warm-up for the same bandwidth. Idle time
+  // arrives long before the first rotation, so the transition is still instant.
+  const warmRest = () => {
+    subjects.slice(1).forEach(function (pair) {
+      new Image().src = pair[0];
+      new Image().src = pair[1];
+    });
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(warmRest, { timeout: 3000 });
+  else window.setTimeout(warmRest, 1500);
 
   function rotate() {
     if (paused) return;
-    idx = (idx % COUNT) + 1;
-    const aURL = swap(after.src, idx);
-    const bURL = swap(before.src, idx);
+    idx = (idx + 1) % subjects.length;
+    const aURL = subjects[idx][0];
+    const bURL = subjects[idx][1];
     let ready = 0;
-    const commit = () => {
-      if (++ready < 2) return;
+    let failed = false;
+    // Both halves must load before the crossfade: swapping one at a time shows a
+    // subject against the previous one's background. If either fails, keep the
+    // subject that IS on screen — a broken image in the hero is worse than no
+    // rotation, and this is the one thing the hero cannot afford to get wrong.
+    const commit = (ok) => {
+      if (!ok) failed = true;
+      if (++ready < 2 || failed) return;
       after.style.opacity = '0';
       before.style.opacity = '0';
       window.setTimeout(() => {
@@ -75,8 +97,8 @@
       }, 280);
     };
     const a = new Image(); const b = new Image();
-    a.onload = commit; b.onload = commit;
-    a.onerror = commit; b.onerror = commit;
+    a.onload = () => commit(true); b.onload = () => commit(true);
+    a.onerror = () => commit(false); b.onerror = () => commit(false);
     a.src = aURL; b.src = bURL;
   }
   window.setInterval(rotate, 4500);

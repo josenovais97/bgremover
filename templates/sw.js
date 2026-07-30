@@ -21,6 +21,12 @@ const MODEL_HOSTS = ['staticimgly.com', 'cdn.jsdelivr.net'];
 const SHELL = [
 {% for path in shell_pages %}  '{{ path }}',
 {% endfor %}{% for asset in shell_assets %}  '{% static asset %}',
+{% endfor %}{% comment %}
+  The worker scripts are requested under their unhashed name because the module
+  that spawns them resolves them itself, from import.meta.url (see
+  SHELL_RUNTIME_ASSETS in remover/views.py) — so precache the name that is
+  actually fetched, using the static prefix WITHOUT the manifest hash.
+{% endcomment %}{% for asset in shell_runtime_assets %}  '{% get_static_prefix %}{{ asset }}',
 {% endfor %}  '/manifest.webmanifest',
 ];
 
@@ -30,11 +36,34 @@ self.addEventListener('install', (event) => {
   );
 });
 
+// Static assets are content-hashed (see config/storage.py), e.g.
+// /static/js/app.9d4b502996a1.js. A redeploy therefore mints NEW urls rather
+// than replacing existing ones, so nothing would ever evict the old entries —
+// unlike the previous unhashed urls, which each deploy simply overwrote.
+const HASHED_ASSET = /\/static\/.+\.[0-9a-f]{12}\.\w+$/;
+
+/** Drop superseded builds: hashed assets that this SHELL no longer references.
+ *  Runtime-cached pages and unhashed assets are left alone — they are still
+ *  current, and they are what serves the site offline. */
+function pruneStaleAssets() {
+  const current = new Set(SHELL.map((p) => new URL(p, self.location.origin).href));
+  return caches.open(CACHE).then((cache) =>
+    cache.keys().then((reqs) =>
+      Promise.all(
+        reqs
+          .filter((r) => HASHED_ASSET.test(new URL(r.url).pathname) && !current.has(r.url))
+          .map((r) => cache.delete(r)),
+      ),
+    ),
+  );
+}
+
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       // Keep the current shell cache AND the model cache; drop stale shell caches.
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== MODEL_CACHE).map((k) => caches.delete(k))))
+      .then(pruneStaleAssets)
       .then(() => self.clients.claim()),
   );
 });

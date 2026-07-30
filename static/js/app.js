@@ -211,9 +211,9 @@ function containInto(src, tw, th, format) {
  * the near-zero fringe the segmentation model leaves around a subject, which
  * would otherwise make "trim" a no-op on most cut-outs.
  *
- * Mirrored in compose-worker.js — the worker can't import from here (Django's
- * static storage doesn't rewrite ES-module paths), so the two stay in step by
- * hand, exactly like cropGeometry() and applyShapeClip().
+ * Mirrored in compose-worker.js — a classic worker, so it cannot import from
+ * here at all, and the two stay in step by hand, exactly like cropGeometry()
+ * and applyShapeClip().
  */
 function trimTransparent(canvas) {
   const w = canvas.width;

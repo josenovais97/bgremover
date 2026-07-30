@@ -4,14 +4,15 @@ from .base import env
 
 DEBUG = False
 
-# Compress static assets (gzip/brotli). We intentionally use the NON-manifest
-# storage so `{% static %}` needs no manifest file at request time — this keeps
-# the app working on serverless hosts (e.g. Vercel) where static files are built
-# in a separate step from the Python function. On a single-server host you may
-# switch to CompressedManifestStaticFilesStorage for hashed cache-busting.
+# Compress static assets (gzip/brotli) AND content-hash their names, which is
+# what lets WhiteNoise serve them `immutable` for a year instead of re-validating
+# every file 60 seconds after the last visit. The non-manifest storage was used
+# here before because a strict manifest 500s the whole site if staticfiles.json
+# does not ship with the serverless function; see config/storage.py, which keeps
+# the hashing but degrades to unhashed URLs instead of raising.
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    "staticfiles": {"BACKEND": "config.storage.LenientManifestStaticFilesStorage"},
 }
 
 # ALLOWED_HOSTS / CSRF_TRUSTED_ORIGINS must be supplied via the environment.

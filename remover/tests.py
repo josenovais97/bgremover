@@ -19,6 +19,7 @@ from remover.views import (
     LEGAL_UPDATED,
     SHELL_ASSETS,
     SHELL_PAGES,
+    SHELL_RUNTIME_ASSETS,
     SITEMAP_PATHS,
     TOOL_PATHS,
     TRANSLATED_PATHS,
@@ -904,6 +905,77 @@ class PWATests(SimpleTestCase):
     def test_manifest_has_shortcuts(self):
         manifest = self.client.get(reverse("remover:manifest")).content.decode()
         self.assertIn('"shortcuts"', manifest)
+
+    def test_service_worker_precaches_the_runtime_resolved_workers(self):
+        # These are fetched under their UNHASHED name (the spawning module builds
+        # the URL from import.meta.url, which the manifest storage cannot see),
+        # so the shell must list that exact name or an offline export loses the
+        # worker and falls back to the main thread.
+        sw = self.client.get(reverse("remover:sw")).content.decode()
+        for asset in SHELL_RUNTIME_ASSETS:
+            with self.subTest(asset=asset):
+                self.assertIn(f"'{settings.STATIC_URL}{asset}'", sw)
+
+    def test_every_js_module_is_precached_exactly_once(self):
+        # SHELL_ASSETS globs static/js and subtracts SHELL_RUNTIME_ASSETS. If that
+        # subtraction ever loses a file, its tool stops working offline silently.
+        on_disk = {f"js/{p.name}" for p in (Path(settings.BASE_DIR) / "static/js").glob("*.js")}
+        listed = list(SHELL_ASSETS) + list(SHELL_RUNTIME_ASSETS)
+        self.assertEqual(len(listed), len(set(listed)), "an asset is precached twice")
+        self.assertEqual(on_disk - set(listed), set(), "a JS module is missing from the shell")
+
+
+class HashedStaticAssetTests(SimpleTestCase):
+    """Production serves content-hashed static files (see config/storage.py).
+
+    Hashing is what buys `immutable` caching, but it only holds together if every
+    URL the app uses is one the manifest can rewrite. These guard the two ways
+    that quietly stops being true.
+    """
+
+    def test_storage_degrades_instead_of_raising(self):
+        # A missing manifest entry (or missing file) must not 500 the page: the
+        # static build ships separately from the serverless function.
+        from config.storage import LenientManifestStaticFilesStorage
+
+        storage = LenientManifestStaticFilesStorage()
+        self.assertFalse(storage.manifest_strict)
+        self.assertEqual(storage.hashed_name("img/does-not-exist.png"), "img/does-not-exist.png")
+
+    def test_relative_module_imports_are_rewritable(self):
+        # Django only rewrites `from './x.js'` when the statement ends in a
+        # semicolon. Without one the hashed module imports the UNHASHED sibling —
+        # which resolves, but is not the URL the service worker precached, so the
+        # import fails offline. Cheap to get wrong, invisible until then.
+        from config.storage import LenientManifestStaticFilesStorage
+
+        self.assertTrue(LenientManifestStaticFilesStorage.support_js_module_import_aggregation)
+        pattern = re.compile(r"""^\s*(?:import|export)\b.*\bfrom\s*['"]\.[^'"]+['"].*$""", re.M)
+        for path in sorted((Path(settings.BASE_DIR) / "static/js").glob("*.js")):
+            for line in pattern.findall(path.read_text()):
+                with self.subTest(module=path.name, line=line.strip()):
+                    self.assertTrue(
+                        line.rstrip().endswith(";"),
+                        "relative import must end with ';' to be hashed",
+                    )
+
+    def test_demo_rotator_gets_its_urls_from_the_template(self):
+        # landing.js used to derive demo2/demo3 by string-swapping the filename,
+        # which 404s once names are hashed. The template now passes resolved URLs.
+        body = self.client.get(reverse("remover:index")).content.decode()
+        match = re.search(r"data-subjects='(\[.*?\])'", body, re.S)
+        self.assertIsNotNone(match, "the demo figure no longer declares data-subjects")
+        subjects = json.loads(match.group(1))
+        self.assertGreater(len(subjects), 1, "nothing to rotate through")
+        for after, before in subjects:
+            for url in (after, before):
+                with self.subTest(url=url):
+                    self.assertTrue(
+                        (Path(settings.BASE_DIR) / "static" / url.split("/static/")[-1]).exists(),
+                        f"{url} is declared for the rotator but missing on disk",
+                    )
+        js = (Path(settings.BASE_DIR) / "static/js/landing.js").read_text()
+        self.assertNotIn("replace(/demo", js, "landing.js is deriving URLs again")
 
 
 class AssetHostingTests(SimpleTestCase):

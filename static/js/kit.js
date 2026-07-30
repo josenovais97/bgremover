@@ -1,11 +1,12 @@
 /**
  * Shared browser kit — the helpers every tool page needs.
  *
- * Loaded as a CLASSIC script from base.html (not an ES module) on purpose:
- * Django's static storage does not rewrite ES-module import paths, so a local
- * `import` between tool modules breaks in production. A classic script that
- * publishes `window.CBG` sidesteps that entirely — it always runs before the
- * type="module" tool scripts, which are deferred by definition.
+ * Loaded as a CLASSIC script from base.html (not an ES module) on purpose: it
+ * always runs before the type="module" tool scripts, which are deferred by
+ * definition, so `window.CBG` is simply there — no tool has to wait on a module
+ * graph edge of its own before its code starts. (A local `import` would also
+ * work now that the manifest storage rewrites relative specifiers; see
+ * config/storage.py. It just buys nothing here.)
  *
  * Every tool used to carry its own private copy of $, $$, Toast, loadImage,
  * humanSize and the drag/drop/paste wiring — sixteen near-identical Toasts among
