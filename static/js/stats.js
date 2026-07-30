@@ -54,7 +54,10 @@
   function showWeek(week) {
     if (!weekEl || !weekNumEl || typeof week !== 'number' || week < 1) return;
     weekNumEl.textContent = fmt(week);
+    // The cell holds its number and the divider that follows it, so revealing it
+    // has to restore the flex row `hidden` was suppressing.
     weekEl.classList.remove('hidden');
+    weekEl.classList.add('flex');
     if (totalLong && totalShort) {
       totalLong.classList.add('hidden');
       totalShort.classList.remove('hidden');

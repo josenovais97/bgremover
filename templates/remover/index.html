@@ -20,24 +20,47 @@
                 <p class="text-lg text-gray-600 dark:text-gray-300">
                     {% t "Drop an image and get a clean, transparent PNG in seconds. No sign-up, no watermarks, no quality loss — the AI runs entirely on your device." %}
                 </p>
+                {% comment %}
+                A stat strip, not a sentence. As one line of prose the two numbers ran
+                together ("…this week 48,213 all time"), every part carried the same
+                weight, and the pill stretched to 768px — a rule of text competing with
+                the headline above it. Stacking each number over its own label makes the
+                figures the thing you see, in half the width, and lets the privacy claim
+                sit as its own cell instead of a tail on a sentence.
+
+                Two numbers, because an all-time total alone says nothing about whether
+                the site is still busy today. The weekly cell (and its divider) stay
+                hidden until the count is non-zero — right after the Monday rollover
+                "0 this week" is worse social proof than no claim at all. stats.js fills
+                both and swaps the all-time label when the weekly cell appears.
+                {% endcomment %}
                 <div id="social-proof" class="hidden animate-fade-in-up">
-                    <span class="inline-flex flex-wrap justify-center items-center gap-x-2.5 gap-y-1 px-4 py-2 rounded-full glass border border-gray-200/70 dark:border-gray-800/70 shadow-sm text-sm">
-                        <span class="relative flex h-2 w-2" aria-hidden="true">
+                    <div class="inline-flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-5 gap-y-2 px-5 py-2.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-sm">
+                        {% comment %}The live dot belongs to the strip, not to the weekly cell: it used
+                        to sit inside it, so the one state where the badge shows a bare all-time
+                        total — a fresh week — was also the state with no sign of life at all.{% endcomment %}
+                        <span class="relative flex h-2 w-2 -mr-1.5 sm:-mr-2" aria-hidden="true">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500/60"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                         </span>
-                        {% comment %}Two numbers, because an all-time total alone says nothing about
-                        whether the site is still busy today. The weekly span is hidden until the
-                        count is non-zero — right after the Monday rollover "0 this week" is worse
-                        social proof than no claim at all. stats.js fills both.{% endcomment %}
-                        <span id="social-proof-week" class="hidden text-gray-600 dark:text-gray-300"><strong id="social-proof-week-count" class="font-bold text-gray-900 dark:text-white tabular-nums">0</strong> {% t "images processed this week" %}</span>
-                        <span class="text-gray-600 dark:text-gray-300"><strong id="social-proof-count" class="font-bold text-gray-900 dark:text-white tabular-nums">0</strong> {% comment %}Both labels ship in the markup and stats.js picks one, so neither
-                            has to exist as a translatable string inside the JS.{% endcomment %}<span id="social-proof-total-long">{% t "images processed" %}</span><span id="social-proof-total-short" class="hidden">{% t "all time" %}</span></span>
-                        <span class="h-3.5 w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
-                        <span class="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium">
-                            <i class="fa-solid fa-shield-halved text-[11px]" aria-hidden="true"></i> {% t "nothing uploaded" %}
+                        <div id="social-proof-week" class="hidden items-center gap-x-4 sm:gap-x-5">
+                            <div class="flex flex-col items-center leading-tight">
+                                <strong id="social-proof-week-count" class="text-lg font-bold text-gray-900 dark:text-white tabular-nums">0</strong>
+                                <span class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "this week" %}</span>
+                            </div>
+                            <span class="self-stretch w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
+                        </div>
+                        <div class="flex flex-col items-center leading-tight">
+                            <strong id="social-proof-count" class="text-lg font-bold text-gray-900 dark:text-white tabular-nums">0</strong>
+                            {% comment %}Both labels ship in the markup and stats.js picks one, so neither
+                            has to exist as a translatable string inside the JS.{% endcomment %}
+                            <span class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400"><span id="social-proof-total-long">{% t "images processed" %}</span><span id="social-proof-total-short" class="hidden">{% t "all time" %}</span></span>
+                        </div>
+                        <span class="self-stretch w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
+                        <span class="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400 text-xs font-semibold">
+                            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% t "nothing uploaded" %}
                         </span>
-                    </span>
+                    </div>
                 </div>
                 {% comment %} The Product Hunt badge lives in the footer only — a second copy here sat
                    directly under the primary CTA and competed with it for the first click. {% endcomment %}

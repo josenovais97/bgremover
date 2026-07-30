@@ -374,7 +374,8 @@ UI = {
     "Coming from another tool?": "Vem de outra ferramenta?",
     "See how we compare to remove.bg": "Veja como nos comparamos ao remove.bg",
     "images processed": "imagens processadas",
-    "images processed this week": "imagens processadas esta semana",
+    # Stat-strip labels under each number (see the hero badge in index.html).
+    "this week": "esta semana",
     "all time": "desde sempre",
     # --- How it works: what actually runs on the device ---
     "Three steps — with no server anywhere in them.":

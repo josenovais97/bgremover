@@ -155,13 +155,18 @@ work lands alongside.
   missing file falls back to its plain URL — so hashing costs nothing. Relative
   ES-module imports are rewritten too (`support_js_module_import_aggregation`),
   so a module's dependencies are cached as aggressively as its entry point.
-- **The social-proof badge counts the week as well as all time.** An all-time
-  total says the site has existed; it says nothing about whether anyone is using
-  it today. The stats endpoint now keeps a per-ISO-week bucket (UTC, 45-day TTL)
-  alongside the global counter and returns both in one `MGET`, so the badge reads
-  "1,274 images processed this week · 48,213 all time". The weekly half stays
-  hidden until it is non-zero — right after the Monday rollover "0 this week" is
-  worse than saying nothing.
+- **The social-proof badge counts the week as well as all time, and is now a stat
+  strip rather than a sentence.** An all-time total says the site has existed; it
+  says nothing about whether anyone is using it today. The stats endpoint keeps a
+  per-ISO-week bucket (UTC, 45-day TTL) beside the global counter and returns both
+  in one `MGET`. As prose the two numbers ran together ("…this week 48,213 all
+  time") in a 768px-wide rule of text competing with the headline; each figure now
+  sits over its own label in a 387px pill, with the privacy claim as its own cell
+  and the live dot promoted to the strip — it used to live inside the weekly cell,
+  so the one state showing a bare all-time total was also the state with no sign
+  of life. The weekly cell stays hidden until it is non-zero (right after the
+  Monday rollover "0 this week" is worse than saying nothing), and the all-time
+  label expands to "images processed" while it is alone.
 - **"How it works" says what actually runs on your device.** Three generic steps
   asked visitors to take the site's entire claim on faith. The page now names the
   model (IS-Net via ONNX Runtime Web), the backends (WebGPU with the work off the
