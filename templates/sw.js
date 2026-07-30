@@ -4,12 +4,13 @@
 // is no longer required for freshness. The name is just the offline snapshot's
 // store; only bump it if you ever need to force-evict every client's cache.
 const CACHE = 'bgr-v23';
-// The ~40MB AI model weights + WASM runtime live on a separate, long-lived cache
-// so a normal shell redeploy (which changes CACHE) never evicts them — the model
-// is downloaded once, then served instantly and offline on every repeat use.
+// The AI model weights + WASM runtime (~190MB for the full-precision model,
+// ~56MB for the quantized one) live on a separate, long-lived cache so a normal
+// shell redeploy (which changes CACHE) never evicts them — the model is
+// downloaded once, then served instantly and offline on every repeat use.
 const MODEL_CACHE = 'bgr-model-v1';
 // Cross-origin hosts served cache-first into the long-lived model cache: the
-// ~40MB AI model weights/WASM (staticimgly.com) AND the version-pinned library
+// AI model weights/WASM (staticimgly.com) AND the version-pinned library
 // ESM (@imgly, JSZip on cdn.jsdelivr.net). Both are immutable per version, so a
 // CDN outage can't break repeat visitors — everything is served from cache.
 const MODEL_HOSTS = ['staticimgly.com', 'cdn.jsdelivr.net'];

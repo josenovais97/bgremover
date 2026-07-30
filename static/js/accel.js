@@ -29,6 +29,21 @@ let usingGpu = false;
 /** True once the resolved config asked for the GPU backend. */
 export const isGpu = () => usingGpu;
 
+/** Which model this page will use. Known synchronously, before the GPU probe. */
+const modelName = () => (self.crossOriginIsolated ? 'isnet' : 'isnet_quint8');
+
+/**
+ * Roughly how much the first run downloads, in MB — model weights plus the
+ * onnxruntime binary, which is the whole one-time cost the user waits through.
+ *
+ * Measured from the CDN's resources.json: the chunks are served raw, with no
+ * gzip or brotli, so these are the real bytes on the wire and not a compressed
+ * estimate. isnet 176 MB / isnet_quint8 44 MB; the ORT wasm is 12 MB, or 23 MB
+ * for the .jsep build the WebGPU path needs. Quoted against the smaller runtime
+ * because the backend is not known yet when the badge first appears.
+ */
+export const downloadMb = () => (modelName() === 'isnet' ? 190 : 56);
+
 async function gpuAvailable() {
   if (!navigator.gpu) return false;
   try {
@@ -59,7 +74,7 @@ export function removalConfig(extra) {
       // its multi-threaded + SIMD backend. Without isolation (e.g. Safari) the
       // quantized 'isnet_quint8' keeps the main thread from stalling long enough
       // to trip the browser's "page not responding" prompt.
-      model: self.crossOriginIsolated ? 'isnet' : 'isnet_quint8',
+      model: modelName(),
       ...extra,
     };
     if (await gpuAvailable()) {

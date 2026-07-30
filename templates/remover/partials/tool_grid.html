@@ -1,4 +1,4 @@
-{% load i18n_extras %}
+{% load static i18n_extras %}
 {% comment %}
 Every tool as a card in its own signature colour.
 
@@ -42,12 +42,39 @@ Params:
             {% for item in group.items %}{% if item.name != exclude %}
             <li class="basis-[calc(50%-0.375rem)] sm:basis-[calc(33.333%-0.667rem)] lg:basis-[calc(25%-0.75rem)]">
                 <a href="{{ item.url }}" style="{{ item.accent_vars }}"
-                   class="tool-card card glass group h-full flex flex-col gap-2 p-4 sm:p-5 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <span class="w-11 h-11 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText text-lg group-hover:scale-110 transition-transform duration-300">
-                        <i class="{{ item.icon }}" aria-hidden="true"></i>
+                   class="tool-card card glass group h-full flex flex-col rounded-2xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    {% comment %}
+                    The card used to be icon + label + blurb, which read as a nav
+                    list rather than as thirty tools worth looking at. It now
+                    leads with the tool's own result image — the same artwork its
+                    page already uses — so the grid shows instead of tells.
+
+                    Every thumbnail is lazy with intrinsic dimensions: the grid
+                    sits below the fold, so none of this competes with the hero
+                    or moves LCP, and nothing downloads until you scroll to it.
+                    Where a before/after pair exists, the "before" cross-fades in
+                    on hover or keyboard focus — the transformation is the pitch.
+                    {% endcomment %}
+                    {% if item.demo %}
+                    <span class="relative block aspect-[4/3] overflow-hidden bg-primary/5">
+                        <img src="{% static item.demo_thumb %}" alt="" loading="lazy" decoding="async" width="480" height="360"
+                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        {% if item.demo_before %}
+                        <img src="{% static item.demo_before_thumb %}" alt="" loading="lazy" decoding="async" width="480" height="360"
+                             class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                        <span class="absolute top-2 left-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-black/60 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">{% t "Before" %}</span>
+                        {% endif %}
                     </span>
-                    <span class="font-semibold text-sm sm:text-base">{{ item.label }}</span>
-                    <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-snug">{{ item.blurb }}</span>
+                    {% endif %}
+                    <span class="flex flex-col gap-2 p-4 sm:p-5">
+                        <span class="flex items-center gap-2.5">
+                            <span class="w-9 h-9 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText group-hover:scale-110 transition-transform duration-300">
+                                <i class="{{ item.icon }}" aria-hidden="true"></i>
+                            </span>
+                            <span class="font-semibold text-sm sm:text-base">{{ item.label }}</span>
+                        </span>
+                        <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-snug">{{ item.blurb }}</span>
+                    </span>
                 </a>
             </li>
             {% endif %}{% endfor %}

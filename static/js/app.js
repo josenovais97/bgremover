@@ -13,7 +13,7 @@
 
 import { removeBackground, preload } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
-import { removalConfig, markGpuFailed, isGpu } from './accel.js';
+import { removalConfig, markGpuFailed, isGpu, downloadMb } from './accel.js';
 
 const { $, $$, Toast, loadImage, t, download, Chain } = CBG;
 
@@ -349,8 +349,11 @@ const ModelStatus = {
   async warm() {
     if (this.started) return;
     this.started = true;
+    // Size comes from accel.js, which owns the model choice — the two used to
+    // drift apart, and the badge advertised 40 MB while isolated browsers pulled
+    // the full-precision weights.
     const label = (extra) => this.render(
-      `<i class="fa-solid fa-circle-notch fa-spin"></i> Loading the AI${extra} <span class="opacity-70">· one-time ~40&nbsp;MB</span>`,
+      `<i class="fa-solid fa-circle-notch fa-spin"></i> Loading the AI${extra} <span class="opacity-70">· one-time ~${downloadMb()}&nbsp;MB</span>`,
       'bg-primary/10 text-primaryText',
     );
     label('');
@@ -2484,9 +2487,9 @@ const App = {
 
     // Also warm proactively once the page goes idle, so a visitor who uploads
     // immediately (without hovering first) still skips the first-run wait. The
-    // model is ~40 MB, so skip it when the connection looks slow or data-saver
-    // is on — warm() is idempotent, so the intent listeners above still cover
-    // those users on demand.
+    // model is 190 MB on isolated browsers, so skip it when the connection looks
+    // slow or data-saver is on — warm() is idempotent, so the intent listeners
+    // above still cover those users on demand.
     const conn = navigator.connection;
     const stingy = conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ''));
     if (!stingy) {

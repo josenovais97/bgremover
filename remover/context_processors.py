@@ -1,4 +1,6 @@
 """Template context processors."""
+import pathlib
+
 from django.conf import settings
 from django.urls import reverse, translate_url
 from django.utils.translation import get_language
@@ -30,72 +32,141 @@ CHAIN_EXCLUDED = {"qr", "video_gif", "video_converter", "heic", "pdf_to_image", 
 # The list order is also the pill-row order (most-used first).
 TOOL_NAV = [
     {"name": "index", "icon": "fa-solid fa-wand-magic-sparkles", "label": "Remove BG", "group": "edit",
-     "blurb": "Cut out any subject into a transparent PNG"},
+     "blurb": "Cut out any subject into a transparent PNG",
+     "demo": "img/demo1-after.webp",
+     "demo_before": "img/demo1-before.webp"},
     {"name": "convert", "icon": "fa-solid fa-arrow-right-arrow-left", "label": "Convert", "group": "optimize",
-     "blurb": "Swap between PNG, JPG, WEBP and AVIF"},
+     "blurb": "Swap between PNG, JPG, WEBP and AVIF",
+     "demo": "img/demo-convert-after.webp"},
     {"name": "compress", "icon": "fa-solid fa-compress", "label": "Compress", "group": "optimize",
-     "blurb": "Shrink file size without visible quality loss"},
+     "blurb": "Shrink file size without visible quality loss",
+     "demo": "img/demo-compress-after.webp"},
     {"name": "resize", "icon": "fa-solid fa-expand", "label": "Resize", "group": "optimize",
-     "blurb": "Scale to exact pixel dimensions"},
+     "blurb": "Scale to exact pixel dimensions",
+     "demo": "img/demo-crop-before.webp"},
     {"name": "instagram", "icon": "fa-brands fa-instagram", "label": "Instagram", "group": "create",
-     "blurb": "Crop and fit for feed, story or reel"},
+     "blurb": "Crop and fit for feed, story or reel",
+     "demo": "img/demo-instagram-after.webp",
+     "demo_before": "img/demo-instagram-before.webp"},
     {"name": "crop", "icon": "fa-solid fa-crop-simple", "label": "Crop", "group": "edit",
-     "blurb": "Trim to a shape or a fixed ratio"},
+     "blurb": "Trim to a shape or a fixed ratio",
+     "demo": "img/demo-crop-after.webp",
+     "demo_before": "img/demo-crop-before.webp"},
     {"name": "sticker", "icon": "fa-solid fa-note-sticky", "label": "Stickers", "group": "create",
-     "blurb": "Add a die-cut outline for chat stickers"},
+     "blurb": "Add a die-cut outline for chat stickers",
+     "demo": "img/demo-sticker-after.webp",
+     "demo_before": "img/demo-sticker-before.webp"},
     {"name": "text_behind", "icon": "fa-solid fa-font", "label": "Text Behind", "group": "create",
-     "blurb": "Tuck text behind your subject"},
+     "blurb": "Tuck text behind your subject",
+     "demo": "img/demo-textbehind-after.webp",
+     "demo_before": "img/demo-textbehind-before.webp"},
     {"name": "watermark", "icon": "fa-solid fa-stamp", "label": "Watermark", "group": "create",
-     "blurb": "Stamp text or a logo across an image"},
+     "blurb": "Stamp text or a logo across an image",
+     "demo": "img/demo-watermark-after.webp",
+     "demo_before": "img/demo-blur-before.webp"},
     {"name": "gif", "icon": "fa-solid fa-images", "label": "GIF Maker", "group": "create",
-     "blurb": "Turn a set of frames into an animation"},
+     "blurb": "Turn a set of frames into an animation",
+     "demo": "img/demo-gif.gif"},
     {"name": "video_gif", "icon": "fa-solid fa-images", "label": "Video to GIF", "group": "create",
-     "blurb": "Convert an MP4 or WebM clip into a GIF"},
+     "blurb": "Convert an MP4 or WebM clip into a GIF",
+     "demo": "img/demo-gif.gif"},
     {"name": "video_converter", "icon": "fa-solid fa-arrow-right-arrow-left", "label": "Video Converter", "group": "optimize",
-     "blurb": "Trim, change speed and convert video to MP4"},
+     "blurb": "Trim, change speed and convert video to MP4",
+     "demo": "img/demo-video-convert.webp"},
     {"name": "meme", "icon": "fa-solid fa-face-laugh", "label": "Meme", "group": "create",
-     "blurb": "Classic top and bottom caption text"},
+     "blurb": "Classic top and bottom caption text",
+     "demo": "img/demo-meme-after.webp",
+     "demo_before": "img/demo-meme-before.webp"},
     {"name": "passport", "icon": "fa-solid fa-passport", "label": "Passport", "group": "photos",
-     "blurb": "Official sizes for any country"},
+     "blurb": "Official sizes for any country",
+     "demo": "img/demo-passport-after.webp",
+     "demo_before": "img/demo-passport-before.webp"},
     {"name": "ecommerce", "icon": "fa-solid fa-store", "label": "eCommerce", "group": "photos",
-     "blurb": "Clean white product shots that pass review"},
+     "blurb": "Clean white product shots that pass review",
+     "demo": "img/demo-ecommerce-after.webp",
+     "demo_before": "img/demo-ecommerce-before.webp"},
     {"name": "blur", "icon": "fa-solid fa-camera", "label": "Blur", "group": "edit",
-     "blurb": "Portrait-mode depth on any photo"},
+     "blurb": "Portrait-mode depth on any photo",
+     "demo": "img/demo-blur-after.webp",
+     "demo_before": "img/demo-blur-before.webp"},
     {"name": "redact", "icon": "fa-solid fa-shield-halved", "label": "Redact", "group": "edit",
-     "blurb": "Blur out faces, plates and private details"},
+     "blurb": "Blur out faces, plates and private details",
+     "demo": "img/demo-redact-after.webp",
+     "demo_before": "img/demo-redact-before.webp"},
     {"name": "favicon", "icon": "fa-solid fa-star", "label": "Favicon", "group": "optimize",
-     "blurb": "Every icon size a site or app needs"},
+     "blurb": "Every icon size a site or app needs",
+     "demo": "img/demo-favicon-after.webp",
+     "demo_before": "img/demo-favicon-before.webp"},
     {"name": "qr", "icon": "fa-solid fa-table-cells-large", "label": "QR Code", "group": "optimize",
      "blurb": "Generate a scannable code from a link"},
     {"name": "exif", "icon": "fa-solid fa-database", "label": "EXIF", "group": "optimize",
-     "blurb": "Strip GPS and camera data from photos"},
+     "blurb": "Strip GPS and camera data from photos",
+     "demo": "img/demo-exif-sample.jpg"},
     {"name": "pdf", "icon": "fa-solid fa-file-arrow-down", "label": "Image to PDF", "group": "optimize",
-     "blurb": "Combine photos or scans into one PDF"},
+     "blurb": "Combine photos or scans into one PDF",
+     "demo": "img/demo-pdf.webp"},
     {"name": "screenshot", "icon": "fa-solid fa-mobile-screen", "label": "Beautify Shot", "group": "create",
-     "blurb": "Frame a screenshot on a pretty backdrop"},
+     "blurb": "Frame a screenshot on a pretty backdrop",
+     "demo": "img/demo-screenshot-after.webp",
+     "demo_before": "img/demo-screenshot-before.webp"},
     {"name": "collage", "icon": "fa-solid fa-table-columns", "label": "Collage", "group": "create",
-     "blurb": "Arrange several photos into a grid"},
+     "blurb": "Arrange several photos into a grid",
+     "demo": "img/demo-collage-after.webp"},
     {"name": "border", "icon": "fa-solid fa-image-portrait", "label": "Border", "group": "create",
-     "blurb": "Add a border or a Polaroid frame"},
+     "blurb": "Add a border or a Polaroid frame",
+     "demo": "img/demo-border-after.webp"},
     {"name": "palette", "icon": "fa-solid fa-swatchbook", "label": "Palette", "group": "optimize",
      "blurb": "Pull the colours out of any photo"},
     {"name": "base64", "icon": "fa-solid fa-code", "label": "Base64", "group": "optimize",
      "blurb": "Encode or decode an image data URI"},
     {"name": "remove_object", "icon": "fa-solid fa-eraser", "label": "Remove Object", "group": "edit",
-     "blurb": "Brush over anything and erase it from the photo"},
+     "blurb": "Brush over anything and erase it from the photo",
+     "demo": "img/demo-removeobj-after.webp",
+     "demo_before": "img/demo-removeobj-before.webp"},
     {"name": "photo_filters", "icon": "fa-solid fa-sliders", "label": "Filters", "group": "edit",
-     "blurb": "One-tap looks plus fine adjustment sliders"},
+     "blurb": "One-tap looks plus fine adjustment sliders",
+     "demo": "img/demo-filters-after.webp",
+     "demo_before": "img/demo-filters-before.webp"},
     {"name": "upscale", "icon": "fa-solid fa-magnifying-glass-plus", "label": "Upscale", "group": "optimize",
-     "blurb": "Enlarge 2× or 4× with clean, sharp edges"},
+     "blurb": "Enlarge 2× or 4× with clean, sharp edges",
+     "demo": "img/demo-upscale-after.webp",
+     "demo_before": "img/demo-upscale-before.webp"},
     {"name": "heic", "icon": "fa-brands fa-apple", "label": "HEIC to JPG", "group": "optimize",
-     "blurb": "Open iPhone HEIC photos anywhere as JPG"},
+     "blurb": "Open iPhone HEIC photos anywhere as JPG",
+     "demo": "img/demo-heic.webp"},
     {"name": "pdf_to_image", "icon": "fa-solid fa-file-arrow-up", "label": "PDF to Images", "group": "optimize",
-     "blurb": "Save every PDF page as a sharp image"},
+     "blurb": "Save every PDF page as a sharp image",
+     "demo": "img/demo-pdf-to-image.webp"},
     {"name": "ocr", "icon": "fa-solid fa-align-left", "label": "Image to Text", "group": "optimize",
-     "blurb": "Copy the text out of any photo or screenshot"},
+     "blurb": "Copy the text out of any photo or screenshot",
+     "demo": "img/demo-ocr.webp"},
     {"name": "svg_to_png", "icon": "fa-solid fa-vector-square", "label": "SVG to PNG", "group": "optimize",
-     "blurb": "Rasterise vector art at any size, pixel-sharp"},
+     "blurb": "Rasterise vector art at any size, pixel-sharp",
+     "demo": "img/demo-svg-after.webp",
+     "demo_before": "img/demo-svg-before.webp"},
 ]
+
+
+def thumb_path(demo):
+    """'img/demo-x.gif' -> 'img/thumbs/demo-x.webp'.
+
+    The homepage grid shows a card-sized crop, not the tool page's hero artwork:
+    the originals are up to 900px for a slot that renders around 230px, which put
+    2.4 MB on the landing page and competed with the AI model warm-up for the
+    same bandwidth. scripts/make-tool-thumbs.py generates these from the same
+    `demo` keys below, so the two cannot drift — keep the naming in step with
+    thumb_name() there.
+    """
+    return f"img/thumbs/{pathlib.Path(demo).stem}.webp"
+
+
+# Resolve each tool's thumbnails once at import rather than per render, and keep
+# `demo`/`demo_before` pointing at the originals so the generator stays driven by
+# a single list.
+for _tool in TOOL_NAV:
+    for _key in ("demo", "demo_before"):
+        if _tool.get(_key):
+            _tool[f"{_key}_thumb"] = thumb_path(_tool[_key])
 
 # The footer's Tools column uses fuller, more descriptive labels than the nav
 # pills ("Background Remover", not "Remove BG") — better for the internal-link
