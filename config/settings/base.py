@@ -82,6 +82,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # Sits above LocaleMiddleware so it can strip the `Vary: Accept-Language` that
+    # Locale adds on the way out (responses unwind in reverse).
+    "config.middleware.EdgeCacheMiddleware",
     # LocaleMiddleware activates the language from the URL prefix (/pt/…). It must
     # sit before CommonMiddleware so URL handling sees the active language.
     "django.middleware.locale.LocaleMiddleware",

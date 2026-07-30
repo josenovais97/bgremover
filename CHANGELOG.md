@@ -145,7 +145,7 @@ work lands alongside.
   warning, and size/EC/margin moved into a collapsed "Advanced" panel.
 
 - **Static assets are content-hashed in production**, which is what lets
-  WhiteNoise serve them `Cache-Control: immutable` for a year instead of
+  WhiteNoise serve them `Cache-Control: public, immutable` instead of
   `max-age=60` — a repeat visitor was re-validating *every* file (the homepage
   alone carries ~50 images plus the JS and CSS) a minute after their last visit.
   The manifest storage this needs used to be off for a real reason: a missing
@@ -155,10 +155,38 @@ work lands alongside.
   missing file falls back to its plain URL — so hashing costs nothing. Relative
   ES-module imports are rewritten too (`support_js_module_import_aggregation`),
   so a module's dependencies are cached as aggressively as its entry point.
+- **Page HTML is cacheable by a CDN.** It carried no `Cache-Control` at all, so
+  every view of all ~90 pages booted the Python function, cold start included —
+  even though the pages are anonymous and identical for everyone (no sessions, no
+  `{% templatetag openblock %} csrf_token {% templatetag closeblock %}` in any
+  template, nothing sets a cookie, and the one live number is fetched by stats.js
+  after load). `EdgeCacheMiddleware` now sends
+  `public, max-age=0, s-maxage=86400, stale-while-revalidate=604800`: browsers
+  still revalidate, shared caches serve outright. Views with their own policy
+  (`no-store` on the stats API, `no-cache` on sw.js, the manifest/robots/sitemap
+  `max-age`) are untouched, and non-200s stay uncached.
+- **Dropped the `Vary: Accept-Language` that LocaleMiddleware stamps on every
+  page.** The language comes from the URL prefix alone — all 91 sitemap URLs
+  render byte-identically whatever the header says (`CacheHeaderTests` samples
+  each page type so it fails first if that changes) — so the header was splitting
+  a shared cache across every `Accept-Language` string in the wild, throwing away
+  most of the benefit above.
+- **The homepage's LCP image is `fetchpriority="high"`.** The hero before/after
+  pair *is* the LCP element, but only the shared demo partial that tool pages use
+  had the hint, so on the one page that matters most Chrome started it at Low
+  priority behind ~40 other subresources. Also carries its intrinsic dimensions
+  now, like every other demo image.
+- **Brotli joins gzip for static assets.** WhiteNoise only writes a `.br` beside
+  each `.gz` if `brotli` is importable at `collectstatic` time, and it wasn't —
+  so every modern browser (all of which ask for `br`) was served gzip. Measured
+  on this build: `tailwind.css` 21.9K → 15.3K (-30%, and it is render-blocking),
+  `app.js` 30.2K → 25.7K (-15%).
 - **The service worker prunes superseded builds.** Hashed URLs are new names
   rather than replacements, so nothing evicted the old ones the way each deploy
-  used to overwrite `app.js`; `activate` now drops hashed assets the current
-  shell no longer references. The two Web Workers are resolved at runtime from
+  used to overwrite `app.js`. Eviction is keyed on the name *without* the hash —
+  at `activate` for shell assets, and at cache-write for everything the shell
+  does not list (grid thumbnails, demo art), which keeps exactly one copy of each
+  file without evicting the current thumbnails an offline homepage needs. The two Web Workers are resolved at runtime from
   `import.meta.url` and so are still requested unhashed — `SHELL_RUNTIME_ASSETS`
   precaches them under that name, and a test fails if a JS module falls out of
   the shell entirely.

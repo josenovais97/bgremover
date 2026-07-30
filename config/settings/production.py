@@ -4,9 +4,10 @@ from .base import env
 
 DEBUG = False
 
-# Compress static assets (gzip/brotli) AND content-hash their names, which is
-# what lets WhiteNoise serve them `immutable` for a year instead of re-validating
-# every file 60 seconds after the last visit. The non-manifest storage was used
+# Compress static assets (gzip + brotli, the latter needs `brotli` installed at
+# build time — see requirements.txt) AND content-hash their names, which is what
+# lets WhiteNoise serve them `immutable` instead of re-validating every file 60
+# seconds after the last visit. The non-manifest storage was used
 # here before because a strict manifest 500s the whole site if staticfiles.json
 # does not ship with the serverless function; see config/storage.py, which keeps
 # the hashing but degrades to unhashed URLs instead of raising.

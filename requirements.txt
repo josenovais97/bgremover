@@ -1,6 +1,12 @@
 Django>=5.0,<5.2
 django-environ==0.11.2
 whitenoise==6.6.0
+# WhiteNoise writes a .br next to every .gz at collectstatic time ONLY if this is
+# importable — without it the "gzip/brotli" storage is gzip-only, and every
+# modern browser sends `Accept-Encoding: br`. Measured on this build: tailwind.css
+# 21.9K gzip → 15.3K brotli (-30%, and it is render-blocking), app.js 30.2K →
+# 25.7K (-15%). Build-time only; nothing imports it at runtime.
+brotli==1.1.0
 gunicorn==21.2.0
 
 # Optional: only needed if you enable the Django admin with PostgreSQL.

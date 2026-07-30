@@ -33,15 +33,23 @@ before "fixing" the test:
   isn't in the committed Font Awesome subset (`static/css/fontawesome.css`). Out-of-subset
   icons render as blank boxes in the browser with no error.
 
-## 2. Geometry unit tests (fast, no browser)
+## 2. JS unit tests (fast, no browser)
 
-Pure-math checks for the shared `cropGeometry()` helper — the code the live preview and the
-final export both depend on. The test pulls the function straight out of
-`static/js/app.js`, so it always exercises the shipped code.
+Both pull the functions straight out of the shipped source, so they always exercise the code
+that runs in the browser:
+
+- **`crop-geometry.test.mjs`** — pure-math checks for the shared `cropGeometry()` helper, the
+  code the live preview and the final export both depend on.
+- **`sw-cache.test.mjs`** — the service worker's cache eviction (`templates/sw.js`). Static
+  assets are content-hashed, so a redeploy mints new URLs instead of overwriting old ones;
+  the cache only stays bounded because eviction keys on the name *without* the hash. Both
+  failure modes (keep everything forever / evict the current thumbnails) look fine in a
+  browser as long as you are online, so they need a test.
 
 ```bash
 node tests/crop-geometry.test.mjs
-# or
+node tests/sw-cache.test.mjs
+# or both
 npm test
 ```
 

@@ -1,9 +1,10 @@
 """Static files storage.
 
 Content-hashed filenames exist for one reason: they let WhiteNoise serve every
-asset with ``Cache-Control: max-age=31536000, immutable``. Without them it can
-only send ``max-age=60`` — a name like ``app.js`` may mean something different
-after the next deploy, so it has to keep asking. That was measurably costing us:
+asset with ``Cache-Control: max-age=315360000, public, immutable`` (ten years —
+its own default for a name it recognises as versioned). Without them it can only
+send ``max-age=60`` — a name like ``app.js`` may mean something different after
+the next deploy, so it has to keep asking. That was measurably costing us:
 a repeat visitor re-validated *every* file a minute after their last visit, and
 the homepage alone carries ~50 images plus the JS and CSS. Bytes were saved by
 the ETags; the round-trips were not.
@@ -49,6 +50,10 @@ class LenientManifestStaticFilesStorage(CompressedManifestStaticFilesStorage):
     """Manifest hashing that degrades to plain URLs instead of erroring."""
 
     manifest_strict = False
+    # The fallback below is all-or-nothing in practice — if the static build did
+    # not ship, EVERY url on the page takes it — so warn once per process rather
+    # than ~50 times per request.
+    _warned = False
     # Rewrite relative `import ... from './x.js'` / `import('./x.js')` to the
     # hashed name, so a module's dependencies are cached as aggressively — and
     # precached by the service worker as reliably — as its entry point.
@@ -60,5 +65,11 @@ class LenientManifestStaticFilesStorage(CompressedManifestStaticFilesStorage):
         except ValueError:
             # Raised when the source file cannot be found — i.e. the static build
             # did not ship. Serve the plain name so templates still render.
-            logger.warning("static file %r missing; serving its unhashed URL", name)
+            if not type(self)._warned:
+                type(self)._warned = True
+                logger.warning(
+                    "static file %r missing: serving unhashed URLs (no immutable "
+                    "caching). Did collectstatic run and ship with the app?",
+                    name,
+                )
             return name

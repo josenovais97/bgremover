@@ -90,10 +90,15 @@
                                ["{% static 'img/demo3-after.webp' %}", "{% static 'img/demo3-before.webp' %}"]
                              ]'>
                             <!-- Real product photo → transparent cut-out (the handle reveals it;
-                                 landing.js rotates through the data-subjects above). -->
-                            <img id="demo-after-img" src="{% static 'img/demo1-after.webp' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500" alt="Product photo with the background removed" draggable="false">
+                                 landing.js rotates through the data-subjects above).
+                                 fetchpriority="high" because this pair IS the homepage's
+                                 LCP element (measured), and the shared demo partial that
+                                 every tool page uses already does the same. Without it
+                                 Chrome starts an in-viewport <img> at Low priority and
+                                 only boosts it after layout — behind ~40 subresources. -->
+                            <img id="demo-after-img" src="{% static 'img/demo1-after.webp' %}" width="820" height="616" fetchpriority="high" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500" alt="Product photo with the background removed" draggable="false">
                             <div id="demo-before" class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
-                                <img id="demo-before-img" src="{% static 'img/demo1-before.webp' %}" class="w-full h-full object-cover transition-opacity duration-500" alt="Original product photo on a studio background" draggable="false">
+                                <img id="demo-before-img" src="{% static 'img/demo1-before.webp' %}" width="820" height="616" fetchpriority="high" class="w-full h-full object-cover transition-opacity duration-500" alt="Original product photo on a studio background" draggable="false">
                             </div>
                             <!-- Divider + handle -->
                             <div id="demo-line" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">

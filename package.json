@@ -6,7 +6,7 @@
   "scripts": {
     "build:css": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.css --minify",
     "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/css/tailwind.css --watch",
-    "test": "node tests/crop-geometry.test.mjs"
+    "test": "node tests/crop-geometry.test.mjs && node tests/sw-cache.test.mjs"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17"

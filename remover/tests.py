@@ -925,6 +925,56 @@ class PWATests(SimpleTestCase):
         self.assertEqual(on_disk - set(listed), set(), "a JS module is missing from the shell")
 
 
+class CacheHeaderTests(SimpleTestCase):
+    """Page HTML is anonymous, so a shared cache should be able to serve it.
+
+    See config.middleware.EdgeCacheMiddleware — without these headers every page
+    view boots the Python function.
+    """
+
+    def test_pages_are_cacheable_by_a_shared_cache(self):
+        for path in ("/", reverse("remover:blur"), reverse("remover:crop")):
+            with self.subTest(path=path):
+                cc = self.client.get(path)["Cache-Control"]
+                self.assertIn("public", cc)
+                self.assertIn("s-maxage=", cc)
+                # Browsers must still revalidate, or a visitor keeps a stale page.
+                self.assertIn("max-age=0", cc)
+
+    def test_views_that_set_their_own_policy_are_left_alone(self):
+        self.assertEqual(self.client.get(reverse("remover:sw"))["Cache-Control"], "no-cache")
+        self.assertIn("max-age=86400", self.client.get(reverse("remover:manifest"))["Cache-Control"])
+
+    def test_nothing_personal_is_ever_marked_public(self):
+        # The guard that makes the whole thing safe: no sessions, no CSRF token in
+        # any template, so no page may set a cookie. If one ever does, this fails
+        # before it can be cached and served to somebody else.
+        for path in ("/", reverse("remover:blur")):
+            response = self.client.get(path)
+            with self.subTest(path=path):
+                self.assertFalse(response.cookies, "a page set a cookie; it must not be public-cached")
+        self.assertNotIn("csrf_token", (Path(settings.BASE_DIR) / "templates/base.html").read_text())
+
+    def test_language_comes_from_the_url_not_the_header(self):
+        # EdgeCacheMiddleware drops `Vary: Accept-Language` because the body does
+        # not depend on it — verified across all 91 sitemap URLs when the header
+        # was added; this samples one of each page type so it fails first if that
+        # ever stops being true (a shared cache would then serve the wrong
+        # language to everyone behind it).
+        for path in ("/", "/pt/", reverse("remover:blur"), "/guides/", "/open-heic-on-windows/"):
+            with self.subTest(path=path):
+                pt = self.client.get(path, HTTP_ACCEPT_LANGUAGE="pt-BR,pt;q=0.9")
+                en = self.client.get(path, HTTP_ACCEPT_LANGUAGE="en-US,en;q=0.9")
+                self.assertEqual(pt.status_code, 200)
+                self.assertEqual(pt.content, en.content)
+                self.assertNotIn("accept-language", (pt.get("Vary") or "").lower())
+
+    def test_error_pages_are_not_cached(self):
+        response = self.client.get("/remove-background/not-a-real-page/")
+        self.assertEqual(response.status_code, 404)
+        self.assertIsNone(response.get("Cache-Control"))
+
+
 class HashedStaticAssetTests(SimpleTestCase):
     """Production serves content-hashed static files (see config/storage.py).
 

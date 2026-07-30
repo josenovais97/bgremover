@@ -39,21 +39,35 @@ self.addEventListener('install', (event) => {
 // Static assets are content-hashed (see config/storage.py), e.g.
 // /static/js/app.9d4b502996a1.js. A redeploy therefore mints NEW urls rather
 // than replacing existing ones, so nothing would ever evict the old entries —
-// unlike the previous unhashed urls, which each deploy simply overwrote.
-const HASHED_ASSET = /\/static\/.+\.[0-9a-f]{12}\.\w+$/;
+// unlike the previous unhashed urls, which each deploy simply overwrote. Both
+// eviction paths below are keyed on the name WITHOUT the hash, because that is
+// what identifies "the same file, rebuilt".
+const HASHED_ASSET = /^(\/static\/.+)\.[0-9a-f]{12}(\.\w+)$/;
 
-/** Drop superseded builds: hashed assets that this SHELL no longer references.
- *  Runtime-cached pages and unhashed assets are left alone — they are still
- *  current, and they are what serves the site offline. */
+/** '/static/js/app.9d4b5.js' -> '/static/js/app.js'; null if not hashed. */
+function baseName(pathname) {
+  const m = HASHED_ASSET.exec(pathname);
+  return m ? m[1] + m[2] : null;
+}
+
+/** Drop the previous build's SHELL assets: a cached hash of a file this shell
+ *  now references under a different hash. Deleting everything the shell does not
+ *  list would take the ~50 runtime-cached grid thumbnails with it — those are
+ *  current, and evicting them is exactly what breaks the offline homepage. Their
+ *  supersession is handled in cachePut instead, where the replacement arrives. */
 function pruneStaleAssets() {
-  const current = new Set(SHELL.map((p) => new URL(p, self.location.origin).href));
+  const currentByBase = new Map();
+  SHELL.forEach((p) => {
+    const url = new URL(p, self.location.origin);
+    const base = baseName(url.pathname);
+    if (base) currentByBase.set(base, url.href);
+  });
   return caches.open(CACHE).then((cache) =>
     cache.keys().then((reqs) =>
-      Promise.all(
-        reqs
-          .filter((r) => HASHED_ASSET.test(new URL(r.url).pathname) && !current.has(r.url))
-          .map((r) => cache.delete(r)),
-      ),
+      Promise.all(reqs.map((r) => {
+        const current = currentByBase.get(baseName(new URL(r.url).pathname));
+        return current && current !== r.url ? cache.delete(r) : null;
+      })),
     ),
   );
 }
@@ -69,7 +83,18 @@ self.addEventListener('activate', (event) => {
 });
 
 function cachePut(req, res) {
-  if (res && res.ok) caches.open(CACHE).then((c) => c.put(req, res));
+  if (!res || !res.ok) return;
+  caches.open(CACHE).then((cache) => {
+    cache.put(req, res);
+    // Hashed assets the shell does not list (grid thumbnails, demo art, social
+    // cards) land here and nowhere else, so this is where an older hash of the
+    // same file gets dropped — one entry per file, however many deploys pass.
+    const base = baseName(new URL(req.url).pathname);
+    if (!base) return;
+    cache.keys().then((reqs) => reqs.forEach((r) => {
+      if (r.url !== req.url && baseName(new URL(r.url).pathname) === base) cache.delete(r);
+    }));
+  });
 }
 
 self.addEventListener('fetch', (event) => {

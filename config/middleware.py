@@ -88,6 +88,64 @@ COOP = "same-origin"
 COEP = "credentialless"
 
 
+# --- Edge caching for page HTML ----------------------------------------------
+# Every page here is anonymous and identical for all visitors: there is no
+# SessionMiddleware, no template renders {% csrf_token %}, nothing sets a cookie,
+# and the one number that changes (the social-proof counter) is fetched by
+# stats.js after load. Yet the pages sent no Cache-Control at all, so a CDN could
+# not touch them and EVERY view — including the 33 tool pages and ~40 SEO pages —
+# booted the Python function, cold start included.
+#
+# `max-age=0` keeps browsers revalidating (so a visitor never sees yesterday's
+# page), while `s-maxage` lets the shared cache serve it outright. The content
+# only changes when the site is redeployed, and Vercel invalidates its edge cache
+# on deploy, so a day is conservative; `stale-while-revalidate` then covers the
+# refresh without making anyone wait for it.
+#
+# Views that opt out (the stats API's `no-store`, sw.js's `no-cache`, the manifest
+# and robots/sitemap `max-age`) set Cache-Control themselves and are left alone.
+PAGE_CACHE_CONTROL = "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800"
+
+
+class EdgeCacheMiddleware:
+    """Make anonymous page HTML cacheable by a shared cache.
+
+    Must sit BEFORE LocaleMiddleware in MIDDLEWARE: responses unwind in reverse,
+    so this runs after Locale has added its `Vary: Accept-Language` — which is
+    what lets us drop it (see below).
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if (
+            request.method not in ("GET", "HEAD")
+            or response.status_code != 200
+            or not response.get("Content-Type", "").startswith("text/html")
+            or response.has_header("Cache-Control")  # the view knows better
+            or response.cookies  # never mark a personalised response public
+        ):
+            return response
+
+        response["Cache-Control"] = PAGE_CACHE_CONTROL
+
+        # LocaleMiddleware stamps `Vary: Accept-Language` on every response, but
+        # the language here comes from the URL prefix alone (/pt/…) — the body is
+        # byte-identical whatever the header says, which CacheHeaderTests asserts.
+        # Left in place it splits the CDN's cache across every Accept-Language
+        # string in the wild, which is most of the benefit above thrown away.
+        vary = response.get("Vary")
+        if vary:
+            kept = [v for v in (p.strip() for p in vary.split(",")) if v.lower() != "accept-language"]
+            if kept:
+                response["Vary"] = ", ".join(kept)
+            else:
+                del response["Vary"]
+        return response
+
+
 class SecurityHeadersMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
