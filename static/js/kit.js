@@ -71,35 +71,22 @@
   };
 
   /**
-   * Load an image and resolve once its pixels are actually ready to draw.
+   * Load an image, resolving with the HTMLImageElement (~60 call sites read
+   * `naturalWidth`/`naturalHeight`, so this must not become an ImageBitmap).
    *
-   * `load` fires when the bytes have arrived, NOT when they are decoded — the
-   * decode then happens on the main thread at the first drawImage, stalling it
-   * for the whole of a 12 MP photo. Every tool here opens a photo through this
-   * one function, so that stall was on every one of them. `decode()` does the
-   * same work up front and off the main thread where the browser allows it.
-   *
-   * Resolves with an HTMLImageElement, deliberately: ~60 call sites read
-   * `naturalWidth`/`naturalHeight`, which the otherwise-tempting
-   * createImageBitmap does not provide.
+   * Awaiting `img.decode()` here instead of `load` was tried and reverted: it
+   * does NOT move the decode off the main thread, because Chrome already
+   * decodes blob-URL images eagerly in the background. All it changes is that
+   * the caller now WAITS for that work — measured at ~200ms extra before the
+   * image is usable for a 12 MP photo, with no reduction in main-thread
+   * blocking (0 long tasks either way, in both orderings).
    */
-  const loadImage = (src) => {
+  const loadImage = (src) => new Promise((resolve, reject) => {
     const img = new Image();
-    img.decoding = 'async';
-    // Wired BEFORE src, so neither event can fire before we are listening.
-    const loaded = new Promise((resolve, reject) => {
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error('image load failed'));
-    });
-    // Only consulted when decode() rejects; mark it handled so an unused
-    // rejection here never surfaces as an unhandled one.
-    loaded.catch(() => {});
+    img.onload = () => resolve(img);
+    img.onerror = reject;
     img.src = src;
-    // decode() also rejects in cases the browser can nonetheless render (some
-    // SVG sources among them), so a rejection falls back to the load event —
-    // the previous behaviour — rather than failing a usable image.
-    return img.decode().then(() => img, () => loaded);
-  };
+  });
 
   const humanSize = (b) =>
     (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1048576).toFixed(1)} MB`);
