@@ -194,6 +194,19 @@
                     <span>{% t "What that means for your device: the first run is a real download and needs some memory, so it takes a few seconds on a recent laptop or phone and can take up to a minute on an older one. Every run after that is fast. If your browser can't run the model at all, the page says so plainly instead of hanging — and the editing tools that don't need AI (crop, convert, compress, resize) keep working regardless." %}</span>
                 </p>
                 <p class="text-gray-500 dark:text-gray-400">{% t "None of this involves an upload: there is no queue to wait in, no per-image limit to hit, and no copy of your photo on a server to trust anyone with." %}</p>
+                {% comment %}
+                The claim above is the whole product, and every competitor asserts
+                something similar while uploading anyway — so asserting it harder is
+                worthless. This is the one form of it a visitor can falsify in ten
+                seconds, and it only passes because the processing genuinely is local:
+                a cloud tool cannot survive the test at all. Deliberately scoped to
+                "after your first cut-out", since the model download is real and a
+                visitor who tries this on a cold cache would rightly call it a lie.
+                {% endcomment %}
+                <p class="flex items-start gap-2.5 border-t border-gray-200/70 dark:border-gray-800/70 mt-4 pt-4">
+                    <i class="fa-solid fa-circle-check mt-0.5 text-primaryText" aria-hidden="true"></i>
+                    <span><b class="font-semibold text-gray-900 dark:text-gray-100">{% t "Check it yourself:" %}</b> {% t "once you have made a single cut-out, turn off your Wi-Fi and reload this page. Every tool keeps working — the background remover included — because the page, the tools and the model are already on your device. Nothing else you have tried this in will survive that test." %}</span>
+                </p>
             </div>
             <p class="text-center text-sm text-gray-500 dark:text-gray-400">
                 {% t "Coming from another tool?" %}

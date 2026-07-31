@@ -330,7 +330,7 @@ PRIVACY_PAGES = [
         "url_name": "priv_hub",
         "nav": "Private image tools",
         "title": "Private Image Tools — Edit Photos Without Uploading | ClearBG",
-        "description": "A full toolkit of image tools that run entirely in your browser — remove backgrounds, compress, convert, resize, redact and strip metadata without uploading a single photo. Free, no account, no tracking.",
+        "description": "A full toolkit of image tools that run entirely in your browser — remove backgrounds, compress, convert, resize and strip metadata. No upload, no account.",
         "h1": "Image tools that never upload your photos",
         "tagline": "Every tool here runs on your device. Your photos are processed in the browser and never sent to a server — no account, no cloud, no tracking.",
         "intro": [

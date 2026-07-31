@@ -412,6 +412,14 @@ UI = {
     "and no copy of your photo on a server to trust anyone with.":
         "Nada disto envolve um carregamento: não há fila de espera, não há limite por imagem e não "
         "há nenhuma cópia da sua fotografia num servidor que tenha de confiar a alguém.",
+    "Check it yourself:": "Confirme você mesmo:",
+    "once you have made a single cut-out, turn off your Wi-Fi and reload this page. Every tool "
+    "keeps working — the background remover included — because the page, the tools and the model "
+    "are already on your device. Nothing else you have tried this in will survive that test.":
+        "depois de fazer um único recorte, desligue o Wi-Fi e recarregue esta página. Todas as "
+        "ferramentas continuam a funcionar — incluindo a remoção de fundo — porque a página, as "
+        "ferramentas e o modelo já estão no seu dispositivo. Mais nenhum serviço onde tenha "
+        "experimentado isto sobrevive a esse teste.",
     # --- Why is it free? ---
     "Why is it free?": "Porque é gratuito?",
     "The usual catch is that you are the product. Here is the actual arrangement.":
