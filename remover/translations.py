@@ -132,9 +132,9 @@ UI = {
     # --- Remove Object page ---
     "Erased locally — nothing is uploaded": "Apagado localmente — nada é carregado",
     "Remove Objects from Photos — Free, Private & In Your Browser":
-        "Remover Objetos de Fotografias — Grátis, Privado e no Navegador",
-    "Erase unwanted objects, people or blemishes from a photo: brush over them and a content-aware fill blends them away. Free, no watermark, and nothing is uploaded — it all runs in your browser.":
-        "Apague objetos, pessoas ou imperfeições de uma fotografia: pinte por cima e um preenchimento inteligente funde-os com o fundo. Grátis, sem marca de água e sem nada carregado — corre tudo no seu navegador.",
+        "Remover Objetos de Fotografias — Grátis e no Navegador",
+    "Erase unwanted objects, people or blemishes from a photo: brush over them and a content-aware fill blends them away. Free, and nothing is uploaded.":
+        "Apague objetos, pessoas ou imperfeições de uma fotografia: pinte por cima e um preenchimento inteligente funde-os com o fundo. Grátis e sem nada carregado.",
     "Remove Objects from Photos": "Remova Objetos de Fotografias",
     "Remove": "Remova",
     "Objects": "Objetos",
@@ -170,8 +170,8 @@ UI = {
     "Enlarged locally — nothing is uploaded": "Ampliado localmente — nada é carregado",
     "Upscale an Image 2× or 4× — Free, Sharp & In Your Browser":
         "Ampliar uma Imagem 2× ou 4× — Grátis, Nítido e no Navegador",
-    "Enlarge images 2× or 4× with high-quality Lanczos resampling and detail sharpening — free and instant, right in your browser. No upload, no watermark, no sign-up.":
-        "Amplie imagens 2× ou 4× com reamostragem Lanczos de alta qualidade e reforço de detalhe — grátis e instantâneo, no seu navegador. Sem carregamentos, sem marca de água, sem registo.",
+    "Enlarge images 2× or 4× with high-quality Lanczos resampling and detail sharpening — free and instant, right in your browser. No upload, no sign-up.":
+        "Amplie imagens 2× ou 4× com reamostragem Lanczos de alta qualidade e reforço de detalhe — grátis e instantâneo, no navegador. Sem carregamentos, sem registo.",
     "Upscale an Image": "Amplie uma Imagem",
     "2× or 4×": "2× ou 4×",
     "High-quality": "Reamostragem",
@@ -197,8 +197,8 @@ UI = {
     "Converted locally — nothing is uploaded": "Convertido localmente — nada é carregado",
     "HEIC to JPG Converter — Free, Private & In Your Browser":
         "Conversor de HEIC para JPG — Grátis, Privado e no Navegador",
-    "Convert iPhone HEIC photos to JPG, PNG or WEBP for free — right in your browser, so your photos are never uploaded. Batch convert and download as a ZIP. No watermark, no sign-up.":
-        "Converta fotos HEIC do iPhone para JPG, PNG ou WEBP gratuitamente — no seu navegador, sem as fotos serem carregadas. Converta em lote e descarregue em ZIP. Sem marca de água, sem registo.",
+    "Convert iPhone HEIC photos to JPG, PNG or WEBP for free — in your browser, so your photos are never uploaded. Batch convert, download as a ZIP.":
+        "Converta fotos HEIC do iPhone para JPG, PNG ou WEBP gratuitamente — no seu navegador, sem as fotos serem carregadas. Converta em lote, descarregue em ZIP.",
     "Convert HEIC to": "Converta HEIC para",
     "iPhone photos that won't open on Windows, Android or the web? Drop them here and get":
         "Fotos do iPhone que não abrem no Windows, no Android ou na web? Largue-as aqui e receba",
@@ -224,9 +224,9 @@ UI = {
     # --- PDF to images page ---
     "Rendered locally — nothing is uploaded": "Processado localmente — nada é carregado",
     "PDF to Images — Convert PDF Pages to PNG or JPG, Free":
-        "PDF para Imagens — Converta Páginas de PDF em PNG ou JPG, Grátis",
-    "Turn every page of a PDF into a sharp PNG or JPG image, free and in your browser — the PDF is never uploaded. Download single pages or all pages as a ZIP. No watermark, no limits.":
-        "Transforme cada página de um PDF numa imagem PNG ou JPG nítida, grátis e no seu navegador — o PDF nunca é carregado. Descarregue páginas individuais ou todas em ZIP. Sem marca de água, sem limites.",
+        "PDF para Imagens — Páginas de PDF em PNG ou JPG, Grátis",
+    "Turn every page of a PDF into a sharp PNG or JPG, free and in your browser — the PDF is never uploaded. Download single pages or all as a ZIP.":
+        "Transforme cada página de um PDF numa imagem PNG ou JPG nítida, grátis e no seu navegador — o PDF nunca é carregado. Descarregue páginas ou tudo em ZIP.",
     "PDF to": "PDF para",
     "Images": "Imagens",
     "Every page of your PDF as a sharp": "Cada página do seu PDF como um",
@@ -254,9 +254,9 @@ UI = {
     # --- OCR page ---
     "Recognised locally — nothing is uploaded": "Reconhecido localmente — nada é carregado",
     "Image to Text (OCR) — Copy Text from a Photo, Free & Private":
-        "Imagem para Texto (OCR) — Copie Texto de uma Foto, Grátis e Privado",
-    "Extract and copy text from any photo or screenshot with on-device OCR — free, in your browser, nothing uploaded. Supports English and Portuguese. No watermark, no sign-up, no limits.":
-        "Extraia e copie texto de qualquer foto ou captura de ecrã com OCR no dispositivo — grátis, no navegador, sem nada carregado. Suporta português e inglês. Sem marca de água, sem registo, sem limites.",
+        "Imagem para Texto (OCR) — Copie Texto de uma Foto, Grátis",
+    "Extract and copy text from any photo or screenshot with on-device OCR — free, in your browser, nothing uploaded. No sign-up, no limits.":
+        "Extraia e copie texto de qualquer foto ou captura de ecrã com OCR no dispositivo — grátis, no navegador, sem nada carregado. Sem registo, sem limites.",
     "Copy Text out of": "Copie o Texto de",
     "Any Image": "Qualquer Imagem",
     "Screenshots, photos of documents, whiteboards — the OCR engine reads them":
@@ -288,9 +288,9 @@ UI = {
     # --- SVG page ---
     "Rasterised locally — nothing is uploaded": "Convertido localmente — nada é carregado",
     "SVG to PNG Converter — Pixel-Sharp at Any Size, Free":
-        "Conversor de SVG para PNG — Nítido em Qualquer Tamanho, Grátis",
-    "Convert SVG to PNG at 1×, 2×, 4× or any exact width — rendered from the vector so edges stay pixel-sharp. Free, in your browser, transparent background kept, nothing uploaded.":
-        "Converta SVG para PNG a 1×, 2×, 4× ou numa largura exata — gerado do vetor para os contornos ficarem nítidos. Grátis, no navegador, com transparência mantida e sem nada carregado.",
+        "Conversor SVG para PNG — Nítido em Qualquer Tamanho, Grátis",
+    "Convert SVG to PNG at 1×, 2×, 4× or any exact width — rendered from the vector so edges stay pixel-sharp. Free, in your browser, nothing uploaded.":
+        "Converta SVG para PNG a 1×, 2×, 4× ou numa largura exata — gerado do vetor para os contornos ficarem nítidos. Grátis, no navegador, sem nada carregado.",
     "SVG to": "SVG para",
     "Rendered from the": "Gerado a partir da",
     "vector source": "fonte vetorial",
@@ -317,9 +317,9 @@ UI = {
     # --- Photo filters page ---
     "Edited locally — nothing is uploaded": "Editado localmente — nada é carregado",
     "Photo Filters & Adjustments — Free Online Editor, No Upload":
-        "Filtros e Ajustes de Fotografia — Editor Online Grátis, Sem Carregamentos",
-    "Apply one-tap looks and fine-tune brightness, contrast, saturation, warmth, vignette and grain — free, in your browser, full-resolution export with no watermark and nothing uploaded.":
-        "Aplique estilos de um toque e afine brilho, contraste, saturação, calor, vinheta e grão — grátis, no navegador, com exportação em resolução total, sem marca de água e sem nada carregado.",
+        "Filtros e Ajustes de Fotografia — Editor Online Grátis",
+    "Apply one-tap looks and fine-tune brightness, contrast, saturation, warmth, vignette and grain — free, in your browser, nothing uploaded.":
+        "Aplique estilos de um toque e afine brilho, contraste, saturação, calor, vinheta e grão — grátis, no seu navegador, sem nada carregado.",
     "Photo Filters &": "Filtros e",
     "Adjustments": "Ajustes",
     "Ten one-tap": "Dez",
@@ -825,7 +825,7 @@ USE_CASES_PT = {
     "product-photos": {
         "nav": "Fotos de produtos",
         "title": "Remover Fundo de Fotos de Produtos — Grátis e Instantâneo",
-        "description": "Crie fotos de produtos limpas, em branco ou transparentes, para a sua loja online. Grátis, privado e ilimitado — a IA corre no seu navegador, por isso nada é carregado.",
+        "description": "Crie fotos de produtos limpas, em branco ou transparentes, para a sua loja online. Grátis e ilimitado — a IA corre no seu navegador, nada é carregado.",
         "h1": "Remova Fundos de Fotos de Produtos",
         "tagline": "Dê à sua loja um aspeto consistente e profissional com recortes limpos — grátis, ilimitado e processado inteiramente no seu dispositivo.",
         "intro": [
@@ -873,7 +873,7 @@ USE_CASES_PT = {
     "signature": {
         "nav": "Assinaturas",
         "title": "Remover Fundo de uma Assinatura — PNG Transparente",
-        "description": "Transforme uma foto ou digitalização da sua assinatura manuscrita num PNG transparente e limpo para documentos e contratos. Grátis e privado — corre no seu navegador.",
+        "description": "Transforme uma foto ou digitalização da sua assinatura manuscrita num PNG transparente para documentos e contratos. Grátis — corre no seu navegador.",
         "h1": "Crie uma Assinatura Transparente",
         "tagline": "Transforme uma digitalização ou foto da sua assinatura manuscrita num PNG transparente e limpo para contratos e documentos.",
         "intro": [
@@ -889,7 +889,7 @@ USE_CASES_PT = {
     "car-photos": {
         "nav": "Fotos de carros",
         "title": "Remover Fundo de Fotos de Carros — Grátis e Instantâneo",
-        "description": "Remova o fundo de fotos de carros para anúncios de stands e marketplaces. Coloque qualquer veículo sobre um fundo branco ou transparente — grátis, privado, no seu navegador.",
+        "description": "Remova o fundo de fotos de carros para anúncios de stands e marketplaces. Coloque qualquer veículo sobre branco ou transparente — grátis, no navegador.",
         "h1": "Remova Fundos de Fotos de Carros",
         "tagline": "Dê a cada veículo uma foto de anúncio limpa e consistente para o seu stand ou marketplace — grátis, ilimitado e processado no seu dispositivo.",
         "intro": [
@@ -921,7 +921,7 @@ USE_CASES_PT = {
     "pet-photos": {
         "nav": "Fotos de animais",
         "title": "Remover Fundo de Fotos de Animais — Grátis e Privado",
-        "description": "Recorte o seu cão, gato ou qualquer animal de uma foto grátis. Crie PNGs transparentes para autocolantes, impressões e memes — privado e no seu navegador, nada é carregado.",
+        "description": "Recorte o seu cão, gato ou qualquer animal de uma foto grátis. Crie PNGs transparentes para autocolantes, impressões e memes — no seu navegador.",
         "h1": "Remova o Fundo de Fotos de Animais",
         "tagline": "Recorte o seu cão, gato ou amigo peludo para autocolantes, impressões, canecas e memes — grátis, ilimitado e tudo no seu navegador.",
         "intro": [
@@ -937,7 +937,7 @@ USE_CASES_PT = {
     "youtube-thumbnail": {
         "nav": "Miniaturas de YouTube",
         "title": "Remover Fundo para Miniaturas de YouTube — Grátis",
-        "description": "Recorte-se de uma foto para uma miniatura de YouTube apelativa. PNGs transparentes grátis para colocar sobre qualquer fundo — privado, no seu navegador, nada é carregado.",
+        "description": "Recorte-se de uma foto para uma miniatura de YouTube apelativa. PNGs transparentes grátis para qualquer fundo — privado, no seu navegador.",
         "h1": "Remova Fundos para Miniaturas de YouTube",
         "tagline": "Recorte-se a si ou ao seu assunto de forma limpa e coloque sobre um fundo forte para miniaturas que geram cliques — grátis e ilimitado.",
         "intro": [
@@ -953,7 +953,7 @@ USE_CASES_PT = {
     "ebay": {
         "nav": "Anúncios eBay",
         "title": "Remover Fundo de Fotos eBay — Grátis e Instantâneo",
-        "description": "Dê aos seus anúncios eBay fundos brancos ou transparentes gratuitamente. Faça os artigos parecerem profissionais e vender mais depressa — privado, ilimitado e no seu navegador.",
+        "description": "Dê aos seus anúncios eBay fundos brancos ou transparentes gratuitamente. Faça os artigos parecerem profissionais — ilimitado, no seu navegador.",
         "h1": "Remova Fundos de Fotos eBay",
         "tagline": "Transforme fotos de telemóvel desarrumadas em fotos de anúncio eBay limpas e profissionais — grátis, ilimitado e processado no seu dispositivo.",
         "intro": [
@@ -969,7 +969,7 @@ USE_CASES_PT = {
     "discord-pfp": {
         "nav": "Avatares Discord",
         "title": "Removedor de Fundo para Foto de Perfil de Discord — Grátis",
-        "description": "Crie uma foto de perfil de Discord limpa removendo o fundo da sua foto ou avatar. PNGs transparentes grátis para colocar sobre qualquer cor — privado, no seu navegador, nada é carregado.",
+        "description": "Crie uma foto de perfil de Discord limpa removendo o fundo da sua foto ou avatar. PNGs transparentes grátis para qualquer cor — no seu navegador.",
         "h1": "Remova o Fundo da Sua Foto de Perfil de Discord",
         "tagline": "Recorte-se a si ou à sua personagem de forma limpa para um avatar de Discord nítido — grátis, ilimitado e tudo no seu navegador.",
         "intro": [

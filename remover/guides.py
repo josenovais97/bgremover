@@ -101,7 +101,7 @@ def _anchor(heading):
 GUIDES = [
     _guide(
         slug="image-formats-explained",
-        title="PNG vs JPG vs WebP vs AVIF — Which Image Format to Use and When",
+        title="PNG vs JPG vs WebP vs AVIF — Which Format to Use and When",
         h1="PNG vs JPG vs WebP vs AVIF: which format should you actually use?",
         description="PNG, JPG, WebP or AVIF? What each format is good at, what it costs you, real file-size numbers, and which to pick for photos, logos and transparency.",
         category="Formats",
@@ -202,9 +202,9 @@ GUIDES = [
     ),
     _guide(
         slug="product-photography-for-marketplaces",
-        title="How to Photograph Products for Amazon, eBay and Etsy — A Practical Guide",
+        title="How to Photograph Products for Amazon, eBay and Etsy",
         h1="How to photograph products for Amazon, eBay and Etsy",
-        description="What marketplace image rules actually require, how to light a product with two lamps and a sheet of paper, and the shot list that converts — written for sellers photographing at home without a studio.",
+        description="What marketplace image rules require, how to light a product with two lamps and a sheet of paper, and the shot list that converts — no studio needed.",
         category="Photography",
         updated="2026-07-28",
         intro=[
@@ -300,7 +300,7 @@ GUIDES = [
         slug="why-passport-photos-are-rejected",
         title="Why Passport Photos Get Rejected — And How to Avoid It",
         h1="Why passport photos get rejected, and how to avoid it",
-        description="The real reasons passport and visa photos come back — head size, shadows, glasses, expression — plus how biometric checks work, what differs by country, and how to shoot a compliant photo at home.",
+        description="The real reasons passport and visa photos come back — head size, shadows, glasses, expression — plus how to shoot a compliant one at home.",
         category="Documents",
         updated="2026-07-28",
         intro=[
@@ -399,7 +399,7 @@ GUIDES = [
         slug="what-exif-data-reveals",
         title="What EXIF Data Reveals About You — And How to Remove It",
         h1="What EXIF data reveals about you, and how to remove it",
-        description="Every photo carries hidden metadata: GPS coordinates, device serial numbers, timestamps and more. What is actually in there, which platforms strip it, and how to remove it before you share.",
+        description="Every photo carries hidden metadata: GPS coordinates, serial numbers, timestamps. What is in there, which platforms strip it, and how to remove it.",
         category="Privacy",
         updated="2026-07-28",
         intro=[
@@ -485,9 +485,9 @@ GUIDES = [
     ),
     _guide(
         slug="how-image-compression-works",
-        title="How Image Compression Actually Works — And How to Use It Well",
+        title="How Image Compression Works — And How to Use It Well",
         h1="How image compression actually works",
-        description="What lossy compression is really doing to your pixels, why quality 80 looks identical to 100, where artefacts come from, and how to hit a target file size without visible damage.",
+        description="What lossy compression does to your pixels, why quality 80 looks identical to 100, and how to hit a target file size without visible damage.",
         category="Formats",
         updated="2026-07-28",
         intro=[
@@ -576,7 +576,7 @@ GUIDES = [
         slug="redacting-images-safely",
         title="How to Redact a Screenshot Safely — Blurring Is Not Enough",
         h1="How to redact a screenshot safely",
-        description="Blur and pixelation have both been reversed in real cases. What actually works, why mosaic filters fail against known fonts, and the one method that cannot be undone.",
+        description="Blur and pixelation have both been reversed in real cases. What actually works, why mosaic filters fail, and the one method that cannot be undone.",
         category="Privacy",
         updated="2026-07-28",
         intro=[
@@ -663,9 +663,9 @@ GUIDES = [
     ),
     _guide(
         slug="transparent-backgrounds-explained",
-        title="How Transparent Backgrounds Actually Work — Alpha Channels Explained",
+        title="How Transparent Backgrounds Work — Alpha Channels Explained",
         h1="How transparent backgrounds actually work",
-        description="What an alpha channel is, why cut-outs get white or black fringes, the difference between straight and premultiplied alpha, and which formats can carry transparency at all.",
+        description="What an alpha channel is, why cut-outs get white or black fringes, straight vs premultiplied alpha, and which formats carry transparency at all.",
         category="Formats",
         updated="2026-07-28",
         intro=[
@@ -843,7 +843,7 @@ GUIDES = [
         slug="image-sizes-for-social-media",
         title="The Right Image Size for Every Social Platform",
         h1="The right image size for every social platform",
-        description="Current dimensions and aspect ratios for Instagram, X, LinkedIn, Facebook, YouTube, TikTok and Pinterest — plus why platforms recompress your images and how to lose the least quality.",
+        description="Current dimensions and aspect ratios for Instagram, X, LinkedIn, Facebook, YouTube, TikTok and Pinterest — plus how to lose the least quality.",
         category="Editing",
         updated="2026-07-28",
         intro=[
@@ -927,7 +927,7 @@ GUIDES = [
     ),
     _guide(
         slug="on-device-vs-cloud-image-tools",
-        title="On-Device vs Cloud Image Tools — What Actually Happens to Your Photo",
+        title="On-Device vs Cloud Image Tools — What Happens to Your Photo",
         h1="On-device vs cloud image tools: what happens to your photo",
         description="What 'free online image tool' usually means for your file, what browser-based processing changes, and an honest account of where each approach wins and loses.",
         category="Privacy",
@@ -1012,7 +1012,7 @@ GUIDES = [
         slug="shooting-for-clean-cutouts",
         title="How to Photograph Anything for a Clean Cut-Out",
         h1="How to photograph anything for a clean cut-out",
-        description="Background removal quality is decided when you take the photo. What separates edges cleanly, why hair and glass are hard, and how to shoot so the cut-out works the first time.",
+        description="Background removal quality is decided when you take the photo. What separates edges cleanly, why hair and glass are hard, and how to shoot for it.",
         category="Photography",
         updated="2026-07-28",
         intro=[
@@ -1104,7 +1104,7 @@ GUIDES = [
     ),
     _guide(
         slug="colour-profiles-explained",
-        title="Why Your Photo Looks Different on Every Screen — Colour Profiles Explained",
+        title="Colour Profiles: Why Photos Look Different on Every Screen",
         h1="Why your photo looks different on every screen",
         description="sRGB, Display P3 and Adobe RGB, what an embedded colour profile does, why exported images sometimes look washed out or oversaturated, and what to use where.",
         category="Formats",

@@ -199,7 +199,7 @@ USE_CASES = [
         "slug": "car-photos",
         "nav": "Car photos",
         "title": "Remove Background from Car Photos — Free & Instant",
-        "description": "Remove the background from car photos for dealer listings and marketplace ads. Put any vehicle on a clean white or transparent backdrop — free, private, in your browser.",
+        "description": "Remove the background from car photos for dealer listings and marketplace ads. Put any vehicle on white or transparent — free, in your browser.",
         "h1": "Remove Backgrounds from Car Photos",
         "tagline": "Give every vehicle a clean, consistent listing shot for your dealership or marketplace ad — free, unlimited, and processed on your device.",
         "intro": [
@@ -216,7 +216,7 @@ USE_CASES = [
         "slug": "clothing",
         "nav": "Clothing & fashion",
         "title": "Remove Background from Clothing Photos — Free for Resellers",
-        "description": "Remove the background from clothing and fashion photos for Vinted, Depop, Poshmark or your own shop. Clean white or transparent PNGs — free, private, in your browser.",
+        "description": "Remove the background from clothing and fashion photos for Vinted, Depop, Poshmark or your own shop. Free white or transparent PNGs, in-browser.",
         "h1": "Remove the Background from Clothing Photos",
         "tagline": "Turn phone snaps of clothes into clean, sellable product shots for Vinted, Depop, Poshmark or your own store — free and unlimited.",
         "intro": [
@@ -250,7 +250,7 @@ USE_CASES = [
         "slug": "youtube-thumbnail",
         "nav": "YouTube thumbnails",
         "title": "Remove Background for YouTube Thumbnails — Free",
-        "description": "Cut yourself out of a photo for a click-worthy YouTube thumbnail. Free transparent PNGs to drop over any background — private, in your browser, nothing uploaded.",
+        "description": "Cut yourself out of a photo for a click-worthy YouTube thumbnail. Free transparent PNGs to drop over any background — private, in your browser.",
         "h1": "Remove Backgrounds for YouTube Thumbnails",
         "tagline": "Cut yourself or your subject out cleanly and drop it over a bold background for thumbnails that get the click — free and unlimited.",
         "intro": [
@@ -267,7 +267,7 @@ USE_CASES = [
         "slug": "ebay",
         "nav": "eBay listings",
         "title": "Remove Background from eBay Photos — Free & Instant",
-        "description": "Give your eBay listings clean white or transparent backgrounds for free. Make items look professional and sell faster — private, unlimited, and processed in your browser.",
+        "description": "Give your eBay listings clean white or transparent backgrounds for free. Make items look professional — private, unlimited, in your browser.",
         "h1": "Remove Backgrounds from eBay Photos",
         "tagline": "Turn cluttered phone snaps into clean, professional eBay listing photos — free, unlimited, and processed on your device.",
         "intro": [
@@ -284,7 +284,7 @@ USE_CASES = [
         "slug": "discord-pfp",
         "nav": "Discord avatars",
         "title": "Discord Profile Picture Background Remover — Free",
-        "description": "Make a clean Discord PFP by removing the background from your photo or avatar. Free transparent PNGs to drop on any color — private, in your browser, nothing uploaded.",
+        "description": "Make a clean Discord PFP by removing the background from your photo or avatar. Free transparent PNGs to drop on any color — in your browser.",
         "h1": "Remove the Background from Your Discord PFP",
         "tagline": "Cut yourself or your character out cleanly for a crisp Discord avatar — free, unlimited, and all in your browser.",
         "intro": [
@@ -301,7 +301,7 @@ USE_CASES = [
         "slug": "twitch",
         "nav": "Twitch & streaming",
         "title": "Remove Background for Twitch & Streaming — No Green Screen",
-        "description": "Cut yourself out of a photo for Twitch panels, overlays and emotes — no green screen needed. Free transparent PNGs, private and in your browser, nothing uploaded.",
+        "description": "Cut yourself out of a photo for Twitch panels, overlays and emotes — no green screen needed. Free transparent PNGs, private, in your browser.",
         "h1": "Remove Backgrounds for Twitch and Streaming",
         "tagline": "Make clean cut-outs for panels, overlays and emotes without a green screen — free, unlimited, and processed on your device.",
         "intro": [
@@ -329,7 +329,7 @@ PRIVACY_PAGES = [
         "slug": "private-image-tools",
         "url_name": "priv_hub",
         "nav": "Private image tools",
-        "title": "Private Image Tools — Edit Photos Without Uploading | ClearBG",
+        "title": "Private Image Tools — Edit Photos Without Uploading",
         "description": "A full toolkit of image tools that run entirely in your browser — remove backgrounds, compress, convert, resize and strip metadata. No upload, no account.",
         "h1": "Image tools that never upload your photos",
         "tagline": "Every tool here runs on your device. Your photos are processed in the browser and never sent to a server — no account, no cloud, no tracking.",
@@ -360,7 +360,7 @@ PRIVACY_PAGES = [
         "url_name": "priv_no_upload",
         "nav": "Remove background without uploading",
         "title": "Remove Background Without Uploading — 100% Private & Free",
-        "description": "Remove an image background without uploading your photo. The AI runs entirely in your browser, so nothing is sent to a server. Free, unlimited, no watermark, no sign-up.",
+        "description": "Remove an image background without uploading your photo. The AI runs entirely in your browser, so nothing is sent to a server. Free and unlimited.",
         "h1": "Remove a background without uploading your photo",
         "tagline": "The background-removal AI runs inside your browser. Your photo is never uploaded, so even sensitive images stay completely private.",
         "intro": [
@@ -389,8 +389,8 @@ PRIVACY_PAGES = [
         "slug": "offline-image-editor",
         "url_name": "priv_offline",
         "nav": "Offline image editor",
-        "title": "Offline Image Editor — Edit Photos in Your Browser, No Internet",
-        "description": "Compress, convert, resize, crop and remove image backgrounds offline, right in your browser. Install ClearBG as an app and keep editing with no connection — nothing is ever uploaded.",
+        "title": "Offline Image Editor — Edit Photos With No Internet",
+        "description": "Compress, convert, resize, crop and remove image backgrounds offline, right in your browser. Install ClearBG as an app and edit with no connection.",
         "h1": "An image editor that works offline",
         "tagline": "Because the tools run on your device, they keep working with no connection. Install ClearBG once and edit images offline — privately, with nothing uploaded.",
         "intro": [
@@ -428,7 +428,7 @@ TOOL_LANDINGS = [
         "url_name": "heic_windows",
         "nav": "Open HEIC on Windows",
         "title": "Can't Open HEIC on Windows? Convert to JPG Free — No Install",
-        "description": "Windows can't open your iPhone's HEIC photos? Convert them to JPG free, right in your browser — no codec pack, no installed software, nothing uploaded. Batch supported.",
+        "description": "Windows can't open your iPhone's HEIC photos? Convert them to JPG free, right in your browser — no codec pack, no software, nothing uploaded.",
         "h1": "Open HEIC photos on Windows",
         "tagline": "No codec pack, no paid app from the Microsoft Store — drop the photos in your browser and download them as JPGs Windows opens natively.",
         "intro": [
@@ -458,8 +458,8 @@ TOOL_LANDINGS = [
         "slug": "convert-iphone-photos-to-jpg",
         "url_name": "heic_iphone",
         "nav": "iPhone photos to JPG",
-        "title": "Convert iPhone Photos to JPG — Free, Private, In Your Browser",
-        "description": "Turn iPhone HEIC photos into JPGs that open anywhere — free and in your browser, so your camera roll is never uploaded. Batch convert with ZIP download, no watermark.",
+        "title": "Convert iPhone Photos to JPG — Free &amp; Private",
+        "description": "Turn iPhone HEIC photos into JPGs that open anywhere — free and in your browser, so your camera roll is never uploaded. Batch convert to a ZIP.",
         "h1": "Convert iPhone photos to JPG",
         "tagline": "AirDropped or copied photos that nothing can open? Convert the whole batch to JPG on your own device — free, private, no app to install.",
         "intro": [
@@ -488,7 +488,7 @@ TOOL_LANDINGS = [
         "url_name": "ocr_extract",
         "nav": "Extract text from image",
         "title": "Extract Text from an Image — Free OCR, Nothing Uploaded",
-        "description": "Copy text out of a photo or screenshot with free on-device OCR — the image is read in your browser and never uploaded. Editable result, copy with one click, five languages.",
+        "description": "Copy text out of a photo or screenshot with free on-device OCR — the image is read in your browser and never uploaded. Editable result, one click.",
         "h1": "Extract text from any image",
         "tagline": "Screenshots, photographed documents, whiteboards — on-device OCR turns them into editable text without the image ever leaving your browser.",
         "intro": [
@@ -750,7 +750,7 @@ COMPRESS_PAGES = [
         "slug": "compress-video", "url_name": "compress_video", "nav": "Compress Video",
         "cta_url_name": "video_converter",
         "title": "Compress Video Online — Free, Private &amp; No Watermark",
-        "description": "Compress an MP4 or WebM video to a smaller file in your browser, free — pick the Small-file quality, trim the clip, and nothing is uploaded. No watermark, no sign-up.",
+        "description": "Compress an MP4 or WebM video to a smaller file in your browser, free — pick a quality, trim the clip, nothing uploaded. No watermark, no sign-up.",
         "h1": "Compress a video to a smaller size",
         "tagline": "Shrink an MP4 or WebM for chat, email or the web — re-encoded entirely on your device, with nothing uploaded.",
         "intro": [
@@ -822,7 +822,7 @@ COMPARISONS = [
         "competitor": "Canva", "cta_url_name": "index", "cta_icon": "fa-wand-magic-sparkles",
         "cta_label": "Remove a background free", "cta_note": "No account. Nothing uploaded.",
         "title": "Free Canva Alternative for Image Tools — No Account, Private",
-        "description": "Need Canva's background remover and image tools without a Pro subscription or account? ClearBG runs free in your browser with nothing uploaded. See the comparison.",
+        "description": "Need Canva's background remover and image tools without a Pro subscription? ClearBG runs free in your browser with nothing uploaded.",
         "h1_lead": "The free, no-account", "h1_highlight": "Canva alternative",
         "tagline": "Remove backgrounds, resize, convert and compress without a Canva account or Pro subscription — all free and private in your browser.",
         "intro": [
@@ -855,7 +855,7 @@ COMPARISONS = [
         "slug": "adobe-express-alternative", "url_name": "cmp_adobe", "nav": "vs Adobe Express",
         "competitor": "Adobe Express", "cta_url_name": "index", "cta_icon": "fa-wand-magic-sparkles",
         "cta_label": "Remove a background free", "cta_note": "No account. Nothing uploaded.",
-        "title": "Free Adobe Express Alternative — No Login, Private Image Tools",
+        "title": "Free Adobe Express Alternative — No Login, No Upload",
         "description": "A free Adobe Express alternative for background removal and image tools — no Adobe account, no upload, in your browser. Compare ClearBG vs Adobe Express.",
         "h1_lead": "The no-login", "h1_highlight": "Adobe Express alternative",
         "tagline": "Remove backgrounds and edit images without an Adobe account — free, private, and entirely in your browser.",
@@ -923,8 +923,8 @@ COMPARISONS = [
         "slug": "cloudconvert-alternative", "url_name": "cmp_cloudconvert", "nav": "vs CloudConvert",
         "competitor": "CloudConvert", "cta_url_name": "heic", "cta_icon": "fa-mobile-screen",
         "cta_label": "Convert a file free", "cta_note": "No account. Nothing uploaded.",
-        "title": "Free CloudConvert Alternative — Convert Files Without Uploading",
-        "description": "A private CloudConvert alternative for images: convert HEIC, PNG, JPG, WEBP and turn PDFs into images in your browser — no upload, no minutes limit, no account. See the comparison.",
+        "title": "Free CloudConvert Alternative — No Upload, No Limits",
+        "description": "A private CloudConvert alternative for images: convert HEIC, PNG, JPG, WEBP and turn PDFs into images in your browser — no upload, no account.",
         "h1_lead": "The private", "h1_highlight": "CloudConvert alternative",
         "tagline": "Convert HEIC, PNG, JPG and WEBP, and turn PDFs into images — in your browser, with no upload, no conversion-minutes cap and no account.",
         "intro": [
