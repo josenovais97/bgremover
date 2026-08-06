@@ -632,6 +632,46 @@
    * lives and makes them work with no connection at all, rather than unlocking
    * anything.
    */
+  /* ------------------------------------------------- working-state chrome
+   * Fold the marketing intro away once a tool is actually in use.
+   *
+   * Every tool page opens with a badge, a headline and a paragraph of pitch,
+   * which is right for someone deciding whether to upload and pure obstruction
+   * for someone who already has: on the sticker maker it pushed the canvas and
+   * its controls a full screen down, so editing meant scrolling past the reasons
+   * to start editing.
+   *
+   * Done here, once, rather than in each of the twenty-six tool scripts. Every
+   * tool already reveals a panel with an id ending "-editor" by dropping the
+   * `hidden` class, so watching for that is enough to know the page has changed
+   * mode — and no tool has to remember to call anything.
+   *
+   * It reverses: "New image" re-hides the editor and the intro comes back, so a
+   * visitor returning to the empty state gets the explanation again.
+   */
+  function watchToolMode() {
+    const intro = $('[data-tool-intro]');
+    const editors = $$('[id$="-editor"]');
+    if (!intro || !editors.length) return;
+
+    const sync = () => {
+      const working = editors.some((el) => !el.classList.contains('hidden'));
+      // Collapsed rather than display:none — the height animates away instead of
+      // snapping, so the canvas rises into place and the change reads as the page
+      // making room rather than as content vanishing.
+      intro.classList.toggle('opacity-0', working);
+      intro.classList.toggle('max-h-0', working);
+      intro.classList.toggle('overflow-hidden', working);
+      intro.classList.toggle('!mt-0', working);
+      intro.setAttribute('aria-hidden', working ? 'true' : 'false');
+    };
+
+    const obs = new MutationObserver(sync);
+    editors.forEach((el) => obs.observe(el, { attributes: true, attributeFilter: ['class'] }));
+    sync();
+  }
+  document.addEventListener('DOMContentLoaded', watchToolMode);
+
   document.addEventListener('DOMContentLoaded', offerInstallOnReturn);
 
   function showInstall() {

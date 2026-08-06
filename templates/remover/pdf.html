@@ -24,7 +24,7 @@
 
     <!-- Hero -->
     <section class="max-w-5xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
                 <i class="fa-solid fa-lock" aria-hidden="true"></i> Built on your device — nothing is uploaded
             </span>
@@ -83,6 +83,7 @@
                 <button id="pdf-add" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium">
                     <i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>Add more
                 </button>
+                {% include 'remover/partials/dropzone_footer.html' %}
             </div>
             <ol id="pdf-pages" class="grid grid-cols-2 sm:grid-cols-3 gap-3" aria-label="PDF pages"></ol>
         </div>

@@ -24,7 +24,7 @@
 
     <!-- Hero: dropzone + demo side by side -->
     <section class="max-w-5xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
                 <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i> Made locally — nothing is uploaded
             </span>
@@ -116,6 +116,7 @@
                         <button type="button" class="vc-speed px-1 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-speed="1.25">1.25×</button>
                         <button type="button" class="vc-speed px-1 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-speed="1.5">1.5×</button>
                         <button type="button" class="vc-speed px-1 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-speed="2">2×</button>
+                {% include 'remover/partials/dropzone_footer.html' %}
                     </div>
                 </div>
                 <div class="space-y-1.5">

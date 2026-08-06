@@ -10,7 +10,7 @@
 
     <!-- Hero + dropzone -->
     <section class="max-w-5xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
                 <i class="fa-solid fa-compress" aria-hidden="true"></i> Compressed locally — nothing is uploaded
             </span>
@@ -53,6 +53,7 @@
                     <button type="button" data-format="image/jpeg" data-ext="jpg" class="cmp-format-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Smallest for photos, no transparency">JPG</button>
                     <button type="button" data-format="image/png" data-ext="png" class="cmp-format-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Lossless — best for graphics with few colours">PNG</button>
                     <button type="button" data-format="image/avif" data-ext="avif" class="cmp-format-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Next-gen, smallest files (Chromium browsers)">AVIF</button>
+                {% include 'remover/partials/dropzone_footer.html' %}
                 </div>
             </div>
 

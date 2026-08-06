@@ -20,7 +20,7 @@
 
     <!-- Hero + dropzone -->
     <section class="max-w-5xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-[#d62976]/10 text-[#d62976]">
                 <i class="fa-brands fa-instagram" aria-hidden="true"></i> Edit locally — nothing is uploaded
             </span>
@@ -47,9 +47,10 @@
                 <button id="ig-browse" type="button" class="mt-2 px-8 py-3 text-white font-medium rounded-xl shadow-lg transition-transform hover:scale-105 bg-gradient-to-r from-[#d62976] to-[#4f5bd5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
                     <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
                 </button>
+                {% include 'remover/partials/dropzone_footer.html' %}
             </div>
         </div>
-        {% include 'remover/partials/demo.html' with before='img/demo-instagram-before.webp' after='img/demo-instagram-after.webp' before_label='Original' after_label='Instagram' caption='Drag the handle — sample photo, nothing uploaded' %}
+        {% include 'remover/partials/ig_size_demo.html' %}
         </div>
     </section>
 

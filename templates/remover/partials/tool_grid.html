@@ -31,13 +31,17 @@ Params:
     than grid so a trailing part-row centres instead of leaving an orphan card
     hanging at the left edge — the counts change with TOOL_NAV, so no column
     count divides them forever. Basis = one column minus its share of the gap.
+
+    Three columns at desktop rather than four: the cards are now a line of text
+    beside an icon, and at four across the blurb wrapped to three ragged lines
+    and cost back the height the compact card had just saved.
     {% endcomment %}
     {% for group in tool_groups %}
-    <div class="space-y-4">
+    <div class="space-y-3">
         <h3 class="text-center text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{{ group.label }}</h3>
-        <ul role="list" class="flex flex-wrap justify-center gap-3 sm:gap-4">
+        <ul role="list" class="flex flex-wrap justify-center gap-2.5">
             {% for item in group.items %}{% if item.name != exclude %}
-            <li class="basis-[calc(50%-0.375rem)] sm:basis-[calc(33.333%-0.667rem)] lg:basis-[calc(25%-0.75rem)]">
+            <li class="basis-full sm:basis-[calc(50%-0.625rem)] lg:basis-[calc(33.333%-0.834rem)]">
                 {% include 'remover/partials/tool_card.html' %}
             </li>
             {% endif %}{% endfor %}

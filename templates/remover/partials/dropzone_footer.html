@@ -1,0 +1,38 @@
+{% load i18n_extras %}
+{% comment %}
+The bottom of an empty dropzone.
+
+Tool pages lay the dropzone beside a before/after demo with `items-stretch`, so
+the panel is as tall as the demo — which left most tools with a dashed box that
+was two thirds empty air while the visitor decided what to do. This is the part
+that decides whether they drop a file, and it was the emptiest thing on the page.
+
+Rather than shrink the panel, fill it with the two things a first-time visitor
+does not know and would want to: that they can paste straight from the clipboard,
+and that the file is not going anywhere. Both are true of every tool, which is why
+this is shared rather than written per page.
+
+The paste hint is hidden on touch devices via `hidden sm:flex` — there is no
+Ctrl+V on a phone, and advertising a shortcut nobody can press is noise.
+
+Takes no parameters, deliberately. It used to accept an optional `formats` line —
+and because {% include %} inherits the parent context, it picked up the unrelated
+`formats` variable the converter and Instagram views already pass (their output
+format buttons) and rendered a raw Python list into the dropzone. Every dropzone
+already names its own accepted formats above the button, so the parameter was
+speculative as well as dangerous.
+{% endcomment %}
+<div class="pt-2 space-y-2 text-center">
+    <p class="hidden sm:flex items-center justify-center gap-1.5 text-sm text-gray-400 dark:text-gray-500">
+        <i class="fa-solid fa-clipboard text-xs" aria-hidden="true"></i>
+        {% t "Press" %}
+        <kbd class="px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 font-mono text-[11px]">Ctrl</kbd>
+        <span aria-hidden="true">+</span>
+        <kbd class="px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 font-mono text-[11px]">V</kbd>
+        {% t "to paste" %}
+    </p>
+    <p class="flex items-center justify-center gap-1.5 text-sm text-primaryText/80">
+        <i class="fa-solid fa-shield-halved text-xs" aria-hidden="true"></i>
+        {% t "Your images never leave your device" %}
+    </p>
+</div>

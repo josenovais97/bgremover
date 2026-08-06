@@ -1,0 +1,50 @@
+{% load static i18n_extras %}
+{% comment %}
+The Instagram hero demo: one photo in the three frames the tool exports to.
+
+It replaces a drag-to-compare slider. The slider's "after" image was correct —
+the photo fitted to a square with a blurred fill rather than cropped — but a
+blurred fill made of the photo itself reads as MORE PHOTO, so dragging the handle
+appeared to reveal the same picture twice. A demo that looks like it does nothing
+is worse than no demo: it is a live claim that the tool has no effect.
+
+Showing the same source in a 1:1, a 4:5 and a 9:16 frame states the actual
+headline instead — exact Instagram sizes, nothing cropped away — and it needs no
+new photography, which is the constraint that ruled out re-shooting the slider.
+
+The photo is `object-contain` on a soft backdrop so the letterboxing IS the
+point: you can see the frame the picture was fitted into, which is exactly what
+the slider hid.
+{% endcomment %}
+<figure class="flex flex-col gap-3 w-full">
+    {% comment %}items-end so the three frames share a baseline: they are different
+    heights by definition, and top-aligning them staggered the captions into a
+    ragged diagonal that read as broken layout rather than as three sizes.{% endcomment %}
+    <div class="grid grid-cols-3 gap-2.5 sm:gap-3 items-end">
+        {% comment %}Ratios are literal classes so Tailwind's scanner sees them.{% endcomment %}
+        <div class="space-y-1.5">
+            <div class="relative aspect-square rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 bg-gray-100 dark:bg-gray-800 grid place-items-center">
+                <img src="{% static 'img/demo-instagram-before.webp' %}" width="820" height="616" loading="lazy" decoding="async"
+                     class="max-w-full max-h-full object-contain" alt="{% t 'The same photo fitted to a square Instagram post' %}" draggable="false">
+            </div>
+            <p class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">{% t "Post" %} <span class="text-gray-400 dark:text-gray-500">1:1</span></p>
+        </div>
+        <div class="space-y-1.5">
+            <div class="relative aspect-[4/5] rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 bg-gray-100 dark:bg-gray-800 grid place-items-center">
+                <img src="{% static 'img/demo-instagram-before.webp' %}" width="820" height="616" loading="lazy" decoding="async"
+                     class="max-w-full max-h-full object-contain" alt="{% t 'The same photo fitted to a 4:5 Instagram portrait' %}" draggable="false">
+            </div>
+            <p class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">{% t "Portrait" %} <span class="text-gray-400 dark:text-gray-500">4:5</span></p>
+        </div>
+        <div class="space-y-1.5">
+            <div class="relative aspect-[9/16] rounded-xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 bg-gray-100 dark:bg-gray-800 grid place-items-center">
+                <img src="{% static 'img/demo-instagram-before.webp' %}" width="820" height="616" loading="lazy" decoding="async"
+                     class="max-w-full max-h-full object-contain" alt="{% t 'The same photo fitted to a 9:16 Instagram story' %}" draggable="false">
+            </div>
+            <p class="text-center text-[11px] font-medium text-gray-500 dark:text-gray-400">{% t "Story" %} <span class="text-gray-400 dark:text-gray-500">9:16</span></p>
+        </div>
+    </div>
+    <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+        <i class="fa-solid fa-crop-simple mr-1" aria-hidden="true"></i>{% t "One photo, every size — nothing cropped off, nothing uploaded" %}
+    </figcaption>
+</figure>

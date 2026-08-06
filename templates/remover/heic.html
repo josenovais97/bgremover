@@ -24,7 +24,7 @@
 
     <!-- Hero -->
     <section id="hc-hero" class="max-w-5xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
                 <i class="fa-brands fa-apple" aria-hidden="true"></i> {% t "Converted locally — nothing is uploaded" %}
             </span>
@@ -74,6 +74,7 @@
                     <button type="button" data-fmt="image/jpeg" data-ext="jpg" class="hc-fmt px-4 py-2 bg-primary text-white">JPG</button>
                     <button type="button" data-fmt="image/png" data-ext="png" class="hc-fmt px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">PNG</button>
                     <button type="button" data-fmt="image/webp" data-ext="webp" class="hc-fmt px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">WEBP</button>
+                {% include 'remover/partials/dropzone_footer.html' %}
                 </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 ml-auto">

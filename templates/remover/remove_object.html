@@ -24,7 +24,7 @@
 
     <!-- Hero -->
     <section id="ro-hero" class="max-w-5xl mx-auto space-y-8">
-        <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
                 <i class="fa-solid fa-eraser" aria-hidden="true"></i> {% t "Erased locally — nothing is uploaded" %}
             </span>
@@ -92,6 +92,7 @@
                     <button id="ro-clear" type="button" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                         <i class="fa-solid fa-xmark mr-1.5" aria-hidden="true"></i>{% t "Clear brush" %}
                     </button>
+                {% include 'remover/partials/dropzone_footer.html' %}
                 </div>
             </div>
 
