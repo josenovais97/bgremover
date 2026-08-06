@@ -443,6 +443,13 @@ class ThinPageTests(SimpleTestCase):
     a search or ad-network quality review reads as thin. They are now backed by
     page_content.DEEP, rendered through partials/deep_dive.html. These tests pin
     the floor sitewide rather than per-page, so a NEW thin page fails too.
+
+    The floor was 200 and is now 350. AdSense rejected the site for "low value
+    content" while 26 pages sat between 216 and 386 unique words — every one of
+    them a page that had never been given a DEEP entry. Clearing 200 was not the
+    same as being substantial, so the bar moved to where the site now actually
+    is. Raising it again after a content pass is the cheapest way to keep this
+    from being re-earned.
     """
 
     @staticmethod
@@ -473,7 +480,7 @@ class ThinPageTests(SimpleTestCase):
         for path, words in sorted(self._unique_words().items(), key=lambda kv: kv[1]):
             with self.subTest(path=path):
                 self.assertGreaterEqual(
-                    words, 200,
+                    words, 350,
                     f"{path} has only {words} words that appear nowhere else on the site",
                 )
 
@@ -888,19 +895,57 @@ class CrossOriginIsolationTests(SimpleTestCase):
 
 
 class MonetizationTests(SimpleTestCase):
+    """Ads run on the guides and nowhere else.
+
+    The use-case landings used to carry them and deliberately no longer do: they
+    are eleven framings of one tool, and they were the thinnest pages on the site
+    running ad code when AdSense rejected the domain for "low value content".
+    Pinned as a test because the ad surface is the kind of thing that gets
+    widened later "just for a bit" and then reviewed.
+    """
+
     @override_settings(ADSENSE_CLIENT="ca-pub-test")
-    def test_ads_only_on_landing_pages(self):
-        landing = self.client.get(reverse("remover:use_case", args=["logo"]))
-        self.assertContains(landing, "ca-pub-test")
-        # Tool pages (isolated and non-isolated) stay ad-free.
-        for name in ("index", "convert"):
-            response = self.client.get(reverse(f"remover:{name}"))
-            self.assertNotContains(response, "adsbygoogle")
+    def test_ads_run_on_the_guides(self):
+        guide = self.client.get(
+            reverse("remover:guide", args=["image-formats-explained"])
+        )
+        self.assertContains(guide, "ca-pub-test")
+
+    @override_settings(ADSENSE_CLIENT="ca-pub-test")
+    def test_tool_and_landing_pages_stay_ad_free(self):
+        # Tool pages (isolated and non-isolated) and every landing page.
+        paths = [
+            reverse("remover:index"),
+            reverse("remover:convert"),
+            reverse("remover:use_case", args=["logo"]),
+            reverse("remover:cmp_canva"),
+            reverse("remover:priv_hub"),
+        ]
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertNotContains(self.client.get(path), "adsbygoogle")
 
     @override_settings(ADSENSE_CLIENT="")
     def test_ads_disabled_when_client_unset(self):
-        response = self.client.get(reverse("remover:use_case", args=["logo"]))
+        response = self.client.get(
+            reverse("remover:guide", args=["image-formats-explained"])
+        )
         self.assertNotContains(response, "adsbygoogle")
+
+    @override_settings(ADSENSE_CLIENT="ca-pub-test")
+    def test_ads_txt_names_the_configured_publisher(self):
+        """AdSense withholds inventory from a domain with no ads.txt."""
+        response = self.client.get("/ads.txt")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.content.decode().strip(),
+            "google.com, pub-test, DIRECT, f08c47fec0942fa0",
+        )
+
+    @override_settings(ADSENSE_CLIENT="")
+    def test_ads_txt_absent_rather_than_empty(self):
+        """An ads.txt authorising nobody is worse than none — crawlers cache it."""
+        self.assertEqual(self.client.get("/ads.txt").status_code, 404)
 
 
 class PWATests(SimpleTestCase):

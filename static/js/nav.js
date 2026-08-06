@@ -42,7 +42,14 @@
     // pill would stay visible, leaving the row overflowing.
     pills.forEach((el) => { el.style.display = ''; });
     if (nav.scrollWidth <= nav.clientWidth + 1) return; // everything fits
-    const limit = nav.getBoundingClientRect().left + nav.clientWidth - moreBtn.offsetWidth - 8;
+    // The Guides link is not a [data-nav-item] and so is never hidden — it is the
+    // site's only editorial entry point and the one thing in this row that must
+    // survive a narrow window. It still takes horizontal space, so reserve its
+    // width here; without that the tool pills would be measured against a limit
+    // that ignores it and the row would overflow behind it.
+    const guides = document.getElementById('nav-guides');
+    const reserved = moreBtn.offsetWidth + (guides ? guides.offsetWidth : 0) + 8;
+    const limit = nav.getBoundingClientRect().left + nav.clientWidth - reserved;
 
     // Measure every pill BEFORE hiding any. Hiding reflows the row and pulls the
     // later pills leftwards, so a measure-and-hide loop would find that a pill

@@ -1912,6 +1912,32 @@ def manifest(request):
 
 @require_safe
 @cache_control(max_age=3600)
+def ads_txt(request):
+    """Serve /ads.txt, which authorises Google to sell this domain's inventory.
+
+    AdSense requires the file at the domain root and treats its absence as
+    unauthorised inventory, so ads can be withheld even on an approved site.
+    Generated from ADSENSE_CLIENT rather than committed as a static file, so the
+    publisher ID lives in exactly one place — a stale hand-copied ID here would
+    fail in a way that looks like an approval problem rather than a typo.
+
+    Returns 404 when no publisher ID is configured. An ads.txt naming nobody is
+    worse than none: crawlers cache it, and an empty file reads as "this domain
+    authorises no one".
+    """
+    client = (settings.ADSENSE_CLIENT or "").strip()
+    if not client:
+        raise Http404("no AdSense publisher configured")
+    # Format is fixed by the IAB spec: domain, publisher ID, relationship, TAG ID.
+    pub = client.removeprefix("ca-")
+    return HttpResponse(
+        f"google.com, {pub}, DIRECT, f08c47fec0942fa0\n",
+        content_type="text/plain",
+    )
+
+
+@require_safe
+@cache_control(max_age=3600)
 def robots_txt(request):
     """Serve robots.txt, pointing crawlers at the sitemap."""
     return render(

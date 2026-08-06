@@ -1433,6 +1433,969 @@ DEEP = {
             },
         ],
     },
+    # --- Tool pages that shipped without a deep dive (1.11) ---
+    'ecommerce': {
+        "title": 'Product shots that pass marketplace review',
+        "sections": [
+            {
+                "h": 'Pure white is a specific number, not a colour',
+                "p": [
+                    "Amazon's main-image rule is RGB 255,255,255 exactly. A backdrop that photographs as white almost never is — studio white typically lands somewhere around 240-250 per channel, which looks white next to a product and reads as light grey against the marketplace's own page background. The seam where your image ends becomes visible, and that is what a reviewer notices.",
+                    'This is why compositing the cut-out onto a generated white canvas beats trying to shoot a perfect white background. The canvas is 255 by construction, and the only thing that has to be right is the edge of the cut-out.',
+                ],
+            },
+            {
+                "h": 'The 85% frame rule that quietly fails listings',
+                "p": [
+                    'Amazon expects the product to occupy roughly 85% of the image frame. A cut-out dropped onto a large square with comfortable margins satisfies every colour requirement and still fails this one, because the product ends up filling perhaps half the frame.',
+                    "Crop after removing the background, not before. Removing first gives you a known product boundary, so the crop can be computed from the subject's actual bounding box with a fixed margin, rather than guessed from the original photo where the product sits wherever the photographer put it.",
+                ],
+            },
+            {
+                "h": 'Sizes worth exporting',
+                "p": [
+                    'Marketplaces differ less than their documentation suggests, and the practical answer is to export large and square.',
+                ],
+                "list": [
+                    'Amazon: 2000x2000 px enables the zoom viewer; 1600 px is the minimum for it.',
+                    'Etsy: 2000x2000 px, though it displays at a 4:3 crop, so keep the product centred.',
+                    'Shopify: 2048x2048 px is the theme-friendly default.',
+                    'Keep a transparent PNG master as well — resizing from a cut-out is free, re-cutting is not.',
+                ],
+            },
+            {
+                "h": 'Shadows: keep, fake, or drop',
+                "p": [
+                    'Background removal takes the original contact shadow with it, and a product floating with no shadow looks pasted on. Marketplaces vary on whether that matters: Amazon permits a shadow on the main image but forbids props and text, while a plain cut-out is always safe.',
+                    'For a consistent catalogue the reliable choice is no shadow at all on the primary image, and a shadow only on secondary lifestyle shots. Inconsistent fake shadows across a catalogue look worse than none, because the eye reads the grid as a set and picks out the odd one immediately.',
+                ],
+            },
+        ],
+    },
+    'ocr': {
+        "title": 'Getting a clean read out of an image',
+        "sections": [
+            {
+                "h": 'Why the same document reads twice differently',
+                "p": [
+                    "Recognition begins by deciding, pixel by pixel, what is ink and what is paper. That decision is made from local contrast, so anything that changes brightness across the page changes the answer — a shadow from your hand, a window on one side, the curve of a book's spine.",
+                    'It is why a photo that looks perfectly legible to you can return nonsense from one half of the page and near-perfect text from the other. The half that failed was thresholded to solid black or solid white before any character was examined.',
+                ],
+            },
+            {
+                "h": 'The resolution floor',
+                "p": [
+                    "Accuracy is governed by how many pixels tall a lowercase letter is, not by the megapixels of the image. Around 20-30 pixels is comfortable. Below about 10, the shapes that distinguish similar characters — the gap in an 'e', the join on an 'a' — simply are not present in the data, and no amount of processing recovers them.",
+                    'The practical consequence is that zooming in before you capture beats every post-processing step. A screenshot of a zoomed page outperforms a full-page screenshot scaled up afterwards, because one has the pixels and the other is inventing them.',
+                ],
+            },
+            {
+                "h": 'Choosing the language actually matters',
+                "p": [
+                    'The engine resolves ambiguous shapes against a model of the language you selected, so the wrong selection does not merely fail to help — it produces confident, wrong, real words. Portuguese text read as English comes back as English-looking nonsense, and accented characters tend to vanish because the model has no expectation of them.',
+                    'If a document mixes languages, pick the dominant one rather than loading several. Multiple packs dilute each model and usually cost more accuracy than the mixed content does.',
+                ],
+            },
+            {
+                "h": 'What to fix before recognising',
+                "p": [
+                    'Almost every improvement is upstream of the recognition step.',
+                ],
+                "list": [
+                    'Crop to the text block, so layout analysis has nothing else to interpret.',
+                    'Straighten the page — small skew is corrected automatically, large skew defeats line detection.',
+                    'Even out the lighting before raising contrast; contrast on an uneven image amplifies the problem.',
+                    'Do not sharpen heavily — the haloes it creates get read as ink and merge adjacent characters.',
+                ],
+            },
+        ],
+    },
+    'pdf_to_image': {
+        "title": 'Turning PDF pages into usable images',
+        "sections": [
+            {
+                "h": 'Rendering versus extracting',
+                "p": [
+                    "There are two different operations people call 'PDF to image'. Extracting pulls out photographs that were embedded in the file, at whatever resolution they were embedded. Rendering draws the page — text, vectors, images and all — into a new bitmap at a size you choose.",
+                    'This tool renders. That is what you want for anything containing text or diagrams, because the characters are drawn from their vector outlines at the output size and stay crisp. Extraction would give you only the photos and none of the layout.',
+                ],
+            },
+            {
+                "h": 'Choosing a scale that is worth the megabytes',
+                "p": [
+                    'A PDF page has a nominal size in points, and rendering at 1x produces roughly 72 pixels per inch — fine for a thumbnail and too soft to read comfortably. 2x lands near 150 DPI, which is the sensible default for screen reading and the point where body text becomes properly legible.',
+                    '4x approaches 300 DPI and is worth it only when the result will be printed or when you intend to run recognition over the output. The file size scales with the square of the factor, so a 4x render of a twenty-page document is a genuinely large download for output most people will view at a quarter of that size.',
+                ],
+            },
+            {
+                "h": 'Why a scanned PDF behaves differently',
+                "p": [
+                    'A PDF produced by a scanner has no text in it at all — each page is one large photograph. Rendering such a page above the resolution of the original scan cannot add detail; it enlarges the scan and inflates the file.',
+                    'You can usually tell which kind you have by trying to select text in a PDF viewer. If nothing highlights, the page is an image, the useful export is JPG rather than PNG, and the natural next step is text recognition rather than a higher scale factor.',
+                ],
+            },
+            {
+                "h": 'PNG or JPG for the pages',
+                "p": [
+                    "Pages that are mostly text, tables or line diagrams should be PNG: the content is hard edges on flat white, which is exactly where lossless compression is small and where JPEG's ringing artefacts show up around every character.",
+                    'Pages that are mostly photographs should be JPG, where PNG would be several times larger for no visible gain. A mixed document is usually better off as PNG, because damaged text is more noticeable than a slightly larger file.',
+                ],
+            },
+        ],
+    },
+    'svg_to_png': {
+        "title": 'Rasterising vector art without losing the edges',
+        "sections": [
+            {
+                "h": 'Why exports from other tools come out soft',
+                "p": [
+                    'An SVG has a nominal size in its width, height or viewBox attributes, and many converters rasterise at that size and then scale the resulting bitmap to whatever you asked for. The vector is only consulted once, at the small size, and everything after that is a bitmap being stretched.',
+                    'Rendering at the target size instead means the curves are evaluated at the resolution you actually want, so a 4x export contains four times the real detail rather than four times the pixels. The difference is most obvious on diagonal edges and small text, which is where stretched bitmaps go to pieces.',
+                ],
+            },
+            {
+                "h": 'Fonts are the usual surprise',
+                "p": [
+                    'SVG text is not shapes — it is characters plus a font name, resolved at render time. If the file names a font that is not available where it is rasterised, a fallback is substituted and the text reflows: different widths, different line breaks, sometimes overlapping other elements.',
+                    'The fix belongs in the SVG rather than in the converter. Converting text to outlines in your vector editor before export makes the file self-contained and immune to this, at the cost of no longer being editable as text. For a logo destined for export that is almost always the right trade.',
+                ],
+            },
+            {
+                "h": 'External references do not travel',
+                "p": [
+                    'An SVG can reference images by URL rather than embedding them, and can pull in webfonts and stylesheets the same way. Rasterised in isolation, those references produce blank rectangles and fallback type, because nothing is fetched.',
+                    'Embedding raster content as a data URI inside the SVG makes it self-contained. It grows the file, but the file then renders identically everywhere, which is the entire point of handing someone a vector.',
+                ],
+            },
+            {
+                "h": 'Transparency and what JPG does to it',
+                "p": [
+                    'PNG output keeps the alpha channel, so an icon exported at any size drops onto any background cleanly. That is normally what you want from vector art.',
+                    'Exporting the same artwork as JPG flattens transparency onto white, and the result is a white box wherever the artwork was transparent. If the destination cannot take PNG, fill the background with the colour it will actually sit on rather than accepting the default.',
+                ],
+            },
+        ],
+    },
+    'upscale': {
+        "title": 'What enlarging an image can and cannot do',
+        "sections": [
+            {
+                "h": 'Resampling is interpolation, not invention',
+                "p": [
+                    'Enlarging computes new pixels from the ones around them. A good filter — Lanczos, here — weights a neighbourhood of source pixels to estimate each new one, which keeps edges clean where a naive method would produce stair-stepping or blur.',
+                    'What it cannot do is add detail that was never captured. If a face occupies forty pixels in the original, no filter recovers the eyelashes, because that information does not exist in the file. Enlargement makes an image bigger and, done well, keeps it looking deliberate rather than stretched.',
+                ],
+            },
+            {
+                "h": 'Why this is not an AI upscaler, on purpose',
+                "p": [
+                    'Model-based super-resolution genuinely can hallucinate plausible detail, and on the right image it is impressive. In a browser tab it is also slow enough to lock the page for tens of seconds on a large photo, and memory-hungry enough to crash a phone.',
+                    'There is a second, less discussed cost: an AI upscaler invents detail, and invented detail is wrong detail. On a document, a licence plate or a face, that is a liability rather than a feature. A resampled enlargement is honest about what it knows.',
+                ],
+            },
+            {
+                "h": 'Sharpening after, not before',
+                "p": [
+                    'Enlargement softens edges slightly no matter how good the filter is, so a gentle unsharp pass afterwards restores the appearance of crispness. Applied before enlargement, the same sharpening gets magnified along with everything else and turns into visible haloes.',
+                    'Overdoing it is the common mistake. Sharpening amplifies noise and JPEG artefacts as readily as detail, so an already-compressed source will show its blocking pattern long before it looks sharp.',
+                ],
+            },
+            {
+                "h": 'When enlargement is the wrong answer',
+                "p": [
+                    'If you need a larger image for print and have access to the original file, go back to it. A camera original or a vector source beats any enlargement of a downscaled copy, and the difference is not subtle.',
+                ],
+                "list": [
+                    'Logos and icons: find the SVG and rasterise it instead — infinitely better than any enlargement.',
+                    'Screenshots of text: retake at a higher zoom rather than enlarging.',
+                    'Heavily compressed images: compress artefacts enlarge too, and sharpening makes them worse.',
+                    'Print: 2x from a good original is usually plenty; 4x from a thumbnail will not rescue it.',
+                ],
+            },
+        ],
+    },
+    'remove_object': {
+        "title": 'How content-aware fill decides what goes in the hole',
+        "sections": [
+            {
+                "h": 'The fill is borrowed, not imagined',
+                "p": [
+                    'Erasing an object leaves a hole, and the fill is assembled from the pixels around it — colour, texture and gradient sampled from the boundary and propagated inward, coarse structure first and fine detail after.',
+                    'This is why the surroundings decide the result far more than the object does. A person standing against open sky disappears completely, because the algorithm has an enormous amount of consistent sky to borrow from. The same person in front of a bookshelf leaves a smear, because there is no way to infer which book was behind them.',
+                ],
+            },
+            {
+                "h": 'Brush generously, but not too generously',
+                "p": [
+                    "Under-brushing is the most common mistake. Leaving a rim of the object's edge pixels means those colours get treated as legitimate surroundings and propagated into the fill, producing a ghost in roughly the object's shape.",
+                    'Cover the object plus a small margin, including its shadow and any reflection — a removed object whose shadow remains reads as obviously wrong. But an unnecessarily huge selection forces the algorithm to invent more area than it has evidence for, so the fill turns mushy. Slightly larger than the object is the target.',
+                ],
+            },
+            {
+                "h": 'Several small passes beat one large one',
+                "p": [
+                    'A big object over varied background is better removed in stages. Erase a portion, let the fill settle, then erase the next — each pass has more plausible surroundings to work from than one enormous selection would.',
+                    'It also lets you stop when it looks right rather than committing to a single result, and to work along a boundary — the edge of a wall, a horizon — instead of across it, which is where fills most visibly break down.',
+                ],
+            },
+            {
+                "h": 'Where this approach runs out',
+                "p": [
+                    'Straight lines that pass behind the object rarely reconnect convincingly: tiles, window frames, floorboards and railings all show a kink. Repeating patterns can drift out of phase. And anything that would require knowing what was genuinely hidden — a face behind a hand, text behind a sign — cannot be recovered by any amount of borrowing.',
+                    'When the fill fails, cropping the object out of the frame is often the better edit, and an honest one.',
+                ],
+            },
+        ],
+    },
+    'gif': {
+        "title": 'Building an animated GIF that stays small',
+        "sections": [
+            {
+                "h": 'Cost scales with area, so size the frame first',
+                "p": [
+                    'Every frame stores pixels, so halving the width and height of a GIF removes roughly three quarters of its data. No other setting comes close, which makes dimensions the first thing to decide rather than the last.',
+                    'For a UI demonstration 320-480 pixels wide is usually enough, since the result is typically displayed inline at around that size anyway. Exporting at full screen width and letting the page scale it down means paying for pixels nobody sees.',
+                ],
+            },
+            {
+                "h": 'The palette is where the quality goes',
+                "p": [
+                    'A GIF frame can hold 256 colours. Everything else is approximated, and that approximation — not the compression, which is lossless — is what makes GIFs look coarse compared to the source.',
+                    'Content with a narrow range of colours survives this well: screen recordings, line art, flat illustration. Photographic content with gradients does not, because a sky reduced to a handful of blues becomes visible bands.',
+                ],
+            },
+            {
+                "h": 'Why dithering can make the file bigger',
+                "p": [
+                    'Dithering hides banding by scattering pixels of the available colours so the eye blends them. It works, and it fights the compression directly: the algorithm shrinks files by finding repeated runs of pixels, and dithering deliberately replaces smooth areas with high-frequency noise that has no runs to find.',
+                    'So the banding fix and the file-size goal pull in opposite directions. On flat-coloured content, turning dithering off entirely is often both smaller and cleaner.',
+                ],
+            },
+            {
+                "h": 'Frame rate and duration',
+                "p": [
+                    'GIF timing is stored per frame in hundredths of a second, and most viewers clamp very short delays, so extremely high frame rates do not play as intended anyway.',
+                ],
+                "list": [
+                    '10-15 fps looks fine for screen recordings and interface demos.',
+                    'Trim to the seconds that carry the point — duration costs linearly.',
+                    'A static camera compresses far better than a panning one; crop to the moving region.',
+                    'If the clip is longer than about five seconds, consider whether it should be a video.',
+                ],
+            },
+        ],
+    },
+    # --- More tool pages (1.11) ---
+    'heic': {
+        "title": 'Converting iPhone photos without wasting quality',
+        "sections": [
+            {
+                "h": 'What you give up in the conversion',
+                "p": [
+                    'HEIC stores 10 bits per colour channel; JPEG stores 8. That difference is invisible in most photographs and shows up as faint banding in large smooth gradients — a clear sky at dusk is the classic case. It cannot be recovered afterwards.',
+                    'The container also carries things a flat image format has nowhere to put: Live Photo motion, the depth map that portrait blur relies on, and the edit history that makes Revert possible on the phone. Converting produces a finished picture and discards the rest.',
+                ],
+            },
+            {
+                "h": 'Convert once, from the original',
+                "p": [
+                    'JPEG is lossy, so every encode discards a little more. Converting an already-converted file compounds that for no reason. Go back to the HEIC each time rather than re-exporting a JPG you made earlier.',
+                    'Keep the originals until you have checked the output. Deleting the HEIC masters is the only irreversible step in this process, and it is the one people do first.',
+                ],
+            },
+            {
+                "h": 'JPG or PNG out',
+                "p": [
+                    'Pick JPG when the destination is an upload form, an email or long-term storage — the size saving is the entire reason the format exists and the quality cost at a high setting is not visible.',
+                    'Pick PNG when the photo is going into further editing. It is lossless, so the conversion adds no generational damage, at the cost of a file several times larger than the HEIC you started with.',
+                ],
+            },
+            {
+                "h": 'Order of operations for a camera roll',
+                "p": [
+                    'A holiday folder is the real case, and a few habits keep it clean.',
+                ],
+                "list": [
+                    'Convert the whole batch in one pass so the generational loss happens once.',
+                    'Convert first and compress second, as separate decisions — a converter that silently shrinks to hit a size target has chosen quality for you.',
+                    'Strip metadata at the same time if the photos are going somewhere public; every file is being rewritten anyway.',
+                    'Check a few outputs before deleting anything.',
+                ],
+            },
+        ],
+    },
+    'qr': {
+        "title": 'Designing a code that scans on the first try',
+        "sections": [
+            {
+                "h": 'The blank margin is part of the code',
+                "p": [
+                    'The specification requires a quiet zone — four modules of empty space on every side, a module being one of the small squares. Scanners use it to find where the code begins, and it is not a design suggestion.',
+                    'Printing a code flush against text, a border or a coloured panel is the single most common reason a technically valid code refuses to scan. Paper also absorbs ink and slightly thickens every module, which eats into the margin further, so a proof that scans on screen can fail in print.',
+                ],
+            },
+            {
+                "h": 'Error correction is what buys you a logo',
+                "p": [
+                    'Four levels of redundancy are available, recovering roughly 7%, 15%, 25% and 30% of the data. A logo dropped in the centre is simply damage, so whether the code survives is decided entirely by which level it was generated at.',
+                    "At the highest level a centre logo covering up to about a quarter of the area still decodes. At the lowest, the same logo destroys the code. There is no way to place a logo 'safely' other than leaving enough redundancy to absorb it.",
+                ],
+            },
+            {
+                "h": 'Colour contrast is not brightness contrast',
+                "p": [
+                    'A scanner measures luminance, not hue. Red modules on a green field look strongly contrasting to a person and can be nearly identical in brightness to a camera, which is why colourful codes fail in ways their designers find baffling.',
+                    'Check any coloured design in greyscale before committing. If the modules and the background are hard to tell apart there, the code will struggle. Keep the modules darker than the background, too — inverted codes are decoded by many scanners and not all.',
+                ],
+            },
+            {
+                "h": 'Size follows viewing distance',
+                "p": [
+                    'The working rule is that a code should be at least one tenth as wide as the distance it will be scanned from. A metre away wants 10 cm; across a room wants far more than most posters allocate.',
+                ],
+                "list": [
+                    'Shorter URLs produce fewer modules, so each one is physically larger and easier to read.',
+                    'Below roughly 2 cm, print becomes unreliable regardless of distance.',
+                    'Test with a default camera app, not a dedicated scanner — that is how people scan.',
+                    'Test on the actual material under the actual lighting before a print run.',
+                ],
+            },
+        ],
+    },
+    'exif': {
+        "title": 'What the file says about you after you send it',
+        "sections": [
+            {
+                "h": 'The fields that actually matter',
+                "p": [
+                    'Cameras and phones write a block of metadata into every photo. Most of it is harmless — exposure, focal length, orientation. Three fields are not: GPS coordinates, the timestamp, and the device identifier.',
+                    'The coordinates are precise enough to identify a building, and a photo taken indoors is usually taken at home. A set of photos shared over months carries a movement history nobody intended to publish, which is the part people underestimate.',
+                ],
+            },
+            {
+                "h": 'Which platforms strip it, and why that is not a plan',
+                "p": [
+                    'Large social networks generally strip metadata on upload, partly for privacy and partly because they re-encode everything anyway. That protects the public copy and nothing else.',
+                    "The file you emailed, put in a shared folder, sent over a chat app that preserves originals, or attached to a marketplace listing keeps every field. Stripping before sending is the only approach that does not depend on each destination's current behaviour.",
+                ],
+            },
+            {
+                "h": 'Why stripping costs no quality on a JPEG',
+                "p": [
+                    'A JPEG is a sequence of marker segments, and metadata lives in its own segments alongside the compressed image data. Removing them is a matter of dropping those segments and rewriting the file — the pixels are never decoded, so there is no re-encode and no generational loss.',
+                    'This is worth knowing because the alternative people reach for — opening the photo in an editor and re-saving it — does re-encode, and loses a little quality every time.',
+                ],
+            },
+            {
+                "h": 'What metadata will not tell you',
+                "p": [
+                    'Absent metadata is not evidence of anything. Screenshots never had any, messaging apps remove it, and any re-save can drop it, so a photo with no EXIF is unremarkable rather than suspicious.',
+                    'Equally, present metadata is not proof: every field is editable. It is a convenience for organising your own photos and a privacy risk when sharing, and it is not a chain of custody.',
+                ],
+            },
+        ],
+    },
+    'redact': {
+        "title": 'Hiding information so it stays hidden',
+        "sections": [
+            {
+                "h": 'Blur and pixelation are reversible in principle',
+                "p": [
+                    'Both are deterministic transforms that discard detail without discarding structure. Given the method and its parameters, an attacker can blur candidate text the same way and compare — which is how pixelated text has been recovered in practice more than once.',
+                    "The risk is highest for content drawn from a small set: a six-digit number, a card's last four, a name from a short list. Brute-forcing every candidate through the same filter and matching the output is entirely feasible.",
+                ],
+            },
+            {
+                "h": 'A solid bar is the only honest redaction',
+                "p": [
+                    'Drawing an opaque rectangle replaces the pixels with one colour, and no information survives that. It is the boring option and it is the correct one whenever the content genuinely matters.',
+                    "Blur and pixelation are better thought of as de-emphasis — fine for a bystander's face in a screenshot you are posting for a different reason, wrong for an account number.",
+                ],
+            },
+            {
+                "h": 'Flatten, and check what you exported',
+                "p": [
+                    'The most damaging failures are not weak filters but redactions that were never applied to the pixels: a shape sitting on a layer above the image, or a PDF annotation drawn over text that is still selectable underneath. Copying the text out of such a document returns everything.',
+                    'Exporting a flattened image is what makes a redaction permanent. Verify by opening the export fresh and attempting to select or zoom into the covered area — check the file you are about to send, not the editor you made it in.',
+                ],
+            },
+            {
+                "h": 'The parts people forget to cover',
+                "p": [
+                    'Sensitive information is rarely only in the obvious place.',
+                ],
+                "list": [
+                    'Reflections in glasses, screens and windows.',
+                    'The browser tab strip, bookmarks bar and notifications in a screenshot.',
+                    'Document headers, footers, reference numbers and barcodes — a barcode encodes the number in plain sight.',
+                    'The filename itself, which often contains a name or an account number.',
+                    'Metadata: the pixels can be clean while the file still names the device and location.',
+                ],
+            },
+        ],
+    },
+    'screenshot': {
+        "title": 'Why a raw screenshot looks worse than it should',
+        "sections": [
+            {
+                "h": 'The problem is the edge, not the content',
+                "p": [
+                    'A raw screenshot is a rectangle of interface that ends abruptly at the crop. Placed on a page or a slide it reads as a fragment: nothing indicates where the interface stopped and the document began, so the eye treats the boundary as damage.',
+                    'Padding on a contrasting backdrop fixes this by giving the rectangle somewhere to sit. That is the entire mechanism behind the polished look — the screenshot has not been improved, it has been framed.',
+                ],
+            },
+            {
+                "h": 'Shadow and radius do the separating',
+                "p": [
+                    'A soft drop shadow lifts the image off the background and makes the boundary intentional rather than accidental. It wants to be large and faint; a tight dark shadow looks like a sticker.',
+                    "Rounded corners work because almost every interface being screenshotted already has them, so square corners on the export contradict the content inside. Matching the radius roughly to the window's own is enough.",
+                ],
+            },
+            {
+                "h": 'Capture at the resolution you will publish',
+                "p": [
+                    'Screenshots are pixel data, so an image captured small and enlarged afterwards has soft text that no amount of framing rescues. Capture on a high-density display, or zoom the interface before capturing, and scale down rather than up.',
+                    'Text is also the reason to export PNG. It is nothing but hard edges, which is where JPEG puts visible speckle around every character, and where lossless compression is small anyway because interfaces are mostly flat colour.',
+                ],
+            },
+            {
+                "h": 'Check the frame before you publish it',
+                "p": [
+                    'Screenshots leak more than any other image type, because the whole screen was captured and only the middle was examined.',
+                ],
+                "list": [
+                    'Open tabs, bookmarks and the window title.',
+                    'Notification banners that arrived during the capture.',
+                    'Autofill suggestions and browser history in a dropdown.',
+                    'Real names, email addresses and internal URLs in the interface itself.',
+                ],
+            },
+        ],
+    },
+    'video_gif': {
+        "title": 'Turning a clip into a GIF worth sending',
+        "sections": [
+            {
+                "h": 'You are trading a good codec for a bad one',
+                "p": [
+                    "Video formats describe motion: a frame is stored as 'this block moved, here is a small correction'. GIF has no such concept and stores frames close to whole, so a clip that was a few hundred kilobytes as video routinely becomes several megabytes as a GIF.",
+                    'That is not a flaw in the conversion, it is the format. The reason to accept it is placement — GIF plays as an image, so it works in email, chat boxes and forums that will not take a video element at all.',
+                ],
+            },
+            {
+                "h": 'Trim before anything else',
+                "p": [
+                    'Duration costs linearly, and most clips contain two or three seconds that carry the point plus several that do not. Cutting to the useful moment is usually a larger saving than every quality setting combined.',
+                    'A loop also reads better when it is short. A two-second loop is understood as a loop; an eight-second one is watched once and then becomes a distraction on the page.',
+                ],
+            },
+            {
+                "h": 'Camera movement is the expensive part',
+                "p": [
+                    'Because GIF cannot describe motion, a panning or handheld shot changes every pixel in every frame and nothing can be skipped. A locked-off shot where only one element moves compresses dramatically better.',
+                    'If the source moves, cropping to the region that actually matters recovers much of the difference — you remove pixels that were being re-stored on every single frame.',
+                ],
+            },
+            {
+                "h": 'Settings, in the order worth adjusting them',
+                "p": [
+                    'Each of these is more effective than the one after it.',
+                ],
+                "list": [
+                    'Dimensions: 320-480 px wide is plenty for most uses and cost scales with area.',
+                    'Duration: cut to the seconds that carry the point.',
+                    'Frame rate: 10-15 fps reads as smooth for screen content.',
+                    'Palette: fewer colours, and turn dithering off on flat-coloured content.',
+                ],
+            },
+        ],
+    },
+    'video_converter': {
+        "title": 'Trimming and converting video in a browser tab',
+        "sections": [
+            {
+                "h": 'Why MP4 is the format to land on',
+                "p": [
+                    'MP4 carrying H.264 video is the closest thing to a universal video format. It plays on phones, desktops, televisions, in every browser and in every editor, and hardware decoding for it exists on essentially everything.',
+                    'Newer codecs compress better, and that matters when you are serving millions of views. For a clip you need someone else to be able to open, compatibility is worth more than the bytes.',
+                ],
+            },
+            {
+                "h": 'What trimming does and does not re-encode',
+                "p": [
+                    'Video is stored as occasional complete keyframes with dependent frames between them, so a cut that does not land on a keyframe requires re-encoding the surrounding section to produce a valid file.',
+                    'That is why a trimmed clip can be slightly softer than its source even though nothing else changed, and why trimming is slower than the file size suggests. Cutting from an original rather than from an already-trimmed export keeps the damage to one generation.',
+                ],
+            },
+            {
+                "h": 'Speed changes and audio',
+                "p": [
+                    'Changing playback speed rewrites timing rather than pixels, so the video itself does not degrade. Audio is the awkward part: raising speed raises pitch unless the track is resampled, which is why a sped-up clip can sound comical.',
+                    'For a silent demonstration this is moot and dropping the audio track entirely is usually the right call — it removes a surprising share of the file size and avoids autoplay restrictions on the web.',
+                ],
+            },
+            {
+                "h": "Working within a browser's limits",
+                "p": [
+                    "Everything here runs in the page, which means it runs in the tab's memory. Long or high-resolution sources are the practical ceiling.",
+                ],
+                "list": [
+                    'Short clips convert comfortably; a feature-length file is the wrong job for a browser tab.',
+                    'Keep the tab in the foreground — background tabs are throttled and the work stalls.',
+                    'Trim first, then convert, so the encode processes only the part you are keeping.',
+                    'Nothing is uploaded, which is also why your machine does all the work and can take a while.',
+                ],
+            },
+        ],
+    },
+    'pdf': {
+        "title": 'Assembling images into a PDF that behaves',
+        "sections": [
+            {
+                "h": 'A PDF of photos is a container, not a compressor',
+                "p": [
+                    'Placing images in a PDF does not shrink them. JPEG data is normally embedded as-is, so the document is roughly the sum of its images plus a small amount of structure — twenty 4 MB photos produce a document around 80 MB.',
+                    'If the result needs to fit an upload limit, compress the images before assembling rather than looking for a setting afterwards. That ordering also keeps you in control of the quality trade instead of leaving it to a generic optimiser.',
+                ],
+            },
+            {
+                "h": 'Page size versus image shape',
+                "p": [
+                    'A4 and Letter are both close to a 1:1.41 and 1:1.29 ratio, while phone photos are 4:3 or 16:9. Something has to give: fit the image inside the page and accept margins, or size the page to the image and get a document whose pages are all different shapes.',
+                    'For anything that will be printed, choose the standard page size — a printer handling twenty differently shaped pages produces twenty differently scaled results. For a document that will only ever be viewed on screen, fitting the page to the image looks better.',
+                ],
+            },
+            {
+                "h": 'Order, orientation and the scanning case',
+                "p": [
+                    'The most common real use is turning photographed documents into one file to send. Two things make that pass without a complaint: pages in the right order, and every page the same way up.',
+                    'Photographs carry an orientation flag that viewers honour inconsistently, so a page that looked upright in your gallery can arrive sideways. Rotating before assembly, rather than relying on the flag, removes the problem.',
+                ],
+            },
+            {
+                "h": 'What a PDF of images cannot do',
+                "p": [
+                    'The output contains pictures of text, not text. Nobody can search it, select from it, or have a screen reader read it aloud, and some organisations reject exactly this kind of submission.',
+                    'If searchable text matters, run recognition over the pages and keep the text alongside the document. It is also worth remembering that photographs of documents carry the metadata of the photograph, including where it was taken.',
+                ],
+            },
+        ],
+    },
+    # --- Landing + comparison pages (1.11) ---
+    'priv_hub': {
+        "title": "What 'runs on your device' means technically",
+        "sections": [
+            {
+                "h": 'Where the computation physically happens',
+                "p": [
+                    "A conventional image service accepts an upload, processes the file on a server it controls, and sends a result back. Your file exists on that machine for at least the duration of the job, and in practice for as long as the operator's retention policy says.",
+                    "These tools compile the same work — segmentation models, image codecs, PDF rendering, text recognition — to WebAssembly and run it inside the browser tab. The file is read from disk into the page's memory, transformed there, and written back out. There is no request carrying it anywhere, because no part of the pipeline lives anywhere else.",
+                ],
+            },
+            {
+                "h": 'Why this is a structural property, not a policy',
+                "p": [
+                    'A privacy policy is a promise about what a company will do with data it already holds. It can be revised, misapplied, or made irrelevant by a breach or an acquisition, and none of those events require anyone to act in bad faith.',
+                    'An architecture that never receives the data has nothing to revise. The distinction matters most for exactly the files people are most careful with — identity documents, medical letters, photographs of children — and it is the one claim an upload-based competitor cannot copy without rebuilding their product.',
+                ],
+            },
+            {
+                "h": 'What the server still sees',
+                "p": [
+                    'It would be dishonest to claim nothing is observable. Requesting a page is a request, so the hosting provider sees an IP address, a timestamp and which URL was fetched, exactly as it does for any website.',
+                    'The AI model weights are fetched once from a public CDN, so that CDN sees a download of a public file. What none of them see is your image, because it is never part of any request.',
+                ],
+            },
+            {
+                "h": 'The costs of doing it this way',
+                "p": [
+                    'Local processing is a real trade rather than a free win, and it is worth being straight about the losses.',
+                ],
+                "list": [
+                    'The first background removal downloads a model, which is a genuine wait on a slow connection.',
+                    'Your device does the work, so an old phone is slower than a rented GPU would be.',
+                    "Very large files are bounded by the tab's memory rather than by a server's.",
+                    'Cloud services with far larger models beat these tools on the hardest inputs.',
+                ],
+            },
+        ],
+    },
+    'priv_no_upload': {
+        "title": 'How to check a no-upload claim yourself',
+        "sections": [
+            {
+                "h": 'Watch the network panel',
+                "p": [
+                    'Every browser ships developer tools with a network tab that lists every request the page makes. Open it, clear it, then run the tool on an image and watch what appears.',
+                    "A tool that processes locally shows requests for its own code and assets and then nothing while the work happens. A tool that uploads shows a request carrying a payload roughly the size of your file — which is unmistakable, because a photograph is orders of magnitude larger than the page's own traffic.",
+                ],
+            },
+            {
+                "h": 'The offline test is simpler and harder to fake',
+                "p": [
+                    'Load the page, then disconnect from the network entirely, then use the tool. Software that needs a server cannot work without one, so if the result still appears, the computation happened on your machine.',
+                    'This is a stronger check than reading any policy, because it tests the thing itself rather than a description of it. The one caveat is the first run, which may need to fetch a model before it can go offline.',
+                ],
+            },
+            {
+                "h": 'What a claim of deletion actually promises',
+                "p": [
+                    'Services that upload frequently promise deletion after an interval — an hour, a day. That is a meaningful commitment and a much weaker one than it sounds: it concedes the file was transmitted, stored, and readable by that system for the window in question.',
+                    'It also cannot cover copies that left the primary store: backups, logs, the CDN, a queue, an error report containing the file. Deletion is a process rather than an event, which is why not receiving the file is a different category of assurance.',
+                ],
+            },
+            {
+                "h": 'Signals that a tool is not local',
+                "p": [
+                    'Some behaviours are only possible with a server, whatever the marketing says.',
+                ],
+                "list": [
+                    "A progress bar that tracks 'uploading' rather than processing.",
+                    'A result delivered as a link to a hosted file rather than a direct download.',
+                    'A hard file-size cap in the low megabytes — a server cost, not a browser limit.',
+                    'An account requirement for processing, which implies work tied to an identity.',
+                    'Nothing works with the network off, after the page has loaded.',
+                ],
+            },
+        ],
+    },
+    'priv_offline': {
+        "title": 'Why these tools keep working without a connection',
+        "sections": [
+            {
+                "h": 'A service worker holds the app',
+                "p": [
+                    "The first visit installs a small script that sits between the page and the network and keeps a copy of the site's own files — the HTML shell, the stylesheet, the scripts each tool needs.",
+                    'On later visits it can answer from that cache. So a tool loads with no connection at all, which is why the site behaves like an installed application rather than a page you have to be online to reach.',
+                ],
+            },
+            {
+                "h": 'The model is cached separately, and it is the big one',
+                "p": [
+                    'Background removal needs neural network weights, which are far larger than the rest of the site combined. They are fetched once and then stored, so the wait happens on the first cut-out and not again.',
+                    'This is the one part that genuinely requires a connection the first time. Tools that need no model — cropping, converting, compressing, resizing — work offline from the first visit onward.',
+                ],
+            },
+            {
+                "h": 'Offline as evidence rather than convenience',
+                "p": [
+                    'The useful property here is not that you can edit photos on a plane. It is that working offline is only possible if the processing was never remote, which makes it a demonstration rather than a claim.',
+                    "Any tool that stops working when the network does was sending your file somewhere. That inference runs one way and needs no trust in anybody's documentation.",
+                ],
+            },
+            {
+                "h": 'How updates reach a cached copy',
+                "p": [
+                    "Caching aggressively creates the opposite problem: a stale copy that never changes. The worker fetches from the network first for the site's own files when a connection exists, and falls back to the cache when it does not.",
+                    'In practice a deployment is picked up the next time you load the site online, while an offline visit continues to work from what was stored. The model is treated the other way round — cache first, since a fixed set of weights has no reason to be re-checked.',
+                ],
+            },
+        ],
+    },
+    'alternative': {
+        "title": 'The economics behind per-image pricing',
+        "sections": [
+            {
+                "h": 'Why cloud removal has to be metered',
+                "p": [
+                    'Running a segmentation model on a server means renting a GPU by the second. Every image has a marginal cost, so the business is obliged to count images — credits, subscriptions and per-image tiers are consequences of the architecture rather than pricing strategy.',
+                    "Moving the model into the visitor's browser removes that cost entirely. An additional image costs the operator nothing, which is why there is no counter here: there is nothing to meter.",
+                ],
+            },
+            {
+                "h": 'What paid services genuinely buy you',
+                "p": [
+                    'It would be misleading to suggest the paid tools offer nothing. They run larger models than a browser can download, which shows on the hardest inputs — fine hair against a busy background, motion blur, semi-transparent fabric.',
+                    'They also offer batch APIs, service levels and integrations that matter if background removal is part of an automated pipeline processing thousands of images a day. If that is the job, an API is the right tool and this is not.',
+                ],
+            },
+            {
+                "h": 'The resolution and watermark question',
+                "p": [
+                    'The most common complaint about free tiers is not the image limit but what arrives at the end: a preview at reduced resolution, or a watermark, with the full-quality file behind a payment step. The work is done and then withheld.',
+                    'Nothing is withheld here because there is no paid tier to protect. Exports are full resolution and unwatermarked, which is a consequence of having nothing to upsell rather than generosity.',
+                ],
+            },
+            {
+                "h": 'Choosing between them honestly',
+                "p": [
+                    'The decision is usually straightforward once framed by volume and sensitivity.',
+                ],
+                "list": [
+                    'Occasional images, done by hand: a local tool, with no account and no per-image cost.',
+                    'Sensitive images: local, because the file is never transmitted.',
+                    'Thousands of images through an automated pipeline: a paid API.',
+                    'One unusually difficult image where quality matters more than anything: try both.',
+                ],
+            },
+        ],
+    },
+    'cmp_tinypng': {
+        "title": 'How image compressors actually differ',
+        "sections": [
+            {
+                "h": 'Quantisation versus quality settings',
+                "p": [
+                    'The best-known PNG compressors work largely by reducing the number of distinct colours in an image and storing it as an indexed palette. On interface graphics, logos and flat illustration this is close to free — such images contain few colours to begin with — and it produces the dramatic reductions those tools are known for.',
+                    'On a photograph the same technique is much less effective, because photographs contain thousands of colours that cannot be discarded without visible banding. That is why compression results vary so much by image type rather than by tool.',
+                ],
+            },
+            {
+                "h": 'Targeting a size instead of a quality',
+                "p": [
+                    "Most compressors expose a quality slider, which answers the wrong question when you have a hard limit to meet. Being told an image is 'quality 80' does not tell you whether it fits under a two megabyte cap.",
+                    'Searching for the quality that lands just under a target size answers the actual question, at the cost of encoding the image several times. Done in the browser that is only your own processing time, which is why the approach is practical here.',
+                ],
+            },
+            {
+                "h": 'Changing the format usually beats tuning the quality',
+                "p": [
+                    'A JPEG squeezed hard develops blocking artefacts long before it approaches the size of the same image encoded as WebP at a comfortable quality. Format choice moves the whole curve; the quality slider only moves you along it.',
+                    'The reason to stay with the original format is compatibility with wherever the file is going, which is a real constraint for email attachments and upload forms. Where you control the destination, converting is usually the larger win.',
+                ],
+            },
+            {
+                "h": 'The batch and privacy trade',
+                "p": [
+                    'Upload-based compressors typically cap free use by file count or size per month, because each image consumes their bandwidth twice.',
+                ],
+                "list": [
+                    'Local compression has no monthly quota, because there is no bandwidth to consume.',
+                    'Your device does the encoding, so a large batch takes real time on an old machine.',
+                    'Nothing is transmitted, which matters for unreleased product shots and personal photos.',
+                    'Dedicated encoders can still edge out a browser on absolute ratio for a given format.',
+                ],
+            },
+        ],
+    },
+    'cmp_canva': {
+        "title": 'Design suites and utilities solve different problems',
+        "sections": [
+            {
+                "h": 'Composition versus a single transformation',
+                "p": [
+                    'A design suite exists to help you make something new: a layout with type, shapes, images and a brand system, assembled on a canvas and revisited over time. That work needs projects, templates, fonts and collaboration, and a cloud account is a reasonable price for it.',
+                    'A utility exists to apply one transformation to a file you already have. Cropping to an exact ratio or stripping a background is a job with a beginning and an end, and wrapping it in a document model adds steps rather than capability.',
+                ],
+            },
+            {
+                "h": 'The account is the actual difference',
+                "p": [
+                    'Cloud design tools require an account because the document lives on their servers — that is what makes it openable from another machine and editable with a colleague. The requirement follows from the feature.',
+                    'For a one-off transformation the same requirement is pure overhead: a signup, a verification email and a stored copy of your image, in exchange for an operation that finishes in seconds and produces a file you download immediately.',
+                ],
+            },
+            {
+                "h": 'Where the free tier tends to stop',
+                "p": [
+                    'Free tiers of design suites are generous with templates and restrictive at the export step, which is where the value is captured — resolution limits, watermarks, or a background-removal feature reserved for the paid plan.',
+                    'That is a coherent business model and it means the last step of your work is the one you cannot finish. A utility with nothing to sell has no reason to place a gate there.',
+                ],
+            },
+            {
+                "h": 'Using both, which is the usual answer',
+                "p": [
+                    'These are complements far more often than alternatives.',
+                ],
+                "list": [
+                    'Cut out, crop, compress or convert the asset here, with no account and at full resolution.',
+                    'Take the finished asset into a design tool for layout, type and brand work.',
+                    'Keep sensitive source images out of a cloud project by transforming them locally first.',
+                    'Use a design suite when the output is a composition; use a utility when it is a file.',
+                ],
+            },
+        ],
+    },
+    'cmp_cloudconvert': {
+        "title": 'What a browser can convert, and what it cannot',
+        "sections": [
+            {
+                "h": 'Formats a browser already understands',
+                "p": [
+                    'Browsers ship with decoders and encoders for the image formats the web runs on, and a canvas can move pixels between them. That covers the overwhelming majority of real conversion requests — JPEG, PNG, WebP and, in current browsers, AVIF.',
+                    'Formats the browser does not know can still be handled by shipping a decoder compiled to WebAssembly, which is how HEIC from an iPhone and PDF rendering work here. The cost is a one-time download of that decoder.',
+                ],
+            },
+            {
+                "h": 'Where a conversion service is genuinely the right tool',
+                "p": [
+                    'General-purpose converters cover hundreds of formats, including proprietary and professional ones — CAD drawings, camera raw files from every manufacturer, legacy office documents, archive video codecs.',
+                    'Supporting that breadth means running a large collection of specialised binaries, which is server work. If you need a Photoshop file flattened or a raw file developed, that is what those services are for and a browser is not a substitute.',
+                ],
+            },
+            {
+                "h": 'Queues, quotas and the round trip',
+                "p": [
+                    'A server-side conversion has a shape: upload, wait in a queue, convert, download. For a large file on a domestic connection the transfer dominates, and free tiers add queue priority as one of the things you are paying to skip.',
+                    'A local conversion has no upload, no queue and no download — it starts immediately and is bounded by your own processor. For a common format that is usually faster in wall-clock terms even when the server is more powerful.',
+                ],
+            },
+            {
+                "h": 'Choosing between the two',
+                "p": [
+                    'The dividing line is format breadth against transmission.',
+                ],
+                "list": [
+                    'Everyday web and phone image formats: local, with no upload and no quota.',
+                    'Professional, proprietary or archival formats: a dedicated conversion service.',
+                    'Anything confidential, in a common format: local, because it never leaves.',
+                    'Automated conversion inside a pipeline: an API, which a browser cannot provide.',
+                ],
+            },
+        ],
+    },
+    'heic_iphone': {
+        "title": 'Two iPhone settings that decide what you get',
+        "sections": [
+            {
+                "h": 'The capture format',
+                "p": [
+                    "Settings, then Camera, then Formats offers 'High Efficiency' and 'Most Compatible'. The first captures HEIC and roughly halves the storage each photo uses. The second captures JPEG and produces files that open anywhere.",
+                    'The trade is storage and colour depth against compatibility. Nothing here changes photos you have already taken, which is why switching it rarely solves the problem someone actually has.',
+                ],
+            },
+            {
+                "h": 'The transfer setting most people never see',
+                "p": [
+                    "At the bottom of Settings, then Photos, there is 'Transfer to Mac or PC' with two options. On 'Automatic' the phone converts HEIC to JPEG as it copies over a cable. On 'Keep Originals' it hands across the HEIC untouched.",
+                    'A great many people have this on Keep Originals without knowing, which is why photos that display perfectly on the phone arrive on a laptop as files nothing will open. Changing it fixes future cable transfers and does nothing for files already copied.',
+                ],
+            },
+            {
+                "h": 'Why the route off the phone matters',
+                "p": [
+                    'The same photo arrives in different formats depending on how it travelled. AirDrop to a Mac preserves HEIC. Most messaging apps convert to JPEG and heavily recompress. Email attachments are often converted. A cable transfer depends on the setting above.',
+                    "So 'I already sent it to myself' is not a reliable conversion step — it frequently produces a much lower quality JPEG than converting deliberately would, because a chat app optimises for bandwidth rather than for your photo.",
+                ],
+            },
+            {
+                "h": 'Converting a backlog',
+                "p": [
+                    'For photos already taken, converting is the only route, and the order of operations matters.',
+                ],
+                "list": [
+                    'Work from the HEIC originals rather than from anything a chat app returned.',
+                    'Convert the batch once — repeated JPEG encodes compound the loss.',
+                    'Choose PNG instead if the photo is going into further editing.',
+                    'Keep the originals until you have checked the output, then reclaim the space.',
+                ],
+            },
+        ],
+    },
+    'heic_windows': {
+        "title": 'Making Windows open iPhone photos',
+        "sections": [
+            {
+                "h": 'Why Windows needs an extension at all',
+                "p": [
+                    'HEIC images are compressed with HEVC, a codec covered by a large and fragmented set of patent pools. Bundling a decoder with the operating system means licensing from several of them, which is why Microsoft ships it as a separate component rather than including it.',
+                    'The practical result is a file the operating system recognises by name and cannot display, producing an error that suggests corruption when the file is perfectly valid.',
+                ],
+            },
+            {
+                "h": 'The extensions, and the confusing part',
+                "p": [
+                    'Two items are involved: HEIF Image Extensions, which handles the container, and HEVC Video Extensions, which handles the actual decoding. Photos need both, and the second has at various times been a paid listing while a device-manufacturer variant was free.',
+                    'This is why instructions found online contradict each other — they were written at different points in that history, and availability has also varied by region and Windows version.',
+                ],
+            },
+            {
+                "h": 'What installing them does not fix',
+                "p": [
+                    'The extensions teach Windows itself to display HEIC. They do not teach every application: older editors, many upload forms, and a great deal of third-party software still refuse the format, because each carries its own image loading code.',
+                    "So installing them solves 'I want to look at my photos on this laptop' and does not solve 'I need to attach this to a form' or 'I need to send it to someone else'. Those need an actual conversion.",
+                ],
+            },
+            {
+                "h": 'Converting instead of installing',
+                "p": [
+                    'Converting to JPEG sidesteps the codec question entirely and produces files that work in every application on every machine, including the ones you are sending them to.',
+                ],
+                "list": [
+                    'No system component to install, and no administrator rights required.',
+                    'The result opens on Windows, Android, older software and web forms alike.',
+                    'A browser-based converter carries its own decoder, so it works on a machine that cannot display HEIC at all.',
+                    'Convert from the originals, once, and keep them until you have checked the output.',
+                ],
+            },
+        ],
+    },
+    'ocr_extract': {
+        "title": 'Pulling text out of a screenshot in practice',
+        "sections": [
+            {
+                "h": 'Capture at the size you will recognise',
+                "p": [
+                    'The single biggest determinant of accuracy is how many pixels tall the letters are, and a screenshot is the one input where you fully control that. Zoom the page or application before capturing rather than enlarging the image afterwards.',
+                    'Enlarging a small screenshot cannot add the detail that distinguishes similar characters, so the recognised text degrades in exactly the places that matter — digits, punctuation and short words.',
+                ],
+            },
+            {
+                "h": 'Crop to the text and nothing else',
+                "p": [
+                    'Before characters are identified, the page is analysed for structure: blocks, columns, reading order. Interface furniture around your text — toolbars, sidebars, tab strips — is analysed too, and can produce output interleaved in an order nobody wanted.',
+                    "Cropping tightly to the passage removes that ambiguity and usually fixes 'the words are right but jumbled' without touching any other setting.",
+                ],
+            },
+            {
+                "h": 'Interfaces that are hard to read',
+                "p": [
+                    'Modern interface design works against recognition in two specific ways. Low-contrast grey text on a slightly lighter grey thresholds unpredictably, and text placed over photographs or gradients has no consistent background to separate from.',
+                    'Dark mode is worth mentioning: light text on a dark background is handled by most engines, but a screenshot mixing dark panels and light ones can threshold inconsistently across the image. Capturing in light mode is a surprisingly effective fix.',
+                ],
+            },
+            {
+                "h": 'Expect to proofread the ambiguous characters',
+                "p": [
+                    'Recognition resolves uncertain shapes using a model of the language, which is why errors cluster where that model has no help to offer.',
+                ],
+                "list": [
+                    'Digits and letters that share shapes: 0/O, 1/l/I, 5/S, 8/B.',
+                    'Serial numbers, licence keys and codes — no language model can validate them.',
+                    'Line breaks, which are guessed from spacing rather than read.',
+                    'Accented characters when the language is set wrongly.',
+                ],
+            },
+        ],
+    },
+    'compress_video': {
+        "title": 'Why video files are large and what actually shrinks them',
+        "sections": [
+            {
+                "h": 'Bitrate is the number that matters',
+                "p": [
+                    "A video's size is essentially its bitrate multiplied by its duration. Resolution, frame rate and codec all matter because of how they push the bitrate needed for a given appearance, but the file size follows the bitrate.",
+                    'This is why a short 4K clip can dwarf a long, low-resolution one, and why trimming is such an effective saving: it reduces the multiplier directly, with no quality cost at all.',
+                ],
+            },
+            {
+                "h": 'Resolution is usually the honest cut',
+                "p": [
+                    'Halving the width and height quarters the pixels the encoder has to describe, and for footage destined for a phone screen or a chat window the difference is frequently invisible.',
+                    'Most footage is captured at a resolution chosen by the camera rather than by the use. A clip shot in 4K and destined for a messaging app is carrying four times the pixels of a 1080p version that would look identical at its viewing size.',
+                ],
+            },
+            {
+                "h": 'Audio is a bigger share than people expect',
+                "p": [
+                    'Uncompressed or high-bitrate audio can account for a surprising portion of a short clip. Reducing it to a sensible compressed bitrate, or dropping it entirely for a silent demonstration, is a quick and visually free saving.',
+                    'Dropping audio has a second benefit on the web, where autoplay policies are far more permissive for silent video than for anything with a soundtrack.',
+                ],
+            },
+            {
+                "h": "Working within the browser's limits",
+                "p": [
+                    'Encoding video in a page is genuinely demanding, and being realistic about the ceiling saves frustration.',
+                ],
+                "list": [
+                    'Trim first so the encoder only processes what you are keeping.',
+                    'Drop the resolution to the viewing size before adjusting anything else.',
+                    'Remove the audio track when the clip is a silent demonstration.',
+                    'Keep the tab in the foreground; background tabs are throttled and the encode stalls.',
+                ],
+            },
+        ],
+    },
 }
 
 

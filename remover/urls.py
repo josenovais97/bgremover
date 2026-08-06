@@ -83,6 +83,7 @@ urlpatterns = [
     path("manifest.webmanifest", views.manifest, name="manifest"),
     path("favicon.ico", RedirectView.as_view(url=static("img/favicon.ico"), permanent=False)),
     path("healthz", views.healthz, name="healthz"),
+    path("ads.txt", views.ads_txt, name="ads_txt"),
     path("robots.txt", views.robots_txt, name="robots"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap"),
     # Yandex Webmaster site-ownership verification file.

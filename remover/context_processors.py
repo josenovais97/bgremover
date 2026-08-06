@@ -428,7 +428,13 @@ def seo(request):
     # The guides are long-form editorial, which is both the best place on the site
     # for an in-content unit and the kind of page an ad network expects to see one
     # on. The interactive tool pages stay ad-free.
-    ads_allowed = url_name in {"use_case", "guide", "guides"} and url_name not in ISOLATED_VIEWS
+    #
+    # The use-case landings used to carry ads too and no longer do. They are eleven
+    # framings of one tool ("remove the background from X"), and at roughly half a
+    # guide's unique word count they were the thinnest pages on the site carrying
+    # ad code — precisely the pattern a "low value content" review is looking for.
+    # Ads follow the editorial, not the traffic.
+    ads_allowed = url_name in {"guide", "guides"} and url_name not in ISOLATED_VIEWS
     alternates = _alternate_urls(request)
     canonical_url = _canonical_url(request)
     accent, accent_hover, accent_text_dark, accent_text_dark_alt = TOOL_ACCENTS.get(

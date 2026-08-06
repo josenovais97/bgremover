@@ -149,6 +149,16 @@
                                 <span>{% t "All tools" %}</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform" data-chevron aria-hidden="true"></i>
                             </button>
+                            {% comment %}Guides sit in the top nav, not only in the footer. They are
+                            the site's only editorial content, and a visitor — or a quality reviewer —
+                            who never scrolls to the footer would see a toolbox and conclude the site
+                            is nothing else. It is the one non-tool entry in this row, so it is
+                            separated by a divider rather than styled as another tool.{% endcomment %}
+                            <span class="shrink-0 w-px h-4 mx-1 bg-gray-300 dark:bg-gray-700" aria-hidden="true"></span>
+                            <a id="nav-guides" {% if active == "guide" or active == "guides" %}data-active{% endif %} href="{% url 'remover:guides' %}" {% if active == "guide" or active == "guides" %}aria-current="page"{% endif %} class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors {% if active == 'guide' or active == 'guides' %}bg-white dark:bg-gray-800 text-primaryText shadow-sm{% else %}text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200{% endif %}">
+                                <i class="fa-solid fa-bookmark text-[11px]" aria-hidden="true"></i>
+                                <span>{% t "Guides" %}</span>
+                            </a>
                         </nav>
 
                         <!-- Grouped "All tools" mega-menu. Server-rendered from tool_groups so
