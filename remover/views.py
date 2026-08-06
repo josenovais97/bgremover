@@ -62,6 +62,9 @@ from .seo_content import (
     OCR_FAQS,
     SVG_TO_PNG_FAQS,
     PHOTO_FILTERS_FAQS,
+    EXIF_PRIVACY,
+    REDACT_PRIVACY,
+    PASSPORT_PRIVACY,
     faq_jsonld,
 )
 from .translations import (
@@ -163,7 +166,7 @@ USE_CASES = [
         ],
         "benefits": [
             {"icon": "fa-user", "title": "Flattering cut-outs", "text": "Trained to handle hair and soft edges, with a refine brush for the finishing touches."},
-            {"icon": "fa-palette", "title": "Any background color", "text": "Match a brand palette or a plain studio backdrop, then export PNG, JPG or WEBP."},
+            {"icon": "fa-swatchbook", "title": "Any background color", "text": "Match a brand palette or a plain studio backdrop, then export PNG, JPG or WEBP."},
             {"icon": "fa-shield-halved", "title": "Private by design", "text": "Your face never leaves your browser — nothing is sent to a server."},
         ],
     },
@@ -196,7 +199,7 @@ USE_CASES = [
             "Since the whole process runs in your browser, your signature — a sensitive piece of information — is never uploaded to a server.",
         ],
         "benefits": [
-            {"icon": "fa-file-signature", "title": "Document-ready", "text": "Get transparent ink you can drop straight into PDFs, contracts and letters."},
+            {"icon": "fa-stamp", "title": "Document-ready", "text": "Get transparent ink you can drop straight into PDFs, contracts and letters."},
             {"icon": "fa-shield-halved", "title": "Kept private", "text": "Your signature never leaves your device — nothing is sent anywhere."},
             {"icon": "fa-wand-magic-sparkles", "title": "Clean isolation", "text": "Separates ink from paper texture and shadows, with a brush to refine the result."},
         ],
@@ -213,9 +216,9 @@ USE_CASES = [
             "Because the AI runs locally in your browser, you can process a whole lot of stock without uploading a single photo, hitting an API limit, or paying per image.",
         ],
         "benefits": [
-            {"icon": "fa-car", "title": "Showroom-clean", "text": "Swap a messy forecourt for a spotless studio-style backdrop that keeps the focus on the car."},
+            {"icon": "fa-square-full", "title": "Showroom-clean", "text": "Swap a messy forecourt for a spotless studio-style backdrop that keeps the focus on the car."},
             {"icon": "fa-layer-group", "title": "Whole-lot batches", "text": "Drop in dozens of shots at once and download them together as a ZIP."},
-            {"icon": "fa-bolt", "title": "Instant & free", "text": "No per-photo cost and no watermark — full-resolution output every time."},
+            {"icon": "fa-clock", "title": "Instant & free", "text": "No per-photo cost and no watermark — full-resolution output every time."},
         ],
     },
     {
@@ -230,8 +233,8 @@ USE_CASES = [
             "It all runs in your browser at full resolution, so you can prep an entire wardrobe of listings privately — no uploads, no per-photo fees.",
         ],
         "benefits": [
-            {"icon": "fa-shirt", "title": "Sellable in seconds", "text": "Clean cut-outs of tops, dresses and shoes that look at home in any shop grid."},
-            {"icon": "fa-tags", "title": "Consistent listings", "text": "Give every item the same tidy backdrop so your storefront looks professional."},
+            {"icon": "fa-store", "title": "Sellable in seconds", "text": "Clean cut-outs of tops, dresses and shoes that look at home in any shop grid."},
+            {"icon": "fa-bookmark", "title": "Consistent listings", "text": "Give every item the same tidy backdrop so your storefront looks professional."},
             {"icon": "fa-shield-halved", "title": "Private by design", "text": "Your photos never leave your device — nothing is uploaded to a server."},
         ],
     },
@@ -247,9 +250,9 @@ USE_CASES = [
             "Everything happens on your device, so you can experiment with as many photos as you like — no uploads, no limits, and no watermark.",
         ],
         "benefits": [
-            {"icon": "fa-paw", "title": "Great with fur", "text": "Trained to handle soft edges, fur and whiskers for a natural-looking cut-out."},
+            {"icon": "fa-brush", "title": "Great with fur", "text": "Trained to handle soft edges, fur and whiskers for a natural-looking cut-out."},
             {"icon": "fa-wand-magic-sparkles", "title": "Refine by hand", "text": "Tidy leftover background or restore fine detail with the built-in edge brush."},
-            {"icon": "fa-heart", "title": "Print & sticker ready", "text": "Full-resolution transparent PNGs for mugs, stickers, prints and memes."},
+            {"icon": "fa-note-sticky", "title": "Print & sticker ready", "text": "Full-resolution transparent PNGs for mugs, stickers, prints and memes."},
         ],
     },
     {
@@ -264,8 +267,8 @@ USE_CASES = [
             "It runs entirely in your browser at full resolution, so creators can turn thumbnails around fast — no uploads, no subscriptions, and no watermark.",
         ],
         "benefits": [
-            {"icon": "fa-clapperboard", "title": "Made for creators", "text": "Clean cut-outs of you or your subject to pop against any thumbnail background."},
-            {"icon": "fa-bolt", "title": "Fast turnaround", "text": "Removes the background in seconds so you can ship the thumbnail and hit publish."},
+            {"icon": "fa-camera", "title": "Made for creators", "text": "Clean cut-outs of you or your subject to pop against any thumbnail background."},
+            {"icon": "fa-clock", "title": "Fast turnaround", "text": "Removes the background in seconds so you can ship the thumbnail and hit publish."},
             {"icon": "fa-crop-simple", "title": "Full quality", "text": "Full-resolution transparent PNGs with no watermark, ready for any editor."},
         ],
     },
@@ -281,9 +284,9 @@ USE_CASES = [
             "Because the AI runs locally in your browser, you can prep an entire inventory without uploading a single photo, hitting an API limit, or paying per image.",
         ],
         "benefits": [
-            {"icon": "fa-tag", "title": "Sell faster", "text": "Clean white backgrounds make items look professional and build buyer trust."},
+            {"icon": "fa-bookmark", "title": "Sell faster", "text": "Clean white backgrounds make items look professional and build buyer trust."},
             {"icon": "fa-layer-group", "title": "Batch your inventory", "text": "Drop in dozens of items at once and download them together as a ZIP."},
-            {"icon": "fa-bolt", "title": "Free & unlimited", "text": "No per-photo cost and no watermark — full-resolution output every time."},
+            {"icon": "fa-circle-check", "title": "Free & unlimited", "text": "No per-photo cost and no watermark — full-resolution output every time."},
         ],
     },
     {
@@ -298,8 +301,8 @@ USE_CASES = [
             "Everything happens on your device, so you can try as many looks as you like — no uploads, no limits, and no watermark.",
         ],
         "benefits": [
-            {"icon": "fa-circle-user", "title": "Crisp avatars", "text": "Clean cut-outs that read well even at Discord's small avatar size."},
-            {"icon": "fa-palette", "title": "Any color or gradient", "text": "Drop your cut-out onto a solid color, gradient or blurred backdrop, then crop to a circle."},
+            {"icon": "fa-user", "title": "Crisp avatars", "text": "Clean cut-outs that read well even at Discord's small avatar size."},
+            {"icon": "fa-swatchbook", "title": "Any color or gradient", "text": "Drop your cut-out onto a solid color, gradient or blurred backdrop, then crop to a circle."},
             {"icon": "fa-shield-halved", "title": "Private by design", "text": "Your photo never leaves your browser — nothing is uploaded to a server."},
         ],
     },
@@ -315,8 +318,8 @@ USE_CASES = [
             "It all runs in your browser at full resolution, so you can build a whole set of on-brand graphics privately — no uploads, no per-image fees, no watermark.",
         ],
         "benefits": [
-            {"icon": "fa-tower-broadcast", "title": "No green screen", "text": "Get a clean cut-out from any photo — no chroma key or studio setup needed."},
-            {"icon": "fa-icons", "title": "Panels & emotes", "text": "Transparent PNGs ready for overlays, panels, schedules and emote art."},
+            {"icon": "fa-wand-magic-sparkles", "title": "No green screen", "text": "Get a clean cut-out from any photo — no chroma key or studio setup needed."},
+            {"icon": "fa-images", "title": "Panels & emotes", "text": "Transparent PNGs ready for overlays, panels, schedules and emote art."},
             {"icon": "fa-crop-simple", "title": "Full quality", "text": "Full-resolution, watermark-free exports for any streaming layout tool."},
         ],
     },
@@ -1010,6 +1013,8 @@ _CORE_TRANSLATED = frozenset(
     # FAQ accordion + JSON-LD via translations.localize_faqs.
     + ["/remove-object/", "/photo-filters/", "/upscale/", "/heic-to-jpg/",
        "/pdf-to-image/", "/image-to-text/", "/svg-to-png/"]
+    # 1.11 adds the two highest-intent privacy/utility pages on the same terms.
+    + ["/resize-image/", "/exif-remover/"]
 )
 
 TRANSLATED_PATHS = {lang: _CORE_TRANSLATED for lang in LANGUAGES}
@@ -1316,6 +1321,7 @@ def passport(request):
         "countries": COUNTRIES,
         "faqs": PASSPORT_FAQS,
         "faq_jsonld": faq_jsonld(PASSPORT_FAQS),
+        "privacy": PASSPORT_PRIVACY,
     })
 
 
@@ -1443,6 +1449,7 @@ def redact(request):
     return render(request, "remover/redact.html", {
         "faqs": REDACT_FAQS,
         "faq_jsonld": faq_jsonld(REDACT_FAQS),
+        "privacy": REDACT_PRIVACY,
     })
 
 
@@ -1506,6 +1513,7 @@ def exif(request):
     return render(request, "remover/exif.html", {
         "faqs": EXIF_FAQS,
         "faq_jsonld": faq_jsonld(EXIF_FAQS),
+        "privacy": EXIF_PRIVACY,
     })
 
 

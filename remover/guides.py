@@ -45,6 +45,12 @@ _NAV_LABELS = {
     "on-device-vs-cloud-image-tools": "On-device vs cloud",
     "shooting-for-clean-cutouts": "Shooting for cut-outs",
     "colour-profiles-explained": "Colour profiles",
+    "heic-and-why-your-photos-will-not-open": "HEIC photos",
+    "making-stickers-for-whatsapp-and-telegram": "Chat stickers",
+    "qr-codes-that-actually-scan": "QR codes",
+    "favicons-that-work-everywhere": "Favicons",
+    "gif-versus-video-for-short-clips": "GIF vs video",
+    "getting-text-out-of-images-with-ocr": "OCR & text",
 }
 
 
@@ -1189,6 +1195,563 @@ GUIDES = [
              "a": "A block of metadata embedded in an image that states which colour space its pixel values belong to, so software can convert them correctly for whatever display is attached. Without it, viewers guess — and they guess sRGB."},
             {"q": "Does removing metadata affect image colour?",
              "a": "It can. If a tool strips all metadata including the ICC profile, a wide-gamut image loses its definition and will be interpreted as sRGB, which usually makes it look flat. Tools aimed at privacy should remove EXIF and GPS while keeping the colour profile."},
+        ],
+    ),
+    _guide(
+        slug="heic-and-why-your-photos-will-not-open",
+        title="HEIC Explained — Why iPhone Photos Won't Open, and What to Convert To",
+        h1="HEIC: why your iPhone photos will not open anywhere else",
+        description="Why iPhones save photos as HEIC, what the format actually does, which devices refuse it, and how to convert to JPG without throwing away quality.",
+        category="Formats",
+        updated="2026-08-06",
+        intro=[
+            "You send a photo from your iPhone to a colleague and it arrives as a file nothing will open. You upload one to a web form and it is rejected. The photo looks perfectly fine on the phone that took it, which makes the failure feel arbitrary. It is not — the file is HEIC, and most of the computing world still cannot read it.",
+            "This guide explains what HEIC is, why Apple switched to it, exactly where it breaks, and how to get out of it without losing what you paid for in quality.",
+        ],
+        sections=[
+            {
+                "h": "What HEIC actually is",
+                "p": [
+                    "HEIC stands for High Efficiency Image Container. The container is HEIF; the image data inside it is normally encoded with HEVC, also called H.265 — a video codec. That is the whole trick: still photos are compressed with a modern video codec rather than with a 1992 still-image codec, and video codecs have had thirty more years of research poured into them.",
+                    "The result is roughly half the file size of a JPEG at the same visual quality. On a 128 GB phone that shoots 12-megapixel photos, halving the size of every image is not a rounding error — it is thousands of extra photos.",
+                    "HEIC also carries things JPEG structurally cannot: 10-bit colour instead of 8-bit (so skies band less), transparency, image sequences such as Live Photos, and non-destructive edit data. When you crop a photo on an iPhone and can later press Revert, that is the container holding both the edit and the original.",
+                ],
+            },
+            {
+                "h": "Why it fails everywhere else",
+                "p": [
+                    "Apple made HEIC the default in iOS 11 in 2017. Support elsewhere has been slow, and the reason is licensing rather than difficulty. HEVC is covered by a large, fragmented set of patents administered by several separate licensing pools. Shipping a decoder can mean paying more than one of them, which is a straightforward business decision for Apple and an unattractive one for a free operating system, a browser vendor, or a small web service.",
+                    "So the pattern you see is not random. Windows can open HEIC only if you install a codec from the Microsoft Store, which for a period was a paid item. Android added support in version 10, but individual apps still refuse it. Most websites reject it at upload because their server-side image library was built before it existed. Older photo software and print kiosks frequently do not know what it is at all.",
+                    "The confusing part for most people is that the photo works flawlessly on the device that took it and on iMessage, so it does not feel like a broken file. It is a perfectly valid file that most software has chosen not to read.",
+                ],
+                "list": [
+                    "iPhone and Mac: opens natively.",
+                    "Windows 10/11: needs the HEIF and HEVC extensions installed.",
+                    "Android 10 and later: system support, but app support varies.",
+                    "Web upload forms: usually rejected outright.",
+                    "Print shops and older editors: frequently unsupported.",
+                ],
+            },
+            {
+                "h": "The setting that prevents the problem",
+                "p": [
+                    "If you would rather not deal with this again, the iPhone has a switch. Under Settings → Camera → Formats, 'High Efficiency' shoots HEIC and 'Most Compatible' shoots JPEG. Choosing the second one costs you roughly double the storage per photo and the 10-bit colour depth, and buys you files that open anywhere.",
+                    "There is a second, subtler setting worth knowing. Under Settings → Photos, at the very bottom, 'Transfer to Mac or PC' can be set to 'Automatic' or 'Keep Originals'. On Automatic, the phone converts HEIC to JPEG as it transfers over a cable. On Keep Originals, it hands over the raw HEIC and you get the problem back. Many people have this set to Keep Originals without knowing.",
+                    "Neither setting changes photos you have already taken, which is the situation most people are actually in.",
+                ],
+            },
+            {
+                "h": "Converting without wasting the quality you paid for",
+                "p": [
+                    "Converting HEIC to JPEG means decoding the HEVC data and re-encoding it as JPEG. Because JPEG is lossy, this is a generational loss — you are compressing already-compressed data. In practice the loss is invisible at a sensible quality setting, but it is real, and it means you should convert from the original once rather than repeatedly converting the converted file.",
+                    "Two things are genuinely lost and cannot be recovered by any converter. The first is colour depth: HEIC's 10-bit channel becomes JPEG's 8-bit, which can introduce faint banding in large smooth gradients such as a clear sky at sunset. The second is anything that depended on the container — Live Photo motion, depth maps used for portrait blur, and the ability to revert edits. A converted file is a flat, final picture.",
+                    "If you want none of that loss, convert to PNG instead. It is lossless, so the pixels survive exactly, at the cost of a file several times larger than the HEIC you started with. That is the right choice for a photo you intend to edit further, and the wrong one for an email attachment.",
+                ],
+                "list": [
+                    "Converting for a web form or email → JPEG at high quality.",
+                    "Converting because you will edit it further → PNG, or keep the HEIC as your master.",
+                    "Converting a large batch for storage → JPEG; the size saving is the point.",
+                    "Never convert a file that was already converted — go back to the original.",
+                ],
+            },
+            {
+                "h": "Where the conversion happens matters",
+                "p": [
+                    "Most 'HEIC to JPG' results are upload-based services. Your photo travels to a server, is converted there, and comes back. That is a meaningful thing to agree to for a camera roll, which is typically the most personal set of files a person owns, and the photos usually still carry the GPS coordinates of where each was taken.",
+                    "A browser can do this work itself. Decoding HEIC in a page requires a WebAssembly build of libheif, which is a few megabytes and then cached — after that the conversion is local, and the file never leaves the machine. Our HEIC converter works this way, which is also why it keeps working with the network switched off.",
+                    "The practical tell for any converter you are considering: if it can convert with the connection dropped, the work was local. If it cannot, your photos went somewhere.",
+                ],
+            },
+            {
+                "h": "Batch converting a camera roll",
+                "p": [
+                    "The common real task is not one photo, it is four hundred from a holiday. A few things make that go smoothly.",
+                    "Convert from the originals in one pass rather than in several rounds, so you take the generational loss once. Keep the HEIC files until you have confirmed the JPEGs are what you wanted — deleting the masters first is the one irreversible step in the process. And if the destination is a web upload with a size cap, convert first and compress second, as separate decisions; a converter that silently shrinks your images to hit a size target has made a quality choice on your behalf.",
+                    "If the photos are going somewhere public, this is also the natural moment to strip metadata, since you are rewriting every file anyway.",
+                ],
+            },
+        ],
+        takeaways=[
+            "HEIC is a video codec (HEVC) applied to still photos, which is why it halves file size against JPEG.",
+            "It fails outside Apple's ecosystem for patent-licensing reasons, not technical ones — the files are not corrupt.",
+            "Settings → Camera → Formats → 'Most Compatible' stops the problem for future photos, at double the storage.",
+            "Converting to JPEG permanently loses 10-bit colour, Live Photo motion, depth data and the ability to revert edits.",
+            "Convert once from the original, and keep the HEIC masters until you have checked the output.",
+        ],
+        tools=["heic", "convert", "compress", "exif"],
+        faqs=[
+            {"q": "Does converting HEIC to JPG lose quality?",
+             "a": "Slightly, and unavoidably — JPEG is lossy, so re-encoding already-compressed data is a generational loss. At a high quality setting it is not visible. What is genuinely lost is 10-bit colour depth, Live Photo motion and depth data, none of which JPEG can store. Convert to PNG if you need the pixels preserved exactly."},
+            {"q": "Why does my HEIC photo open on my phone but not my laptop?",
+             "a": "Because the file is fine and your laptop lacks a decoder. HEIC uses the HEVC codec, which carries patent licensing costs, so Windows requires an extension from the Microsoft Store and many applications simply never added support."},
+            {"q": "Can I stop my iPhone saving photos as HEIC?",
+             "a": "Yes — Settings → Camera → Formats → Most Compatible. New photos will be JPEG. Existing HEIC photos are unaffected and still need converting."},
+            {"q": "Is it safe to convert HEIC photos online?",
+             "a": "It depends entirely on whether the conversion runs on a server or in your browser. Server-based converters receive your photos, which for a camera roll carrying GPS data is worth thinking about. A browser-based converter decodes locally and uploads nothing — you can verify this by turning off your network and watching it still work."},
+        ],
+    ),
+    _guide(
+        slug="making-stickers-for-whatsapp-and-telegram",
+        title="How to Make WhatsApp and Telegram Stickers That Actually Work",
+        h1="How to make stickers that actually work in WhatsApp and Telegram",
+        description="The real technical rules for WhatsApp and Telegram stickers — 512x512, the 100 KB cap, why transparency matters, and how to make one from a photo.",
+        category="Editing",
+        updated="2026-08-06",
+        intro=[
+            "Sticker packs look like a casual thing, and then you try to make one and discover both apps enforce a surprisingly strict set of rules. Wrong dimensions, wrong format, one kilobyte over the limit, and the app refuses the file with an error that rarely says which rule you broke.",
+            "This guide lists the rules that are actually enforced, explains why each exists, and covers the part most guides skip — how to get a clean cut-out of your subject, which is what separates a sticker from a photo with a white box around it.",
+        ],
+        sections=[
+            {
+                "h": "The rules WhatsApp actually enforces",
+                "p": [
+                    "WhatsApp's requirements are specific and unforgiving. A static sticker must be exactly 512 by 512 pixels, in WebP format, and no larger than 100 kilobytes. Animated stickers get 500 KB and must run no longer than 10 seconds. Each sticker also needs a small margin of transparent padding at the edges, and a pack needs a 96 by 96 pixel tray icon.",
+                    "The 100 KB cap is the one that catches people. It is not a guideline — the file is rejected. It exists because stickers are sent constantly, cached aggressively on device, and often delivered over slow mobile connections in markets where WhatsApp is the primary messaging app. A 2 MB sticker sent to a group of fifty people is a real cost to someone.",
+                    "Hitting 512x512 in WebP under 100 KB is comfortable for illustrations and flat art. It gets tight for photographs, which is why quality often has to be stepped down until the file fits.",
+                ],
+                "list": [
+                    "Static: exactly 512x512 px, WebP, under 100 KB.",
+                    "Animated: 512x512 px, WebP, under 500 KB, max 10 seconds.",
+                    "Tray icon: 96x96 px, PNG, under 50 KB.",
+                    "A pack needs at least 3 and at most 30 stickers.",
+                    "Leave roughly 8-16 px of transparent padding around the subject.",
+                ],
+            },
+            {
+                "h": "Telegram's rules are different",
+                "p": [
+                    "Telegram is looser but not identical, and assuming the two are the same is a common way to waste an afternoon. Telegram stickers must have one side exactly 512 pixels, with the other side 512 or smaller — so 512x384 is legal on Telegram and rejected by WhatsApp.",
+                    "Telegram accepts PNG as well as WebP, which removes the 100 KB squeeze entirely for static stickers, and its file limits are far more generous. Packs are created by messaging @Stickers rather than through a third-party app.",
+                    "The practical consequence: if you want one sticker to work on both platforms, build to WhatsApp's rules. A 512x512 WebP under 100 KB is legal on Telegram too. The reverse is not true.",
+                ],
+            },
+            {
+                "h": "Why transparency is the whole point",
+                "p": [
+                    "A sticker is pasted over a conversation, and chat backgrounds are not white — they are patterned, coloured, dark in dark mode, and set to a photo by a large minority of users. A sticker with a solid background renders as a rectangle sitting on top of the chat, which reads as a mistake even when the image inside it is good.",
+                    "This is why WebP matters beyond file size. WebP supports lossy compression with an alpha channel, a combination PNG cannot offer — PNG transparency is always lossless and therefore large. A photographic cut-out with soft edges can be lossy WebP at 40 KB where the PNG equivalent is 400 KB.",
+                    "The transparent padding around the edge exists for a related reason: both apps draw a subtle outline or shadow behind stickers, and a subject touching the edge of the canvas gets visibly clipped.",
+                ],
+            },
+            {
+                "h": "Getting a clean cut-out from a photo",
+                "p": [
+                    "The hard part of making a sticker from a photo is separating the subject from its background convincingly. Hard edges are easy; the problems are always hair, fur, motion blur and anything semi-transparent such as a glass or a wisp of smoke.",
+                    "Two things improve results more than any amount of tool choice. First, contrast between subject and background — a dark jacket against a dark sofa has no edge to find, and no software will invent one. Second, focus: a subject that is slightly out of focus has no crisp boundary, so the cut-out inherits the mush.",
+                    "For fur and flyaway hair, expect to touch up by hand. A refine brush that lets you paint background back in or restore detail is worth more than a marginally better automatic mask, because the automatic mask is right about 95% of the pixels and the remaining 5% are all in the same visually obvious place — around the head.",
+                    "Our sticker maker runs the cut-out in your browser and exports straight to 512x512 WebP, stepping the quality down until it clears 100 KB.",
+                ],
+            },
+            {
+                "h": "Making it read at thumbnail size",
+                "p": [
+                    "Stickers are viewed small — often around 128 pixels on screen despite the 512 pixel file. Designs that look great at full size regularly turn to mush in the chat, and it is nearly always for one of three reasons.",
+                    "Too much detail: a full-body photo becomes an unrecognisable smudge. Crop tight to the face or the single element that carries the joke. Text too small: caption text needs to be far larger than feels reasonable, typically 10-15% of the canvas height, in a heavy weight. And insufficient edge contrast: a dark subject on a dark chat background disappears, which is why a white or light outline around the cut-out is near-universal in sticker design. It is not decoration — it guarantees the silhouette reads against any background.",
+                ],
+                "list": [
+                    "Crop tight — one subject, filling most of the frame.",
+                    "Add a thick outline so the shape reads on dark and light backgrounds.",
+                    "Caption text at 10-15% of canvas height, heavy weight, short words.",
+                    "Check it at 128 px before committing; that is how it will be seen.",
+                ],
+            },
+            {
+                "h": "Where sticker tools tend to go wrong",
+                "p": [
+                    "Most sticker makers are phone apps that upload your photo, add a watermark, or require an account. The watermark is the most damaging of the three: a sticker is a thing you send to other people repeatedly, so a watermarked sticker is an advertisement you have agreed to distribute to your friends on the app's behalf, forever.",
+                    "The upload question also deserves more weight here than usual. Stickers are usually made from photos of family, friends and pets — exactly the images people are most careless about handing over and would most object to losing.",
+                    "The honest limitation of a browser-based approach: it can build the sticker file, but it cannot install a pack into WhatsApp, because pack installation goes through the app's own API from a native app. You export the image and add it through a pack app, or send it directly into a chat.",
+                ],
+            },
+        ],
+        takeaways=[
+            "WhatsApp: exactly 512x512, WebP, under 100 KB — the size cap is enforced, not advisory.",
+            "Telegram is looser (one side 512, PNG allowed), so build to WhatsApp's rules and it works on both.",
+            "Lossy WebP with alpha is why stickers can be transparent and still tiny; PNG transparency is always large.",
+            "Design for roughly 128 px on screen: crop tight, add an outline, oversize any text.",
+            "Never accept a watermark on a sticker — you would be distributing it to your friends every time you send it.",
+        ],
+        tools=["sticker", "index", "crop", "convert"],
+        faqs=[
+            {"q": "Why does WhatsApp reject my sticker?",
+             "a": "Almost always dimensions or size. It must be exactly 512x512 pixels, in WebP, and under 100 KB. Photographs frequently exceed the size cap, so the quality has to be stepped down until it fits."},
+            {"q": "Do stickers need a transparent background?",
+             "a": "Technically no, practically yes. Chat backgrounds are patterned, dark or user-set photos, so a sticker with a solid background renders as an obvious rectangle pasted over the conversation."},
+            {"q": "Can I use the same sticker on WhatsApp and Telegram?",
+             "a": "Yes, if you build it to WhatsApp's stricter rules. A 512x512 WebP under 100 KB is valid on both. A Telegram sticker with unequal sides will be rejected by WhatsApp."},
+            {"q": "Can a website install a sticker pack for me?",
+             "a": "No. Pack installation goes through each app's own API and requires a native app. A web tool can produce a correctly formatted sticker image, which you then add via a pack app or send straight into a chat."},
+        ],
+    ),
+    _guide(
+        slug="qr-codes-that-actually-scan",
+        title="QR Codes That Actually Scan — Size, Contrast and Error Correction",
+        h1="Why QR codes fail to scan, and how to make ones that always do",
+        description="How QR codes really work, the minimum size for a given distance, why low contrast and inverted colours break scanning, and what error correction buys you.",
+        category="Formats",
+        updated="2026-08-06",
+        intro=[
+            "A QR code either scans instantly or it does not scan at all, and the failures are rarely random. They come from a small set of causes: the code is too small for the distance, the contrast is too low, the colours are inverted, or a logo has been dropped in the middle without the error correction to survive it.",
+            "This guide covers what the black squares are actually doing, and the specific numbers that decide whether a code works on a poster, a business card or a table tent.",
+        ],
+        sections=[
+            {
+                "h": "What is inside a QR code",
+                "p": [
+                    "A QR code is not an image of a link. It is a two-dimensional data structure with defined regions, and knowing them explains every failure mode.",
+                    "The three large squares in the corners are finder patterns; they let a scanner locate the code and work out its rotation, which is why a QR code scans upside down. The smaller square near the fourth corner is the alignment pattern, correcting for the code being photographed at an angle. The dotted lines running between the finder patterns are timing patterns, establishing the grid size. Everything else is data and error correction.",
+                    "Around all of it is the quiet zone — a margin of blank space, four modules wide, where a module is one of the small squares. The quiet zone is part of the specification, not decoration. A code printed flush against text or a coloured background frequently fails for this reason alone, and it is the single most common design mistake.",
+                ],
+            },
+            {
+                "h": "Error correction: how much damage it survives",
+                "p": [
+                    "QR codes use Reed-Solomon error correction, the same family of algorithm that lets a scratched CD play. There are four levels, and choosing one is a trade between resilience and capacity.",
+                    "Level L recovers about 7% of the data, M about 15%, Q about 25% and H about 30%. Higher levels mean more of the code is redundancy, so for a given amount of data the code needs more modules — a longer URL at level H produces a visibly denser code than the same URL at level L.",
+                    "This is what makes centre logos possible. A logo covering 20% of the code is simply damage, and at level H the code still decodes. At level L the same logo destroys it. If you are placing a logo, use H and keep the coverage under about 25%; there is no way to place a logo 'correctly' other than leaving enough redundancy to absorb it.",
+                    "The other reason to raise the level is the physical environment. A code on a table in a restaurant, a sticker on a lamppost, a label on a machine — these accumulate scratches, grease and fading. Level Q or H is a maintenance decision.",
+                ],
+                "list": [
+                    "L (~7%): screens and digital use where nothing will damage it.",
+                    "M (~15%): the usual default; fine for clean print.",
+                    "Q (~25%): print that will be handled, or a small logo.",
+                    "H (~30%): outdoor, industrial, or a centre logo.",
+                ],
+            },
+            {
+                "h": "How big does it need to be?",
+                "p": [
+                    "There is a widely used rule of thumb: the code's width should be at least one tenth of the scanning distance. Scanned from one metre, the code should be at least 10 cm across. From five metres — a poster across a room — it needs to be 50 cm, which is far larger than most people expect and is why poster QR codes so often fail.",
+                    "The rule is conservative and modern phone cameras often beat it, but designing to it means the code works for the person with an older phone in poor light, which is the case that matters.",
+                    "There is also an absolute floor. Below roughly 2 cm, a printed code becomes unreliable regardless of distance, because the individual modules approach the resolution of the printing process and the camera. If your code carries a long URL it has more modules in the same physical space, each one smaller — so shortening the URL genuinely improves scannability. A link shortener is a legitimate technical fix here, not just tidiness.",
+                ],
+            },
+            {
+                "h": "Contrast, colour and the inversion trap",
+                "p": [
+                    "Scanners look for a luminance difference between modules and background. The specification effectively wants a contrast ratio of at least 3:1, and in practice you want considerably more.",
+                    "Two rules break codes constantly. The first: the code must be darker than its background. Scanners expect dark modules on a light field, and while many modern decoders handle inversion, a meaningful number do not. A white code on a black poster is a coin flip across the installed base of scanning apps.",
+                    "The second: colour contrast is not luminance contrast. Red modules on a green background look strongly contrasting to a human eye and can be nearly identical in brightness, which is what the camera is measuring. If you are colouring a code, check it in greyscale — if the modules and the background look similar there, the code will struggle.",
+                    "Gradients are usable if the light end stays clearly darker than the background, but every increase in styling is a decrease in margin. A code is a functional object first.",
+                ],
+                "list": [
+                    "Dark modules on a light background, not the reverse.",
+                    "Check the design in greyscale before printing.",
+                    "Keep the four-module quiet zone completely clear.",
+                    "Avoid placing a code over a photograph or texture.",
+                ],
+            },
+            {
+                "h": "Static versus dynamic codes",
+                "p": [
+                    "A static QR code contains the destination directly. Anyone scanning it goes straight there, it never expires, it works with no third party involved — and it cannot be changed. Fixing a typo means reprinting.",
+                    "A dynamic QR code contains a short URL owned by a service, which redirects. That gives you editable destinations and scan analytics, and it introduces a dependency: the code works only as long as that company exists, keeps the link active, and does not start charging. There is a well-established pattern of free dynamic QR services expiring links after a trial and turning printed materials into dead ends.",
+                    "For anything printed at volume or intended to last, static is the safer engineering choice. Use dynamic when the ability to change the destination is genuinely worth the dependency — a campaign you expect to redirect, for instance. Our QR generator produces static codes only, which is a deliberate limitation rather than a missing feature.",
+                ],
+            },
+            {
+                "h": "Test before you print a thousand",
+                "p": [
+                    "Test at the real size, on the real material, in the light where it will live. A code that scans on your monitor tells you very little about a matte-laminated card under a restaurant's dim lighting.",
+                    "Test with more than one phone, including an older one, and with the default camera app rather than a dedicated scanner app — most people scan with the camera. Test at the distance people will actually stand. And print one physical proof before the run: paper absorbs ink and slightly thickens the modules, which reduces the effective quiet zone and can push a marginal code over the edge.",
+                ],
+            },
+        ],
+        takeaways=[
+            "The quiet zone — four modules of blank space — is part of the spec, and omitting it is the most common failure.",
+            "Code width should be at least 1/10th of the scanning distance; posters need far bigger codes than people expect.",
+            "Error correction level H absorbs a centre logo up to about 25% coverage; level L will not.",
+            "Colour contrast is not luminance contrast — check the design in greyscale.",
+            "Static codes never expire; dynamic codes depend on a company continuing to honour the redirect.",
+        ],
+        tools=["qr", "convert", "palette"],
+        faqs=[
+            {"q": "Why won't my QR code scan?",
+             "a": "In order of likelihood: no quiet zone around it, too small for the distance, insufficient luminance contrast, inverted colours (light code on dark background), or a logo placed without enough error correction to absorb it."},
+            {"q": "Can I put a logo in the middle of a QR code?",
+             "a": "Yes, if you generate at error correction level H and keep the logo under about 25% of the area. The logo is treated as damage, and level H recovers roughly 30% of the data."},
+            {"q": "Do QR codes expire?",
+             "a": "Static codes never expire — the destination is encoded in the code itself. Dynamic codes point at a redirect owned by a service, and stop working if that service ends the link or the company disappears."},
+            {"q": "What size should a QR code be on a poster?",
+             "a": "At least one tenth of the viewing distance. Read from three metres, the code needs to be about 30 cm wide. Below roughly 2 cm nothing scans reliably regardless of distance."},
+        ],
+    ),
+    _guide(
+        slug="favicons-that-work-everywhere",
+        title="Favicons Explained — Every Size, Format and File You Actually Need",
+        h1="Favicons: which sizes and files you actually need in 2026",
+        description="What a favicon set really requires — ICO versus PNG versus SVG, Apple touch icons, maskable PWA icons, dark mode, and the HTML that ties them together.",
+        category="Formats",
+        updated="2026-08-06",
+        intro=[
+            "Favicon advice has accumulated for twenty-five years, and most of what you find recommends a list of thirty files for devices that no longer exist. The real requirement in 2026 is much shorter, but it is not one file either, and the parts that are still genuinely needed are the ones people skip.",
+            "This guide covers what each file is for, which ones you can safely drop, and the specific case — maskable icons — that silently makes installed web apps look broken.",
+        ],
+        sections=[
+            {
+                "h": "Why one file was never enough",
+                "p": [
+                    "The favicon began as favicon.ico in Internet Explorer 5, in a Windows icon container format that can hold several resolutions in one file. That was a sensible design, and it is why ICO persists despite being unusual in every other respect.",
+                    "The requirement expanded because the contexts multiplied. A browser tab needs about 16 pixels. A bookmark bar and a pinned tab want more. iOS wants a 180-pixel icon for the home screen. Android and installed web apps want 192 and 512 pixel icons, and want to crop them into whatever shape the launcher uses. A search result may show your icon at 48 pixels.",
+                    "These are not the same image scaled. A logo that reads at 512 pixels frequently turns to porridge at 16, which is why serious favicon sets contain a simplified mark for the small sizes and the full logo for the large ones.",
+                ],
+            },
+            {
+                "h": "The set that actually matters now",
+                "p": [
+                    "For a site starting today, the following covers effectively all real traffic. Everything else on the traditional thirty-file list is for browsers and devices with negligible share.",
+                    "An ICO at the site root remains worth including even though PNG is universally supported, because a surprising amount of software — feed readers, link previewers, older enterprise browsers — still requests /favicon.ico by path without reading your HTML at all. It is 15 KB of insurance.",
+                    "An SVG favicon is the modern addition and the most useful one, because it is resolution-independent and can respond to dark mode. Browsers that support it prefer it; those that do not fall back to the PNGs.",
+                ],
+                "list": [
+                    "favicon.ico — 16 and 32 px inside one file, at the site root.",
+                    "favicon.svg — scalable, and can adapt to dark mode.",
+                    "favicon-96x96.png — search results and general fallback.",
+                    "apple-touch-icon.png — 180x180, for iOS home screens.",
+                    "icon-192.png and icon-512.png — referenced from the web manifest.",
+                    "A 512x512 maskable icon — see below; this is the one everyone misses.",
+                ],
+            },
+            {
+                "h": "Maskable icons, and why installed apps look wrong without them",
+                "p": [
+                    "Android launchers crop app icons into a shape of the device's choosing — a circle, a squircle, a rounded square. If your icon is a normal square PNG, the launcher crops it, and the corners of your logo are cut off. If the logo fills the square, the crop removes a visible slice of it.",
+                    "The fix is a separate icon declared with `\"purpose\": \"maskable\"` in the manifest. A maskable icon is designed with a safe zone: all essential content must sit inside a circle covering the central 80% of the canvas, with the outer 10% on each side treated as expendable bleed that the crop may remove. The background must extend to the full canvas, so no shape of crop ever exposes an empty corner.",
+                    "This means a maskable icon is not the same file as your normal icon with a different label. It is the same logo, smaller within its canvas, on a filled background. Declaring a normal icon as maskable produces exactly the clipped result the mechanism exists to prevent.",
+                ],
+            },
+            {
+                "h": "Dark mode, and the disappearing black logo",
+                "p": [
+                    "Browser tabs are dark in dark mode, and a favicon that is black line art on transparency becomes invisible against them. This is common and easy to miss, because developers who work in dark mode look at their own favicon all day and stop seeing that it is a faint smudge.",
+                    "An SVG favicon can solve this directly, because SVG can carry a media query. A `prefers-color-scheme` rule inside the SVG lets the same file draw dark strokes on light backgrounds and light strokes on dark ones. No other favicon format can do this.",
+                    "If you cannot use SVG, the robust alternative is to give the icon its own background rather than relying on transparency — a coloured rounded square with the mark reversed out of it reads on any tab colour. Most well-known sites do exactly this, which is why so many favicons are a letter on a solid block.",
+                ],
+            },
+            {
+                "h": "The HTML, and the parts that are optional",
+                "p": [
+                    "The declarations are short. A link for the SVG, one for the ICO as fallback, one for the Apple touch icon, and one for the manifest — the manifest then carries the PWA icons rather than the HTML doing it.",
+                    "Two long-standing recommendations can now be dropped. The `msapplication-*` meta tags for Windows tiles refer to a Start menu feature that no longer exists. And the long ladder of `apple-touch-icon-76x76`, `-120x120` and so on is unnecessary: iOS has scaled a single 180-pixel icon down for years.",
+                    "One detail that still bites: browsers cache favicons aggressively and often ignore normal cache headers, so a changed favicon can appear stale for a long time. Changing the filename is more reliable than waiting.",
+                ],
+                "list": [
+                    "<link rel=\"icon\" href=\"/favicon.svg\" type=\"image/svg+xml\">",
+                    "<link rel=\"icon\" href=\"/favicon.ico\" sizes=\"32x32\">",
+                    "<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png\">",
+                    "<link rel=\"manifest\" href=\"/site.webmanifest\">",
+                ],
+            },
+            {
+                "h": "Designing a mark that survives 16 pixels",
+                "p": [
+                    "At 16 pixels you have 256 pixels in total to work with, and after antialiasing perhaps a dozen meaningful shapes. Almost nothing survives that intact.",
+                    "Words never do — a company name in a favicon is a grey smear. Use one letter, or a symbol. Thin strokes disappear, so weight lines far more heavily than looks right at full size. Detail must be removed rather than shrunk: the small favicon should be a deliberately simplified drawing, not the logo scaled down. And test on both a white and a dark tab strip, at actual size, on a real screen rather than zoomed in your editor.",
+                    "Our favicon generator produces the full set from a single source image, including the maskable variant and the manifest.",
+                ],
+            },
+        ],
+        takeaways=[
+            "Six files cover essentially all real traffic; the thirty-file lists online are maintaining support for dead devices.",
+            "Keep favicon.ico at the site root — plenty of software requests that path without reading your HTML.",
+            "A maskable icon is a genuinely different file: logo inside the central 80%, background filling the whole canvas.",
+            "Only SVG favicons can respond to dark mode; otherwise give the icon its own solid background.",
+            "Design the 16 px mark by removing detail, not by scaling the logo down.",
+        ],
+        tools=["favicon", "convert", "resize", "crop"],
+        faqs=[
+            {"q": "Do I still need favicon.ico?",
+             "a": "Yes, as a fallback. Modern browsers prefer PNG and SVG, but a lot of other software — feed readers, link preview generators, older enterprise browsers — requests /favicon.ico by path without parsing your HTML."},
+            {"q": "What is a maskable icon?",
+             "a": "An icon designed to survive being cropped into a circle or squircle by an Android launcher. All important content sits within the central 80% and the background fills the entire canvas, so no crop shape exposes an empty corner or clips the logo."},
+            {"q": "Why does my favicon disappear in dark mode?",
+             "a": "Because it is dark artwork on a transparent background, and the tab strip is dark. Either use an SVG favicon with a prefers-color-scheme rule, or give the icon its own solid background colour."},
+            {"q": "Why won't my new favicon show up?",
+             "a": "Browsers cache favicons very aggressively and frequently ignore cache headers for them. Changing the filename is far more reliable than waiting for the cache to expire."},
+        ],
+    ),
+    _guide(
+        slug="gif-versus-video-for-short-clips",
+        title="GIF vs Video — Why GIFs Are Enormous and When to Use One Anyway",
+        h1="GIF vs video: why GIFs are so big, and when one is still the right answer",
+        description="Why a three-second GIF can be larger than a minute of video, what GIF's 256-colour limit really costs, and how to decide between GIF, MP4 and WebP.",
+        category="Formats",
+        updated="2026-08-06",
+        intro=[
+            "A three-second GIF can easily be 8 megabytes. The same clip as an MP4 is often under 400 kilobytes and looks better. That is a twenty-fold difference, and it surprises people because GIFs feel like small, casual things.",
+            "The reason is that GIF is from 1987 and was never designed for video. Understanding what it does explains both why it is so inefficient and why it nonetheless remains the right choice in a few specific places.",
+        ],
+        sections=[
+            {
+                "h": "What GIF is doing to each frame",
+                "p": [
+                    "GIF stores an animation as a sequence of images compressed with LZW, a general-purpose lossless algorithm that looks for repeated byte patterns. Critically, its compression works within each frame and, in the best case, stores only the rectangle that changed between frames. It has no concept of motion.",
+                    "This is the central inefficiency. Modern video codecs achieve their size by predicting: they encode a keyframe, then describe subsequent frames as motion vectors — 'this block of pixels moved eleven pixels left' — plus a small correction. A panning shot is nearly free to a video codec, because almost everything simply moved. To GIF, a panning shot means every pixel in every frame changed, so nothing can be skipped and every frame is stored close to whole.",
+                    "That is why camera movement destroys GIF file size while a static shot with a small moving element stays reasonable. It is also why the advice 'crop the GIF' works so well: you are removing pixels that were being stored repeatedly.",
+                ],
+            },
+            {
+                "h": "The 256-colour limit",
+                "p": [
+                    "A GIF frame can contain at most 256 distinct colours, drawn from a palette stored in the file. A photograph or a video frame typically contains tens of thousands. Reducing that to 256 is where most of the visible quality loss comes from — not from the compression, which is lossless, but from the palette.",
+                    "Two techniques manage the reduction. Palette selection picks the 256 colours that best represent the frame, which is why a clip with a narrow colour range survives well and a colourful one does not. Dithering scatters pixels of available colours to simulate missing ones, trading banding for a fine noise texture.",
+                    "Dithering has a cruel interaction with the compression. LZW compresses repeated patterns, and dithering deliberately introduces high-frequency noise, which has no repeated patterns. So turning dithering up to fix banding can substantially increase the file size. Gradients — skies, shadows, fades — are the worst case for GIF: they band badly without dithering and inflate badly with it.",
+                ],
+                "list": [
+                    "Narrow palettes (cartoons, screencasts, line art) compress well.",
+                    "Gradients and skies band or bloat, with no good setting.",
+                    "Dithering trades banding for noise, and noise costs file size.",
+                    "Reducing to 64 or 128 colours often saves more than reducing frames.",
+                ],
+            },
+            {
+                "h": "So why does anyone still use GIF?",
+                "p": [
+                    "Because of where it is allowed. GIF plays as an image, which means it works in contexts that forbid or awkwardly handle video: email clients, many chat and forum inputs, documentation platforms, some CMS fields, and older wiki software. An MP4 in an email will not play; a GIF will.",
+                    "It also autoplays silently and loops without any player controls, with no user gesture required. On mobile browsers, video autoplay is restricted by policy — video needs to be muted, inline and often explicitly permitted — while a GIF simply animates. For a small looping demonstration, that reliability is worth real bytes.",
+                    "And it degrades to a still image everywhere, which no video format does.",
+                ],
+            },
+            {
+                "h": "The alternatives, and what each costs",
+                "p": [
+                    "Animated WebP is the closest replacement: it supports full colour, real transparency, and both lossy and lossless modes, at file sizes commonly 30-50% below an equivalent GIF. It is supported by every current browser. It is not accepted by many of the platforms that accept GIF, which is exactly the problem it fails to solve.",
+                    "MP4 with H.264 is the size winner by a wide margin for anything photographic, and plays everywhere video is allowed. For a web page, a muted autoplaying looping MP4 is almost always the correct implementation of what people mean by 'a GIF' — same visual result, a fraction of the bandwidth. The cost is that it is a video element with the policies that come with it.",
+                    "APNG deserves a mention as the honest answer for animations that need lossless quality and true alpha, such as UI animations on a transparent background. It is larger than WebP and supported in current browsers.",
+                ],
+            },
+            {
+                "h": "Making a GIF that is not enormous",
+                "p": [
+                    "If GIF is the requirement, the size levers in order of effectiveness are dimensions, duration, frame rate and palette — in that order, and it is not close.",
+                    "Dimensions dominate because cost scales with area: halving the width and height quarters the pixel count. A 480-pixel-wide GIF is usually plenty, and 320 is fine for a UI demonstration. Duration is linear, and ruthless trimming to the two seconds that matter is the second-biggest win. Frame rate can usually drop to 10-15 fps before motion looks wrong, against 30 in the source. Palette reduction to 128 or 64 colours is the last lever and often costs less quality than expected.",
+                    "One structural trick: a static background with a small animated region compresses far better than a moving camera, so stabilising or cropping to the moving part pays twice.",
+                ],
+                "list": [
+                    "Resize first — width 320-480 px is usually enough.",
+                    "Trim to only the seconds that matter.",
+                    "Drop to 10-15 fps.",
+                    "Reduce the palette to 128 or 64 colours.",
+                    "Crop to the moving region if the camera is static.",
+                ],
+            },
+            {
+                "h": "A short decision rule",
+                "p": [
+                    "If it is going on a web page you control, use a muted looping MP4 and stop thinking about it. If it is going into an email, a chat box, a forum post or a documentation platform that only takes images, use a GIF and optimise it hard. If it needs transparency and quality, use APNG or animated WebP and check the target accepts it.",
+                    "The one combination to avoid is a long, full-screen, camera-moving GIF. That is the case where the format is at its absolute worst and something else is always available.",
+                ],
+            },
+        ],
+        takeaways=[
+            "GIF has no motion prediction, so camera movement forces near-whole frames to be stored — the main size driver.",
+            "The 256-colour palette, not the compression, causes most visible GIF quality loss.",
+            "Dithering fixes banding by adding noise, and noise defeats LZW — so it can inflate the file substantially.",
+            "GIF survives because it is allowed where video is not, and autoplays with no policy restrictions.",
+            "To shrink one: dimensions first, then duration, then frame rate, then palette.",
+        ],
+        tools=["gif", "video_gif", "video_converter", "compress", "crop"],
+        faqs=[
+            {"q": "Why is my GIF bigger than the video it came from?",
+             "a": "Because video codecs describe motion between frames while GIF stores each frame almost whole, and GIF's LZW compression is defeated by the noise in photographic content. A twenty-fold difference against an MP4 is normal."},
+            {"q": "How do I make a GIF smaller?",
+             "a": "In order of impact: reduce the dimensions (cost scales with area), trim the duration, drop the frame rate to 10-15 fps, and only then reduce the colour palette."},
+            {"q": "Should I use WebP instead of GIF?",
+             "a": "For your own web pages, yes — animated WebP is typically 30-50% smaller with full colour. But the platforms that force you into GIF in the first place, like email and many chat inputs, usually do not accept WebP either."},
+            {"q": "Why does my GIF look grainy or banded?",
+             "a": "The 256-colour palette. Gradients cannot be represented, so they either band into visible steps or get dithered into noise — and the dithering noise increases the file size."},
+        ],
+    ),
+    _guide(
+        slug="getting-text-out-of-images-with-ocr",
+        title="OCR Explained — How to Get Accurate Text Out of Images and Screenshots",
+        h1="How OCR really works, and what wrecks its accuracy",
+        description="What optical character recognition does to your image, why screenshots read almost perfectly and photos do not, and the specific things that destroy accuracy.",
+        category="Documents",
+        updated="2026-08-06",
+        intro=[
+            "OCR feels like it should either work or not work, and instead it produces text that is 99% right on one image and unusable on another that looks similar. The difference is rarely luck — it comes from a short list of image properties that the recognition pipeline is extremely sensitive to.",
+            "This guide explains what happens between your image and the text, which conditions matter most, and how to fix the inputs rather than fight the output.",
+        ],
+        sections=[
+            {
+                "h": "What happens between the image and the text",
+                "p": [
+                    "Classical OCR — including Tesseract, the open-source engine behind a large share of the world's scanning software — runs a pipeline, and each stage can fail in ways that show up much later.",
+                    "First the image is binarised: every pixel is decided to be either ink or background. This single step causes most catastrophic failures, because it is where uneven lighting does its damage. A photograph with a shadow across one half will threshold that half to solid black, and no amount of cleverness downstream recovers text from a black rectangle.",
+                    "Then the page is deskewed and analysed for layout — finding blocks, columns, lines and finally individual character shapes. Each shape is classified, and the results are checked against a language model that knows which letter sequences are plausible. That final stage is why OCR output often contains real words that are the wrong words: the model confidently repaired an ambiguous shape into something that fits the language.",
+                ],
+            },
+            {
+                "h": "Why screenshots are easy and photographs are hard",
+                "p": [
+                    "A screenshot is the ideal input. The text is perfectly sharp, perfectly aligned, evenly lit, high contrast, and rendered rather than captured. Accuracy on clean screenshots is routinely near-perfect, and if you have a choice between screenshotting something and photographing it, that choice matters more than any setting.",
+                    "A photograph of a page introduces every problem at once: perspective distortion from not being exactly parallel, uneven lighting from the room, a shadow from your own head or phone, focus that is slightly off, motion blur, and page curvature if the document is a book. Each is individually survivable and they compound.",
+                    "Resolution is the most commonly misunderstood factor. OCR wants roughly 300 DPI for body text, meaning a lowercase letter should be around 20-30 pixels tall. Below about 10 pixels tall, accuracy collapses no matter how clean the image is — there is simply not enough information to distinguish an 'e' from a 'c'. This is why zooming in before screenshotting small text beats any post-processing.",
+                ],
+                "list": [
+                    "Lowercase letters should be at least 20 px tall; below 10 px is hopeless.",
+                    "Even lighting matters more than bright lighting.",
+                    "Shoot parallel to the page, not at an angle.",
+                    "Sharp focus beats high megapixels.",
+                ],
+            },
+            {
+                "h": "The things that destroy accuracy",
+                "p": [
+                    "Some inputs are simply outside what classical OCR does well, and knowing them saves time spent assuming you configured something wrong.",
+                    "Handwriting is the big one. Tesseract and its relatives are trained on printed type; cursive handwriting is a fundamentally different recognition problem that needs models built for it. Expect poor results and do not conclude the tool is broken.",
+                    "Text over images or textured backgrounds breaks binarisation, because there is no clean ink-versus-background split to find. Decorative and script fonts are frequently misread. Very low contrast — grey text on a slightly lighter grey, common in modern UI design — thresholds unpredictably. Tables and multi-column layouts often produce correct words in the wrong reading order, because layout analysis decided the structure incorrectly. And rotation past a few degrees defeats line detection, though deskewing handles small angles automatically.",
+                ],
+            },
+            {
+                "h": "Choosing the language, and why it matters more than expected",
+                "p": [
+                    "OCR engines use a language model to resolve ambiguous shapes, so telling the engine the wrong language actively harms accuracy rather than merely failing to help. Running Portuguese text through an English model produces English-looking words that were never on the page, because every ambiguous character is repaired towards English.",
+                    "This is also why accented characters are frequently dropped when the language is set wrong: the model has no expectation of them and treats the accent as noise.",
+                    "For documents mixing languages, most engines accept several language packs at once, at some cost to accuracy in each. If one language dominates, choosing that single language usually beats a combined model.",
+                ],
+            },
+            {
+                "h": "Preparing an image so OCR can succeed",
+                "p": [
+                    "The fixes are almost all upstream. In rough order of effect: get more resolution, get the lighting even, get the page square to the camera, and raise contrast to a genuine black-on-white.",
+                    "Cropping to just the text region helps twice — it removes background that could confuse layout analysis, and it removes anything that would drag automatic thresholding in the wrong direction. Converting to greyscale before OCR is essentially free and occasionally helps. Straightening a photographed page matters more than people expect, because line detection assumes horizontal text.",
+                    "One counterintuitive point: do not sharpen aggressively. Sharpening creates haloes around strokes, and binarisation reads haloes as ink, which thickens characters and merges adjacent ones. Mild is fine; heavy sharpening makes things worse.",
+                ],
+                "list": [
+                    "Crop tightly to the text before recognising.",
+                    "Straighten the page; small skew is handled, large skew is not.",
+                    "Increase contrast towards true black on true white.",
+                    "Avoid heavy sharpening — it merges characters.",
+                ],
+            },
+            {
+                "h": "Where the recognition runs",
+                "p": [
+                    "OCR is applied disproportionately to documents people would not want to hand over: contracts, payslips, medical letters, ID documents, and screenshots of private conversations. That makes the location of the processing a real question rather than a technicality.",
+                    "Tesseract compiles to WebAssembly and runs entirely in a browser tab, downloading the language pack once and caching it. That is how our image-to-text tool works, which is why it functions offline after first use — and why the documents never leave the device.",
+                    "The honest trade-off: cloud OCR services, particularly the ones using modern transformer-based models, are meaningfully more accurate on hard inputs like handwriting and photographed receipts. If you have a difficult image and it contains nothing sensitive, they will do better. For anything private, local recognition on a well-prepared image is usually more than good enough, and the preparation matters more than the engine.",
+                ],
+            },
+        ],
+        takeaways=[
+            "Binarisation — deciding each pixel is ink or background — is where uneven lighting causes catastrophic failure.",
+            "Body text wants roughly 300 DPI; below 10 pixels of letter height, accuracy collapses regardless of processing.",
+            "Setting the wrong language actively harms results, because the language model repairs characters towards it.",
+            "Handwriting, textured backgrounds and low-contrast grey-on-grey are outside classical OCR's competence.",
+            "Fix the input rather than the output — but avoid heavy sharpening, which merges characters.",
+        ],
+        tools=["ocr", "crop", "photo_filters", "pdf_to_image"],
+        faqs=[
+            {"q": "Why is my OCR result full of mistakes?",
+             "a": "Usually resolution or lighting. Letters need to be at least 20 pixels tall, and uneven lighting breaks the binarisation step that decides which pixels are ink. A shadow across the page can black out a whole region before recognition even starts."},
+            {"q": "Can OCR read handwriting?",
+             "a": "Classical engines like Tesseract are trained on printed type and do poorly on cursive handwriting. Handwriting recognition is a different problem needing purpose-built models."},
+            {"q": "Does choosing the wrong language matter?",
+             "a": "Yes, and it makes things actively worse. The engine uses a language model to resolve ambiguous characters, so the wrong language repairs uncertain shapes into words from that language and tends to drop accented characters."},
+            {"q": "Is browser-based OCR as good as a cloud service?",
+             "a": "On clean screenshots and printed documents, close enough that the difference rarely matters. On hard inputs — handwriting, photographed receipts, poor lighting — cloud services using modern models are better. The trade is that they receive your document, which for contracts, IDs and medical letters is the whole question."},
         ],
     ),
 ]

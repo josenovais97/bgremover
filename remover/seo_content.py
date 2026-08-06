@@ -468,3 +468,75 @@ PHOTO_FILTERS_FAQS = [
     {"q": "Is it free, with no watermark?",
      "a": "Completely free and unlimited with no watermark or sign-up — export as PNG, JPG or WEBP."},
 ]
+
+
+# --- "Why this one runs on your device" blocks -------------------------------
+# Rendered by remover/partials/privacy_note.html on the three tools where the
+# visitor's reason for searching IS the privacy question — stripping GPS from a
+# photo, blacking out a document, or making an ID photo. On those pages "nothing
+# is uploaded" is the product, not a footnote, so it gets stated in the terms the
+# visitor is already worried about rather than left to a badge in the hero.
+#
+# Keyed by nothing: each view passes its own block, so a page that stops being a
+# privacy-first page simply stops including it.
+EXIF_PRIVACY = {
+    "risk": (
+        "A photo straight off a phone usually carries the exact GPS coordinates where it was "
+        "taken, the time down to the second, and the device that took it. Uploading it to a "
+        "site that strips metadata means handing over all of it first — to the one party you "
+        "were trying to hide it from."
+    ),
+    "answer": (
+        "This tool reads and strips that data in the page itself, so the file never leaves "
+        "your device."
+    ),
+    "points": [
+        {"icon": "fa-compass", "title": "GPS stays yours",
+         "text": "See the coordinates before you remove them — including the home address a holiday photo quietly carries."},
+        {"icon": "fa-scissors", "title": "Lossless for JPEG",
+         "text": "Metadata segments are dropped and the pixel data is untouched, so stripping costs no quality."},
+        {"icon": "fa-globe", "title": "Works offline",
+         "text": "Load the page once and it keeps working with the network off — the clearest proof nothing is sent."},
+    ],
+}
+
+REDACT_PRIVACY = {
+    "risk": (
+        "The images people redact are the sensitive ones: passports, bank statements, medical "
+        "letters, screenshots of private chats. Uploading one to a redaction site means the "
+        "un-redacted original sits on someone else's server — the exact version you were "
+        "trying to make sure nobody sees."
+    ),
+    "answer": (
+        "Every box, blur and pixelation here is drawn on a canvas in your own browser, and the "
+        "original is never transmitted anywhere."
+    ),
+    "points": [
+        {"icon": "fa-eraser", "title": "Really destroyed, not covered",
+         "text": "The export is flattened pixels — there is no layer underneath for anyone to peel back later."},
+        {"icon": "fa-lock", "title": "Documents never travel",
+         "text": "The un-redacted original stays on your device, so there is no copy of it to leak or subpoena."},
+        {"icon": "fa-eye", "title": "Check your work",
+         "text": "Toggle back to the original before exporting to confirm every sensitive area is actually covered."},
+    ],
+}
+
+PASSPORT_PRIVACY = {
+    "risk": (
+        "A passport or visa photo is a biometric portrait tied to your identity documents — the "
+        "single image you should be most careful about uploading. Most online ID-photo services "
+        "process it on their servers, and many keep it long enough to sell you a print."
+    ),
+    "answer": (
+        "The cut-out, the white backdrop and the exact biometric sizing all happen in your "
+        "browser, so your face is never sent to us or to anyone else."
+    ),
+    "points": [
+        {"icon": "fa-ruler-combined", "title": "Exact official sizes",
+         "text": "Compliant dimensions at 300 DPI for a long list of countries, measured to each one's own spec."},
+        {"icon": "fa-shield-halved", "title": "No face on a server",
+         "text": "No account, no upload and no retention — there is no copy of your portrait to store."},
+        {"icon": "fa-print", "title": "Print at home or a shop",
+         "text": "Export a 6x4 sheet and print it anywhere, instead of paying per photo for the same result."},
+    ],
+}

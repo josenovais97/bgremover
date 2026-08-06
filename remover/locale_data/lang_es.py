@@ -570,6 +570,76 @@ UI = {
     # --- Batch bar (resize / watermark / EXIF) ---
     "images queued": "imágenes en cola",
     "Download all as ZIP (%d)": "Descargar todo en ZIP (%d)",
+    # --- Resizer + EXIF remover (tool pages translated in 1.11) ---
+    'Free Image Resizer — Resize Photos by Pixels or Percentage':
+        'Redimensionar Imágenes Gratis — Por Píxeles o Porcentaje',
+    'Resize any image to exact pixels or a percentage, free and in your browser. Lock the aspect ratio, pick a preset, and export JPG, PNG or WEBP.':
+        'Redimensiona cualquier imagen a píxeles exactos o a un porcentaje, gratis y en tu navegador. Bloquea la proporción, elige un ajuste y exporta JPG, PNG o WEBP.',
+    'Free Image Resizer — Exact Pixels, Private':
+        'Redimensionar Imágenes Gratis — Píxeles Exactos, Privado',
+    'Made locally — nothing is uploaded': 'Hecho localmente — no se sube nada',
+    'Resizer': 'Redimensionador',
+    'Resize any photo to exact': 'Redimensiona cualquier foto a',
+    'pixels': 'píxeles exactos',
+    'or a': 'o a un',
+    'percentage': 'porcentaje',
+    '— aspect ratio locked so nothing stretches. Free, full quality and 100% private.':
+        '— con la proporción bloqueada para que nada se deforme. Gratis, con calidad completa y 100% privado.',
+    'or click to browse — JPG, PNG or WEBP · pick several to resize a batch':
+        'o haz clic para buscar — JPG, PNG o WEBP · elige varias para redimensionar un lote',
+    'Width': 'Ancho',
+    'Height': 'Alto',
+    'Lock aspect ratio': 'Bloquear proporción',
+    'Fit within': 'Ajustar a',
+    'Same': 'Igual',
+    'New': 'Nueva',
+    'Resize in three steps': 'Redimensionar en tres pasos',
+    "Any JPG, PNG or WEBP — it's read straight in your browser.":
+        'Cualquier JPG, PNG o WEBP — se lee directamente en tu navegador.',
+    'Set the size': 'Define el tamaño',
+    'Type exact pixels, pick a percentage, or fit within a preset. Aspect ratio stays locked.':
+        'Escribe los píxeles exactos, elige un porcentaje o ajústala a una medida. La proporción se mantiene bloqueada.',
+    'Export JPG, PNG or WEBP at the new size — free, no watermark.':
+        'Exporta JPG, PNG o WEBP en el nuevo tamaño — gratis y sin marca de agua.',
+    'Free EXIF Remover — View & Remove Photo Metadata (GPS)':
+        'Eliminar EXIF Gratis — Ver y Borrar Metadatos de Fotos (GPS)',
+    'See and remove the hidden metadata in your photos — GPS location, camera, date and more. Strips EXIF losslessly, in your browser, nothing uploaded.':
+        'Mira y borra los metadatos ocultos de tus fotos — ubicación GPS, cámara, fecha y más. Elimina el EXIF sin pérdidas, en tu navegador y sin subir nada.',
+    'EXIF Remover — Strip Photo Metadata & GPS, Free & Private':
+        'Eliminar EXIF — Borra Metadatos y GPS, Gratis y Privado',
+    'Read locally — nothing is uploaded': 'Leído localmente — no se sube nada',
+    'EXIF & Metadata': 'EXIF y Metadatos',
+    'Remover': 'Eliminar',
+    'See the hidden data in your photos —': 'Mira los datos ocultos de tus fotos —',
+    'GPS location': 'ubicación GPS',
+    ', camera, date — and strip it out before you share. Lossless, free and 100% private.':
+        ', cámara, fecha — y bórralos antes de compartir. Sin pérdidas, gratis y 100% privado.',
+    'or click to browse — JPG photos carry the most hidden data · pick several to clean a batch':
+        'o haz clic para buscar — las fotos JPG son las que más datos ocultan · elige varias para limpiar un lote',
+    'No photo handy?': '¿No tienes ninguna foto a mano?',
+    'Try a sample photo': 'Prueba con una foto de ejemplo',
+    '— a real JPEG with GPS and camera data inside.':
+        '— un JPEG real con datos de GPS y de la cámara dentro.',
+    'Location data found': 'Se encontraron datos de ubicación',
+    'All metadata': 'Todos los metadatos',
+    'Download clean copy': 'Descargar copia limpia',
+    'New photo': 'Nueva foto',
+    "What's hiding in your photos": 'Lo que se esconde en tus fotos',
+    'Phones tag photos with the exact coordinates they were taken — often your home. Strip it before posting.':
+        'Los móviles etiquetan las fotos con las coordenadas exactas donde se tomaron — a menudo tu casa. Bórralas antes de publicar.',
+    'Date & device': 'Fecha y dispositivo',
+    'The exact timestamp, camera and even the software used are all embedded in the file.':
+        'La hora exacta, la cámara e incluso el software usado están incrustados en el archivo.',
+    'Lossless & private': 'Sin pérdidas y privado',
+    'JPEGs are cleaned losslessly with zero quality loss, and nothing ever leaves your device.':
+        'Los JPEG se limpian sin ninguna pérdida de calidad, y nada sale de tu dispositivo.',
+    'Why this one runs on your device': 'Por qué esta herramienta corre en tu dispositivo',
+    "You can check this yourself: open your browser's network panel, run the tool, and watch it stay silent. Or turn off your Wi-Fi — the tool keeps working.":
+        'Puedes comprobarlo tú: abre el panel de red del navegador, usa la herramienta y verás que no dice nada. O apaga el Wi-Fi — la herramienta sigue funcionando.',
+    "Resize your": "Redimensiona tus",
+    "Photos": "Fotos",
+    "Remove EXIF &": "Elimina EXIF y",
+    "Metadata": "Metadatos",
 }
 
 
@@ -801,7 +871,7 @@ USE_CASES = {
         ],
         "benefits": [
             {"icon": "fa-user", "title": "Recortes favorecedores", "text": "Preparada para el pelo y los bordes suaves, con un pincel de refinado para los últimos retoques."},
-            {"icon": "fa-palette", "title": "Cualquier color de fondo", "text": "Combina con una paleta de marca o un fondo de estudio liso, y exporta en PNG, JPG o WEBP."},
+            {"icon": "fa-swatchbook", "title": "Cualquier color de fondo", "text": "Combina con una paleta de marca o un fondo de estudio liso, y exporta en PNG, JPG o WEBP."},
             {"icon": "fa-shield-halved", "title": "Privado por diseño", "text": "Tu cara nunca sale de tu navegador — no se envía nada a un servidor."},
         ],
     },
@@ -832,7 +902,7 @@ USE_CASES = {
             "Como todo el proceso corre en tu navegador, tu firma — un dato sensible — nunca se sube a un servidor.",
         ],
         "benefits": [
-            {"icon": "fa-file-signature", "title": "Lista para documentos", "text": "Consigue tinta transparente que puedes colocar directamente en PDF, contratos y cartas."},
+            {"icon": "fa-stamp", "title": "Lista para documentos", "text": "Consigue tinta transparente que puedes colocar directamente en PDF, contratos y cartas."},
             {"icon": "fa-shield-halved", "title": "Se queda en privado", "text": "Tu firma nunca sale de tu dispositivo — no se envía nada a ninguna parte."},
             {"icon": "fa-wand-magic-sparkles", "title": "Aislado limpio", "text": "Separa la tinta de la textura del papel y de las sombras, con un pincel para refinar el resultado."},
         ],
@@ -848,9 +918,9 @@ USE_CASES = {
             "Como la IA corre localmente en tu navegador, puedes procesar todo el stock sin subir una sola foto, sin límites de API y sin pagar por imagen.",
         ],
         "benefits": [
-            {"icon": "fa-car", "title": "Limpio como un concesionario", "text": "Cambia un aparcamiento desordenado por un fondo de estudio impecable que mantiene el foco en el coche."},
+            {"icon": "fa-square-full", "title": "Limpio como un concesionario", "text": "Cambia un aparcamiento desordenado por un fondo de estudio impecable que mantiene el foco en el coche."},
             {"icon": "fa-layer-group", "title": "Lotes completos", "text": "Suelta decenas de fotos a la vez y descárgalas juntas en un ZIP."},
-            {"icon": "fa-bolt", "title": "Instantáneo y gratis", "text": "Sin coste por foto y sin marca de agua — resolución completa siempre."},
+            {"icon": "fa-clock", "title": "Instantáneo y gratis", "text": "Sin coste por foto y sin marca de agua — resolución completa siempre."},
         ],
     },
     "clothing": {
@@ -864,8 +934,8 @@ USE_CASES = {
             "Todo corre en tu navegador a resolución completa, así que puedes preparar un armario entero de anuncios en privado — sin subidas y sin tarifas por foto.",
         ],
         "benefits": [
-            {"icon": "fa-shirt", "title": "Vendible en segundos", "text": "Recortes limpios de tops, vestidos y zapatos que encajan en cualquier cuadrícula de tienda."},
-            {"icon": "fa-tags", "title": "Anuncios uniformes", "text": "Dale a cada prenda el mismo fondo cuidado para que tu escaparate se vea profesional."},
+            {"icon": "fa-store", "title": "Vendible en segundos", "text": "Recortes limpios de tops, vestidos y zapatos que encajan en cualquier cuadrícula de tienda."},
+            {"icon": "fa-bookmark", "title": "Anuncios uniformes", "text": "Dale a cada prenda el mismo fondo cuidado para que tu escaparate se vea profesional."},
             {"icon": "fa-shield-halved", "title": "Privado por diseño", "text": "Tus fotos nunca salen de tu dispositivo — no se sube nada a un servidor."},
         ],
     },
@@ -880,9 +950,9 @@ USE_CASES = {
             "Todo ocurre en tu dispositivo, así que puedes probar con todas las fotos que quieras — sin subidas, sin límites y sin marca de agua.",
         ],
         "benefits": [
-            {"icon": "fa-paw", "title": "Genial con el pelo", "text": "Preparada para bordes suaves, pelo y bigotes, para un recorte de aspecto natural."},
+            {"icon": "fa-brush", "title": "Genial con el pelo", "text": "Preparada para bordes suaves, pelo y bigotes, para un recorte de aspecto natural."},
             {"icon": "fa-wand-magic-sparkles", "title": "Refina a mano", "text": "Limpia el fondo que sobra o recupera detalles finos con el pincel de bordes integrado."},
-            {"icon": "fa-heart", "title": "Lista para imprimir y pegar", "text": "PNG transparentes a resolución completa para tazas, pegatinas, impresiones y memes."},
+            {"icon": "fa-note-sticky", "title": "Lista para imprimir y pegar", "text": "PNG transparentes a resolución completa para tazas, pegatinas, impresiones y memes."},
         ],
     },
     "youtube-thumbnail": {
@@ -896,8 +966,8 @@ USE_CASES = {
             "Corre entero en tu navegador a resolución completa, así que puedes sacar miniaturas rápido — sin subidas, sin suscripciones y sin marca de agua.",
         ],
         "benefits": [
-            {"icon": "fa-clapperboard", "title": "Hecho para creadores", "text": "Recortes limpios de ti o de tu sujeto para que destaquen sobre cualquier fondo de miniatura."},
-            {"icon": "fa-bolt", "title": "Resultados rápidos", "text": "Quita el fondo en segundos para que cierres la miniatura y le des a publicar."},
+            {"icon": "fa-camera", "title": "Hecho para creadores", "text": "Recortes limpios de ti o de tu sujeto para que destaquen sobre cualquier fondo de miniatura."},
+            {"icon": "fa-clock", "title": "Resultados rápidos", "text": "Quita el fondo en segundos para que cierres la miniatura y le des a publicar."},
             {"icon": "fa-crop-simple", "title": "Calidad completa", "text": "PNG transparentes a resolución completa y sin marca de agua, listos para cualquier editor."},
         ],
     },
@@ -912,9 +982,9 @@ USE_CASES = {
             "Como la IA corre localmente en tu navegador, puedes preparar un inventario entero sin subir una sola foto, sin límites de API y sin pagar por imagen.",
         ],
         "benefits": [
-            {"icon": "fa-tag", "title": "Vende más rápido", "text": "Los fondos blancos y limpios hacen que los artículos se vean profesionales y generan confianza."},
+            {"icon": "fa-bookmark", "title": "Vende más rápido", "text": "Los fondos blancos y limpios hacen que los artículos se vean profesionales y generan confianza."},
             {"icon": "fa-layer-group", "title": "Procesa el inventario en lote", "text": "Suelta decenas de artículos a la vez y descárgalos juntos en un ZIP."},
-            {"icon": "fa-bolt", "title": "Gratis e ilimitado", "text": "Sin coste por foto y sin marca de agua — resolución completa siempre."},
+            {"icon": "fa-circle-check", "title": "Gratis e ilimitado", "text": "Sin coste por foto y sin marca de agua — resolución completa siempre."},
         ],
     },
     "discord-pfp": {
@@ -928,8 +998,8 @@ USE_CASES = {
             "Todo ocurre en tu dispositivo, así que puedes probar todos los estilos que quieras — sin subidas, sin límites y sin marca de agua.",
         ],
         "benefits": [
-            {"icon": "fa-circle-user", "title": "Avatares nítidos", "text": "Recortes limpios que se leen bien incluso en el tamaño pequeño de los avatares de Discord."},
-            {"icon": "fa-palette", "title": "Cualquier color o degradado", "text": "Pon tu recorte sobre un color sólido, un degradado o un fondo desenfocado, y recórtalo en círculo."},
+            {"icon": "fa-user", "title": "Avatares nítidos", "text": "Recortes limpios que se leen bien incluso en el tamaño pequeño de los avatares de Discord."},
+            {"icon": "fa-swatchbook", "title": "Cualquier color o degradado", "text": "Pon tu recorte sobre un color sólido, un degradado o un fondo desenfocado, y recórtalo en círculo."},
             {"icon": "fa-shield-halved", "title": "Privado por diseño", "text": "Tu foto nunca sale de tu navegador — no se sube nada a un servidor."},
         ],
     },
@@ -944,8 +1014,8 @@ USE_CASES = {
             "Todo corre en tu navegador a resolución completa, así que puedes montar un set entero de gráficos de marca en privado — sin subidas, sin tarifas por imagen y sin marca de agua.",
         ],
         "benefits": [
-            {"icon": "fa-tower-broadcast", "title": "Sin croma", "text": "Consigue un recorte limpio de cualquier foto — sin croma ni montaje de estudio."},
-            {"icon": "fa-icons", "title": "Paneles y emotes", "text": "PNG transparentes listos para overlays, paneles, horarios y arte de emotes."},
+            {"icon": "fa-wand-magic-sparkles", "title": "Sin croma", "text": "Consigue un recorte limpio de cualquier foto — sin croma ni montaje de estudio."},
+            {"icon": "fa-images", "title": "Paneles y emotes", "text": "PNG transparentes listos para overlays, paneles, horarios y arte de emotes."},
             {"icon": "fa-crop-simple", "title": "Calidad completa", "text": "Exportaciones a resolución completa y sin marca de agua para cualquier herramienta de diseño de directos."},
         ],
     },
@@ -1074,4 +1144,29 @@ FAQS = {
     "Can I fine-tune a preset look?":
         ("¿Puedo ajustar un estilo predefinido?",
          "Sí — pulsa un estilo y luego mueve cualquier control encima. El estilo marca el punto de partida; los controles siempre los llevas tú."),
+    # --- Resizer + EXIF remover ---
+    'Is this image resizer free?':
+        ('¿Este redimensionador de imágenes es gratis?',
+         'Sí — gratis, ilimitado, sin marca de agua y sin registro. Redimensiona todas las imágenes que quieras.'),
+    'Will resizing reduce quality?':
+        ('¿Redimensionar reduce la calidad?',
+         'Hacer una imagen más pequeña la mantiene nítida. Ampliarla más allá del tamaño original puede verse blanda, porque no hay detalle extra que añadir — los mejores resultados vienen de reducir.'),
+    'Can I keep the aspect ratio?':
+        ('¿Puedo mantener la proporción?',
+         'Sí. Bloquea la proporción y al cambiar el ancho se actualiza el alto automáticamente, así la imagen nunca se deforma; desbloquéala para fijar dimensiones exactas.'),
+    'Is my image uploaded?':
+        ('¿Se sube mi imagen?',
+         'No — el redimensionado ocurre por completo en tu navegador, así que tus imágenes nunca salen de tu dispositivo.'),
+    'What is EXIF / photo metadata?':
+        ('¿Qué son los EXIF o metadatos de una foto?',
+         'Datos ocultos que tu cámara o tu móvil guarda dentro de la foto — ubicación GPS, la fecha y hora exactas y el modelo del dispositivo. Viajan con el archivo cuando lo compartes.'),
+    'Is removing it private?':
+        ('¿Borrarlos es privado?',
+         'Sí — la foto se lee y se limpia por completo en tu navegador y nunca se sube, así que incluso las fotos privadas con geoetiqueta se quedan en tu dispositivo.'),
+    'Does removing metadata reduce quality?':
+        ('¿Borrar los metadatos reduce la calidad?',
+         'No. En los JPEG los metadatos se eliminan sin pérdidas — los datos de la imagen quedan intactos, así que no hay ninguna pérdida de calidad.'),
+    'Why remove location data before sharing?':
+        ('¿Por qué borrar la ubicación antes de compartir?',
+         'Las fotos con geoetiqueta revelan exactamente dónde se tomaron — a menudo tu casa. Borrar la etiqueta GPS antes de publicar protege tu privacidad.'),
 }

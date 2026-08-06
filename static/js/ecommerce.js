@@ -14,7 +14,7 @@
 const { $, $$, Toast, loadImage, download, t } = CBG;
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
-import { removalConfig } from './accel.js';
+import { removalConfig, markRemovalSucceeded } from './accel.js';
 
 /* --------------------------------------------------------------- helpers */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -189,6 +189,7 @@ const App = {
       const stopIdle = CBG.sparkleLoopOver(it.canvas, { count: 7 });
       try {
         const blob = await removeBackground(it.file, await removalConfig());
+        markRemovalSucceeded();  // full-quality weights from the next load on (accel.js)
         it.cutoutUrl = URL.createObjectURL(blob);
         it.cutout = await loadImage(it.cutoutUrl);
         it.bbox = this.alphaBBox(it.cutout);

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static i18n_extras %}
 
-{% block title %}Free EXIF Remover — View &amp; Remove Photo Metadata (GPS){% endblock %}
-{% block description %}See and remove the hidden metadata in your photos — GPS location, camera, date and more. Strips EXIF losslessly, in your browser, nothing uploaded.{% endblock %}
-{% block og_title %}EXIF Remover — Strip Photo Metadata &amp; GPS, Free &amp; Private{% endblock %}
+{% block title %}{% t "Free EXIF Remover — View & Remove Photo Metadata (GPS)" %}{% endblock %}
+{% block description %}{% t "See and remove the hidden metadata in your photos — GPS location, camera, date and more. Strips EXIF losslessly, in your browser, nothing uploaded." %}{% endblock %}
+{% block og_title %}{% t "EXIF Remover — Strip Photo Metadata & GPS, Free & Private" %}{% endblock %}
 
 {% block extra_seo %}
 <script type="application/ld+json">
@@ -26,15 +26,14 @@
     <section class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Read locally — nothing is uploaded
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% t "Read locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                EXIF &amp; Metadata
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Remover</span>
+                {% t "Remove EXIF &" %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Metadata" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                See the hidden data in your photos — <strong>GPS location</strong>, camera, date — and strip it out
-                before you share. Lossless, free and 100% private.
+                {% t "See the hidden data in your photos —" %} <strong>{% t "GPS location" %}</strong>{% t ", camera, date — and strip it out before you share. Lossless, free and 100% private." %}
             </p>
         </div>
 
@@ -46,18 +45,18 @@
                 <div id="ex-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-solid fa-database" aria-hidden="true"></i>
                 </div>
-                <h2 class="text-2xl font-semibold">Drop a photo</h2>
-                <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG photos carry the most hidden data · pick several to clean a batch</p>
+                <h2 class="text-2xl font-semibold">{% t "Drop a photo" %}</h2>
+                <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — JPG photos carry the most hidden data · pick several to clean a batch" %}</p>
                 <button id="ex-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select a photo" %}
                 </button>
                 <p class="text-sm text-gray-500 dark:text-gray-400 pt-1">
-                    No photo handy?
+                    {% t "No photo handy?" %}
                     <button id="ex-sample" type="button" data-src="{% static 'img/demo-exif-sample.jpg' %}"
                             class="font-semibold text-primaryText hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
-                        Try a sample photo
+                        {% t "Try a sample photo" %}
                     </button>
-                    — a real JPEG with GPS and camera data inside.
+                    {% t "— a real JPEG with GPS and camera data inside." %}
                 </p>
             </div>
         </div>
@@ -76,38 +75,40 @@
             <div id="ex-summary" class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 text-sm"></div>
 
             <div id="ex-gps" class="hidden rounded-2xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-700 dark:text-red-300">
-                <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Location data found</div>
+                <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {% t "Location data found" %}</div>
                 <p id="ex-gps-detail" class="mt-1 text-xs"></p>
             </div>
 
             <details id="ex-details" class="hidden glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 overflow-hidden">
                 <summary class="cursor-pointer list-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex items-center justify-between">
-                    <span>All metadata</span>
+                    <span>{% t "All metadata" %}</span>
                     <i class="fa-solid fa-chevron-down text-[10px] transition-transform group-open:rotate-180" aria-hidden="true"></i>
                 </summary>
                 <div id="ex-list" class="px-4 pb-4 max-h-72 overflow-y-auto text-xs space-y-1.5"></div>
             </details>
 
             <button id="ex-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
-                <i class="fa-solid fa-shield-halved mr-1.5" aria-hidden="true"></i>Download clean copy
+                <i class="fa-solid fa-shield-halved mr-1.5" aria-hidden="true"></i>{% t "Download clean copy" %}
             </button>
             {% include 'remover/partials/batch_bar.html' with note='Only the first photo is inspected here; every queued photo is cleaned the same way.' %}
 
             <button id="ex-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New photo
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "New photo" %}
             </button>
         </div>
     </section>
 
     <!-- SEO / help -->
     <section aria-labelledby="ex-how" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="ex-how" class="text-2xl font-bold text-center">What's hiding in your photos</h2>
+        <h2 id="ex-how" class="text-2xl font-bold text-center">{% t "What's hiding in your photos" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-primaryText" aria-hidden="true"></i>GPS location</div><p class="text-sm text-gray-500 dark:text-gray-400">Phones tag photos with the exact coordinates they were taken — often your home. Strip it before posting.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock text-primaryText" aria-hidden="true"></i>Date &amp; device</div><p class="text-sm text-gray-500 dark:text-gray-400">The exact timestamp, camera and even the software used are all embedded in the file.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-shield-halved text-primaryText" aria-hidden="true"></i>Lossless &amp; private</div><p class="text-sm text-gray-500 dark:text-gray-400">JPEGs are cleaned losslessly with zero quality loss, and nothing ever leaves your device.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-primaryText" aria-hidden="true"></i>{% t "GPS location" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Phones tag photos with the exact coordinates they were taken — often your home. Strip it before posting." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock text-primaryText" aria-hidden="true"></i>{% t "Date & device" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "The exact timestamp, camera and even the software used are all embedded in the file." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold flex items-center gap-2"><i class="fa-solid fa-shield-halved text-primaryText" aria-hidden="true"></i>{% t "Lossless & private" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "JPEGs are cleaned losslessly with zero quality loss, and nothing ever leaves your device." %}</p></div>
         </div>
     </section>
+
+    {% include 'remover/partials/privacy_note.html' with risk=privacy.risk answer=privacy.answer points=privacy.points %}
 
     {% include 'remover/partials/faq.html' %}
 </div>

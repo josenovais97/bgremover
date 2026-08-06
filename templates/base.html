@@ -291,13 +291,19 @@
                 which only claims the translated ones. Each is labelled with its own
                 endonym (translations.LANGUAGE_NAMES): someone looking for Spanish scans
                 for "Español", not for a word in a language they are trying to leave.{% endcomment %}
+                {% comment %}A segmented control rather than dot-separated links: with three
+                or more languages the run-on text read as one broken sentence, and the
+                current language was signalled only by weight. The pill makes the active
+                one unmistakable and gives each target a proper tap area.{% endcomment %}
                 {% if languages|length > 1 %}
-                <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs" aria-label="{% t 'Language' %}">
-                    <i class="fa-solid fa-globe text-gray-400" aria-hidden="true"></i>
-                    {% for l in languages %}{% if not forloop.first %}<span class="text-gray-300 dark:text-gray-700">·</span>{% endif %}
-                    <a href="{{ l.url }}" hreflang="{{ l.code }}" class="{% if LANGUAGE_CODE == l.code %}text-primaryText font-semibold{% else %}hover:text-primaryText{% endif %} transition-colors">{{ l.label }}</a>
+                <nav class="flex items-center gap-1 p-1 rounded-full border border-gray-200/70 dark:border-gray-800/70 bg-white/70 dark:bg-gray-900/50" aria-label="{% t 'Language' %}">
+                    <i class="fa-solid fa-globe text-gray-400 text-xs ml-1.5 mr-0.5" aria-hidden="true"></i>
+                    {% for l in languages %}
+                    <a href="{{ l.url }}" hreflang="{{ l.code }}"
+                       {% if LANGUAGE_CODE == l.code %}aria-current="true"{% endif %}
+                       class="px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary {% if LANGUAGE_CODE == l.code %}bg-primary text-white font-semibold shadow-sm{% else %}hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primaryText{% endif %}">{{ l.label }}</a>
                     {% endfor %}
-                </div>
+                </nav>
                 {% endif %}
             </div>
         </div>

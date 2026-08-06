@@ -157,6 +157,8 @@
         </p>
     </section>
 
+    {% include 'remover/partials/privacy_note.html' with risk=privacy.risk answer=privacy.answer points=privacy.points %}
+
     {% include 'remover/partials/faq.html' %}
 </div>
 {% endblock %}

@@ -1,0 +1,49 @@
+{% load i18n_extras %}
+{% comment %}
+The "why it matters that this one is local" block.
+
+Every tool here carries the same "nothing is uploaded" badge, which makes the
+claim easy to skim past. On a handful of tools it is not a feature but the whole
+reason to pick this site: someone stripping GPS off a photo, blacking out a
+document or making an ID photo is already worried about who sees the file, and
+they arrived from a query that says so. This block answers that worry in the
+words they used, instead of leaving them to infer it from a pill.
+
+Deliberately NOT included on every page — spend it where the visitor is already
+anxious, or it becomes the same skimmable furniture the badge is.
+
+Params:
+  risk    - what the file exposes if it goes to someone else's server
+  answer  - what this tool does instead (one sentence, concrete)
+  points  - list of {icon, title, text} dicts, rendered as a three-up grid
+
+Copy runs through {% t %}, so a translated page localises by adding catalogue
+entries for the strings the including template passes in.
+{% endcomment %}
+<section class="max-w-4xl mx-auto">
+    <div class="glass rounded-3xl p-6 sm:p-8 border border-gray-200/70 dark:border-gray-800/70 space-y-6">
+        <div class="flex items-start gap-4">
+            <span class="w-11 h-11 shrink-0 grid place-items-center rounded-2xl bg-primary/10 text-primaryText text-xl">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            </span>
+            <div class="space-y-1">
+                <h2 class="text-xl font-bold tracking-tight">{% t "Why this one runs on your device" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{{ risk }}</p>
+                <p class="text-gray-600 dark:text-gray-300 font-medium">{{ answer }}</p>
+            </div>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4">
+            {% for p in points %}
+            <div class="rounded-2xl p-4 bg-white/60 dark:bg-gray-900/40 border border-gray-200/60 dark:border-gray-800/60 space-y-1.5">
+                <div class="font-semibold text-sm flex items-center gap-2">
+                    <i class="fa-solid {{ p.icon }} text-primaryText" aria-hidden="true"></i>{{ p.title }}
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ p.text }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="text-xs text-gray-400 dark:text-gray-500">
+            {% t "You can check this yourself: open your browser's network panel, run the tool, and watch it stay silent. Or turn off your Wi-Fi — the tool keeps working." %}
+        </p>
+    </div>
+</section>

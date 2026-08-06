@@ -13,7 +13,7 @@
 
 import { removeBackground, preload } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
-import { removalConfig, markGpuFailed, isGpu, downloadMb } from './accel.js';
+import { removalConfig, markGpuFailed, isGpu, downloadMb, markRemovalSucceeded } from './accel.js';
 
 const { $, $$, Toast, loadImage, t, download, Chain } = CBG;
 
@@ -1783,6 +1783,10 @@ class Card {
       this.setState('done');
       // Count this cut-out toward the global "images processed" counter.
       window.__clearbgReport?.(1);
+      // This device has now seen the tool work, so later visits can afford the
+      // full-quality weights (see accel.js MODEL). Takes effect on the next load
+      // — the library has already memoised the config for this one.
+      markRemovalSucceeded();
       // Reward the moment: pop a check-mark over the fresh cut-out, and twinkle
       // along the edge the model just found.
       this.el.classList.add('just-done');

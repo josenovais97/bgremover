@@ -14,7 +14,7 @@
 
 const { $, Toast, loadImage, download, t } = CBG;
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
-import { removalConfig } from './accel.js';
+import { removalConfig, markRemovalSucceeded } from './accel.js';
 
 /* --------------------------------------------------------------- helpers */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -90,6 +90,7 @@ const App = {
     this.render();
     try {
       const blob = await removeBackground(file, await removalConfig());
+      markRemovalSucceeded();  // full-quality weights from the next load on (accel.js)
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);

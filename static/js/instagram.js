@@ -1140,13 +1140,14 @@ const App = {
     // Twinkle over the photo for the wait; the finishing burst replaces it.
     const stopIdle = CBG.sparkleLoopOver(this.canvas);
     try {
-      const [{ removeBackground }, { removalConfig }] = await Promise.all([
+      const [{ removeBackground }, { removalConfig, markRemovalSucceeded }] = await Promise.all([
         import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm'),
         import('./accel.js'),
       ]);
       // Model + CPU/GPU backend are chosen once in accel.js, shared with
       // every tool page that cuts out a subject.
       const blob = await removeBackground(this.file, await removalConfig());
+      markRemovalSucceeded();  // full-quality weights from the next load on (accel.js)
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);

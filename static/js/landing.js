@@ -19,15 +19,38 @@
     cta.classList.toggle('pointer-events-none', !on);
   }
 
+  // Two conditions, tracked separately because they change at opposite ends of
+  // the page: the dropzone must be scrolled away (there is something to jump
+  // back to) and the footer must not be on screen (see below).
+  let past = false;      // dropzone has scrolled up past the trigger line
+  let atFooter = false;  // footer is in view
+
+  function sync() {
+    const landingVisible = !landing || !landing.classList.contains('hidden');
+    show(landingVisible && past && !atFooter);
+  }
+
   // Show once the dropzone has scrolled up past a trigger line at ~45% of the
   // viewport (so it works even on short pages where it never fully leaves view),
   // and only while the landing — not the results workspace — is on screen.
   const io = new IntersectionObserver(function (entries) {
-    const e = entries[0];
-    const landingVisible = !landing || !landing.classList.contains('hidden');
-    show(landingVisible && !e.isIntersecting);
+    past = !entries[0].isIntersecting;
+    sync();
   }, { rootMargin: '-45% 0px 0px 0px', threshold: 0 });
   io.observe(dz);
+
+  // Stand down over the footer. Fixed to the bottom-right, the CTA sat on top of
+  // the footer's own content — it covered the language switcher outright, hiding
+  // whichever language sorted last. The footer is also the one place the CTA has
+  // nothing left to offer: the visitor has reached the end of the page, and the
+  // footer carries its own links to every tool.
+  const footer = document.querySelector('footer');
+  if (footer) {
+    new IntersectionObserver(function (entries) {
+      atFooter = entries[0].isIntersecting;
+      sync();
+    }, { threshold: 0 }).observe(footer);
+  }
 
   cta.addEventListener('click', function () {
     dz.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });

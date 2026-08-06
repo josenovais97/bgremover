@@ -11,7 +11,7 @@
  * so nothing here needs an import to reach them.
  */
 
-const { $, $$, Toast, loadImage, download, t } = CBG;
+const { $, $$, Toast, loadImage, download, share, canShare, t } = CBG;
 
 /* --------------------------------------------------------------- helpers */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -100,9 +100,34 @@ const App = {
 
     $('#stk-download').addEventListener('click', () => this.export('image/webp'));
     $('#stk-download-png').addEventListener('click', () => this.export('image/png'));
+    $('#stk-share').addEventListener('click', () => this.shareSticker());
     $('#stk-new').addEventListener('click', () => this.reset());
+    this.offerShare();
 
     this.setBusy(false);
+  },
+
+  /**
+   * Show the share button, and demote Download beside it, where sharing works.
+   *
+   * Probed with a real one-pixel WebP because canShare() inspects the file's
+   * type: desktop Chrome has navigator.share but refuses file payloads, so a
+   * bare feature-check would raise a button that does nothing on the platform
+   * where it is least useful anyway.
+   */
+  offerShare() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 1;
+    c.toBlob((probe) => {
+      if (!probe || !canShare(probe, 'sticker.webp')) return;
+      $('#stk-share').hidden = false;
+      // Two full-width gradient buttons would compete; Download steps back to
+      // the outline treatment its PNG/New siblings already use.
+      const dl = $('#stk-download');
+      dl.className = dl.className
+        .replace(/text-white |shadow-lg shadow-primary\/30 |bg-gradient-to-r from-primary to-primaryHover hover:brightness-110/g, '')
+        + ' border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800';
+    }, 'image/webp');
   },
 
   setBusy(busy, text) {
@@ -114,6 +139,7 @@ const App = {
     if (text) $('#stk-status-text').textContent = text;
     $('#stk-download').disabled = busy || !this.cutout;
     $('#stk-download-png').disabled = busy || !this.cutout;
+    $('#stk-share').disabled = busy || !this.cutout;
   },
 
   async load(file) {
@@ -125,13 +151,14 @@ const App = {
     this.setBusy(true, 'Removing background…');
     this.render();
     try {
-      const [{ removeBackground }, { removalConfig }] = await Promise.all([
+      const [{ removeBackground }, { removalConfig, markRemovalSucceeded }] = await Promise.all([
         import(MODEL_CDN),
         import('./accel.js'),
       ]);
       // Model + CPU/GPU backend are chosen once in accel.js, shared with
       // every tool page that cuts out a subject.
       const blob = await removeBackground(file, await removalConfig());
+      markRemovalSucceeded();  // full-quality weights from the next load on (accel.js)
       if (this.cutoutUrl) URL.revokeObjectURL(this.cutoutUrl);
       this.cutoutUrl = URL.createObjectURL(blob);
       this.cutout = await loadImage(this.cutoutUrl);
@@ -256,8 +283,15 @@ const App = {
   },
 
   /* ------------------------------------------------------------- export */
-  async export(fmt) {
-    if (!this.cutout) return;
+
+  /**
+   * Encode the sticker at `fmt`, or null if encoding failed.
+   *
+   * Split out of `export()` so the share button can reach the same bytes: the
+   * WhatsApp size squeeze belongs to the sticker, not to the download button.
+   */
+  async encode(fmt) {
+    if (!this.cutout) return null;
     const c = document.createElement('canvas');
     this.paint(c, SIZE);
     const isWebp = fmt === 'image/webp';
@@ -270,6 +304,21 @@ const App = {
         blob = await new Promise((res) => c.toBlob(res, fmt, quality));
       }
     }
+    return blob;
+  },
+
+  /** Report the size of what just left the tool, in the note under the buttons. */
+  note(verb, ext, size) {
+    const kb = Math.round(size / 1024);
+    $('#stk-size-note').innerHTML =
+      `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>${verb} ${ext.toUpperCase()} · ${kb} KB`
+      + (ext === 'webp' && kb <= 100 ? ' · WhatsApp ready' : '');
+  },
+
+  async export(fmt) {
+    if (!this.cutout) return;
+    const isWebp = fmt === 'image/webp';
+    const blob = await this.encode(fmt);
     if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
     // Some browsers can't encode WebP — fall back to PNG rather than mislabel it.
     if (isWebp && blob.type !== 'image/webp') {
@@ -278,8 +327,23 @@ const App = {
     }
     const ext = isWebp ? 'webp' : 'png';
     download(blob, `sticker.${ext}`);
-    const kb = Math.round(blob.size / 1024);
-    $('#stk-size-note').innerHTML = `<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>Saved ${ext.toUpperCase()} · ${kb} KB${isWebp && kb <= 100 ? ' · WhatsApp ready' : ''}`;
+    this.note('Saved', ext, blob.size);
+  },
+
+  /**
+   * Hand the sticker straight to the OS share sheet — the WhatsApp/Telegram path.
+   *
+   * This is the only export that finishes the job on a phone: a downloaded
+   * sticker lands in Files and has to be found again, while a shared one goes
+   * into the chat the user opened this page to post in. Nothing is uploaded —
+   * navigator.share moves the bytes locally to the app the user picks.
+   */
+  async shareSticker() {
+    const blob = await this.encode('image/webp');
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+    // A WebP the sheet refuses is still shareable as PNG on some platforms.
+    const name = blob.type === 'image/webp' ? 'sticker.webp' : 'sticker.png';
+    if (await share(blob, name)) this.note('Shared', name.split('.').pop(), blob.size);
   },
 
   reset() {

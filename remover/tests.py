@@ -1827,10 +1827,20 @@ class IconSubsetTests(SimpleTestCase):
         available = set(re.findall(r"\.(fa-[a-z0-9-]+)::before", css))
         self.assertGreater(len(available), 50, "subset CSS looks empty — wrong path?")
 
+        # Python content modules are scanned too: icon names also live in the
+        # page-copy dicts (views.USE_CASES, seo_content's privacy blocks and the
+        # locale catalogues that mirror them), which reach the page as data
+        # rather than as markup. Scanning only templates/ and static/js let an
+        # out-of-subset glyph render as a blank box with this guard still green
+        # — which is how every use-case landing shipped with empty icon tiles.
+        #
+        # This file is excluded: it names glyphs in prose, and a test that fails
+        # on its own error message is a test nobody can ever make pass.
         sources = [
-            p for d in ("templates", "static/js")
+            p for d in ("templates", "static/js", "remover")
             for p in (root / d).rglob("*")
-            if p.suffix in {".html", ".js"} and p.is_file()
+            if p.suffix in {".html", ".js", ".py"}
+            and p.is_file() and p.name != "tests.py"
         ]
         missing = {}
         for path in sources:

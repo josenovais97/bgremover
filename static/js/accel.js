@@ -22,6 +22,7 @@
 
 const GPU_OFF_KEY = 'bgr_gpu_off';   // set once a GPU session has actually failed here
 const RELOAD_KEY = 'bgr_gpu_fb';     // guards against a reload loop within one tab
+const PROVEN_KEY = 'bgr_proven';     // set once a removal has actually finished here
 
 let resolved = null;
 let usingGpu = false;
@@ -29,8 +30,49 @@ let usingGpu = false;
 /** True once the resolved config asked for the GPU backend. */
 export const isGpu = () => usingGpu;
 
-/** Which model this page will use. Known synchronously, before the GPU probe. */
-const modelName = () => (self.crossOriginIsolated ? 'isnet' : 'isnet_quint8');
+/**
+ * Has this visitor ever completed a removal on this device?
+ *
+ * The flag is what separates "someone deciding whether this site works" from
+ * "someone who already knows it does", which is the only input to the model
+ * choice below.
+ */
+function proven() {
+  try { return !!localStorage.getItem(PROVEN_KEY); } catch { return false; }
+}
+
+/**
+ * Record that a removal completed, so later visits earn the full-quality model.
+ * Called from app.js the moment a cut-out lands on screen.
+ */
+export function markRemovalSucceeded() {
+  try { localStorage.setItem(PROVEN_KEY, '1'); } catch { /* private mode: stay on the light model */ }
+}
+
+/**
+ * Which model this page will use. Resolved ONCE at module load, not per call.
+ *
+ * Two things force that. The library memoises its parsed config on the first
+ * call (see `removalConfig`), so a name that changed mid-page would be ignored
+ * by inference but still believed by the download badge — the badge would
+ * advertise a size nobody was downloading. And `markRemovalSucceeded()` fires
+ * during the very first run, so a live-evaluated version would flip the moment
+ * it succeeded and mislabel the download already in flight.
+ *
+ * The choice itself is a first-impression trade. Full `isnet` needs cross-origin
+ * isolation for the multi-threaded WASM backend, but it costs ~190 MB — and a
+ * first-time visitor pays that *before* their first result, on the one page that
+ * has to convince them the site works at all. Ironically the isolated browsers
+ * that got the biggest download were the best-supported ones (desktop Chrome),
+ * so the strongest traffic got the worst first run. So the first removal on a
+ * device uses the quantised model at ~56 MB, and the full weights are fetched
+ * only once someone has seen a result and come back. Quality on the light model
+ * is close enough that most visitors never notice; a 190 MB wait before any
+ * output is something everyone notices.
+ */
+const MODEL = (self.crossOriginIsolated && proven()) ? 'isnet' : 'isnet_quint8';
+
+const modelName = () => MODEL;
 
 /**
  * Roughly how much the first run downloads, in MB — model weights plus the
@@ -69,11 +111,12 @@ async function gpuAvailable() {
 export function removalConfig(extra) {
   resolved ??= (async () => {
     const config = {
-      // Full-quality 'isnet' where the page is cross-origin isolated (COOP+COEP,
-      // set per-route by SecurityHeadersMiddleware) so the WASM runtime can use
-      // its multi-threaded + SIMD backend. Without isolation (e.g. Safari) the
-      // quantized 'isnet_quint8' keeps the main thread from stalling long enough
-      // to trip the browser's "page not responding" prompt.
+      // Full-quality 'isnet' only where the page is cross-origin isolated
+      // (COOP+COEP, set per-route by SecurityHeadersMiddleware, so the WASM
+      // runtime can use its multi-threaded + SIMD backend) AND the visitor has
+      // completed a removal here before. Without isolation (e.g. Safari) the
+      // quantized 'isnet_quint8' also keeps the main thread from stalling long
+      // enough to trip the browser's "page not responding" prompt. See MODEL.
       model: modelName(),
       ...extra,
     };
