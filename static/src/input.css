@@ -170,6 +170,36 @@
   .card.just-done .done-check > span { animation: none; }
 }
 
+/* Reduced motion, globally -------------------------------------------------
+   The rules above opt individual keyframe animations out of motion, one at a
+   time, which covered the animations this file declares and nothing else. It
+   left every Tailwind `transition-*`, `hover:scale-*` and `hover:-translate-*`
+   in the templates still moving — the tool cards lift on hover, the tool page
+   intro collapses its own height, buttons scale. For a visitor who has asked
+   their OS for less motion, those are the ones they actually feel.
+
+   Durations are near-zero rather than `none` so any code that sets a class and
+   expects the end state still gets it, just immediately. Nothing here listens
+   for transitionend or animationend, so there is no handler left waiting.
+
+   `scroll-behavior: auto` matters as much as the rest: <html> carries
+   `scroll-smooth`, so every in-page jump was a glide.
+
+   Deliberately placed BEFORE @layer components — the per-animation rules above
+   set `animation: none` outright, which is more specific than a duration and so
+   still wins where they have made a considered choice (the progress bar jumps
+   to its endpoint rather than racing to it in 0.01ms). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer components {
   /* Glassmorphism -------------------------------------------------------- */
   .glass {
