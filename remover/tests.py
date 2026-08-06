@@ -1291,15 +1291,28 @@ class SitemapContentTests(SimpleTestCase):
                 self.assertIn(f"/{lang}/remove-background/logo/</loc>", response)
 
     def test_sitemap_omits_untranslated_pages(self):
-        # /pt/convert/ resolves, but convert.html has no {% t %} — it serves the
-        # English page. Submitting it duplicated /convert/ and claimed a
-        # translation that does not exist.
+        """A prefixed URL is submitted only where the page is really translated.
+
+        A path that merely resolves under /pt/ serves the English body, so listing
+        it duplicated the English entry and claimed a translation that does not
+        exist.
+
+        Derived from TRANSLATED_PATHS rather than naming a page: this used to
+        assert on /convert/ as its example of an untranslated page, and silently
+        became a test of nothing the moment the converter WAS translated. Picking
+        the example from the data means it keeps testing the rule as coverage
+        grows.
+        """
         response = self.client.get(reverse("remover:sitemap")).content.decode()
-        self.assertIn("/convert/</loc>", response)
         for lang in LANGUAGES:
             with self.subTest(lang=lang):
-                self.assertNotIn(f"/{lang}/convert/</loc>", response)
-                self.assertNotIn(f"/{lang}/about/</loc>", response)
+                untranslated = [
+                    p for p in SITEMAP_PATHS if p not in TRANSLATED_PATHS[lang]
+                ]
+                self.assertTrue(untranslated, "every path is translated — pick a new guard")
+                for path in untranslated:
+                    self.assertIn(f"{path}</loc>", response)
+                    self.assertNotIn(f"/{lang}{path}</loc>", response)
 
     def test_sitemap_url_count_matches_translated_paths(self):
         response = self.client.get(reverse("remover:sitemap")).content.decode()

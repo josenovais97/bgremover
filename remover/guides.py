@@ -1199,7 +1199,7 @@ GUIDES = [
     ),
     _guide(
         slug="heic-and-why-your-photos-will-not-open",
-        title="HEIC Explained — Why iPhone Photos Won't Open, and What to Convert To",
+        title="HEIC Explained — Why iPhone Photos Won't Open Anywhere Else",
         h1="HEIC: why your iPhone photos will not open anywhere else",
         description="Why iPhones save photos as HEIC, what the format actually does, which devices refuse it, and how to convert to JPG without throwing away quality.",
         category="Formats",
@@ -1292,7 +1292,7 @@ GUIDES = [
     ),
     _guide(
         slug="making-stickers-for-whatsapp-and-telegram",
-        title="How to Make WhatsApp and Telegram Stickers That Actually Work",
+        title="How to Make WhatsApp and Telegram Stickers That Work",
         h1="How to make stickers that actually work in WhatsApp and Telegram",
         description="The real technical rules for WhatsApp and Telegram stickers — 512x512, the 100 KB cap, why transparency matters, and how to make one from a photo.",
         category="Editing",
@@ -1385,7 +1385,7 @@ GUIDES = [
     ),
     _guide(
         slug="qr-codes-that-actually-scan",
-        title="QR Codes That Actually Scan — Size, Contrast and Error Correction",
+        title="QR Codes That Actually Scan — Size, Contrast, Correction",
         h1="Why QR codes fail to scan, and how to make ones that always do",
         description="How QR codes really work, the minimum size for a given distance, why low contrast and inverted colours break scanning, and what error correction buys you.",
         category="Formats",
@@ -1478,7 +1478,7 @@ GUIDES = [
     ),
     _guide(
         slug="favicons-that-work-everywhere",
-        title="Favicons Explained — Every Size, Format and File You Actually Need",
+        title="Favicons Explained — Every Size and File You Actually Need",
         h1="Favicons: which sizes and files you actually need in 2026",
         description="What a favicon set really requires — ICO versus PNG versus SVG, Apple touch icons, maskable PWA icons, dark mode, and the HTML that ties them together.",
         category="Formats",
@@ -1572,7 +1572,7 @@ GUIDES = [
     ),
     _guide(
         slug="gif-versus-video-for-short-clips",
-        title="GIF vs Video — Why GIFs Are Enormous and When to Use One Anyway",
+        title="GIF vs Video — Why GIFs Are So Large, and When to Use One",
         h1="GIF vs video: why GIFs are so big, and when one is still the right answer",
         description="Why a three-second GIF can be larger than a minute of video, what GIF's 256-colour limit really costs, and how to decide between GIF, MP4 and WebP.",
         category="Formats",
@@ -1664,7 +1664,7 @@ GUIDES = [
     ),
     _guide(
         slug="getting-text-out-of-images-with-ocr",
-        title="OCR Explained — How to Get Accurate Text Out of Images and Screenshots",
+        title="OCR Explained — How to Get Accurate Text Out of Images",
         h1="How OCR really works, and what wrecks its accuracy",
         description="What optical character recognition does to your image, why screenshots read almost perfectly and photos do not, and the specific things that destroy accuracy.",
         category="Documents",
@@ -1770,6 +1770,41 @@ def guides_by_category():
         for cat in CATEGORIES
         if any(g["category"] == cat for g in GUIDES)
     ]
+
+
+# Inverse of each guide's `tools` list: which articles legitimately point at a
+# given tool. Built once at import rather than scanned per request.
+#
+# This exists to fix a one-way flow. The house rule is that articles link out to
+# tools and not the reverse, which kept guides from decaying into landing pages —
+# and meant every guide passed authority to the tools while receiving none back.
+# On a domain with no external links, internal links are the only authority there
+# is to distribute, and the guides were getting none of it despite being the only
+# editorial content and the only ad surface.
+#
+# The rule still holds where it matters: a tool page links to an article ONLY if
+# that article already chose to cite the tool, so the relationship stays
+# editorially owned by the guide rather than bolted on for SEO.
+_GUIDES_FOR_TOOL = {}
+for _g in GUIDES:
+    for _t in _g["tools"]:
+        _GUIDES_FOR_TOOL.setdefault(_t, []).append(_g["slug"])
+
+
+def guides_for_tool(url_name, limit=2):
+    """Guides that cite `url_name`, newest-updated first, or [] for none.
+
+    Capped low on purpose: this renders at the foot of a tool page as a reading
+    suggestion, not as a second navigation block. Two is enough to be useful and
+    few enough that it cannot be mistaken for a link farm.
+    """
+    slugs = _GUIDES_FOR_TOOL.get(url_name, [])
+    found = sorted(
+        (GUIDES_BY_SLUG[s] for s in slugs),
+        key=lambda g: g["updated_iso"],
+        reverse=True,
+    )
+    return found[:limit]
 
 
 def related_guides(slug, limit=3):

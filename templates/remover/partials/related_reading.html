@@ -1,0 +1,41 @@
+{% load i18n_extras %}
+{% comment %}
+"Related reading" — the return path from a tool page to the articles about it.
+
+Auto-rendered at the foot of every page that has a matching guide, alongside the
+related_tools block. A tool appears here only in articles that already cite it
+(guides.guides_for_tool inverts each guide's own `tools` list), so the editorial
+rule that articles choose their tools rather than the reverse still holds.
+
+Why it exists: the guides had zero inbound internal links from anywhere on the
+site while three utility pages held roughly two hundred between them. With no
+external authority to distribute, that made the only real content on the site
+also the hardest for a crawler to reach.
+
+Deliberately small — two links, text-only, no cards. A tool page's job is the
+tool; this is a footnote offering the longer explanation to the person who wants
+it, and it should never compete with the tool grid above it.
+{% endcomment %}
+{% if related_reading %}
+<section aria-labelledby="reading-title" class="mt-12 max-w-4xl mx-auto">
+    <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 sm:p-6 space-y-3">
+        <h2 id="reading-title" class="text-sm font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+            {% t "Related reading" %}
+        </h2>
+        <ul class="space-y-3">
+            {% for g in related_reading %}
+            <li>
+                <a href="{% url 'remover:guide' g.slug %}" class="group flex items-start gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg">
+                    <i class="fa-solid fa-bookmark mt-1 text-primaryText text-xs shrink-0" aria-hidden="true"></i>
+                    <span class="min-w-0">
+                        <span class="block font-medium group-hover:text-primaryText transition-colors">{{ g.h1 }}</span>
+                        <span class="block text-sm text-gray-500 dark:text-gray-400">{{ g.description }}</span>
+                        <span class="block text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ g.minutes }} {% t "min read" %}</span>
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% endif %}

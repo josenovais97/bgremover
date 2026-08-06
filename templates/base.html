@@ -212,6 +212,10 @@
         {% block content %}{% endblock %}
         {% comment %}Contextual "related tools" cross-links. Pages with their own full tool grid (the home hub) override this block empty.{% endcomment %}
         {% block related_tools %}{% include 'remover/partials/related_tools.html' %}{% endblock %}
+        {% comment %}The return path to the guides. Rendered outside the related_tools
+        block on purpose: the home hub overrides that block to suppress a second tool
+        grid, and doing so used to take the only editorial link with it.{% endcomment %}
+        {% include 'remover/partials/related_reading.html' %}
     </main>
 
     <footer class="mt-auto border-t border-gray-200/60 dark:border-gray-800/60">

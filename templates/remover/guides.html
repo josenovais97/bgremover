@@ -61,6 +61,39 @@ for. Content comes from remover/guides.py via views.guides_index.
         </p>
     </section>
 
+    {% comment %}The hub needs prose of its own, not just an index. Every headline and
+    description below now also appears on the tool pages that the articles cite, so
+    without this the page that exists to introduce the writing had almost no words that
+    were its own.{% endcomment %}
+    <section class="max-w-3xl mx-auto space-y-4 text-gray-600 dark:text-gray-300 leading-relaxed">
+        <p>
+            Most writing about image files is either a specification nobody reads or a listicle that
+            repeats advice which stopped being true a decade ago. These articles try to sit in between:
+            what the format is actually doing to your pixels, which number matters, and where the
+            conventional answer is now wrong.
+        </p>
+        <p>
+            Three rules keep them honest. Every article has to contain something you could not have
+            guessed — a threshold, a measurement, a specific failure. Every article has to say where the
+            approach breaks down, including where our own tools are the wrong choice; the redaction guide
+            tells you to retype sensitive text rather than trust any pixelation, ours included. And none
+            of them is a rewrite of a tool page: if the substance were "here is what our compressor does",
+            it would belong on the compressor.
+        </p>
+        <p>
+            They are grouped below by subject rather than by date, because none of it is news. Formats
+            covers what to save and when; Editing is the practical craft; Photography is what to do before
+            the file exists; Privacy is what your files reveal about you; Documents covers PDFs and text.
+            Start anywhere — they cross-reference each other where topics genuinely overlap, and repeat
+            each other nowhere.
+        </p>
+        <p>
+            If you only read one, make it the formats article. Nearly every other decision on this list
+            — how small a file can get, whether an edge stays sharp, whether transparency survives, how
+            much quality a second save costs you — follows from which format you picked at the start.
+        </p>
+    </section>
+
     <!-- Grouped index -->
     {% for cat, items in groups %}
     <section aria-labelledby="cat-{{ forloop.counter }}" class="max-w-5xl mx-auto space-y-6">

@@ -7,7 +7,7 @@ from django.utils.translation import get_language
 
 from config.middleware import ISOLATED_VIEWS
 
-from .guides import GUIDES
+from .guides import GUIDES, guides_for_tool
 from .page_content import deep_for
 from .translations import LANGUAGE_NAMES, LANGUAGES, js_catalogue, path_language, strip_language
 from .translations import t as tr
@@ -525,6 +525,11 @@ def seo(request):
         "site_url": settings.SITE_URL.rstrip("/"),
         # Contextual internal linking: a few related tools for the current page.
         "related_tools": _related_tools(tool_nav, url_name),
+        # ...and the articles that cite this tool. The guides were receiving no
+        # internal links at all while three utility pages absorbed ~200 between
+        # them, which on a domain with no external authority meant the only
+        # editorial content on the site was also the least discoverable.
+        "related_reading": guides_for_tool(url_name),
         # Runtime strings for CBG.t(). Empty (and so omitted) on English pages.
         # Passed as a dict, not pre-serialised: base.html renders it with
         # |json_script, which escapes `<` and `&` for safe <script> embedding.

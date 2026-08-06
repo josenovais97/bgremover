@@ -555,8 +555,29 @@
    * changes if it is ignored, which is the whole point of the promise it makes.
    */
   const SUPPORT_AFTER = 3;          // downloads before the ask is earned
+  const INSTALL_AFTER = 2;          // ...and before that, the install offer
   const DL_KEY = 'bgr_dl_n';
   const SUPPORT_KEY = 'bgr_support'; // 'done' once dismissed or clicked
+  const INSTALL_KEY = 'bgr_install'; // 'done' once dismissed or installed
+
+  // Chrome fires this INSTEAD of showing its own install UI, and only when the
+  // PWA criteria are already met — so holding onto it is what makes an install
+  // offer possible at all. It has to be captured at load, because the event is
+  // not replayed later: miss it and there is no way to ask again this page.
+  let installEvent = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    installEvent = e;
+  });
+  window.addEventListener('appinstalled', () => {
+    installEvent = null;
+    pref(INSTALL_KEY, 'done');
+  });
+
+  /** True when the page is already running as an installed app. */
+  const installed = () =>
+    window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
 
   function pref(key, value) {
     try {
@@ -571,6 +592,83 @@
     try { n = Number(pref(DL_KEY) || 0) + 1; } catch { return; }
     pref(DL_KEY, String(n));
     if (n >= SUPPORT_AFTER && pref(SUPPORT_KEY) !== 'done') showSupport();
+  }
+
+  /**
+   * The install offer fires on ARRIVAL, not after a download.
+   *
+   * Every image export raises the chain bar, and both asks stand down for it —
+   * so hanging this off a download meant it would essentially never appear. The
+   * better moment is the one this replaces it with: someone who has exported
+   * before and has come back is exactly the person for whom an icon on the home
+   * screen is worth something, and nothing else is on screen to fight.
+   *
+   * Waits for the install event, which Chrome fires shortly after load once it
+   * decides the PWA criteria are met — it is usually not available yet at
+   * DOMContentLoaded, so checking once on arrival would always miss it.
+   */
+  function offerInstallOnReturn() {
+    if (installed() || pref(INSTALL_KEY) === 'done') return;
+    let downloads = 0;
+    try { downloads = Number(pref(DL_KEY) || 0); } catch { return; }
+    if (downloads < INSTALL_AFTER) return; // not a returning user yet
+
+    const tryShow = () => {
+      if (!installEvent || document.getElementById('cbg-install')) return;
+      // Let the page settle first; an offer that lands during load reads as a
+      // pop-up rather than as something the visitor earned.
+      setTimeout(showInstall, 2500);
+    };
+    if (installEvent) tryShow();
+    else window.addEventListener('beforeinstallprompt', tryShow, { once: true });
+  }
+
+  /**
+   * Offer to install the app, once, after it has already proved useful.
+   *
+   * Same shape and rules as the support ask below: not a modal, not on arrival,
+   * never over the chain bar, dismissable forever. The pitch is the honest one —
+   * the tools already run on the device, so installing changes where the icon
+   * lives and makes them work with no connection at all, rather than unlocking
+   * anything.
+   */
+  document.addEventListener('DOMContentLoaded', offerInstallOnReturn);
+
+  function showInstall() {
+    if (barEl || document.getElementById('cbg-install')) return; // chain bar owns the corner
+    const cta = document.getElementById('sticky-cta');
+    const ctaUp = cta && !cta.classList.contains('hidden')
+      && getComputedStyle(cta).opacity !== '0';
+
+    const el = document.createElement('div');
+    el.id = 'cbg-install';
+    el.className = `fixed inset-x-0 bottom-0 z-40 px-4 ${ctaUp ? 'pb-24 sm:pb-20' : 'pb-4'} pointer-events-none print:hidden`;
+    el.innerHTML = `
+      <div class="pointer-events-auto mx-auto max-w-md glass border border-gray-200/70 dark:border-gray-800/70 rounded-2xl shadow-xl p-3 sm:p-4 flex flex-wrap items-center gap-x-3 gap-y-2 translate-y-3 opacity-0 transition-all duration-300">
+        <span class="w-9 h-9 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-download" aria-hidden="true"></i></span>
+        <span class="text-sm flex-1 min-w-[11rem]">${t('Install ClearBG to keep these tools one tap away — they work offline too.')}</span>
+        <button type="button" data-install
+           class="ml-auto shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border border-primary/40 bg-primary/5 text-primaryText hover:bg-primary/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">${t('Install')}</button>
+        <button type="button" data-dismiss aria-label="${t('Dismiss')}"
+                class="p-2 -m-1 shrink-0 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>`;
+
+    const close = () => { pref(INSTALL_KEY, 'done'); el.remove(); };
+    el.querySelector('[data-dismiss]').addEventListener('click', close);
+    el.querySelector('[data-install]').addEventListener('click', async () => {
+      const e = installEvent;
+      // The captured event is single-use: once prompt() has been called Chrome
+      // will not accept it again, so drop it either way and never re-offer.
+      installEvent = null;
+      close();
+      try { await e.prompt(); } catch { /* dismissed by the browser */ }
+    });
+    document.body.appendChild(el);
+    requestAnimationFrame(() =>
+      el.firstElementChild.classList.remove('translate-y-3', 'opacity-0'));
+    setTimeout(() => { if (document.body.contains(el)) el.remove(); }, 15000);
   }
 
   function showSupport() {

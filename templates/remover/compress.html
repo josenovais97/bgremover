@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n_extras %}
 
-{% block title %}Compress Images Free — Shrink JPG, PNG &amp; WEBP In-Browser{% endblock %}
-{% block description %}Compress and shrink images for free — reduce JPG, PNG and WEBP file size with a quality slider or a target size. In your browser, batch supported.{% endblock %}
-{% block og_title %}Free Image Compressor — Shrink Images Privately &amp; Instantly{% endblock %}
+{% block title %}{% t "Compress Images Free — Shrink JPG, PNG & WEBP In-Browser" %}{% endblock %}
+{% block description %}{% t "Compress and shrink images for free — reduce JPG, PNG and WEBP file size with a quality slider or a target size. In your browser, batch supported." %}{% endblock %}
+{% block og_title %}{% t "Free Image Compressor — Shrink Images Privately & Instantly" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-12">
@@ -15,11 +15,11 @@
                 <i class="fa-solid fa-compress" aria-hidden="true"></i> Compressed locally — nothing is uploaded
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Compress Images to a
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Smaller Size</span>
+                {% t "Compress Images to a" %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Smaller Size" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                Drop an image and shrink its file size — set a quality level or a target size like <strong>under&nbsp;200&nbsp;KB</strong>. Batch supported, full control, 100% private.
+                {% t "Drop an image and shrink its file size — set a quality level or a target size like" %} <strong>{% t "under 200 KB" %}</strong>{% t ". Batch supported, full control, 100% private." %}
             </p>
         </div>
 
@@ -31,12 +31,12 @@
                 <div id="cmp-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
                 </div>
-                <h2 class="text-2xl font-semibold">Drag &amp; drop your images</h2>
+                <h2 class="text-2xl font-semibold">{% t "Drag & drop your images" %}</h2>
                 <p class="text-gray-500 dark:text-gray-400">or click to browse — multiple files welcome</p>
                 <button id="cmp-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
                     <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select images
                 </button>
-                <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">Shrinks JPG, PNG &amp; WEBP · Choose a quality or a target file size</p>
+                <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">{% t "Shrinks JPG, PNG & WEBP · Choose a quality or a target file size" %}</p>
             </div>
         </div>
         {% include 'remover/partials/size_demo.html' with image='img/demo-compress-after.webp' before_label='Original' before_size='3.1 MB' after_label='Compressed' after_size='268 KB' after_pct=8 saving='~12× smaller' caption='Same quality, ~12× smaller — nothing uploaded' %}
@@ -47,7 +47,7 @@
     <section id="cmp-controls" class="hidden max-w-5xl mx-auto glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-5">
         <div class="flex flex-col lg:flex-row lg:items-end gap-5 lg:gap-8">
             <div class="space-y-2">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Output format</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Output format" %}</span>
                 <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
                     <button type="button" data-format="image/webp" data-ext="webp" class="cmp-format-btn px-4 py-2 bg-primary text-white" title="Best compression, supports transparency">WEBP</button>
                     <button type="button" data-format="image/jpeg" data-ext="jpg" class="cmp-format-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Smallest for photos, no transparency">JPG</button>
@@ -59,8 +59,8 @@
             <div class="space-y-2">
                 <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Mode</span>
                 <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
-                    <button type="button" data-mode="quality" class="cmp-mode-btn px-4 py-2 bg-primary text-white">Quality</button>
-                    <button type="button" data-mode="size" class="cmp-mode-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Target size</button>
+                    <button type="button" data-mode="quality" class="cmp-mode-btn px-4 py-2 bg-primary text-white">{% t "Quality" %}</button>
+                    <button type="button" data-mode="size" class="cmp-mode-btn px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">{% t "Target size" %}</button>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@
             </div>
 
             <div id="cmp-size-wrap" class="hidden space-y-2">
-                <label for="cmp-target" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Target size</label>
+                <label for="cmp-target" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Target size" %}</label>
                 <div class="flex items-center gap-2">
                     <input id="cmp-target" type="number" min="5" step="5" value="200" aria-label="Target maximum file size in kilobytes"
                            class="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -81,7 +81,7 @@
             </div>
 
             <div class="space-y-2">
-                <label for="cmp-maxdim" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Max dimension</label>
+                <label for="cmp-maxdim" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Max dimension" %}</label>
                 <div class="flex items-center gap-2">
                     <input id="cmp-maxdim" type="number" min="16" step="1" placeholder="Original" aria-label="Maximum output dimension in pixels (longest side); leave blank to keep original size"
                            class="w-24 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -133,11 +133,11 @@
 
     <!-- SEO / help content -->
     <section aria-labelledby="cmp-how" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="cmp-how" class="text-2xl font-bold text-center">How to compress an image</h2>
+        <h2 id="cmp-how" class="text-2xl font-bold text-center">{% t "How to compress an image" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop your images</div><p class="text-sm text-gray-500 dark:text-gray-400">Add one or many — JPG, PNG or WEBP. Everything stays on your device.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Pick quality or size</div><p class="text-sm text-gray-500 dark:text-gray-400">Slide the quality, or set a target like “under 200&nbsp;KB” and we hit it automatically.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Download</div><p class="text-sm text-gray-500 dark:text-gray-400">Grab the smaller file, or download them all as a ZIP. No watermark, no sign-up.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>{% t "Drop your images" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Add one or many — JPG, PNG or WEBP. Everything stays on your device." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>{% t "Pick quality or size" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Slide the quality, or set a target like “under 200 KB” and we hit it automatically." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>{% t "Download" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Grab the smaller file, or download them all as a ZIP. No watermark, no sign-up." %}</p></div>
         </div>
     </section>
 </div>
@@ -156,7 +156,7 @@
         <div class="p-4 space-y-3">
             <div class="min-w-0">
                 <p class="filename text-sm font-medium truncate" title="">image</p>
-                <p class="meta text-xs text-gray-500 dark:text-gray-400">Compressing…</p>
+                <p class="meta text-xs text-gray-500 dark:text-gray-400">{% t "Compressing…" %}</p>
             </div>
             <div class="h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
                 <div class="bar h-full bg-gradient-to-r from-primary to-primaryHover transition-all duration-300" style="width:0%"></div>

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n_extras %}
 
-{% block title %}Free Image Converter — PNG, JPG &amp; WEBP in Your Browser{% endblock %}
-{% block description %}Convert images between PNG, JPG and WEBP for free. Auto-detects the input format and converts locally in your browser — no uploads, batch supported.{% endblock %}
-{% block og_title %}Free Image Format Converter — Private &amp; Instant{% endblock %}
+{% block title %}{% t "Free Image Converter — PNG, JPG & WEBP in Your Browser" %}{% endblock %}
+{% block description %}{% t "Convert images between PNG, JPG and WEBP for free. Auto-detects the input format and converts locally in your browser — no uploads, batch supported." %}{% endblock %}
+{% block og_title %}{% t "Free Image Format Converter — Private & Instant" %}{% endblock %}
 
 {% block content %}
 <div class="space-y-12">
@@ -12,14 +12,14 @@
     <section class="max-w-5xl mx-auto space-y-8">
         <div class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i> Convert locally — nothing is uploaded
+                <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i> {% t "Convert locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Convert Images to
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Any Format</span>
+                {% t "Convert Images to" %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Any Format" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                Drop any image — we detect its format automatically. Pick a target format and download instantly. Batch supported, full quality, 100% private.
+                {% t "Drop any image — we detect its format automatically. Pick a target format and download instantly. Batch supported, full quality, 100% private." %}
             </p>
         </div>
 
@@ -31,12 +31,12 @@
                 <div id="convert-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
                 </div>
-                <h2 class="text-2xl font-semibold">Drag &amp; drop your images</h2>
+                <h2 class="text-2xl font-semibold">{% t "Drag & drop your images" %}</h2>
                 <p class="text-gray-500 dark:text-gray-400">or click to browse — multiple files welcome</p>
                 <button id="convert-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
                     <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select images
                 </button>
-                <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">Detects PNG, JPG, WEBP, GIF, BMP &amp; more · Converts to PNG, JPG, WEBP or AVIF</p>
+                <p class="pt-4 text-sm text-gray-400 dark:text-gray-500">{% t "Detects PNG, JPG, WEBP, GIF, BMP & more · Converts to PNG, JPG, WEBP or AVIF" %}</p>
             </div>
         </div>
         {% include 'remover/partials/size_demo.html' with image='img/demo-convert-after.webp' before_label='PNG' before_size='2.1 MB' after_label='WEBP' after_size='0.3 MB' after_pct=14 saving='86% smaller' caption='Same pixels, smaller & web-ready — no visible quality loss' %}
@@ -47,7 +47,7 @@
     <section id="convert-controls" class="hidden max-w-5xl mx-auto glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-5">
         <div class="flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-8">
             <div class="space-y-2">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Convert to</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Convert to" %}</span>
                 <div class="format-group inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
                     {% for f in formats %}
                     <button type="button" data-format="{{ f.mime }}" data-ext="{{ f.ext }}" data-lossy="{{ f.lossy|yesno:'1,0' }}" title="{{ f.desc }}"
@@ -95,7 +95,7 @@
 
     <!-- Supported formats (SEO / empty-state helper) -->
     <section aria-labelledby="fmt-title" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="fmt-title" class="text-2xl font-bold text-center">Supported output formats</h2>
+        <h2 id="fmt-title" class="text-2xl font-bold text-center">{% t "Supported output formats" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
             {% for f in formats %}
             <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2 text-center">
@@ -122,7 +122,7 @@
         <div class="p-4 space-y-3">
             <div class="min-w-0">
                 <p class="filename text-sm font-medium truncate" title="">image</p>
-                <p class="meta text-xs text-gray-500 dark:text-gray-400">Converting…</p>
+                <p class="meta text-xs text-gray-500 dark:text-gray-400">{% t "Converting…" %}</p>
             </div>
             <div class="flex items-center gap-2">
                 <button type="button" class="remove-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove this image">

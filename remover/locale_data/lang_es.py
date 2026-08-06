@@ -640,6 +640,51 @@ UI = {
     "Photos": "Fotos",
     "Remove EXIF &": "Elimina EXIF y",
     "Metadata": "Metadatos",
+    # --- Converter + compressor (translated in 1.11) ---
+    'Free Image Converter — PNG, JPG & WEBP in Your Browser':
+        'Conversor de Imágenes Gratis — PNG, JPG y WEBP en tu Navegador',
+    'Convert images between PNG, JPG and WEBP for free. Auto-detects the input format and converts locally in your browser — no uploads, batch supported.':
+        'Convierte imágenes entre PNG, JPG y WEBP gratis. Detecta el formato de origen y convierte localmente en tu navegador — sin subidas y por lotes.',
+    'Free Image Format Converter — Private & Instant':
+        'Conversor de Formatos Gratis — Privado e Instantáneo',
+    'Convert locally — nothing is uploaded': 'Convertido localmente — no se sube nada',
+    'Convert Images to': 'Convierte Imágenes a',
+    'Any Format': 'Cualquier Formato',
+    'Drop any image — we detect its format automatically. Pick a target format and download instantly. Batch supported, full quality, 100% private.':
+        'Suelta cualquier imagen — detectamos su formato automáticamente. Elige el formato de destino y descarga al instante. Por lotes, con calidad completa y 100% privado.',
+    'Detects PNG, JPG, WEBP, GIF, BMP & more · Converts to PNG, JPG, WEBP or AVIF':
+        'Detecta PNG, JPG, WEBP, GIF, BMP y más · Convierte a PNG, JPG, WEBP o AVIF',
+    'Convert to': 'Convertir a',
+    'Supported output formats': 'Formatos de salida admitidos',
+    'Converting…': 'Convirtiendo…',
+    'Compress Images Free — Shrink JPG, PNG & WEBP In-Browser':
+        'Comprimir Imágenes Gratis — Reduce JPG, PNG y WEBP en el Navegador',
+    'Compress and shrink images for free — reduce JPG, PNG and WEBP file size with a quality slider or a target size. In your browser, batch supported.':
+        'Comprime y reduce imágenes gratis — baja el tamaño de JPG, PNG y WEBP con un control de calidad o un tamaño objetivo. En tu navegador y por lotes.',
+    'Free Image Compressor — Shrink Images Privately & Instantly':
+        'Compresor de Imágenes Gratis — Reduce de Forma Privada e Instantánea',
+    'Compress Images to a': 'Comprime Imágenes a un',
+    'Smaller Size': 'Tamaño Menor',
+    'Drop an image and shrink its file size — set a quality level or a target size like':
+        'Suelta una imagen y reduce su tamaño — fija un nivel de calidad o un tamaño objetivo como',
+    'under 200 KB': 'menos de 200 KB',
+    '. Batch supported, full control, 100% private.':
+        '. Por lotes, con control total y 100% privado.',
+    'Shrinks JPG, PNG & WEBP · Choose a quality or a target file size':
+        'Reduce JPG, PNG y WEBP · Elige una calidad o un tamaño objetivo',
+    'Quality': 'Calidad',
+    'Target size': 'Tamaño objetivo',
+    'Max dimension': 'Dimensión máxima',
+    'How to compress an image': 'Cómo comprimir una imagen',
+    'Drop your images': 'Suelta tus imágenes',
+    'Add one or many — JPG, PNG or WEBP. Everything stays on your device.':
+        'Añade una o varias — JPG, PNG o WEBP. Todo se queda en tu dispositivo.',
+    'Pick quality or size': 'Elige calidad o tamaño',
+    'Slide the quality, or set a target like “under 200 KB” and we hit it automatically.':
+        'Mueve la calidad, o fija un objetivo como “menos de 200 KB” y lo alcanzamos automáticamente.',
+    'Grab the smaller file, or download them all as a ZIP. No watermark, no sign-up.':
+        'Llévate el archivo más pequeño, o descárgalos todos en un ZIP. Sin marca de agua y sin registro.',
+    'Compressing…': 'Comprimiendo…',
 }
 
 
@@ -836,6 +881,10 @@ JS_UI = {
     # --- Compressor zero-savings hint ---
     "already optimized: try WEBP or AVIF, or lower the quality":
         "ya optimizada: prueba WEBP o AVIF, o baja la calidad",
+    # --- PWA install offer ---
+    'Install ClearBG to keep these tools one tap away — they work offline too.':
+        'Instala ClearBG para tener estas herramientas a un toque — también funcionan sin conexión.',
+    'Install': 'Instalar',
 }
 
 # --- Use-case landings (keyed by slug) ---------------------------------------
@@ -1169,4 +1218,41 @@ FAQS = {
     'Why remove location data before sharing?':
         ('¿Por qué borrar la ubicación antes de compartir?',
          'Las fotos con geoetiqueta revelan exactamente dónde se tomaron — a menudo tu casa. Borrar la etiqueta GPS antes de publicar protege tu privacidad.'),
+    # --- Converter + compressor ---
+    'Will converting reduce my image quality?':
+        ('¿Convertir reduce la calidad de la imagen?',
+         'Convertir a un formato sin pérdidas como PNG mantiene todos los píxeles intactos. Convertir a uno con pérdidas (JPG, WEBP o AVIF) vuelve a codificar la imagen, así que puede haber un pequeño cambio de calidad, pero conservas la resolución original completa — no se reduce nada.'),
+    'Does converting to PNG add transparency to a JPG?':
+        ('¿Convertir a PNG añade transparencia a un JPG?',
+         'No. Convertir un JPG a PNG cambia el contenedor, pero no puede inventar una transparencia que no estaba en el original — un JPG tiene fondo sólido. Para hacer un fondo transparente necesitas nuestro quitador de fondos, que recorta primero el sujeto.'),
+    'Are my images uploaded to a server?':
+        ('¿Se suben mis imágenes a un servidor?',
+         'No. La conversión corre por completo en tu navegador mediante la API de canvas, así que tus imágenes nunca salen del dispositivo. No hay límites de subida ni coste por archivo.'),
+    'Can I convert several images at once?':
+        ('¿Puedo convertir varias imágenes a la vez?',
+         'Sí. Suelta un lote de imágenes, elige el formato de salida y descárgalas juntas — todas procesadas localmente, una tras otra.'),
+    'How does image compression reduce file size?':
+        ('¿Cómo reduce el tamaño la compresión de imágenes?',
+         'La compresión vuelve a codificar la imagen con una calidad más baja y, en las fotos, descarta detalle fino que el ojo apenas nota. Esta herramienta te deja cambiar un poco de calidad por un archivo mucho más pequeño, y muestra el tamaño antes y después para encontrar el punto justo.'),
+    'Will compressing make my image look bad?':
+        ('¿Comprimir va a estropear la imagen?',
+         'No si eliges un nivel de calidad sensato. Entre el 70% y el 85% la mayoría de las fotos se ven idénticas al original mientras el archivo encoge un 60-80%. Puedes previsualizar el resultado y ajustar el control antes de descargar.'),
+    "What's the best format to compress to?":
+        ('¿Cuál es el mejor formato para comprimir?',
+         'Para fotografías, WEBP o AVIF suelen dar el archivo más pequeño con la misma calidad visual, seguidos de JPG. Para gráficos con colores planos o transparencia, PNG o WEBP son mejores. La herramienta permite comparar formatos para elegir el más pequeño que resulte aceptable.'),
+    'Can I compress an image to a specific size, like under 1MB?':
+        ('¿Puedo comprimir una imagen a un tamaño concreto, como menos de 1 MB?',
+         'Sí — baja el control de calidad hasta que el tamaño estimado quede por debajo de tu objetivo (por ejemplo 1 MB, 500 KB o 100 KB para un límite de correo o de subida). El tamaño se actualiza en vivo mientras ajustas.'),
+    'Are my images uploaded when I compress them?':
+        ('¿Se suben mis imágenes al comprimirlas?',
+         'No. Toda la compresión ocurre localmente en tu navegador, así que tus imágenes nunca se suben, se guardan ni las ve nadie. Funciona sin conexión una vez cargada la página.'),
+    'Does compressing remove EXIF and location data?':
+        ('¿Comprimir elimina los datos EXIF y de ubicación?',
+         'Volver a codificar una imagen suele eliminar la mayoría de los metadatos incrustados, incluidos los datos de la cámara y las coordenadas GPS. Si quieres borrar metadatos manteniendo la calidad completa, usa mejor nuestro eliminador de EXIF.'),
+    'Which image formats can I convert between?':
+        ('¿Entre qué formatos de imagen puedo convertir?',
+         'Puedes convertir entre PNG, JPG, WEBP y AVIF en cualquier dirección — por ejemplo PNG a JPG, JPG a WEBP o WEBP a PNG. Sube uno de esos formatos y exporta cualquiera de los otros.'),
+    "What's the difference between PNG, JPG, WEBP and AVIF?":
+        ('¿Cuál es la diferencia entre PNG, JPG, WEBP y AVIF?',
+         'El PNG es sin pérdidas y admite transparencia, lo que lo hace ideal para logotipos, iconos y capturas de pantalla. El JPG es un formato pequeño y con pérdidas, mejor para fotografías, pero no tiene transparencia. WEBP y AVIF son formatos modernos que combinan archivos pequeños con transparencia — el AVIF suele ser el más pequeño y el WEBP tiene la compatibilidad más amplia.'),
 }

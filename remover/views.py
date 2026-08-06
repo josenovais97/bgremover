@@ -1013,8 +1013,11 @@ _CORE_TRANSLATED = frozenset(
     # FAQ accordion + JSON-LD via translations.localize_faqs.
     + ["/remove-object/", "/photo-filters/", "/upscale/", "/heic-to-jpg/",
        "/pdf-to-image/", "/image-to-text/", "/svg-to-png/"]
-    # 1.11 adds the two highest-intent privacy/utility pages on the same terms.
-    + ["/resize-image/", "/exif-remover/"]
+    # 1.11 adds the two highest-intent privacy/utility pages on the same terms,
+    # then the converter and compressor — the two most internally-linked tool
+    # pages on the site, and the ones whose queries are least competitive in
+    # Spanish and Portuguese.
+    + ["/resize-image/", "/exif-remover/", "/convert/", "/compress/"]
 )
 
 TRANSLATED_PATHS = {lang: _CORE_TRANSLATED for lang in LANGUAGES}

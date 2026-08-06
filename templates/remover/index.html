@@ -214,6 +214,35 @@
             </p>
         </section>
 
+        <!-- What people remove backgrounds from -->
+        {% comment %}
+        The eleven use-case landings had no editorial inbound link anywhere on the
+        site — they sat in the footer and nowhere else, which for a crawler makes
+        the highest-intent pages on the domain look like the least important. They
+        are also genuinely useful here: someone arriving with a specific job ("my
+        product photos", "my passport photo") gets a page written for that job
+        instead of the generic tool.
+        {% endcomment %}
+        <section aria-labelledby="cases-title" class="max-w-4xl mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h2 id="cases-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "What are you removing the background from?" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "Each of these has its own guide, with the sizes and rules that apply to it." %}</p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2">
+                {% for c in use_cases %}
+                <a href="{% url 'remover:use_case' c.slug %}"
+                   class="px-3.5 py-2 rounded-full text-sm border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-gray-900/40 hover:border-primary hover:text-primaryText transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    {{ c.nav }}
+                </a>
+                {% endfor %}
+            </div>
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                {% t "Or read the" %}
+                <a href="{% url 'remover:guides' %}" class="font-medium text-primaryText hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">{% t "guides" %}</a>
+                {% t "— explanations of how image formats, compression, metadata and cut-outs actually work." %}
+            </p>
+        </section>
+
         <!-- Why it's free -->
         {% comment %}
         "Free and unlimited" reads as bait unless the economics are stated. The
