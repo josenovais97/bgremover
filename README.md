@@ -77,6 +77,18 @@ aspect ratio).
   (`CBG.Chain` in `static/js/kit.js`). Every tool is a destination automatically: the
   incoming file is delivered to whichever input carries `data-chain-input`, so the tool's
   own change handler does the work and no tool needs to know the feature exists.
+- **Share sheet** — the same bar offers **Share**, handing the result straight to WhatsApp
+  / Telegram / Instagram / AirDrop via `navigator.share` (`CBG.share`). Nothing is
+  uploaded to do it: the file goes from the tab to the target app through the OS. Every
+  tool gets it at once because every export funnels through `download()`. The button is
+  feature-detected *per blob* and simply doesn't appear where there is no share sheet
+  (desktop Linux, macOS Chrome). Results that opt out of chaining still get it — a GIF
+  can't be handed to another tool without losing its animation, but handing it to a chat
+  is the best thing that can happen to it. `tests/share.test.mjs` guards the two things
+  that only break in the field: that no `await` creeps in above `navigator.share` (it
+  would spend the click's transient activation and reject on a real phone), and that the
+  "Made with clearbg.pt" caption is dropped rather than the image on targets that won't
+  take both.
 - **PWA** — installable (with app shortcuts and a dedicated maskable icon), and a service
   worker whose shell is *generated* from the tool list and the contents of `static/js`, so
   it can't fall behind the toolkit. The ~40 MB model lives in a separate long-lived cache

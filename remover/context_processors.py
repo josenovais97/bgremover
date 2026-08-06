@@ -9,9 +9,9 @@ from config.middleware import ISOLATED_VIEWS
 
 from .guides import GUIDES
 from .page_content import deep_for
-from .translations import js_catalogue
+from .translations import LANGUAGE_NAMES, LANGUAGES, js_catalogue, path_language, strip_language
 from .translations import t as tr
-from .views import USE_CASES, is_translated_path
+from .views import USE_CASES, is_translated_path, translated_languages
 
 # Tools that cannot accept an arbitrary image handed over from another tool, so
 # they never appear as a destination in the "keep editing" bar. The QR generator
@@ -357,28 +357,30 @@ def _canonical_url(request):
     Built from SITE_URL (not the request host) so every variant a crawler might
     reach — www/apex, http/https, ?utm=… — declares the same canonical, letting
     Google consolidate signals onto one URL. `request.path` already excludes the
-    query string and keeps any language prefix (e.g. /pt/…), which is correct.
+    query string and keeps any language prefix (e.g. /es/…), which is correct.
 
-    One exception: a /pt/ page whose template is NOT translated (see
-    `views.TRANSLATED_PATHS`) serves the same English body as its root twin, so
-    it canonicalises to that twin instead of to itself. Two URLs serving the same
-    content otherwise compete with each other for the same query.
+    One exception: a prefixed page whose template is NOT translated into that
+    language (see `views.TRANSLATED_PATHS`) serves the same English body as its
+    root twin, so it canonicalises to that twin instead of to itself. Two URLs
+    serving the same content otherwise compete for the same query.
     """
     path = request.path
-    if path.startswith("/pt/") and not is_translated_path(path):
-        path = path[3:]
+    if path_language(path) and not is_translated_path(path):
+        path = strip_language(path)
     return settings.SITE_URL.rstrip("/") + path
 
 
 def _robots_meta(request):
     """Value for <meta name="robots"> on the current page.
 
-    A ``/pt/`` URL whose template is NOT translated (see `views.TRANSLATED_PATHS`)
-    serves the same English body as its root twin. `_canonical_url` already points
-    it at that twin, but a canonical is only a hint: Google still crawls all 59 of
-    them, and an ad-network or quality reviewer walking the site sees 59 English
-    pages sitting on Portuguese URLs. `noindex` is the unambiguous version of the
-    same statement.
+    A prefixed URL whose template is NOT translated into that language (see
+    `views.TRANSLATED_PATHS`) serves the same English body as its root twin.
+    `_canonical_url` already points it at that twin, but a canonical is only a
+    hint: Google still crawls every one of them, and an ad-network or quality
+    reviewer walking the site sees English pages sitting on Spanish URLs.
+    `noindex` is the unambiguous version of the same statement — and it scales
+    with the language count, which is why it is worth having: four languages
+    over 78 paths is 236 such URLs, not 59.
 
     `follow` is deliberate — these pages carry the full footer and tool nav, so we
     still want their outgoing links crawled. A robots.txt `Disallow` would have
@@ -386,25 +388,30 @@ def _robots_meta(request):
     canonical OR the noindex, and the URL can still surface in results.
     """
     path = request.path
-    if path.startswith("/pt/") and not is_translated_path(path):
+    if path_language(path) and not is_translated_path(path):
         return "noindex, follow"
     return "index, follow"
 
 
 def _alternate_urls(request):
-    """Absolute English + Portuguese URLs for the current page (for hreflang).
+    """Absolute URL of the current page in English and every other language.
 
     Built from SITE_URL — NOT the request host — so the hreflang set always names
     the same host as the canonical (which is also SITE_URL-based). Otherwise a
     crawl arriving on www./the apex/the public *.vercel.app alias would emit
     hreflang URLs on a different host than the canonical, and Google discards a
     hreflang cluster whose URLs disagree with the page's own canonical.
+
+    Covers every language, not only the translated ones: the footer switcher is
+    offered everywhere, so a visitor who lands deep in the site can still reach
+    the part of it that speaks their language. The narrower `hreflang` question
+    is answered separately in `seo()`.
     """
     base = settings.SITE_URL.rstrip("/")
     try:
         return {
-            "en": base + translate_url(request.path, "en"),
-            "pt": base + translate_url(request.path, "pt"),
+            code: base + translate_url(request.path, code)
+            for code in ("en",) + LANGUAGES
         }
     except Exception:
         return {}
@@ -478,19 +485,29 @@ def seo(request):
         # Monetization: expose the AdSense config only where ads are allowed.
         "adsense_client": settings.ADSENSE_CLIENT if ads_allowed else "",
         "adsense_slot_landing": settings.ADSENSE_SLOT_LANDING,
-        # i18n. `alt_*` drive the footer language switcher and are always offered
-        # — every page is reachable in both languages, and a Portuguese visitor
-        # who lands deep in the site should still be able to get to the
-        # translated part of it.
+        # i18n. `languages` drives the footer switcher and lists every language
+        # — each page is reachable in all of them, and a Spanish visitor who
+        # lands deep in the site should still be able to get to the part of it
+        # that speaks Spanish.
         #
         # `hreflang_alternates` is the SEO signal and is deliberately narrower:
-        # it is only true where the page BODY is really translated. The two were
-        # the same flag before, which meant every page told Google a Portuguese
-        # version existed while serving English.
+        # it lists only the languages whose page BODY is really translated. The
+        # two were one flag before, which meant every page told Google a
+        # Portuguese version existed while serving English.
         "LANGUAGE_CODE": get_language() or "en",
-        "alt_en": alternates.get("en"),
-        "alt_pt": alternates.get("pt"),
-        "hreflang_alternates": bool(alternates) and is_translated_path(request.path),
+        "languages": [
+            {"code": code, "label": label, "url": alternates.get(code)}
+            for code, label in (("en", "English"),) + tuple(LANGUAGE_NAMES.items())
+            if alternates.get(code)
+        ],
+        "hreflang_alternates": [
+            {"code": code, "url": alternates[code]}
+            for code in ("en",) + tuple(translated_languages(request.path))
+            if alternates.get(code)
+        ] if alternates and translated_languages(request.path) else [],
+        # x-default names the version to serve a visitor we cannot place, which
+        # is always English — the site's source language and its widest reach.
+        "hreflang_default": alternates.get("en"),
         # Canonical URL built from SITE_URL (host/query-stable) for <link rel=canonical> + og:url.
         "canonical_url": canonical_url,
         # "noindex, follow" on the /pt/ URLs that still render English.

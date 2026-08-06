@@ -12,17 +12,16 @@
     <title>{% block title %}Free AI Background Remover — High Quality, No Watermark{% endblock %}</title>
     <meta name="description" content="{% block description %}Remove image backgrounds instantly and 100% free. AI runs in your browser — no uploads, no watermarks. Export transparent PNGs in full resolution.{% endblock %}">
     <link rel="canonical" href="{{ canonical_url }}">
-    {% comment %}"noindex, follow" on a /pt/ URL that still renders English — the canonical
-    below already points at the English twin, and this says the same thing without
-    leaving it to Google's discretion. See context_processors._robots_meta.{% endcomment %}
+    {% comment %}"noindex, follow" on a prefixed URL that still renders English — the
+    canonical below already points at the English twin, and this says the same thing
+    without leaving it to Google's discretion. See context_processors._robots_meta.{% endcomment %}
     <meta name="robots" content="{{ robots_meta|default:'index, follow' }}">
-    {% comment %}Only pages whose body is really translated advertise a Portuguese
-    alternate — see views.TRANSLATED_PATHS. The footer switcher below is separate and
+    {% comment %}A page advertises an alternate only in the languages whose body is really
+    translated — see views.TRANSLATED_PATHS. The footer switcher below is separate and
     stays on every page; this is the crawler-facing claim, and it has to be true.{% endcomment %}
-    {% if hreflang_alternates %}
-    <link rel="alternate" hreflang="en" href="{{ alt_en }}">
-    <link rel="alternate" hreflang="pt" href="{{ alt_pt }}">
-    <link rel="alternate" hreflang="x-default" href="{{ alt_en }}">
+    {% if hreflang_alternates %}{% for alt in hreflang_alternates %}
+    <link rel="alternate" hreflang="{{ alt.code }}" href="{{ alt.url }}">{% endfor %}
+    <link rel="alternate" hreflang="x-default" href="{{ hreflang_default }}">
     {% endif %}
     <meta name="keywords" content="background remover, remove background, transparent png, free background removal, ai background remover, remove bg">
 
@@ -288,12 +287,16 @@
             <!-- Bottom bar -->
             <div class="mt-10 pt-6 border-t border-gray-200/60 dark:border-gray-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-gray-400">
                 <p>&copy; {% now "Y" %} ClearBG. {% t "Free, private, and unlimited." %}</p>
-                {% if alt_en and alt_pt %}
-                <div class="flex items-center gap-2 text-xs" aria-label="{% t 'Language' %}">
+                {% comment %}Every language, on every page — unlike the hreflang set above,
+                which only claims the translated ones. Each is labelled with its own
+                endonym (translations.LANGUAGE_NAMES): someone looking for Spanish scans
+                for "Español", not for a word in a language they are trying to leave.{% endcomment %}
+                {% if languages|length > 1 %}
+                <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs" aria-label="{% t 'Language' %}">
                     <i class="fa-solid fa-globe text-gray-400" aria-hidden="true"></i>
-                    <a href="{{ alt_en }}" hreflang="en" class="{% if LANGUAGE_CODE == 'en' %}text-primaryText font-semibold{% else %}hover:text-primaryText{% endif %} transition-colors">English</a>
-                    <span class="text-gray-300 dark:text-gray-700">·</span>
-                    <a href="{{ alt_pt }}" hreflang="pt" class="{% if LANGUAGE_CODE == 'pt' %}text-primaryText font-semibold{% else %}hover:text-primaryText{% endif %} transition-colors">Português</a>
+                    {% for l in languages %}{% if not forloop.first %}<span class="text-gray-300 dark:text-gray-700">·</span>{% endif %}
+                    <a href="{{ l.url }}" hreflang="{{ l.code }}" class="{% if LANGUAGE_CODE == l.code %}text-primaryText font-semibold{% else %}hover:text-primaryText{% endif %} transition-colors">{{ l.label }}</a>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>

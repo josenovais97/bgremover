@@ -1,9 +1,9 @@
 """Template tag for the lightweight in-code translation catalogue.
 
-Usage: ``{% load i18n_extras %}`` then ``{% t "Convert" %}``. Returns the
-Portuguese string on /pt/ pages (when one exists in remover.translations) and the
-English source otherwise. Keeps English text in the templates as the source of
-truth, so untranslated strings degrade gracefully.
+Usage: ``{% load i18n_extras %}`` then ``{% t "Convert" %}``. Returns the string
+for the active language (when one exists in the matching remover.locale_data
+catalogue) and the English source otherwise. Keeps English text in the templates
+as the source of truth, so untranslated strings degrade gracefully.
 """
 from django import template
 from django.utils.html import escape

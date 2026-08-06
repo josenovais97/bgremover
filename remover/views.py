@@ -64,7 +64,13 @@ from .seo_content import (
     PHOTO_FILTERS_FAQS,
     faq_jsonld,
 )
-from .translations import localize_faqs, localize_use_case
+from .translations import (
+    LANGUAGES,
+    localize_faqs,
+    localize_use_case,
+    path_language,
+    strip_language,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -977,23 +983,28 @@ SITEMAP_PATHS = (
     + INFO_PATHS
 )
 
-# Paths whose PAGE CONTENT is actually translated into Portuguese — not merely
-# reachable under /pt/. Every path is reachable there (i18n_patterns wraps the
-# whole URLconf), but only these two templates run their body through {% t %};
+# Paths whose PAGE CONTENT is actually translated — not merely reachable under a
+# language prefix. Every path is reachable in every language (i18n_patterns wraps
+# the whole URLconf), but only these templates run their body through {% t %};
 # the rest render English text inside translated chrome.
 #
 # This distinction is a ranking problem, not a cosmetic one. Declaring
-# hreflang="pt" for a page that serves English tells Google a translation exists
+# hreflang="es" for a page that serves English tells Google a translation exists
 # where it doesn't, and lists a near-duplicate of the English page in the
 # sitemap. So the alternate set, the sitemap and the canonical are all gated on
-# this list: untranslated /pt/ pages stay reachable and keep their translated
-# chrome, but they are not advertised as Portuguese and they canonicalise to
+# this mapping: untranslated pages stay reachable and keep their translated
+# chrome, but they are not advertised in that language and they canonicalise to
 # their English twin.
 #
-# ADD A PATH HERE ONLY AFTER ITS TEMPLATE IS TRANSLATED. `TranslationCoverageTests`
-# renders each one and fails if the body is not actually Portuguese, so an
-# aspirational entry cannot ship.
-TRANSLATED_PATHS = frozenset(
+# Keyed BY LANGUAGE, because coverage is per language and will diverge: a page
+# translated into Spanish first must be advertised in Spanish only. The shared
+# starting set is named once rather than repeated four times, so the common case
+# stays a single edit and a divergence has to be written deliberately.
+#
+# ADD A PATH HERE ONLY AFTER ITS TEMPLATE IS TRANSLATED IN THAT LANGUAGE.
+# `TranslationCoverageTests` renders each one and fails if the body is not
+# actually translated, so an aspirational entry cannot ship.
+_CORE_TRANSLATED = frozenset(
     ["/"] + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
     # The seven 1.10 tool pages ship fully translated: body copy via {% t %},
     # FAQ accordion + JSON-LD via translations.localize_faqs.
@@ -1001,14 +1012,34 @@ TRANSLATED_PATHS = frozenset(
        "/pdf-to-image/", "/image-to-text/", "/svg-to-png/"]
 )
 
+TRANSLATED_PATHS = {lang: _CORE_TRANSLATED for lang in LANGUAGES}
 
-def is_translated_path(path):
-    """True if `path` (language prefix stripped) has real Portuguese content."""
-    if path.startswith("/pt/"):
-        path = path[3:]
-    elif path == "/pt":
-        path = "/"
-    return path in TRANSLATED_PATHS
+
+def translated_languages(path):
+    """The languages that really have content for `path`, in switcher order.
+
+    `path` may carry a language prefix or not; it is stripped either way, so a
+    page can ask this about itself without knowing which language it is being
+    served in.
+    """
+    bare = strip_language(path)
+    return [lang for lang in LANGUAGES if bare in TRANSLATED_PATHS[lang]]
+
+
+def is_translated_path(path, lang=None):
+    """True if `path` has real content in `lang`.
+
+    `lang` defaults to the language the path's own prefix names. An unprefixed
+    (English) path names none and answers False — English is the source, so
+    "is it translated" is not a question about it. A caller holding a root URL
+    almost always means "does a translation of this page exist anywhere", which
+    is `translated_languages()`; keeping them apart is why one function with one
+    language could not survive four.
+    """
+    lang = lang or path_language(path)
+    if lang is None:
+        return False
+    return strip_language(path) in TRANSLATED_PATHS.get(lang, frozenset())
 
 
 # --- PWA app shell ----------------------------------------------------------
@@ -1898,29 +1929,36 @@ def yandex_verify(request):
 def sitemap_xml(request):
     """Serve an XML sitemap for the static routes, with per-URL priority.
 
-    A path with a real Portuguese translation is listed twice — English at the
-    root, Portuguese under ``/pt/`` — and both entries carry the full hreflang
-    alternate set (Google treats a page that names its siblings from only one
-    side as unlinked).
+    A path is listed once in English plus once per language that really
+    translates it, and *every* entry in that cluster carries the full alternate
+    set — Google treats a page that names its siblings from only one side as
+    unlinked, so the English entry must name the translations and each
+    translation must name English and its siblings.
 
-    A path that is merely *reachable* under ``/pt/`` but still renders English
-    (see ``TRANSLATED_PATHS``) is listed once, in English, with no alternates.
-    Listing it twice submitted a near-duplicate for indexing and claimed a
-    translation that does not exist.
+    A path that is merely *reachable* under a language prefix but still renders
+    English (see ``TRANSLATED_PATHS``) is listed once, in English, with no
+    alternates. Listing it twice submitted a near-duplicate for indexing and
+    claimed a translation that does not exist.
     """
     site_url = settings.SITE_URL.rstrip("/")
     urls = []
     for path in SITEMAP_PATHS:
         alt_en = f"{site_url}{path}"
-        alt_pt = f"{site_url}/pt{path}"
+        langs = translated_languages(path)
+        # The whole cluster shares one alternate set, so it is built once and
+        # attached to each member — including x-default, which always points at
+        # English as the version to serve a visitor we can't place.
+        alternates = (
+            [{"code": "en", "url": alt_en}]
+            + [{"code": lang, "url": f"{site_url}/{lang}{path}"} for lang in langs]
+            + [{"code": "x-default", "url": alt_en}]
+        ) if langs else []
         priority = _sitemap_priority(path)
         lastmod = _sitemap_lastmod(path)
-        translated = path in TRANSLATED_PATHS
-        for loc in ((alt_en, alt_pt) if translated else (alt_en,)):
+        for loc in [alt_en] + [f"{site_url}/{lang}{path}" for lang in langs]:
             urls.append({
                 "loc": loc,
-                "alt_en": alt_en if translated else "",
-                "alt_pt": alt_pt if translated else "",
+                "alternates": alternates,
                 "priority": priority,
                 "lastmod": lastmod,
             })

@@ -1,0 +1,346 @@
+{
+  "info": {
+    "_postman_id": "b4f1c2a0-7d3e-4a10-9c58-clearbg000001",
+    "name": "ClearBG",
+    "description": "ClearBG's complete HTTP surface.\n\nClearBG is a client-side app: background removal, compression, OCR and every other tool run in the visitor's browser, and no image is ever uploaded. There is therefore **no image-processing API** — that absence is the product, not a gap.\n\nWhat is left is one JSON endpoint (the public \"images processed\" counter), a health check, and the machine-readable SEO/PWA files.\n\n## Variables\n\n`baseUrl` defaults to the local dev server (`python manage.py runserver 127.0.0.1:8877`). Switch it to `prodUrl` when you want to hit production.\n\n## Before you POST at production\n\n`POST /api/stats/` is unauthenticated and increments the real, public counter shown on the homepage. Sending it at production inflates a number visitors see. The POST requests here are safe against a local server; point them at production only when you mean to.\n\n## Counter disabled\n\nWhen Upstash is not configured (`UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` unset, the default locally) every response is `{\"enabled\": false, \"count\": null}` with no `week` key. That is deliberate — the UI shows nothing rather than a fabricated figure. The tests below accept both states.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8877",
+      "type": "string",
+      "description": "Local dev server. Change to {{prodUrl}} to hit production."
+    },
+    {
+      "key": "prodUrl",
+      "value": "https://clearbg.pt",
+      "type": "string",
+      "description": "Production. POSTing here writes to the live public counter."
+    }
+  ],
+  "item": [
+    {
+      "name": "Stats API",
+      "description": "The public 'images processed' counter. Unauthenticated by design — it is a vanity number, and the server clamps and rate-limits accordingly.",
+      "item": [
+        {
+          "name": "Get totals",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/stats/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats", ""]
+            },
+            "description": "All-time `count` and this ISO week's `week`.\n\n200 → `{ \"enabled\": true, \"count\": 12412, \"week\": 318 }`\n\nWhen the store is unconfigured → `{ \"enabled\": false, \"count\": null }` (no `week`).\n\nAlways sent with `Cache-Control: no-store`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('has enabled flag', () => pm.expect(b).to.have.property('enabled'));",
+                  "pm.test('never cached', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'));",
+                  "if (b.enabled) {",
+                  "  pm.test('count is a number', () => pm.expect(b.count).to.be.a('number'));",
+                  "  pm.test('week is a number', () => pm.expect(b.week).to.be.a('number'));",
+                  "} else {",
+                  "  pm.test('disabled reports no number', () => pm.expect(b.count).to.equal(null));",
+                  "  console.log('Counter disabled — Upstash is not configured for this environment.');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get per-tool breakdown",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/stats/?breakdown=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats", ""],
+              "query": [
+                {
+                  "key": "breakdown",
+                  "value": "1",
+                  "description": "Any truthy value switches to the breakdown response."
+                }
+              ]
+            },
+            "description": "Per-tool, per-event counters.\n\n200 → `{ \"enabled\": true, \"breakdown\": { \"processed:crop\": 91, \"downloaded:compress\": 40, ... } }`\n\nKeys are `<event>:<tool>`. The server builds the key list itself from the `STATS_EVENTS` × `STATS_TOOLS` whitelists, so no user input reaches Redis. Missing counters read as `0` rather than being omitted."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "if (!b.enabled) { console.log('Counter disabled — no breakdown to check.'); return; }",
+                  "pm.test('breakdown present', () => pm.expect(b.breakdown).to.be.an('object'));",
+                  "pm.test('keys are event:tool', () => {",
+                  "  const events = ['processed', 'downloaded'];",
+                  "  Object.keys(b.breakdown).forEach(k => pm.expect(events).to.include(k.split(':')[0]));",
+                  "});",
+                  "pm.test('values are numbers', () => {",
+                  "  Object.values(b.breakdown).forEach(v => pm.expect(v).to.be.a('number'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report a processed image",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"n\": 1,\n  \"tool\": \"home\",\n  \"event\": \"processed\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stats/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats", ""]
+            },
+            "description": "Increments the global counter, the weekly bucket AND the per-tool counter.\n\nOnly `event: \"processed\"` (or a legacy payload with no `event`) moves the global badge — that number is meant to mean 'real cut-outs', so `downloaded` deliberately does not touch it.\n\n**Fields**\n- `n` — clamped server-side to 1..50. Anything unparseable becomes 1.\n- `tool` — must be in the `STATS_TOOLS` whitelist or the per-tool counter is silently skipped (the global one still moves).\n- `event` — `processed` or `downloaded`.\n\n**Notes**\n- `@csrf_exempt`, so no token is needed.\n- Rate limit: 60 accepted POSTs per IP per 60s window → `429 { \"error\": \"rate_limited\" }`.\n- Writes to the live public counter when `baseUrl` points at production."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 429) {",
+                  "  pm.test('rate limited cleanly', () => pm.expect(pm.response.json().error).to.equal('rate_limited'));",
+                  "  return;",
+                  "}",
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('has enabled flag', () => pm.expect(b).to.have.property('enabled'));",
+                  "if (b.enabled) pm.test('count returned', () => pm.expect(b.count).to.be.a('number'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report a download",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"n\": 1,\n  \"tool\": \"compress\",\n  \"event\": \"downloaded\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stats/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats", ""]
+            },
+            "description": "A conversion event. Increments only the per-tool `downloaded:<tool>` counter — the global 'images processed' badge is left alone on purpose, so it keeps meaning cut-outs rather than any interaction.\n\nThe response still returns the current totals, unchanged."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 429) { pm.test('rate limited cleanly', () => pm.expect(pm.response.json().error).to.equal('rate_limited')); return; }",
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('has enabled flag', () => pm.expect(pm.response.json()).to.have.property('enabled'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Malformed payload is absorbed",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"n\": \"not-a-number\",\n  \"tool\": \"'; DROP TABLE --\",\n  \"event\": \"made-up\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stats/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats", ""]
+            },
+            "description": "Contract check for the endpoint's hostile-input handling, since it is public and unauthenticated.\n\nExpected: **200, not an error**. An unparseable `n` falls back to 1, an unknown `event` skips the global increment, and a `tool` outside the whitelist never reaches a Redis key — the key is assembled from server-side constants only. Nothing here should 500."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 429) { pm.test('rate limited cleanly', () => pm.expect(pm.response.json().error).to.equal('rate_limited')); return; }",
+                  "pm.test('absorbs bad input without erroring', () => pm.response.to.have.status(200));",
+                  "pm.test('still valid JSON', () => pm.expect(pm.response.json()).to.have.property('enabled'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ops & machine-readable",
+      "description": "Everything else the server hands out that is not an HTML page.",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthz"]
+            },
+            "description": "Plain-text `ok` for uptime monitors. `@require_safe`, so it rejects anything but GET/HEAD."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('says ok', () => pm.expect(pm.response.text().trim()).to.equal('ok'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "sitemap.xml",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sitemap.xml",
+              "host": ["{{baseUrl}}"],
+              "path": ["sitemap.xml"]
+            },
+            "description": "Generated from `SITEMAP_PATHS`, so it cannot drift from the URLconf. 91 English URLs plus a `/pt/` entry for each genuinely translated path, with full hreflang alternates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('served as XML', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('xml'));",
+                  "const urls = (pm.response.text().match(/<loc>/g) || []).length;",
+                  "pm.test('has a full set of URLs', () => pm.expect(urls).to.be.above(90));",
+                  "console.log(urls + ' URLs in the sitemap');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "robots.txt",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/robots.txt",
+              "host": ["{{baseUrl}}"],
+              "path": ["robots.txt"]
+            },
+            "description": "Allows everything and points at the sitemap."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('points at the sitemap', () => pm.expect(pm.response.text()).to.include('Sitemap:'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "manifest.webmanifest",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/manifest.webmanifest",
+              "host": ["{{baseUrl}}"],
+              "path": ["manifest.webmanifest"]
+            },
+            "description": "PWA manifest — install metadata, icons (including a maskable one) and the four app shortcuts."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('manifest content type', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('manifest'));",
+                  "const m = pm.response.json();",
+                  "pm.test('installable', () => {",
+                  "  pm.expect(m.name).to.be.a('string');",
+                  "  pm.expect(m.start_url).to.be.a('string');",
+                  "  pm.expect(m.icons).to.be.an('array').that.is.not.empty;",
+                  "});",
+                  "pm.test('has a maskable icon', () => pm.expect(m.icons.some(i => (i.purpose || '').includes('maskable'))).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "sw.js (service worker)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sw.js",
+              "host": ["{{baseUrl}}"],
+              "path": ["sw.js"]
+            },
+            "description": "The service worker, rendered as a template so its precache list is generated from the live tool list rather than hand-maintained.\n\nMust be served with `Service-Worker-Allowed: /` and `Cache-Control: no-cache`, or the offline app shell silently stops updating."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('javascript content type', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('javascript'));",
+                  "pm.test('scoped to root', () => pm.expect(pm.response.headers.get('Service-Worker-Allowed')).to.equal('/'));",
+                  "pm.test('not cached, so updates land', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-cache'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

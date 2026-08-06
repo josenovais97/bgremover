@@ -115,11 +115,80 @@
     a.click();
     URL.revokeObjectURL(url);
     a.remove();
-    if (chain && /^image\//.test(blob.type || '')) Chain.offer(blob, name);
+    // `chain` answers "may another TOOL receive this?", which is a different
+    // question from "may the user send this to a person?". A GIF opts out of
+    // chaining because a destination tool would flatten it to frame one — but
+    // handing that same GIF to WhatsApp is the best thing that can happen to
+    // it. So the bar is offered for any media, and only the tool destinations
+    // are withheld. Text and ZIP exports get nothing, which is correct.
+    if (/^(image|video)\//.test(blob.type || '')) {
+      Chain.offer(blob, name, { chain: chain && /^image\//.test(blob.type || '') });
+    }
     // Every tool downloads through here (SharedKitTests enforces it), so this is
     // the one place that knows a visitor has actually got something out of the
     // site — see showSupport().
     noteDownload();
+  }
+
+  /* ---------------------------------------------------------------- sharing
+   * Handing a result to the OS share sheet — WhatsApp, Telegram, Instagram,
+   * Messages, AirDrop.
+   *
+   * This is the one path by which anything made here reaches another person
+   * without first becoming a file someone has to find again. It matters most
+   * for exactly the tools whose output is already destined for a chat: the
+   * sticker maker, the meme generator, text-behind-image, the screenshot
+   * beautifier. Nothing is uploaded to do it — the file goes from this tab to
+   * the target app through the OS, which is the same promise as the rest of
+   * the site rather than an exception to it.
+   */
+
+  function asFile(blob, name) {
+    return new File([blob], name || 'image.png', { type: blob.type || 'image/png' });
+  }
+
+  /**
+   * True if this browser can put `blob` into the share sheet.
+   *
+   * Tested per blob rather than once at load: canShare() inspects the file, and
+   * a browser willing to share a PNG may refuse a video. Desktop Linux and
+   * macOS Chrome answer false, which is the right answer — there is no sheet
+   * behind them, and a button that opens nothing is worse than no button.
+   */
+  function canShare(blob, name) {
+    if (!blob || !navigator.share || !navigator.canShare) return false;
+    try { return navigator.canShare({ files: [asFile(blob, name)] }); } catch { return false; }
+  }
+
+  /**
+   * Open the share sheet for `blob`. Resolves true only if the sheet accepted it.
+   *
+   * Call this SYNCHRONOUSLY from the click handler. navigator.share requires
+   * transient activation, and any `await` before it spends the gesture — the
+   * call then rejects with NotAllowedError even though the user really did
+   * click. That is why this builds the File itself instead of accepting one,
+   * and why every caller hands it a blob it already holds.
+   *
+   * The caption rides along only when the browser says it can carry both: some
+   * targets take files or text but not the pair, and a caption is never worth
+   * losing the image over. Backing out of the sheet rejects with AbortError,
+   * which is the user saying no — not a failure, so it raises nothing.
+   */
+  async function share(blob, name) {
+    if (!canShare(blob, name)) return false;
+    let payload = { files: [asFile(blob, name)] };
+    try {
+      const withText = { ...payload, text: t('Made with clearbg.pt') };
+      if (navigator.canShare(withText)) payload = withText;
+    } catch { /* files only */ }
+    try {
+      await navigator.share(payload);
+      return true;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return false;
+      Toast.show(t('Could not open the share sheet'), 'error');
+      return false;
+    }
   }
 
   /**
@@ -238,9 +307,14 @@
     // memory only — nothing is written until the user picks a destination.
     _pending: null,
 
-    /** Note `blob` as this page's current result (does not persist it). */
-    offer(blob, name) {
-      this._pending = { blob, name: name || 'image.png' };
+    /**
+     * Note `blob` as this page's current result (does not persist it).
+     *
+     * `chain: false` keeps the result out of the tool destinations but still
+     * lets the bar offer the share sheet — see download().
+     */
+    offer(blob, name, { chain = true } = {}) {
+      this._pending = { blob, name: name || 'image.png', chain };
       renderBar();
     },
 
@@ -377,7 +451,10 @@
    * say "here are some other tools", which is the thing a user already knows.
    * On the first hop there is no journey yet, so it just states the offer.
    */
-  function renderTrail(el) {
+  function renderTrail(el, { canChain = true } = {}) {
+    // A result with no onward tools (a GIF, a converted video) is in the bar
+    // for sharing alone, so promising more editing would be a lie.
+    if (!canChain) { el.textContent = t('Ready to share:'); return; }
     const steps = [...currentSteps(), document.body.dataset.toolLabel]
       .filter(Boolean)
       // Re-entering the same tool twice in a row (export, tweak, export again)
@@ -388,11 +465,28 @@
       : t('Keep editing this image:');
   }
 
+  // The iOS/Android share glyph, inline rather than as a Font Awesome class:
+  // the committed webfont subset has no share icon, and the nearest one it does
+  // have is fa-upload — the single worst icon this site could put on a button,
+  // given that "nothing is uploaded" is the whole promise.
+  const SHARE_ICON =
+    '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"'
+    + ' stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"'
+    + ' class="shrink-0" aria-hidden="true">'
+    + '<path d="M12 15V3"/><path d="m8 7 4-4 4 4"/>'
+    + '<path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/></svg>';
+
   function renderBar() {
     if (barEl || !Chain.has()) return;
+    const { blob, name, chain } = Chain._pending;
     let targets = [];
-    try { targets = JSON.parse($('#chain-targets')?.textContent || '[]'); } catch { return; }
-    if (!targets.length) return;
+    if (chain) {
+      try { targets = JSON.parse($('#chain-targets')?.textContent || '[]'); } catch { targets = []; }
+    }
+    const shareable = canShare(blob, name);
+    // Neither a destination nor a share sheet: stay silent rather than raise a
+    // bar whose only working control is its own close button.
+    if (!targets.length && !shareable) return;
 
     barEl = document.createElement('div');
     barEl.className =
@@ -408,10 +502,26 @@
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
       </div>`;
-    renderTrail(barEl.querySelector('[data-label]'));
+    renderTrail(barEl.querySelector('[data-label]'), { canChain: !!targets.length });
 
     const holder = barEl.querySelector('[data-targets]');
-    for (const tool of targets.slice(0, 5)) {
+    if (shareable) {
+      // Filled rather than outlined like the tool buttons: this one leaves the
+      // site, so it should not read as a sixth destination.
+      const s = document.createElement('button');
+      s.type = 'button';
+      s.className =
+        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-primaryHover transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2';
+      s.innerHTML = SHARE_ICON;
+      s.appendChild(document.createTextNode(t('Share')));
+      // No await before share(): navigator.share needs the click's own gesture.
+      s.addEventListener('click', () => { share(blob, name); });
+      holder.appendChild(s);
+    }
+    // Share takes one of the bar's slots rather than adding a sixth: the row's
+    // width budget is what it always was, and on a phone a sixth button wraps
+    // the bar onto an extra line that then sits under the toast stack.
+    for (const tool of targets.slice(0, shareable ? 4 : 5)) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className =
@@ -850,7 +960,7 @@
 
   window.CBG = {
     $, $$, t, plural, Toast, loadImage, humanSize, baseName,
-    download, dropzone, zipDownload, remember, Chain,
+    download, share, canShare, dropzone, zipDownload, remember, Chain,
     sparkle, sparkleOver, sparkleLoop, sparkleLoopOver,
   };
 

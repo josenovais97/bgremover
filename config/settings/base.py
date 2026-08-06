@@ -117,15 +117,23 @@ WSGI_APPLICATION = "config.wsgi.application"
 # defaults DATABASES to empty, which is exactly what we want here.
 
 # --- Internationalization ----------------------------------------------------
-# English is the default (served without a URL prefix); Portuguese is served
-# under /pt/. Translations are provided by a lightweight in-code catalogue
-# (remover.translations) rather than gettext .mo files, so no gettext build
-# tooling is needed at deploy time. i18n_patterns still handles the routing and
-# language activation. See config/urls.py.
+# English is the default (served without a URL prefix); every other language is
+# served under /<code>/. Translations are provided by lightweight in-code
+# catalogues (remover.locale_data) rather than gettext .mo files, so no gettext
+# build tooling is needed at deploy time. i18n_patterns still handles the routing
+# and language activation. See config/urls.py.
+#
+# This list is duplicated in remover.translations.CATALOGUES, which is the one
+# that actually holds the strings. Settings cannot import from the app (the app
+# registry isn't ready yet), so the two are kept in step by
+# `LanguageRegistryTests` rather than by derivation — a language listed here with
+# no catalogue would render an entirely English site under a prefix that claims
+# otherwise, which is exactly the failure the noindex rules exist to prevent.
 LANGUAGE_CODE = "en"
 LANGUAGES = [
     ("en", "English"),
     ("pt", "Português"),
+    ("es", "Español"),
 ]
 TIME_ZONE = "UTC"
 USE_I18N = True

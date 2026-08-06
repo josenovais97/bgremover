@@ -436,7 +436,7 @@ OCR_FAQS = [
     {"q": "Is my image uploaded for the text recognition?",
      "a": "No. The OCR engine (Tesseract, the same open-source engine many scanners use) runs on your device via WebAssembly. Screenshots often contain private conversations and documents — they never leave your browser here."},
     {"q": "Which languages does it recognise?",
-     "a": "English and Portuguese are built in, and the engine downloads the selected language pack on first use — after that it's cached and works offline."},
+     "a": "English, Portuguese, Spanish, French and German are offered, and the engine downloads the selected language pack on first use — after that it's cached and works offline."},
     {"q": "How accurate is it?",
      "a": "Very good on clean screenshots and printed documents; harder photos (angles, handwriting, low light) reduce accuracy. Sharp, straight-on images with good contrast recognise best."},
     {"q": "Is it free and unlimited?",
