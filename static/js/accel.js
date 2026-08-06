@@ -42,6 +42,16 @@ function proven() {
 }
 
 /**
+ * Has this device already downloaded the model at least once?
+ *
+ * Exported so the landing page can decide whether warming up on idle is free or
+ * expensive. A completed removal means the weights are in the cache, so warming
+ * is a local read; no completed removal means warming is a fresh multi-megabyte
+ * download for someone who has not yet asked for one.
+ */
+export const modelLikelyCached = proven;
+
+/**
  * Record that a removal completed, so later visits earn the full-quality model.
  * Called from app.js the moment a cut-out lands on screen.
  */

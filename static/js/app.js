@@ -13,7 +13,7 @@
 
 import { removeBackground, preload } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
-import { removalConfig, markGpuFailed, isGpu, downloadMb, markRemovalSucceeded } from './accel.js';
+import { removalConfig, markGpuFailed, isGpu, downloadMb, markRemovalSucceeded, modelLikelyCached } from './accel.js';
 
 const { $, $$, Toast, loadImage, t, download, Chain } = CBG;
 
@@ -2517,14 +2517,24 @@ const App = {
       this.dropzone.addEventListener(evt, () => ModelStatus.warm(), { once: true, passive: true }),
     );
 
-    // Also warm proactively once the page goes idle, so a visitor who uploads
-    // immediately (without hovering first) still skips the first-run wait. The
-    // model is 190 MB on isolated browsers, so skip it when the connection looks
-    // slow or data-saver is on — warm() is idempotent, so the intent listeners
-    // above still cover those users on demand.
+    // Also warm proactively once the page goes idle, so a returning visitor who
+    // uploads immediately (without hovering first) skips the wait entirely.
+    //
+    // Only when the weights are already on the device, though. Warming on idle
+    // used to run for everyone, which meant a first-time visitor who landed from
+    // a search result, read for five seconds and left had been charged tens of
+    // megabytes for a tool they never touched — on their mobile data, without
+    // being asked. Once a removal has completed here the model is cached and
+    // warming costs nothing, so the eager path is kept for exactly that case.
+    //
+    // First-timers are still covered by the intent listeners above: hovering,
+    // focusing or touching the dropzone starts the download before the file
+    // dialog closes, which is the moment the cost is actually justified.
     const conn = navigator.connection;
-    const stingy = conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ''));
-    if (!stingy) {
+    // 3g is included deliberately — it is not "fast", and effectiveType reports
+    // it for a great deal of real mobile traffic.
+    const stingy = conn && (conn.saveData || /(^|-)[23]g$/.test(conn.effectiveType || ''));
+    if (!stingy && modelLikelyCached()) {
       const warmSoon = () => ModelStatus.warm();
       if ('requestIdleCallback' in window) requestIdleCallback(warmSoon, { timeout: 4000 });
       else setTimeout(warmSoon, 2500);
