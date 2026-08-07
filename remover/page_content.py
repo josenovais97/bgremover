@@ -1543,6 +1543,134 @@ DEEP = {
             },
         ],
     },
+    'word_to_pdf': {
+        "title": 'What actually happens when a .docx becomes a PDF',
+        "sections": [
+            {
+                "h": 'Fonts are the reason no two conversions match',
+                "p": [
+                    'A Word file does not contain its fonts. It contains their names. When the document says Calibri, it is making a request of whatever machine opens it, and Calibri ships with Microsoft Office rather than with operating systems — so a Mac or a Linux box, and most web browsers on them, do not have it.',
+                    'The substitute is never metrically identical. Characters are a fraction wider or narrower, so the point at which a line wraps moves, and once one line moves every line after it moves too. Two pages can become three. This is not a defect in a particular converter; it is what happens whenever a document is laid out somewhere other than where it was written, and it is why the preview here is shown before the save rather than after.',
+                    'If you need a PDF that is guaranteed identical to what you see in Word, the only reliable route is to export it from Word itself, on the machine that has the fonts. Everything else — this tool, LibreOffice, an online converter — is re-laying the document out and hoping the fonts line up.',
+                ],
+            },
+            {
+                "h": 'Why the print dialog, and not a download button',
+                "p": [
+                    "A page cannot write a file to your disk unasked, so every in-browser converter has to choose how the PDF gets made. One option is to photograph each page and wrap the pictures in a PDF. That produces a file where the text is not text: nothing can be selected or searched, a screen reader finds nothing to read, and the size balloons because prose is being stored as pixels.",
+                    "The other option is the browser's own print engine, which is a real PDF writer with real font embedding and real pagination. It produces selectable text at a fraction of the size. The price is that it opens the print dialog and you pick 'Save as PDF' as the destination. That extra click buys a file that behaves like a document instead of a scan of one.",
+                ],
+            },
+            {
+                "h": 'What converts cleanly and what does not',
+                "p": [
+                    'The reliable cases are the common ones: CVs, cover letters, reports, essays, minutes — anything that is mostly headings and paragraphs, with the occasional list or simple table.',
+                ],
+                "list": [
+                    'Multi-column layouts and text boxes, which depend on precise frame positions.',
+                    'Tracked changes and comments, which are editorial state rather than content and are not rendered.',
+                    'Embedded charts and SmartArt, which are Office-specific drawing objects.',
+                    'Anything relying on a font you own but your browser does not.',
+                ],
+            },
+        ],
+    },
+    'pdf_to_word': {
+        "title": 'Why PDF to Word is harder than Word to PDF',
+        "sections": [
+            {
+                "h": 'A PDF has no paragraphs to find',
+                "p": [
+                    'The two directions look symmetrical and are not. A .docx is a description of intent: this run of text is a heading, this is a body paragraph, these cells form a table. Turning that into pages is a matter of following instructions that are already in the file.',
+                    'A PDF is the finished result with the instructions thrown away. What remains is a list of drawing operations: put this glyph at this coordinate in this font at this size. There is no such thing as a paragraph in a PDF, only characters that happen to share a baseline, and there is no table — only text that happens to line up with some drawn rectangles.',
+                    'So going backwards is not conversion, it is reconstruction. Structure has to be inferred from geometry, and every inference is a guess. This tool groups glyphs into lines by baseline and lines into paragraphs by vertical gap, treats noticeably larger text as a heading, and rejoins words that were hyphenated across a line break. Those rules are honest about what they are, and they are right most of the time on ordinary prose.',
+                ],
+            },
+            {
+                "h": 'Where reconstruction goes wrong',
+                "p": [
+                    'The failure cases all come from the same place: geometry that means something to a human but nothing to a rule about vertical gaps.',
+                ],
+                "list": [
+                    'Two columns read as one, because the extractor works down the page and finds the left column then the right, interleaving them by baseline.',
+                    'Tables lose their grid, because the cells were never cells — just text positioned near some lines.',
+                    'Headers, footers and page numbers arrive as body text, since nothing marks them as furniture.',
+                    'Scanned pages yield nothing at all, because there are no glyphs in the file to extract — only a photograph. That case is detected and sent to the OCR tool instead of producing an empty document.',
+                ],
+            },
+            {
+                "h": 'When to use this and when not to',
+                "p": [
+                    'Use it when you want the words: to quote from a report, rewrite a letter, translate a contract, or recover text from a document whose source you have lost. That is the majority of what people actually need from "PDF to Word", and it works well.',
+                    'Do not use it expecting a visual replica. If the layout is the point — a designed form, a brochure, an invoice template — you are better off keeping the PDF and editing it as a PDF, or rebuilding the layout deliberately in Word around the extracted text. Any tool promising a pixel-perfect PDF-to-Word round trip on a complex page is overselling, whatever it costs.',
+                ],
+            },
+        ],
+    },
+    'pdf_tools': {
+        "title": 'Merging and splitting without touching the pages',
+        "sections": [
+            {
+                "h": 'Why this is lossless and fast',
+                "p": [
+                    'A PDF is a tree of objects with a page list at the top. Each page points at its own content stream — the drawing commands — plus the fonts and images it needs. Merging two documents means building a new tree whose page list references the pages of both; splitting means building trees that reference a subset.',
+                    'The content streams themselves are copied byte for byte and never decoded. Nothing is re-compressed, nothing is rasterised, no image is re-encoded. Text stays selectable because it is the same text objects; a scan keeps exactly the JPEG it arrived as. This is also why it is quick even on large files: the work is proportional to the number of objects, not to the number of pixels.',
+                    'It is worth knowing what that implies about size. A merged file is roughly the sum of its inputs, because all the content is still there. Merging is not a way to make documents smaller, and any tool that shrinks a merged PDF noticeably has re-encoded something.',
+                ],
+            },
+            {
+                "h": 'Page ranges, and why bad ones are refused',
+                "p": [
+                    "Ranges are written the way people write them: 1-3, 5, 8- gives three files, and the open-ended 8- means page eight to the end. Each range becomes its own document, so you get one file per range rather than one file with the pages you chose.",
+                    "A range that runs past the end of the document is rejected rather than quietly trimmed. Silently clamping 1-99 to 1-20 would hand you a file that looks complete and is missing everything you asked for beyond page twenty — a mistake you would find much later, when the submission was already sent.",
+                ],
+            },
+            {
+                "h": 'Encrypted files',
+                "p": [
+                    'A password-protected PDF is refused when you add it, and says so. That is deliberate: the alternative is discovering the problem partway through a merge, with an output file that is missing one input. Open it in a PDF reader, remove the protection, and add it again.',
+                ],
+            },
+        ],
+    },
+    'csv_excel': {
+        "title": 'The details that ruin spreadsheet conversions',
+        "sections": [
+            {
+                "h": 'The delimiter is not always a comma',
+                "p": [
+                    'CSV stands for comma-separated values, and in much of Europe it usually is not. Where the decimal separator is a comma — Portugal, Spain, France, Germany, Italy, Brazil — a comma cannot also separate fields, so Excel writes and expects semicolons instead. The file extension is the same either way.',
+                    'A converter that assumes commas turns such a file into a single column of text: every row becomes one long cell, and the damage is obvious immediately. The delimiter is therefore detected from the content rather than assumed, which is what lets an export straight out of a Portuguese Excel install open correctly here.',
+                ],
+            },
+            {
+                "h": 'Quoting, and the corruption you notice three rows later',
+                "p": [
+                    'A field containing the delimiter has to be wrapped in quotes — "Lisboa, Portugal" is one value, not two — and a field containing a quote has to escape it by doubling. A field can even contain a line break, quoted, which means a CSV row is not the same thing as a line of the file.',
+                    'This is where naive conversion fails quietly. Splitting each line on the delimiter looks right on the first twenty rows and then shifts every column one place to the left at the first address containing a comma, silently, for the rest of the file. Proper quote handling is the difference between a conversion you can trust and one you have to audit.',
+                ],
+            },
+            {
+                "h": 'What a CSV cannot carry',
+                "p": [
+                    'Going from Excel to CSV is a lossy step by nature, and it is better to know what is lost than to discover it.',
+                ],
+                "list": [
+                    'Formulas become their last computed value, which is what you want — the formula referenced cells that no longer exist in a flat file.',
+                    'Formatting, colours, column widths, merged cells and frozen panes have nowhere to go.',
+                    'Multiple sheets do not fit: a CSV file holds exactly one table, so each sheet has to be exported separately.',
+                    'Number and date formats collapse to text, which is why a CSV can turn a date into something Excel later reinterprets differently.',
+                ],
+            },
+            {
+                "h": 'Getting a spreadsheet into Google Sheets privately',
+                "p": [
+                    'There is no button here that sends your file to Google Sheets, and that is a deliberate omission rather than a missing feature. Sheets is a cloud service; a direct "convert to Google Sheets" would have to upload your spreadsheet to Google under an OAuth grant, which is the exact thing this site exists not to do.',
+                    'Sheets imports CSV natively, so the private route is two steps and no middleman: convert to CSV here, then File → Import in Sheets and pick the file. Your data goes from your machine to your own Google account without passing through anyone else\'s converter on the way.',
+                ],
+            },
+        ],
+    },
     'svg_to_png': {
         "title": 'Rasterising vector art without losing the edges',
         "sections": [
