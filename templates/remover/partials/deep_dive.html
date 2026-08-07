@@ -1,3 +1,4 @@
+{% load i18n_extras %}
 {% comment %}
 Long-form section for pages that were too thin on their own. Content comes from
 remover/page_content.py, resolved by url_name (and slug, for use-case pages) in
@@ -6,22 +7,31 @@ and the page gains substance by acquiring a DEEP entry.
 
 Renders nothing when the current page has no entry, so it is safe to include from
 a shared template (landing.html) that serves both covered and uncovered pages.
+
+Every string goes through {% templatetag openblock %} t {% templatetag closeblock %},
+which is what makes this block translatable at all. It was not, until now: DEEP is
+one English dict, so a page listed in views._CORE_TRANSLATED — declaring a
+translation to Google through hreflang and the sitemap — still served several
+hundred English words at the bottom. {% templatetag openblock %} t {% templatetag closeblock %}
+takes a variable as happily as a literal and returns the English source when no
+translation exists, so adding entries to a locale_data UI dict is now the whole
+job, and a partially translated entry degrades per string instead of per page.
 {% endcomment %}
 {% if deep_content %}
 <section aria-labelledby="deep-title" class="max-w-3xl mx-auto space-y-10">
-    <h2 id="deep-title" class="text-2xl font-bold tracking-tight">{{ deep_content.title }}</h2>
+    <h2 id="deep-title" class="text-2xl font-bold tracking-tight">{% t deep_content.title %}</h2>
     {% for s in deep_content.sections %}
     <div class="space-y-4">
-        <h3 class="text-lg font-semibold text-primaryText">{{ s.h }}</h3>
+        <h3 class="text-lg font-semibold text-primaryText">{% t s.h %}</h3>
         {% for p in s.p %}
-        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ p }}</p>
+        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{% t p %}</p>
         {% endfor %}
         {% if s.list %}
         <ul class="space-y-2.5 pt-1">
             {% for item in s.list %}
             <li class="flex items-start gap-3 text-gray-600 dark:text-gray-300">
                 <i class="fa-solid fa-circle-check mt-1.5 text-primaryText text-xs shrink-0" aria-hidden="true"></i>
-                <span class="leading-relaxed">{{ item }}</span>
+                <span class="leading-relaxed">{% t item %}</span>
             </li>
             {% endfor %}
         </ul>

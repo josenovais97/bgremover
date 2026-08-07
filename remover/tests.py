@@ -1572,6 +1572,67 @@ class LanguageRegistryTests(SimpleTestCase):
                 self.assertEqual(self.client.get(f"/{lang}/").status_code, 200)
 
 
+class DeepTranslationTests(SimpleTestCase):
+    """The long-form DEEP block must be translatable, and translated in whole.
+
+    It was not translatable at all until the deep_dive partial started routing its
+    strings through {% t %}: DEEP is one English dict, so every page listed in
+    _CORE_TRANSLATED served several hundred English words at the bottom while
+    telling Google, via hreflang and the sitemap, that a translation existed.
+
+    Use `venv/bin/python scripts/deep-translation-status.py` to see the remaining
+    gap; these tests guard the mechanism and the one defect that actually damages
+    a page — a half-translated entry, which renders as a mix of two languages.
+    """
+
+    @staticmethod
+    def _strings(entry):
+        out = [entry["title"]]
+        for section in entry.get("sections", []):
+            out.append(section["h"])
+            out += section.get("p", [])
+            out += section.get("list", [])
+        return out
+
+    def test_deep_content_is_routed_through_the_catalogue(self):
+        # /crop/ is the reference entry: fully translated in both languages.
+        from remover.page_content import DEEP
+
+        english = DEEP["crop"]["title"]
+        for lang in LANGUAGES:
+            with self.subTest(lang=lang):
+                body = self.client.get(f"/{lang}/crop/").content.decode()
+                translated = CATALOGUES[lang].UI[english]
+                self.assertIn(translated, body)
+                self.assertNotIn(english, body)
+
+    def test_english_deep_content_is_untouched(self):
+        from remover.page_content import DEEP
+
+        body = self.client.get("/crop/").content.decode()
+        self.assertIn(DEEP["crop"]["title"], body)
+
+    def test_no_deep_entry_is_half_translated(self):
+        # All-or-nothing per entry. A partially translated block is worse than an
+        # untranslated one: the reader gets two languages in one section, and it
+        # looks like a bug rather than a gap.
+        from remover.page_content import DEEP
+
+        partial = []
+        for key, entry in DEEP.items():
+            strings = self._strings(entry)
+            for lang in LANGUAGES:
+                done = sum(1 for s in strings if s in CATALOGUES[lang].UI)
+                if 0 < done < len(strings):
+                    partial.append(f"{key} [{lang}] {done}/{len(strings)}")
+        self.assertFalse(
+            partial,
+            "these DEEP entries are translated in part, so the section renders as a "
+            "mix of two languages — finish them or remove the partial entries: "
+            + ", ".join(partial),
+        )
+
+
 class JsTranslationTests(SimpleTestCase):
     """The runtime strings the tools raise must be translatable, and translated.
 

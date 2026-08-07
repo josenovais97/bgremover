@@ -68,6 +68,146 @@ UI = {
     "Cut out any subject into a transparent PNG": "Recorte qualquer objeto para um PNG transparente",
     "What are you removing the background from?": "De que está a remover o fundo?",
 
+    # --- /resize-image/ DEEP ------------------------------------------------
+    "Resizing well": "Redimensionar bem",
+    "Down is safe, up is not": "Reduzir é seguro, ampliar não",
+    "Making an image smaller derives every output pixel from real measured data, so it is the safe direction. It can even improve apparent quality, since averaging groups of pixels reduces noise — a high-ISO photo often looks cleaner at half size.":
+        "Tornar uma imagem mais pequena deriva cada pixel de saída de dados realmente medidos, pelo que é a direção segura. Pode até melhorar a qualidade aparente, já que fazer a média de grupos de pixels reduz o ruído — uma foto com ISO alto costuma parecer mais limpa a metade do tamanho.",
+    "Enlarging is a different problem. The detail was never captured, so it has to be invented: classical resampling does it softly, producing a bigger but blurrier image. Around 2× is the practical ceiling for anything that must look natural.":
+        "Ampliar é um problema diferente. O detalhe nunca foi captado, portanto tem de ser inventado: a reamostragem clássica fá-lo de forma suave, produzindo uma imagem maior mas mais desfocada. Cerca de 2× é o limite prático para algo que tenha de parecer natural.",
+    "Keep the aspect ratio": "Mantenha a proporção",
+    "Changing width and height by different amounts stretches the image, and people are extremely good at spotting it — a face a few percent too wide looks wrong even to someone who cannot say why.":
+        "Alterar a largura e a altura em proporções diferentes distorce a imagem, e as pessoas são extremamente boas a detetá-lo — um rosto poucos por cento demasiado largo parece errado até a quem não sabe explicar porquê.",
+    "When a destination demands an exact ratio your original does not have, crop to that ratio first and then resize, rather than stretching to fit. You lose some framing and keep the proportions.":
+        "Quando um destino exige uma proporção exata que o seu original não tem, recorte primeiro para essa proporção e só depois redimensione, em vez de esticar para caber. Perde algum enquadramento e mantém as proporções.",
+    "Resize before compressing, not after": "Redimensione antes de comprimir, não depois",
+    "File size is driven far more by pixel count than by the quality setting, so reducing dimensions to what will actually be displayed usually clears an upload limit on its own.":
+        "O tamanho do ficheiro depende muito mais do número de pixels do que da definição de qualidade, pelo que reduzir as dimensões ao que vai realmente ser mostrado normalmente cumpre um limite de carregamento por si só.",
+    "The common mistake is to keep full dimensions and push quality down until the file fits, which produces a large, artefact-ridden image where a smaller clean one would have looked better and weighed less.":
+        "O erro comum é manter as dimensões totais e baixar a qualidade até o ficheiro caber, o que produz uma imagem grande e cheia de artefactos onde uma mais pequena e limpa teria ficado melhor e pesado menos.",
+    "Sharpening comes last": "A nitidez vem no fim",
+    "Downscaling softens an image slightly — that is inherent to averaging pixels together — so a light sharpen afterwards is normal and appropriate.":
+        "Reduzir a escala suaviza ligeiramente a imagem — é inerente a fazer a média dos pixels — pelo que uma leve aplicação de nitidez a seguir é normal e apropriada.",
+    "Doing it in the other order does not work: sharpening before you downscale amplifies noise and edge detail that the resize is about to average away, and can leave visible halos around high-contrast edges.":
+        "Fazê-lo na ordem inversa não funciona: aplicar nitidez antes de reduzir amplifica ruído e detalhe de arestas que o redimensionamento está prestes a diluir, e pode deixar halos visíveis em volta de arestas de alto contraste.",
+
+    # --- /exif-remover/ DEEP ------------------------------------------------
+    "What the file says about you after you send it": "O que o ficheiro diz sobre você depois de o enviar",
+    "The fields that actually matter": "Os campos que realmente importam",
+    "Cameras and phones write a block of metadata into every photo. Most of it is harmless — exposure, focal length, orientation. Three fields are not: GPS coordinates, the timestamp, and the device identifier.":
+        "As câmaras e os telemóveis escrevem um bloco de metadados em cada foto. A maior parte é inofensiva — exposição, distância focal, orientação. Três campos não são: as coordenadas GPS, a data e hora, e o identificador do dispositivo.",
+    "The coordinates are precise enough to identify a building, and a photo taken indoors is usually taken at home. A set of photos shared over months carries a movement history nobody intended to publish, which is the part people underestimate.":
+        "As coordenadas são precisas o suficiente para identificar um edifício, e uma foto tirada dentro de casa é normalmente tirada em casa. Um conjunto de fotos partilhadas ao longo de meses transporta um histórico de deslocações que ninguém quis publicar, e é essa a parte que as pessoas subestimam.",
+    "Which platforms strip it, and why that is not a plan":
+        "Que plataformas os removem, e porque isso não é um plano",
+    "Large social networks generally strip metadata on upload, partly for privacy and partly because they re-encode everything anyway. That protects the public copy and nothing else.":
+        "As grandes redes sociais geralmente removem os metadados no carregamento, em parte por privacidade e em parte porque recodificam tudo de qualquer forma. Isso protege a cópia pública e mais nada.",
+    "The file you emailed, put in a shared folder, sent over a chat app that preserves originals, or attached to a marketplace listing keeps every field. Stripping before sending is the only approach that does not depend on each destination's current behaviour.":
+        "O ficheiro que enviou por email, pôs numa pasta partilhada, mandou por uma aplicação de mensagens que preserva os originais, ou anexou a um anúncio, mantém todos os campos. Remover antes de enviar é a única abordagem que não depende do comportamento atual de cada destino.",
+    "Why stripping costs no quality on a JPEG": "Porque remover não custa qualidade num JPEG",
+    "A JPEG is a sequence of marker segments, and metadata lives in its own segments alongside the compressed image data. Removing them is a matter of dropping those segments and rewriting the file — the pixels are never decoded, so there is no re-encode and no generational loss.":
+        "Um JPEG é uma sequência de segmentos marcados, e os metadados vivem nos seus próprios segmentos ao lado dos dados de imagem comprimidos. Removê-los é uma questão de descartar esses segmentos e reescrever o ficheiro — os pixels nunca são descodificados, logo não há recodificação nem perda de geração.",
+    "This is worth knowing because the alternative people reach for — opening the photo in an editor and re-saving it — does re-encode, and loses a little quality every time.":
+        "Vale a pena saber isto porque a alternativa a que as pessoas recorrem — abrir a foto num editor e gravá-la de novo — recodifica de facto, e perde um pouco de qualidade cada vez.",
+    "What metadata will not tell you": "O que os metadados não lhe dizem",
+    "Absent metadata is not evidence of anything. Screenshots never had any, messaging apps remove it, and any re-save can drop it, so a photo with no EXIF is unremarkable rather than suspicious.":
+        "A ausência de metadados não é prova de nada. As capturas de ecrã nunca os tiveram, as aplicações de mensagens removem-nos, e qualquer nova gravação os pode eliminar, pelo que uma foto sem EXIF é banal e não suspeita.",
+    "Equally, present metadata is not proof: every field is editable. It is a convenience for organising your own photos and a privacy risk when sharing, and it is not a chain of custody.":
+        "Da mesma forma, a presença de metadados não é prova: todos os campos são editáveis. São uma conveniência para organizar as suas próprias fotos e um risco de privacidade ao partilhar, e não uma cadeia de custódia.",
+
+    # --- /compress/ DEEP ----------------------------------------------------
+    "Compressing without visible damage": "Comprimir sem estragos visíveis",
+    "Resize before you compress": "Redimensione antes de comprimir",
+    "This is the single most useful thing to know about hitting a size limit, and most people do it in the wrong order. File size scales roughly with pixel count, so halving an image's width and height cuts it to about a quarter — before the quality slider is touched at all.":
+        "Esta é a coisa mais útil que se pode saber sobre cumprir um limite de tamanho, e a maioria das pessoas fá-lo na ordem errada. O tamanho do ficheiro escala aproximadamente com o número de pixels, portanto reduzir a metade a largura e a altura de uma imagem corta-a para cerca de um quarto — antes de sequer tocar no cursor de qualidade.",
+    "A 4000-pixel-wide photo dropped to 1600 pixels will usually clear an upload limit on its own, with no perceptible loss, because nothing displaying it needed 4000 pixels. A 1600-pixel image at quality 85 looks better and weighs less than a 4000-pixel image at quality 40.":
+        "Uma foto de 4000 pixels de largura reduzida a 1600 normalmente cumpre um limite de carregamento por si só, sem perda perceptível, porque nada que a mostre precisava de 4000 pixels. Uma imagem de 1600 pixels com qualidade 85 fica melhor e pesa menos do que uma de 4000 pixels com qualidade 40.",
+    "Where the quality scale actually bites": "Onde a escala de qualidade realmente pesa",
+    "The 0–100 quality number is badly non-linear, and knowing its shape saves a lot of guessing:":
+        "O número de qualidade de 0–100 é fortemente não linear, e conhecer a sua forma evita muitas adivinhas:",
+    "100 to 90: no visible difference on most photographs, but a large file. Wasteful for the web.":
+        "100 a 90: nenhuma diferença visível na maioria das fotografias, mas um ficheiro grande. Desperdício para a web.",
+    "90 to 80: still visually indistinguishable, at roughly half the size. Where most images should sit.":
+        "90 a 80: continua visualmente indistinguível, com cerca de metade do tamanho. É onde a maioria das imagens deve ficar.",
+    "80 to 70: slight softening in fine texture. Fine for thumbnails and secondary images.":
+        "80 a 70: ligeira perda de nitidez na textura fina. Serve para miniaturas e imagens secundárias.",
+    "70 to 60: artefacts appear in skies, skin tones and around sharp edges.":
+        "70 a 60: aparecem artefactos nos céus, nos tons de pele e em volta das arestas nítidas.",
+    "Below 60: obvious blockiness and haloing. Only when size dominates everything.":
+        "Abaixo de 60: blocos e halos evidentes. Só quando o tamanho domina tudo o resto.",
+    "Content changes the answer": "O conteúdo muda a resposta",
+    "Those bands assume photographs. Busy texture — foliage, gravel, fabric — hides compression artefacts well and can go lower than you would expect.":
+        "Estas faixas pressupõem fotografias. Textura carregada — folhagem, gravilha, tecido — esconde bem os artefactos de compressão e pode descer mais do que se esperaria.",
+    "Smooth gradients are the opposite. A clear sky or a studio backdrop has no texture to mask the boundaries between compression blocks, so banding appears early. Screenshots, illustrations and anything with text are the worst case and often should not be lossy at all; if they must be, start at 90 rather than 80.":
+        "Os gradientes suaves são o oposto. Um céu limpo ou um fundo de estúdio não tem textura para mascarar as fronteiras entre os blocos de compressão, pelo que as faixas aparecem cedo. Capturas de ecrã, ilustrações e tudo o que tenha texto são o pior caso e muitas vezes não deviam sequer usar compressão com perdas; se tiverem de usar, comece em 90 em vez de 80.",
+    "Never compress twice": "Nunca comprima duas vezes",
+    "Each lossy save re-quantises data that already carries artefacts from the previous save, and the damage accumulates permanently. Ten saves at quality 90 produce a visibly worse image than one save at quality 60.":
+        "Cada gravação com perdas volta a quantizar dados que já trazem artefactos da gravação anterior, e o dano acumula-se de forma permanente. Dez gravações com qualidade 90 produzem uma imagem visivelmente pior do que uma única gravação com qualidade 60.",
+    "Keep a lossless master and export to a compressed format once, at the end. If you need to send an image to someone who will edit it further, send the master.":
+        "Guarde um original sem perdas e exporte para um formato comprimido uma só vez, no fim. Se precisar de enviar uma imagem a alguém que a vá editar mais, envie o original.",
+
+    # --- /convert/ DEEP -----------------------------------------------------
+    "Choosing the right format": "Escolher o formato certo",
+    "What conversion does and does not cost you": "O que a conversão lhe custa e o que não custa",
+    "Converting to a lossless format — PNG, or WebP in lossless mode — preserves your pixels exactly. Converting to a lossy format (JPG, lossy WebP, AVIF) discards data permanently, in exchange for a much smaller file.":
+        "Converter para um formato sem perdas — PNG, ou WebP em modo lossless — preserva os seus pixels exatamente. Converter para um formato com perdas (JPG, WebP com perdas, AVIF) descarta dados de forma permanente, em troca de um ficheiro muito mais pequeno.",
+    "The case worth avoiding is converting between two lossy formats. A JPG turned into a lossy WebP has been through two rounds of quantisation, and the second round treats the first round's artefacts as real detail worth preserving. Always convert from the highest-quality copy you have, not from a file that has already been compressed.":
+        "O caso a evitar é converter entre dois formatos com perdas. Um JPG transformado em WebP com perdas passou por duas rondas de quantização, e a segunda ronda trata os artefactos da primeira como detalhe real que vale a pena preservar. Converta sempre a partir da cópia de maior qualidade que tem, não de um ficheiro que já foi comprimido.",
+    "Which target format to pick": "Que formato de destino escolher",
+    "The answer depends almost entirely on where the file is going:":
+        "A resposta depende quase inteiramente do destino do ficheiro:",
+    "For your own website: WebP. Typically 25–35% smaller than JPG at the same visual quality, supported by every current browser.":
+        "Para o seu próprio site: WebP. Tipicamente 25–35% mais pequeno que o JPG com a mesma qualidade visual, suportado por todos os navegadores atuais.",
+    "For sending to someone else: JPG. It is the most compatible image format in existence and never gets rejected.":
+        "Para enviar a outra pessoa: JPG. É o formato de imagem mais compatível que existe e nunca é rejeitado.",
+    "For anything with a transparent background: PNG as a master, lossy WebP for the web. JPG cannot store transparency at all.":
+        "Para qualquer coisa com fundo transparente: PNG como original, WebP com perdas para a web. O JPG não consegue guardar transparência de forma alguma.",
+    "For screenshots and images containing text: PNG or lossless WebP — sharp edges are the worst case for lossy compression.":
+        "Para capturas de ecrã e imagens com texto: PNG ou WebP sem perdas — as arestas nítidas são o pior caso para a compressão com perdas.",
+    "For large hero images where bandwidth matters: AVIF, which compresses hardest but encodes slowly.":
+        "Para imagens grandes de destaque onde a largura de banda importa: AVIF, que comprime mais mas codifica devagar.",
+    "The transparency trap": "A armadilha da transparência",
+    "Converting a transparent PNG to JPG is the most common conversion mistake, because JPEG has no alpha channel and no way to represent one. The transparency has to be resolved against something, and the software picks — usually white, sometimes black.":
+        "Converter um PNG transparente para JPG é o erro de conversão mais comum, porque o JPEG não tem canal alfa nem forma de o representar. A transparência tem de ser resolvida contra alguma coisa, e o software escolhe — normalmente branco, às vezes preto.",
+    "Nothing is broken and nothing can be recovered afterwards; the alpha channel was discarded at export. If your cut-out came back with a white background, this is why. Re-export from the original as PNG or WebP.":
+        "Nada está avariado e nada pode ser recuperado depois; o canal alfa foi descartado na exportação. Se o seu recorte apareceu com fundo branco, é por isto. Volte a exportar a partir do original em PNG ou WebP.",
+    "Why this runs on your device": "Porque é que isto corre no seu dispositivo",
+    "Conversion happens in your browser using the same canvas and codec support the browser already ships for displaying images. Nothing is uploaded, which means no file size ceiling imposed by a server, no queue, and no per-image cost — so batch conversion is just a matter of waiting.":
+        "A conversão acontece no seu navegador usando o mesmo canvas e o mesmo suporte de codecs que o navegador já traz para mostrar imagens. Nada é carregado, o que significa nenhum limite de tamanho imposto por um servidor, nenhuma fila e nenhum custo por imagem — logo converter em lote é apenas uma questão de esperar.",
+    "It also means the tool works on files you would not want to hand to a service: scanned documents, identity paperwork, medical images, unreleased work.":
+        "Significa também que a ferramenta funciona com ficheiros que não quereria entregar a um serviço: documentos digitalizados, papelada de identificação, imagens médicas, trabalho ainda não divulgado.",
+
+    # --- /crop/ DEEP (the long-form block) ----------------------------------
+    "Cropping with intent": "Recortar com intenção",
+    "Cropping is free, enlarging is not": "Recortar é grátis, ampliar não",
+    "Cropping discards pixels, which costs you nothing in quality — the pixels that remain are the original measured data. What it costs is resolution, and that only matters if the result ends up smaller than where it is going.":
+        "Recortar descarta pixels, o que não custa nada em qualidade — os pixels que ficam são os dados originais medidos. O que custa é resolução, e isso só importa se o resultado acabar mais pequeno do que o destino onde vai ser usado.",
+    "A 4000-pixel photo cropped to a quarter of its area is still 2000 pixels wide, which is more than enough for almost any screen use. Crop confidently; the mistake is enlarging afterwards to compensate, which invents detail that was never captured.":
+        "Uma foto de 4000 pixels recortada a um quarto da sua área continua a ter 2000 pixels de largura, o que é mais do que suficiente para quase qualquer utilização em ecrã. Recorte com confiança; o erro é ampliar depois para compensar, o que inventa detalhe que nunca foi captado.",
+    "The ratios worth knowing": "As proporções que vale a pena saber",
+    "Most crops are made to fit a destination, and there are only a handful that matter:":
+        "A maioria dos recortes é feita para caber num destino, e só um punhado de proporções importa:",
+    "1:1 square — profile pictures, and the universally safe social format.":
+        "1:1 quadrado — fotos de perfil, e o formato social seguro em qualquer sítio.",
+    "4:5 vertical — the tallest ratio most feeds display uncropped, so it occupies the most screen space.":
+        "4:5 vertical — a proporção mais alta que a maioria dos feeds mostra sem recortar, pelo que ocupa mais espaço no ecrã.",
+    "9:16 — stories, reels and TikTok, full phone screen.":
+        "9:16 — stories, reels e TikTok, ecrã de telemóvel inteiro.",
+    "16:9 — YouTube, link previews and most horizontal video.":
+        "16:9 — YouTube, pré-visualizações de links e a maioria do vídeo horizontal.",
+    "3:2 and 4:3 — the native ratios of most cameras and phones, and the right choice for print.":
+        "3:2 e 4:3 — as proporções nativas da maioria das câmaras e telemóveis, e a escolha certa para impressão.",
+    "Circles are a crop plus transparency": "Os círculos são um recorte mais transparência",
+    "A circular crop is not really a crop — an image file is always rectangular. What it produces is a square image whose corners are transparent, which is why the export format matters.":
+        "Um recorte circular não é bem um recorte — um ficheiro de imagem é sempre retangular. O que produz é uma imagem quadrada com os cantos transparentes, e é por isso que o formato de exportação importa.",
+    "Save a circular crop as PNG or WebP and the corners stay transparent over any background. Save it as JPG and the corners become solid white or black, giving you a circle in a box. This catches people out constantly with avatars.":
+        "Guarde um recorte circular em PNG ou WebP e os cantos ficam transparentes sobre qualquer fundo. Guarde-o em JPG e os cantos passam a branco ou preto sólido, dando-lhe um círculo dentro de uma caixa. Isto engana as pessoas constantemente nos avatares.",
+    "Composition, briefly": "Composição, em resumo",
+    "Two habits improve most crops. Leave space in the direction a subject faces or moves, so the frame does not feel cramped against their gaze. And avoid cropping a person at a joint — the wrist, elbow, knee or ankle — because it reads as an amputation rather than a frame edge; crop mid-limb instead.":
+        "Dois hábitos melhoram a maioria dos recortes. Deixe espaço na direção para onde o motivo olha ou se move, para o enquadramento não parecer apertado contra o seu olhar. E evite recortar uma pessoa numa articulação — pulso, cotovelo, joelho ou tornozelo — porque se lê como uma amputação e não como o limite do enquadramento; recorte a meio do membro.",
+    "For anything going into a circular avatar slot, compose inside the inscribed circle. Everything in the corners of your square will be discarded by the platform.":
+        "Para qualquer coisa destinada a um avatar circular, componha dentro do círculo inscrito. Tudo o que estiver nos cantos do seu quadrado vai ser descartado pela plataforma.",
+
     # --- /crop/ -------------------------------------------------------------
     "Free Image Crop Tool — Circle, Square & Custom Ratio":
         "Recortar Imagens Grátis — Círculo, Quadrado e Proporção Personalizada",
