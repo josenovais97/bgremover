@@ -382,8 +382,16 @@
          scripts, which are deferred, always see it — and so no tool waits on an
          import of its own before it starts. -->
     <script src="{% static 'js/kit.js' %}"></script>
-    <!-- Custom colour picker replacing the unreliable native <input type=color> dialog. -->
-    <script src="{% static 'js/colorpicker.js' %}"></script>
+    {% comment %}
+      Custom colour picker replacing the unreliable native <input type=color> dialog.
+
+      Deferred: it was the only render-blocking script on the page, and it is a
+      progressive enhancement over an input that only 11 of the 47 templates have
+      at all — every guide, article and info page was parsing 19 KB to find no
+      colour inputs to upgrade. Deferred scripts still execute in document order,
+      so it runs before the tool modules in extra_js exactly as it did before.
+    {% endcomment %}
+    <script src="{% static 'js/colorpicker.js' %}" defer></script>
     <!-- Collapses overflowing tool-nav items into a "More" menu so it never clips. -->
     <script src="{% static 'js/nav.js' %}" defer></script>
     <!-- Ctrl+K command palette (filter + keyboard nav over the list above). -->
