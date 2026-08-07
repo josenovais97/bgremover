@@ -23,8 +23,8 @@ as it does when you use the site directly.
 ## How the handoff works
 
 1. `background.js` builds the right-click menu (`contexts: ["image"]`).
-2. On click it fetches the image URL into a data URL, requesting read access to
-   that one origin first if it does not already have it.
+2. On click it reads the image into a data URL — first by fetching it directly,
+   and if that is refused, by running the fetch inside the page via `activeTab`.
 3. The payload is parked in `chrome.storage.session` — in memory, never written
    to disk — because an MV3 service worker can be terminated between the click
    and the new tab loading.
@@ -50,14 +50,34 @@ page sees a local file, exactly as if it had been dragged in.
 |---|---|
 | `contextMenus` | the right-click menu |
 | `storage` | parking the image between the click and the tab load |
+| `activeTab` + `scripting` | reading the image from the page you right-clicked, when a plain fetch cannot |
 | `https://clearbg.pt/*` | running the content script that delivers it |
-| `*://*/*` *(optional)* | reading the image you right-clicked |
+| `*://*/*` *(optional)* | only for sites where neither route above works |
 
-The wildcard is an **optional** permission, requested per-origin at the moment
-you first use the extension on a site — so installing it does not present a
-"read your data on all websites" prompt. Given that the whole product is built
-around not touching your files, that mattered more than the convenience of
-asking once up front.
+**Installing shows no "read your data on all websites" prompt.** The image is
+read by the cheapest route that works:
+
+1. A plain fetch from the service worker. This succeeds whenever the image host
+   sends permissive CORS headers, which a great many image CDNs do.
+2. Otherwise, the fetch runs inside the page itself. A context-menu click grants
+   `activeTab` for that tab, so no host permission is needed and a same-origin
+   image always reads.
+3. Only if both fail does broad access help — and it is offered from the
+   extension's options page, never demanded at install.
+
+### Why the permission is requested from the options page
+
+`chrome.permissions.request()` requires an *unspent* user gesture. The
+context-menu handler must await the image fetch before it can know whether a
+permission is even needed, and that await spends the gesture — the call then
+throws `must be called during a user gesture` every time. A button the user
+clicks has a gesture that has not been spent on anything, so the request works
+there and nowhere else.
+
+This is not theoretical: the first version of this extension asked for the
+permission inside the click handler, the call threw on every single use, the
+error was swallowed, and the tool opened with no image. From the outside it
+looked exactly like "it just opens the page and does nothing".
 
 ## Limits
 

@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ClearBG extension</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 14px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0; padding: 20px; width: 340px;
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  p { margin: 0 0 12px; opacity: .8; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer;
+    padding: 8px 14px; border-radius: 9px;
+    border: 1px solid #4F46E5; background: #4F46E5; color: #fff;
+  }
+  button[disabled] { opacity: .55; cursor: default; }
+  .status { margin-top: 10px; font-size: 13px; }
+  .ok { color: #15803d; }
+</style>
+
+<h1>Access to other sites</h1>
+<p>
+  ClearBG normally reads the image you right-click without needing any extra
+  permission. A few sites serve images in a way that blocks this — granting
+  access here makes it work everywhere.
+</p>
+<p>
+  It is only ever used to read the one image you right-click. Nothing is
+  uploaded, and nothing is read in the background.
+</p>
+
+<button id="grant">Allow on all sites</button>
+<div class="status" id="status"></div>
+
+<script src="options.js"></script>
