@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static i18n_extras %}
+
+{% block title %}Merge PDF & Split PDF — Free, No Upload, In Your Browser{% endblock %}
+{% block description %}Combine several PDFs into one, or split a PDF into separate files by page range — entirely in your browser. Your documents are never uploaded. Free, no account, no watermark.{% endblock %}
+{% block og_title %}Merge & Split PDF — Without Uploading Your Files{% endblock %}
+
+{% block extra_seo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ClearBG Merge & Split PDF",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Merge multiple PDFs into one file and split a PDF into page ranges, entirely in your browser. Files are never uploaded to a server.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+
+    <!-- Hero -->
+    <section class="max-w-5xl mx-auto space-y-8">
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i> Runs locally — your files are never uploaded
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                Merge &amp; split
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">PDF</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                Combine a bundle into one file, or pull pages out into their own. People merge PDFs to
+                assemble a <strong>mortgage application, a visa file, a contract with its annexes</strong> —
+                and every other merge site takes the whole bundle onto their servers. This one doesn't.
+            </p>
+        </div>
+
+        <div class="max-w-2xl mx-auto">
+            <div id="pt-mode-tabs" class="grid grid-cols-2 gap-1 p-1 mb-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-sm font-medium">
+                <button type="button" class="pt-mode px-4 py-2 rounded-lg bg-primary text-white transition" data-mode="merge" role="tab" aria-selected="true">Merge PDFs</button>
+                <button type="button" class="pt-mode px-4 py-2 rounded-lg transition" data-mode="split" role="tab" aria-selected="false">Split a PDF</button>
+            </div>
+
+            <div id="pt-dropzone" role="button" tabindex="0" aria-label="Choose PDF files. Drag and drop, click to browse, or paste."
+                 class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <input type="file" id="pt-input" class="sr-only" accept=".pdf,application/pdf" multiple aria-label="Choose PDF files">
+                <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                    <div id="pt-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>
+                    </div>
+                    <h2 id="pt-drop-title" class="text-2xl font-semibold">Drop your PDFs</h2>
+                    <p id="pt-drop-sub" class="text-gray-500 dark:text-gray-400">or click to browse — add as many as you like</p>
+                    <button id="pt-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <i class="fa-solid fa-file-arrow-up mr-2" aria-hidden="true"></i>Select PDFs
+                    </button>
+                </div>
+            </div>
+            <div id="pt-busy" class="hidden mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <i class="fa-solid fa-circle-notch fa-spin mr-1.5" aria-hidden="true"></i>Reading…
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor -->
+    <section id="pt-editor" class="hidden max-w-3xl mx-auto space-y-4">
+        <div class="flex items-center justify-between">
+            <p id="pt-total" class="text-sm font-medium text-gray-600 dark:text-gray-300"></p>
+            <button id="pt-run" type="button" class="px-5 py-2.5 rounded-xl text-white font-semibold shadow bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                <i class="fa-solid fa-file-arrow-down mr-1.5" aria-hidden="true"></i><span id="pt-run-label">Merge into one PDF</span>
+            </button>
+        </div>
+
+        <div id="pt-merge-pane" class="text-xs text-gray-500 dark:text-gray-400">
+            <i class="fa-solid fa-arrows-up-down mr-1" aria-hidden="true"></i>Drag to reorder — the merged file follows this order.
+        </div>
+
+        <div id="pt-split-pane" class="hidden glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-2">
+            <label for="pt-ranges" class="text-sm font-medium">Page ranges</label>
+            <input type="text" id="pt-ranges" inputmode="numeric" placeholder="1-3, 5, 8-"
+                class="w-full px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent font-mono text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <p id="pt-range-hint" class="text-xs text-gray-500 dark:text-gray-400">Leave empty to get every page as its own PDF.</p>
+        </div>
+
+        <div id="pt-list" class="space-y-2"></div>
+
+        <button id="pt-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>Start over
+        </button>
+    </section>
+
+    <!-- SEO / help -->
+    <section aria-labelledby="pt-how" class="max-w-4xl mx-auto space-y-6">
+        <h2 id="pt-how" class="text-2xl font-bold text-center">Why merge and split PDFs here?</h2>
+        <div class="grid gap-5 sm:grid-cols-3">
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-lock text-primaryText mr-1.5" aria-hidden="true"></i>Never uploaded</div><p class="text-sm text-gray-500 dark:text-gray-400">The bundles people assemble are applications and contracts — the paperwork you'd least want sitting in a stranger's queue. Nothing here leaves your device.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-layer-group text-primaryText mr-1.5" aria-hidden="true"></i>No quality loss</div><p class="text-sm text-gray-500 dark:text-gray-400">Pages are copied whole, not re-encoded. Text stays selectable, images keep the exact bytes they had, and file size doesn't balloon.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-star text-primaryText mr-1.5" aria-hidden="true"></i>No limits</div><p class="text-sm text-gray-500 dark:text-gray-400">No cap on how many files you merge, no daily quota, no sign-up and no watermark — because there's no server bill to pay for.</p></div>
+        </div>
+    </section>
+
+    {% include 'remover/partials/deep_dive.html' %}
+
+    {% include 'remover/partials/faq.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/pdf-tools.js' %}"></script>
+{% endblock %}

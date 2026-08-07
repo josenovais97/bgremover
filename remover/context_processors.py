@@ -21,7 +21,10 @@ from .views import USE_CASES, is_translated_path, translated_languages
 # tool can't be its input either — like the QR generator, it's a source-only hop.
 # HEIC / PDF / SVG conversion tools take a specific source format that no other
 # tool can produce (a chained raster PNG is not a .heic, a PDF or an .svg).
-CHAIN_EXCLUDED = {"qr", "video_gif", "video_converter", "heic", "pdf_to_image", "svg_to_png"}
+CHAIN_EXCLUDED = {"qr", "video_gif", "video_converter", "heic", "pdf_to_image", "svg_to_png",
+                  # These take a .docx, a PDF or a spreadsheet, so there is no
+                  # image for the cross-tool bar to hand them.
+                  "word_to_pdf", "pdf_to_word", "pdf_tools", "csv_excel"}
 
 # The tool switcher in the header. Defined once here so every item renders with
 # identical markup (no per-link drift in sizing/wrapping) and adding a tool is a
@@ -140,6 +143,18 @@ TOOL_NAV = [
     {"name": "pdf_to_image", "icon": "fa-solid fa-file-arrow-up", "label": "PDF to Images", "group": "optimize",
      "blurb": "Save every PDF page as a sharp image",
      "demo": "img/demo-pdf-to-image.webp"},
+    {"name": "word_to_pdf", "icon": "fa-solid fa-print", "label": "Word to PDF", "group": "optimize",
+     "blurb": "Turn a .docx into a PDF without uploading it",
+     "demo": "img/demo-word-to-pdf.webp"},
+    {"name": "pdf_to_word", "icon": "fa-solid fa-align-left", "label": "PDF to Word", "group": "optimize",
+     "blurb": "Pull a PDF's text into an editable .docx",
+     "demo": "img/demo-pdf-to-word.webp"},
+    {"name": "pdf_tools", "icon": "fa-solid fa-file-zipper", "label": "Merge & Split PDF", "group": "optimize",
+     "blurb": "Combine PDFs into one, or split one apart",
+     "demo": "img/demo-pdf-tools.webp"},
+    {"name": "csv_excel", "icon": "fa-solid fa-table-cells-large", "label": "CSV to Excel", "group": "optimize",
+     "blurb": "Convert CSV to .xlsx, or Excel back to CSV",
+     "demo": "img/demo-csv-excel.webp"},
     {"name": "ocr", "icon": "fa-solid fa-align-left", "label": "Image to Text", "group": "optimize",
      "blurb": "Copy the text out of any photo or screenshot",
      "demo": "img/demo-ocr.webp"},
@@ -192,7 +207,10 @@ FOOTER_LABELS = {
     "collage": "Photo Collage", "border": "Border & Polaroid",
     "remove_object": "Remove Object", "photo_filters": "Photo Filters",
     "upscale": "Image Upscaler", "heic": "HEIC to JPG",
-    "pdf_to_image": "PDF to Images", "ocr": "Image to Text",
+    "pdf_to_image": "PDF to Images", "word_to_pdf": "Word to PDF",
+    "pdf_to_word": "PDF to Word", "pdf_tools": "Merge & Split PDF",
+    "csv_excel": "CSV to Excel",
+    "ocr": "Image to Text",
     "svg_to_png": "SVG to PNG",
 }
 
@@ -271,6 +289,10 @@ TOOL_ACCENTS = {
     "upscale": ("4 120 87", "6 95 70", "5 150 105", "16 185 129"),           # emerald 700/800/600/500
     "heic": ("124 58 237", "109 40 217", "167 139 250", "196 181 253"),      # violet 600/700/400/300 (converter family)
     "pdf_to_image": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),  # stone 600/700/400/300 (PDF family)
+    "word_to_pdf": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),   # stone 600/700/400/300 (PDF family)
+    "pdf_to_word": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),   # stone 600/700/400/300 (PDF family)
+    "pdf_tools": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),     # stone 600/700/400/300 (PDF family)
+    "csv_excel": ("21 128 61", "22 101 52", "22 163 74", "34 197 94"),       # green 700/800/600/500 (spreadsheet)
     "ocr": ("14 116 144", "21 94 117", "8 145 178", "6 182 212"),            # cyan 700/800/600/500
     "svg_to_png": ("77 124 15", "63 98 18", "101 163 13", "132 204 22"),     # lime 700/800/600/500
 }

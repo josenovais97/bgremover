@@ -45,6 +45,10 @@ from .seo_content import (
     PALETTE_FAQS,
     PASSPORT_FAQS,
     PDF_FAQS,
+    WORD_PDF_FAQS,
+    CSV_EXCEL_FAQS,
+    PDF_TOOLS_FAQS,
+    PDF_WORD_FAQS,
     QR_FAQS,
     REDACT_FAQS,
     RESIZE_FAQS,
@@ -969,7 +973,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
-TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/", "/screenshot-beautifier/", "/remove-object/", "/photo-filters/", "/upscale/", "/heic-to-jpg/", "/pdf-to-image/", "/image-to-text/", "/svg-to-png/"]
+TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/", "/screenshot-beautifier/", "/remove-object/", "/photo-filters/", "/upscale/", "/heic-to-jpg/", "/pdf-to-image/", "/word-to-pdf/", "/pdf-to-word/", "/merge-pdf/", "/csv-to-excel/", "/image-to-text/", "/svg-to-png/"]
 INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
@@ -1507,6 +1511,42 @@ def image_to_pdf(request):
     return render(request, "remover/pdf.html", {
         "faqs": PDF_FAQS,
         "faq_jsonld": faq_jsonld(PDF_FAQS),
+    })
+
+
+@require_safe
+def word_to_pdf(request):
+    """Render the client-side Word (.docx) → PDF converter."""
+    return render(request, "remover/word_to_pdf.html", {
+        "faqs": WORD_PDF_FAQS,
+        "faq_jsonld": faq_jsonld(WORD_PDF_FAQS),
+    })
+
+
+@require_safe
+def csv_excel(request):
+    """Render the client-side CSV ⇄ Excel (.xlsx) converter."""
+    return render(request, "remover/csv_excel.html", {
+        "faqs": CSV_EXCEL_FAQS,
+        "faq_jsonld": faq_jsonld(CSV_EXCEL_FAQS),
+    })
+
+
+@require_safe
+def pdf_tools(request):
+    """Render the client-side PDF merge / split tool."""
+    return render(request, "remover/pdf_tools.html", {
+        "faqs": PDF_TOOLS_FAQS,
+        "faq_jsonld": faq_jsonld(PDF_TOOLS_FAQS),
+    })
+
+
+@require_safe
+def pdf_to_word(request):
+    """Render the client-side PDF → Word (.docx) text extractor."""
+    return render(request, "remover/pdf_to_word.html", {
+        "faqs": PDF_WORD_FAQS,
+        "faq_jsonld": faq_jsonld(PDF_WORD_FAQS),
     })
 
 

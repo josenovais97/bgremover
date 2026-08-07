@@ -84,6 +84,15 @@
     {% block extra_seo %}{% endblock %}
     {% endblock %}
 
+    {% comment %}
+      Page-specific <head> CSS. Tool-scoped rules that have no business in the
+      shared Tailwind bundle live here — e.g. the print stylesheet word-to-pdf
+      needs, which styles markup a CDN library generates at runtime.
+      ({# #} is single-line only in Django; spanning lines with it emits the
+      comment into every page, which is exactly what happened here once.)
+    {% endcomment %}
+    {% block extra_head %}{% endblock %}
+
     <!-- Vercel Web Analytics (privacy-friendly; active once enabled in Vercel) -->
     <script defer src="/_vercel/insights/script.js"></script>
 

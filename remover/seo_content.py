@@ -212,6 +212,68 @@ PDF_FAQS = [
      "a": "Yes — photograph or scan each page, add them in order, and export a single PDF. Because nothing is uploaded, it's safe for sensitive paperwork."},
 ]
 
+WORD_PDF_FAQS = [
+    {"q": "Is this Word to PDF converter free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark. There is no page limit and no file-size cap beyond what your own browser can hold."},
+    {"q": "Is my document uploaded to a server?",
+     "a": "No. The .docx is opened and laid out inside your browser, and the PDF is produced by your browser's own print engine. The document never leaves your device, which is the whole point: the files people convert are contracts, CVs, medical letters and legal paperwork."},
+    {"q": "Will the PDF look exactly like it does in Word?",
+     "a": "It will look very close, but it is not guaranteed to be identical. A .docx names the fonts it uses without embedding them, so if your computer doesn't have the original font — Calibri, for instance, isn't installed on most Macs or Linux machines — the browser substitutes a similar one, the text is re-measured, and line and page breaks can shift. That's why the tool shows you the laid-out pages before you save."},
+    {"q": "Why do I have to use the print dialog instead of a download button?",
+     "a": "Because that's what keeps the text real. Your browser's print engine writes selectable, searchable text into the PDF. The alternative used by some in-browser converters is to take a picture of each page, which gives a large file with no copyable text that a screen reader cannot read. Choose 'Save as PDF' as the destination in the dialog."},
+    {"q": "Can I convert an old .doc file?",
+     "a": "Not directly. The old binary .doc format is a different container that can't be read this way. Open it in Word, LibreOffice or Google Docs and save it as .docx first, then convert that."},
+    {"q": "What about complex documents?",
+     "a": "Simple documents — CVs, letters, reports, essays — convert well. Heavily designed ones are where accuracy drops: multi-column newsletters, tracked changes, embedded charts and unusual fonts may not lay out the way Word does. The preview tells you before you commit."},
+]
+
+CSV_EXCEL_FAQS = [
+    {"q": "Is this CSV to Excel converter free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark. There is no row limit beyond what your own browser can hold in memory."},
+    {"q": "Is my spreadsheet uploaded anywhere?",
+     "a": "No. The file is parsed and the new one written inside your browser, so the data never leaves your device. That matters more here than almost anywhere else on this site: spreadsheets hold payroll, customer lists, pricing and invoices."},
+    {"q": "How do I get this into Google Sheets?",
+     "a": "Convert to CSV here, then in Sheets use File → Import and pick the file. We deliberately don't offer a direct 'send to Google Sheets' button: Sheets is a cloud service, so that button would have to upload your file to Google's servers, which is exactly what this tool exists to avoid. CSV gets your data there with nothing in between."},
+    {"q": "My CSV uses semicolons, not commas. Will it work?",
+     "a": "Yes. The delimiter is detected from the file, so semicolon-separated exports — the norm in Portugal, Spain, France, Germany and much of Europe — are read correctly instead of collapsing into a single column."},
+    {"q": "What happens to formulas in an Excel file?",
+     "a": "A CSV can only hold values, so each formula cell is exported as its last computed result. That is what you want: the formula itself would be meaningless outside the workbook it referenced."},
+    {"q": "Are accented characters preserved?",
+     "a": "Yes. CSV files are written as UTF-8 with a byte-order mark, which is what makes Excel open them with accents intact rather than mangled. Google Sheets ignores the mark, so it costs nothing on that side."},
+    {"q": "What about multiple sheets in one workbook?",
+     "a": "All sheets are read and you can switch between them. Because a CSV file holds exactly one table, the CSV export saves the sheet you have selected — pick each one and download it in turn."},
+]
+
+PDF_TOOLS_FAQS = [
+    {"q": "Is merging and splitting PDFs free here?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark. No cap on how many files you merge and no daily quota, because there is no server bill behind it."},
+    {"q": "Are my PDFs uploaded to a server?",
+     "a": "No. Both operations run in your browser and nothing is transmitted. The reason people merge PDFs is to assemble a submission — a mortgage application, a visa file, a contract with its annexes — and that is precisely the bundle you would not want sitting in someone else's processing queue."},
+    {"q": "Does merging reduce quality or make the file huge?",
+     "a": "Neither. Pages are copied whole between documents without touching their content, so nothing is re-encoded or rasterised. Text stays selectable and images keep the exact bytes they had — the merged file is essentially the sum of its parts."},
+    {"q": "How do I choose which pages to split out?",
+     "a": "Type ranges like 1-3, 5, 8- and you get one file per range; '8-' means page 8 to the end. Leave the box empty and every page becomes its own PDF. A single range downloads as one file, several arrive as a zip."},
+    {"q": "Can I reorder the files before merging?",
+     "a": "Yes — drag the rows. The merged document follows the order shown on screen."},
+    {"q": "Can it open password-protected PDFs?",
+     "a": "No. An encrypted PDF is rejected when you add it, with a message saying so, rather than failing silently partway through. Remove the password in a PDF reader first."},
+]
+
+PDF_WORD_FAQS = [
+    {"q": "Will the Word file look like my PDF?",
+     "a": "No, and it is worth being direct about that. This extracts the text — paragraphs, headings and page breaks — into an editable document. It does not reproduce columns, tables or exact spacing. If you need a faithful visual copy, a PDF already is one; what Word gives you is editability."},
+    {"q": "Why can't it convert the layout properly?",
+     "a": "Because a PDF has no layout to read. A .docx says 'this is a heading, this is a paragraph, this is a table'; a PDF says 'draw these glyphs at these coordinates' and nothing more. Structure has to be inferred from position and size, and every inference can be wrong. Commercial converters apply machine learning to this and still get columns and tables wrong regularly."},
+    {"q": "Is my PDF uploaded?",
+     "a": "No. The text is extracted in your browser and the .docx is assembled there too, so the document never leaves your device."},
+    {"q": "It says my PDF has no text. Why?",
+     "a": "Because it is a scan — a photograph of pages, with no glyphs in the file to extract. Run it through the Image to Text (OCR) tool instead, which recognises characters in a picture."},
+    {"q": "Are hyphenated words at line ends fixed?",
+     "a": "Yes. A word broken across a line break is rejoined rather than left with a hyphen in the middle, which is one of the more irritating artefacts of naive text extraction."},
+    {"q": "Is this free?",
+     "a": "Yes — free, unlimited, no sign-up and no watermark."},
+]
+
 ALTERNATIVE_FAQS = [
     {"q": "Is ClearBG really a free remove.bg alternative?",
      "a": "Yes — background removal is free and unlimited with no credits, no sign-up and no watermark. You export full-resolution transparent PNGs at no cost."},
