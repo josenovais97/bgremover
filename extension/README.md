@@ -111,8 +111,68 @@ Remove both before packaging.
 
 ## Publishing
 
-The Chrome Web Store listing needs: a 128px icon (included), at least one
-1280×800 screenshot, a short and a long description, and a privacy disclosure.
-The disclosure is the easy part — the extension collects nothing, and the
-justification for the optional host permission is "reading the image the user
-explicitly right-clicked".
+### Building the upload
+
+```
+venv/bin/python scripts/package-extension.py   # -> dist/clearbg-extension-<version>.zip
+```
+
+The script refuses to package rather than let the store reject the upload a day
+later: it checks the 132-character description limit, that each declared icon is
+really the pixel size it claims, that every file the manifest references exists,
+that the version is a legal dotted integer, and that no `127.0.0.1` pattern from
+local testing survived. `README.md` is left out of the zip; `manifest.json` sits
+at the root, which the store requires.
+
+### One-time setup
+
+1. Register at the [developer dashboard](https://chrome.google.com/webstore/devconsole)
+   — a **$5 lifetime fee**, per account, not per extension.
+2. Verify `clearbg.pt` in the account. This is worth doing before the first
+   submission: a verified domain lets the listing link to the site as its
+   official homepage, and reviewers treat a site-backed extension as less
+   suspicious than an anonymous one.
+
+### The listing
+
+- **Store icon** — the 128px from the manifest.
+- **Screenshots** — at least one at exactly 1280×800 or 640×400. The
+  right-click menu open over a photo is the shot that explains the product in
+  one frame; a second showing the tool page with the image already loaded closes
+  the loop.
+- **Single purpose** — "sends an image from the page you are on to the matching
+  tool on clearbg.pt". Say it in one sentence. A description that reads as
+  several unrelated features is the most common cause of rejection.
+- **Permission justifications**, one field each, and they must match what the
+  code does:
+  - `contextMenus` — adds the right-click menu.
+  - `storage` — holds the image in `chrome.storage.session` between the click
+    and the tab load, because an MV3 service worker can be terminated in between.
+  - `activeTab` + `scripting` — reads the right-clicked image from the page when
+    a plain fetch is refused by CORS.
+  - `https://clearbg.pt/*` — the content script that delivers the image.
+  - `*://*/*` *(optional)* — requested from the options page only for sites
+    where neither route above works.
+- **Privacy** — declare **no** data collected, and tick the three required
+  certifications. This is honest and checkable: the extension has no analytics
+  and no server calls, and the processing happens on the user's device.
+
+### Review
+
+First review typically takes a few days; broad host permissions are the thing
+that lengthens it, which is the practical payoff for keeping `*://*/*` optional.
+Publish to a small trusted-tester group first if you want a real install to
+verify against before it is public.
+
+### Updates
+
+Bump `version` in `manifest.json`, re-run the packaging script, upload the new
+zip. The store will not accept a version equal to or lower than the published
+one, and installed copies auto-update within a few hours of approval.
+
+### Firefox
+
+Not a repackage. `browser_specific_settings.gecko.id` is required, the service
+worker becomes an event page, and `chrome.storage.session` needs checking on the
+target version. AMO has no listing fee. Worth doing as a second manifest once
+the Chrome listing is live, not before.

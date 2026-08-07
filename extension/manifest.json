@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ClearBG \u2014 right-click image tools",
   "version": "1.0.0",
-  "description": "Right-click any image on the web to remove its background, crop, compress or convert it. Everything runs in your browser \u2014 nothing is uploaded.",
+  "description": "Right-click any image to remove its background, crop, compress or convert it. Runs in your browser \u2014 nothing is uploaded.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

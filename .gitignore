@@ -28,3 +28,6 @@ node_modules/
 
 # Vercel
 .vercel/
+
+# Chrome Web Store upload built by scripts/package-extension.py
+dist/
