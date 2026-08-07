@@ -141,11 +141,13 @@
             <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>{% t "Download" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Grab the smaller file, or download them all as a ZIP. No watermark, no sign-up." %}</p></div>
         </div>
     </section>
-</div>
+
+    {% include 'remover/partials/related_landings.html' %}
 
     {% include 'remover/partials/deep_dive.html' %}
 
     {% include 'remover/partials/faq.html' %}
+</div>
 
 <!-- Compress card template -->
 <template id="cmp-card-template">

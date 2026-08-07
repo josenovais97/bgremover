@@ -11,7 +11,7 @@ from .guides import GUIDES, guides_for_tool
 from .page_content import deep_for
 from .translations import LANGUAGE_NAMES, LANGUAGES, js_catalogue, path_language, strip_language
 from .translations import t as tr
-from .views import USE_CASES, is_translated_path, translated_languages
+from .views import LANDINGS_BY_PARENT, USE_CASES, is_translated_path, translated_languages
 
 # Tools that cannot accept an arbitrary image handed over from another tool, so
 # they never appear as a destination in the "keep editing" bar. The QR generator
@@ -577,6 +577,11 @@ def seo(request):
         # Resolved here rather than per-view so a template opts in by including
         # partials/deep_dive.html, with no view change.
         "deep_content": deep_for(url_name, match.kwargs if match is not None else {}),
+        # The landing pages this tool is the hub for, so the hub links down into
+        # its cluster instead of leaving those pages reachable only from each
+        # other. Same opt-in shape as deep_content: a template gains the block by
+        # including partials/related_landings.html.
+        "landing_links": LANDINGS_BY_PARENT.get(url_name, []),
         "site_url": settings.SITE_URL.rstrip("/"),
         # Contextual internal linking: a few related tools for the current page.
         "related_tools": _related_tools(tool_nav, url_name),

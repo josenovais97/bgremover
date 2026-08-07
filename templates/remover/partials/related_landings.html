@@ -1,0 +1,32 @@
+{% load i18n_extras %}
+{% comment %}
+The specific pages this tool is the hub for.
+
+Four clusters of landing pages — the ten compression pages, the five competitor
+comparisons, the three privacy pages and the three tool landings — linked only to
+each other. /compress/ holds around a hundred internal links and pointed at none
+of its ten children, so the pages answering the narrowest, highest-intent queries
+on the site ("compress image under 1mb", "open heic on windows") were the hardest
+ones to reach, for a crawler and for a visitor alike.
+
+`landing_links` comes from context_processors.seo, reversed out of each landing
+page's own `cta` (see views.LANDINGS_BY_PARENT) — so this renders nothing on a
+tool that is nobody's hub, and a landing page added later appears here without an
+edit. Modelled on the sibling block in landing.html, which is what /passport-photo/
+has always used to reach its country pages.
+{% endcomment %}
+{% if landing_links %}
+<section aria-labelledby="landing-links-title" class="max-w-3xl mx-auto text-center space-y-3">
+    <h2 id="landing-links-title" class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        {% t "Looking for something more specific?" %}
+    </h2>
+    <div class="flex flex-wrap justify-center gap-3">
+        {% for l in landing_links %}
+        <a href="{{ l.url }}" title="{{ l.tagline }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:border-primary hover:text-primaryText transition">
+            {% t l.nav %} <i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}

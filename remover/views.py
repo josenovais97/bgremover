@@ -981,6 +981,50 @@ COMPARISON_PATHS = [f"/{p['slug']}/" for p in COMPARISONS]
 TOOL_LANDING_PATHS = [f"/{p['slug']}/" for p in TOOL_LANDINGS]
 LANDING_PATHS = ["/remove-bg-alternative/"] + PRIVACY_PATHS + COMPRESS_LANDING_PATHS + COMPARISON_PATHS + TOOL_LANDING_PATHS
 GUIDE_PATHS = ["/guides/"] + [f"/guides/{g['slug']}/" for g in GUIDES]
+
+
+def _landings_by_parent():
+    """Reverse the landing pages' declared parent: tool url_name -> its pages.
+
+    Four clusters of landing pages linked only to each other and to nothing else
+    on the site. /compress/ carries about a hundred internal links and pointed at
+    none of its ten compression pages; /heic-to-jpg/ pointed at neither HEIC
+    landing page. The pages starved of internal links were the highest-intent,
+    least-competitive ones on the site ("compress image under 1mb", "open heic on
+    windows", "tinypng alternative"), and a visitor on the hub was never shown the
+    specific page that answered their question.
+
+    /passport-photo/ was the one cluster wired correctly, and it is the model
+    here. The mapping is derived from each page's own `cta` — which already names
+    the tool it sends people to — rather than hand-listed, so a landing page added
+    later is picked up without touching this.
+    """
+    parents = {}
+
+    def add(url_name, page):
+        parents.setdefault(url_name, []).append({
+            "url": f"/{page['slug']}/",
+            "nav": page["nav"],
+            "tagline": page.get("tagline", ""),
+        })
+
+    # The compression pages are children of /compress/ by construction; they have
+    # no cta of their own to read a parent from.
+    for page in COMPRESS_PAGES:
+        add("compress", page)
+    for page in PRIVACY_PAGES + TOOL_LANDINGS:
+        add(page["cta"]["url_name"], page)
+    for page in COMPARISONS:
+        add(page["cta_url_name"], page)
+    # /remove-bg-alternative/ predates the COMPARISONS collection and has its own
+    # view rather than a data dict, so there is no cta to read a parent from. It
+    # belongs to the same cluster as the other competitor pages.
+    add("index", {"slug": "remove-bg-alternative", "nav": "remove.bg alternative",
+                  "tagline": "Free, unlimited and nothing uploaded"})
+    return parents
+
+
+LANDINGS_BY_PARENT = _landings_by_parent()
 SITEMAP_PATHS = (
     ["/"] + TOOL_PATHS
     + [f"/remove-background/{c['slug']}/" for c in USE_CASES]
