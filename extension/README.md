@@ -115,7 +115,12 @@ Remove both before packaging.
 
 ```
 venv/bin/python scripts/package-extension.py   # -> dist/clearbg-extension-<version>.zip
+venv/bin/python scripts/make-store-assets.py   # -> dist/store/ (screenshots, tiles, icon)
 ```
+
+The listing images need the dev server running, since one of them is a real
+capture of the app doing a removal. `extension/STORE_LISTING.md` holds the
+paste-ready text for every field in the dashboard.
 
 The script refuses to package rather than let the store reject the upload a day
 later: it checks the 132-character description limit, that each declared icon is
