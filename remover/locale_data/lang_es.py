@@ -70,6 +70,195 @@ UI = {
     "Cut out any subject into a transparent PNG": "Recorta cualquier sujeto en un PNG transparente",
     "What are you removing the background from?": "¿A qué le vas a quitar el fondo?",
 
+    # --- /photo-filters/ DEEP -----------------------------------------------
+    "Using filters and adjustments well": "Usar bien los filtros y los ajustes",
+    "Adjustments versus looks": "Ajustes frente a estilos",
+    "Two different things get called filters. Adjustments — exposure, contrast, saturation, temperature — are corrections that move an image towards what it should have looked like. Looks are stylistic presets that move it somewhere deliberately different.":
+        "Se llaman filtros a dos cosas distintas. Los ajustes — exposición, contraste, saturación, temperatura — son correcciones que mueven una imagen hacia lo que debería haber parecido. Los estilos son preajustes estéticos que la llevan deliberadamente a otro sitio.",
+    "The order matters. Correct first, then style. A preset applied to an underexposed, colour-cast photo bakes those problems in and makes them harder to fix, because the preset has already redistributed the tones you needed to work with.":
+        "El orden importa. Corrige primero, estiliza después. Un preajuste aplicado a una foto subexpuesta y con desviación de color fija esos problemas y los vuelve más difíciles de arreglar, porque el preajuste ya ha redistribuido los tonos con los que necesitabas trabajar.",
+    "What each slider actually does": "Qué hace realmente cada control",
+    "Knowing the mechanism makes the results predictable:":
+        "Conocer el mecanismo hace que los resultados sean predecibles:",
+    "Exposure shifts every tone up or down together, and clips highlights or shadows once they hit the ends of the range.":
+        "La exposición desplaza todos los tonos hacia arriba o hacia abajo a la vez, y recorta las luces o las sombras cuando llegan a los extremos del rango.",
+    "Contrast pushes tones away from the middle — brights brighter, darks darker — which also increases apparent saturation as a side effect.":
+        "El contraste aleja los tonos del centro — los claros más claros, los oscuros más oscuros — lo que además aumenta la saturación aparente como efecto secundario.",
+    "Saturation scales all colour intensity uniformly, so already-vivid colours clip first. Vibrance boosts the muted ones more than the vivid ones, which is why it is gentler on skin.":
+        "La saturación escala uniformemente toda la intensidad de color, así que los colores ya vivos son los primeros en recortarse. La intensidad realza más los apagados que los vivos, y por eso es más suave con la piel.",
+    "Temperature and tint correct colour casts along the blue–orange and green–magenta axes respectively.":
+        "La temperatura y el matiz corrigen desviaciones de color a lo largo de los ejes azul–naranja y verde–magenta, respectivamente.",
+    "Sharpening increases contrast at edges. It adds no detail, and overdone it produces bright halos along high-contrast boundaries.":
+        "El enfoque aumenta el contraste en los bordes. No añade detalle, y en exceso produce halos claros a lo largo de los límites de alto contraste.",
+    "Where over-editing shows first": "Dónde se nota primero la edición excesiva",
+    "Skin tones and skies are the two places that give away a heavy hand. Skin turns orange with too much saturation or warmth and grey-green with too much correction the other way; the eye is extremely well calibrated for this and forgiving of almost nothing.":
+        "Los tonos de piel y los cielos son los dos sitios que delatan una mano pesada. La piel se vuelve naranja con demasiada saturación o calidez y verde grisácea con demasiada corrección en sentido contrario; el ojo está extremadamente bien calibrado para esto y no perdona casi nada.",
+    "Skies band. A gradient pushed hard runs out of intermediate values, and the smooth transition becomes visible steps — made worse by any subsequent lossy compression, which handles gradients badly to begin with.":
+        "Los cielos se bandean. Un degradado forzado se queda sin valores intermedios, y la transición suave se convierte en escalones visibles — agravados por cualquier compresión con pérdida posterior, que ya maneja mal los degradados.",
+    "Edit non-destructively where you can": "Edita de forma no destructiva cuando puedas",
+    "Every adjustment discards information: pushed highlights clip, crushed shadows merge, and neither comes back by moving the slider the other way. Doing it repeatedly on a saved JPEG compounds the loss with compression damage.":
+        "Cada ajuste descarta información: las luces forzadas se recortan, las sombras aplastadas se fusionan, y ninguna vuelve moviendo el control en sentido contrario. Hacerlo repetidamente sobre un JPEG guardado suma esa pérdida al daño de compresión.",
+    "Work from the highest-quality original each time rather than re-editing an export, and keep that original untouched. If you are producing several versions of one image, generate each from the master instead of editing one into the next.":
+        "Trabaja siempre desde el original de mayor calidad en vez de reeditar una exportación, y mantén ese original intacto. Si estás produciendo varias versiones de una imagen, genera cada una desde el original en vez de editar una dentro de la siguiente.",
+
+    # --- /remove-object/ DEEP -----------------------------------------------
+    "How content-aware fill decides what goes in the hole":
+        "Cómo decide el relleno según contenido qué va en el hueco",
+    "The fill is borrowed, not imagined": "El relleno es prestado, no imaginado",
+    "Erasing an object leaves a hole, and the fill is assembled from the pixels around it — colour, texture and gradient sampled from the boundary and propagated inward, coarse structure first and fine detail after.":
+        "Borrar un objeto deja un hueco, y el relleno se monta a partir de los píxeles de alrededor — color, textura y degradado muestreados en el límite y propagados hacia dentro, primero la estructura gruesa y después el detalle fino.",
+    "This is why the surroundings decide the result far more than the object does. A person standing against open sky disappears completely, because the algorithm has an enormous amount of consistent sky to borrow from. The same person in front of a bookshelf leaves a smear, because there is no way to infer which book was behind them.":
+        "Por eso el entorno decide el resultado mucho más que el propio objeto. Una persona contra cielo abierto desaparece por completo, porque el algoritmo tiene una cantidad enorme de cielo consistente de donde tomar. La misma persona delante de una estantería deja un borrón, porque no hay manera de inferir qué libro había detrás.",
+    "Brush generously, but not too generously": "Pinta con generosidad, pero sin exagerar",
+    "Under-brushing is the most common mistake. Leaving a rim of the object's edge pixels means those colours get treated as legitimate surroundings and propagated into the fill, producing a ghost in roughly the object's shape.":
+        "Pintar de menos es el error más común. Dejar un borde de los píxeles del contorno del objeto hace que esos colores se traten como entorno legítimo y se propaguen al relleno, produciendo un fantasma con aproximadamente la forma del objeto.",
+    "Cover the object plus a small margin, including its shadow and any reflection — a removed object whose shadow remains reads as obviously wrong. But an unnecessarily huge selection forces the algorithm to invent more area than it has evidence for, so the fill turns mushy. Slightly larger than the object is the target.":
+        "Cubre el objeto más un pequeño margen, incluida su sombra y cualquier reflejo — un objeto eliminado cuya sombra permanece se lee como obviamente erróneo. Pero una selección innecesariamente enorme obliga al algoritmo a inventar más área de la que tiene evidencia, y el relleno queda pastoso. Un poco más grande que el objeto es el objetivo.",
+    "Several small passes beat one large one": "Varias pasadas pequeñas superan a una grande",
+    "A big object over varied background is better removed in stages. Erase a portion, let the fill settle, then erase the next — each pass has more plausible surroundings to work from than one enormous selection would.":
+        "Un objeto grande sobre un fondo variado se elimina mejor por etapas. Borra una parte, deja que el relleno se asiente, luego borra la siguiente — cada pasada tiene un entorno más plausible del que partir que una única selección enorme.",
+    "It also lets you stop when it looks right rather than committing to a single result, and to work along a boundary — the edge of a wall, a horizon — instead of across it, which is where fills most visibly break down.":
+        "También te permite parar cuando queda bien en vez de comprometerte con un único resultado, y trabajar a lo largo de un límite — el borde de una pared, un horizonte — en vez de cruzarlo, que es donde los rellenos fallan de forma más visible.",
+    "Where this approach runs out": "Dónde se agota este enfoque",
+    "Straight lines that pass behind the object rarely reconnect convincingly: tiles, window frames, floorboards and railings all show a kink. Repeating patterns can drift out of phase. And anything that would require knowing what was genuinely hidden — a face behind a hand, text behind a sign — cannot be recovered by any amount of borrowing.":
+        "Las líneas rectas que pasan por detrás del objeto rara vez se reconectan de forma convincente: azulejos, marcos de ventana, tablas del suelo y barandillas muestran todos un desvío. Los patrones repetidos pueden desfasarse. Y cualquier cosa que exigiera saber qué estaba realmente oculto — una cara detrás de una mano, texto detrás de un cartel — no puede recuperarse por mucho que se tome prestado.",
+    "When the fill fails, cropping the object out of the frame is often the better edit, and an honest one.":
+        "Cuando el relleno falla, recortar el objeto fuera del encuadre suele ser la mejor edición, y una edición honesta.",
+
+    # --- /svg-to-png/ DEEP --------------------------------------------------
+    "Rasterising vector art without losing the edges": "Rasterizar arte vectorial sin perder los bordes",
+    "Why exports from other tools come out soft":
+        "Por qué las exportaciones de otras herramientas salen suaves",
+    "An SVG has a nominal size in its width, height or viewBox attributes, and many converters rasterise at that size and then scale the resulting bitmap to whatever you asked for. The vector is only consulted once, at the small size, and everything after that is a bitmap being stretched.":
+        "Un SVG tiene un tamaño nominal en sus atributos width, height o viewBox, y muchos conversores rasterizan a ese tamaño y luego escalan el bitmap resultante a lo que pediste. El vector solo se consulta una vez, en el tamaño pequeño, y todo lo que viene después es un bitmap estirado.",
+    "Rendering at the target size instead means the curves are evaluated at the resolution you actually want, so a 4x export contains four times the real detail rather than four times the pixels. The difference is most obvious on diagonal edges and small text, which is where stretched bitmaps go to pieces.":
+        "Renderizar directamente al tamaño de destino significa que las curvas se evalúan a la resolución que realmente quieres, así que una exportación a 4× contiene cuatro veces el detalle real y no cuatro veces los píxeles. La diferencia es más evidente en los bordes diagonales y el texto pequeño, que es donde los bitmaps estirados se deshacen.",
+    "Fonts are the usual surprise": "Las tipografías son la sorpresa habitual",
+    "SVG text is not shapes — it is characters plus a font name, resolved at render time. If the file names a font that is not available where it is rasterised, a fallback is substituted and the text reflows: different widths, different line breaks, sometimes overlapping other elements.":
+        "El texto de un SVG no son formas — son caracteres más un nombre de tipografía, resueltos en el momento de renderizar. Si el archivo nombra una tipografía que no está disponible donde se rasteriza, se sustituye por una alternativa y el texto refluye: anchos distintos, saltos de línea distintos, a veces solapando otros elementos.",
+    "The fix belongs in the SVG rather than in the converter. Converting text to outlines in your vector editor before export makes the file self-contained and immune to this, at the cost of no longer being editable as text. For a logo destined for export that is almost always the right trade.":
+        "El arreglo corresponde al SVG y no al conversor. Convertir el texto en contornos en tu editor vectorial antes de exportar hace el archivo autosuficiente e inmune a esto, a costa de dejar de ser editable como texto. Para un logotipo destinado a exportación, casi siempre es el intercambio correcto.",
+    "External references do not travel": "Las referencias externas no viajan",
+    "An SVG can reference images by URL rather than embedding them, and can pull in webfonts and stylesheets the same way. Rasterised in isolation, those references produce blank rectangles and fallback type, because nothing is fetched.":
+        "Un SVG puede referenciar imágenes por URL en vez de incrustarlas, y puede traer webfonts y hojas de estilo del mismo modo. Rasterizado en aislamiento, esas referencias producen rectángulos vacíos y tipografías alternativas, porque no se descarga nada.",
+    "Embedding raster content as a data URI inside the SVG makes it self-contained. It grows the file, but the file then renders identically everywhere, which is the entire point of handing someone a vector.":
+        "Incrustar contenido ráster como data URI dentro del SVG lo hace autosuficiente. Aumenta el archivo, pero entonces el archivo se renderiza igual en todas partes, que es precisamente el sentido de entregarle un vector a alguien.",
+    "Transparency and what JPG does to it": "La transparencia y lo que el JPG le hace",
+    "PNG output keeps the alpha channel, so an icon exported at any size drops onto any background cleanly. That is normally what you want from vector art.":
+        "La salida en PNG conserva el canal alfa, así que un icono exportado a cualquier tamaño encaja limpiamente sobre cualquier fondo. Eso es normalmente lo que quieres del arte vectorial.",
+    "Exporting the same artwork as JPG flattens transparency onto white, and the result is a white box wherever the artwork was transparent. If the destination cannot take PNG, fill the background with the colour it will actually sit on rather than accepting the default.":
+        "Exportar la misma obra en JPG aplana la transparencia sobre blanco, y el resultado es una caja blanca donde el arte era transparente. Si el destino no acepta PNG, rellena el fondo con el color sobre el que realmente va a asentarse en vez de aceptar el valor por defecto.",
+
+    # --- /image-to-text/ DEEP -----------------------------------------------
+    "Getting a clean read out of an image": "Conseguir una lectura limpia de una imagen",
+    "Why the same document reads twice differently": "Por qué el mismo documento se lee de dos maneras",
+    "Recognition begins by deciding, pixel by pixel, what is ink and what is paper. That decision is made from local contrast, so anything that changes brightness across the page changes the answer — a shadow from your hand, a window on one side, the curve of a book's spine.":
+        "El reconocimiento empieza decidiendo, píxel a píxel, qué es tinta y qué es papel. Esa decisión se toma a partir del contraste local, así que todo lo que cambie el brillo a lo largo de la página cambia la respuesta — la sombra de tu mano, una ventana a un lado, la curvatura del lomo de un libro.",
+    "It is why a photo that looks perfectly legible to you can return nonsense from one half of the page and near-perfect text from the other. The half that failed was thresholded to solid black or solid white before any character was examined.":
+        "Por eso una foto que a ti te parece perfectamente legible puede devolver disparates de una mitad de la página y texto casi perfecto de la otra. La mitad que falló se convirtió a negro sólido o blanco sólido antes de examinar un solo carácter.",
+    "The resolution floor": "El mínimo de resolución",
+    "Accuracy is governed by how many pixels tall a lowercase letter is, not by the megapixels of the image. Around 20-30 pixels is comfortable. Below about 10, the shapes that distinguish similar characters — the gap in an 'e', the join on an 'a' — simply are not present in the data, and no amount of processing recovers them.":
+        "La precisión la gobierna la altura en píxeles de una letra minúscula, no los megapíxeles de la imagen. Unos 20-30 píxeles resulta cómodo. Por debajo de unos 10, las formas que distinguen caracteres parecidos — la abertura de una «e», la unión de una «a» — simplemente no están en los datos, y ningún procesamiento las recupera.",
+    "The practical consequence is that zooming in before you capture beats every post-processing step. A screenshot of a zoomed page outperforms a full-page screenshot scaled up afterwards, because one has the pixels and the other is inventing them.":
+        "La consecuencia práctica es que acercarse antes de capturar supera cualquier paso de posprocesado. Una captura de una página ampliada supera a una captura de la página completa escalada después, porque una tiene los píxeles y la otra los está inventando.",
+    "Choosing the language actually matters": "Elegir el idioma importa de verdad",
+    "The engine resolves ambiguous shapes against a model of the language you selected, so the wrong selection does not merely fail to help — it produces confident, wrong, real words. Portuguese text read as English comes back as English-looking nonsense, and accented characters tend to vanish because the model has no expectation of them.":
+        "El motor resuelve las formas ambiguas contra un modelo del idioma que seleccionaste, así que una elección equivocada no se limita a no ayudar — produce palabras reales, erróneas y seguras de sí. Un texto en portugués leído como inglés vuelve como disparates con aspecto inglés, y los caracteres acentuados tienden a desaparecer porque el modelo no los espera.",
+    "If a document mixes languages, pick the dominant one rather than loading several. Multiple packs dilute each model and usually cost more accuracy than the mixed content does.":
+        "Si un documento mezcla idiomas, elige el dominante en vez de cargar varios. Varios paquetes diluyen cada modelo y normalmente cuestan más precisión que el propio contenido mezclado.",
+    "What to fix before recognising": "Qué corregir antes de reconocer",
+    "Almost every improvement is upstream of the recognition step.":
+        "Casi todas las mejoras están antes del paso de reconocimiento.",
+    "Crop to the text block, so layout analysis has nothing else to interpret.":
+        "Recorta hasta el bloque de texto, para que el análisis de diseño no tenga nada más que interpretar.",
+    "Straighten the page — small skew is corrected automatically, large skew defeats line detection.":
+        "Endereza la página — una inclinación pequeña se corrige automáticamente, una grande derrota la detección de líneas.",
+    "Even out the lighting before raising contrast; contrast on an uneven image amplifies the problem.":
+        "Uniforma la iluminación antes de subir el contraste; el contraste en una imagen irregular amplifica el problema.",
+    "Do not sharpen heavily — the haloes it creates get read as ink and merge adjacent characters.":
+        "No enfoques en exceso — los halos que crea se leen como tinta y fusionan caracteres contiguos.",
+
+    # --- /pdf-to-image/ DEEP ------------------------------------------------
+    "Turning PDF pages into usable images": "Convertir páginas de PDF en imágenes utilizables",
+    "Rendering versus extracting": "Renderizar frente a extraer",
+    "There are two different operations people call 'PDF to image'. Extracting pulls out photographs that were embedded in the file, at whatever resolution they were embedded. Rendering draws the page — text, vectors, images and all — into a new bitmap at a size you choose.":
+        "Hay dos operaciones distintas a las que la gente llama «PDF a imagen». Extraer saca las fotografías que se incrustaron en el archivo, a la resolución con la que se incrustaron. Renderizar dibuja la página — texto, vectores, imágenes, todo — en un nuevo bitmap del tamaño que elijas.",
+    "This tool renders. That is what you want for anything containing text or diagrams, because the characters are drawn from their vector outlines at the output size and stay crisp. Extraction would give you only the photos and none of the layout.":
+        "Esta herramienta renderiza. Es lo que quieres para cualquier cosa con texto o diagramas, porque los caracteres se dibujan desde sus contornos vectoriales al tamaño de salida y quedan nítidos. La extracción te daría solo las fotos y nada del diseño.",
+    "Choosing a scale that is worth the megabytes": "Elegir una escala que justifique los megabytes",
+    "A PDF page has a nominal size in points, and rendering at 1x produces roughly 72 pixels per inch — fine for a thumbnail and too soft to read comfortably. 2x lands near 150 DPI, which is the sensible default for screen reading and the point where body text becomes properly legible.":
+        "Una página de PDF tiene un tamaño nominal en puntos, y renderizar a 1× produce unos 72 píxeles por pulgada — suficiente para una miniatura y demasiado suave para leer con comodidad. 2× queda cerca de 150 DPI, que es el valor por defecto sensato para leer en pantalla y el punto en que el texto corrido se vuelve bien legible.",
+    "4x approaches 300 DPI and is worth it only when the result will be printed or when you intend to run recognition over the output. The file size scales with the square of the factor, so a 4x render of a twenty-page document is a genuinely large download for output most people will view at a quarter of that size.":
+        "4× se acerca a los 300 DPI y solo vale la pena cuando el resultado se va a imprimir o cuando piensas pasarle reconocimiento de texto. El tamaño del archivo escala con el cuadrado del factor, así que renderizar a 4× un documento de veinte páginas es una descarga realmente grande para un resultado que la mayoría verá a una cuarta parte de ese tamaño.",
+    "Why a scanned PDF behaves differently": "Por qué un PDF escaneado se comporta de otra forma",
+    "A PDF produced by a scanner has no text in it at all — each page is one large photograph. Rendering such a page above the resolution of the original scan cannot add detail; it enlarges the scan and inflates the file.":
+        "Un PDF producido por un escáner no tiene texto alguno — cada página es una gran fotografía. Renderizar una página así por encima de la resolución del escaneo original no puede añadir detalle; amplía el escaneo e infla el archivo.",
+    "You can usually tell which kind you have by trying to select text in a PDF viewer. If nothing highlights, the page is an image, the useful export is JPG rather than PNG, and the natural next step is text recognition rather than a higher scale factor.":
+        "Normalmente puedes saber qué tipo tienes intentando seleccionar texto en un lector de PDF. Si no se resalta nada, la página es una imagen, la exportación útil es JPG y no PNG, y el paso natural siguiente es el reconocimiento de texto y no un factor de escala mayor.",
+    "PNG or JPG for the pages": "PNG o JPG para las páginas",
+    "Pages that are mostly text, tables or line diagrams should be PNG: the content is hard edges on flat white, which is exactly where lossless compression is small and where JPEG's ringing artefacts show up around every character.":
+        "Las páginas que son sobre todo texto, tablas o diagramas de líneas deben ser PNG: el contenido son bordes duros sobre blanco liso, que es exactamente donde la compresión sin pérdida ocupa poco y donde los artefactos de anillo del JPEG aparecen alrededor de cada carácter.",
+    "Pages that are mostly photographs should be JPG, where PNG would be several times larger for no visible gain. A mixed document is usually better off as PNG, because damaged text is more noticeable than a slightly larger file.":
+        "Las páginas que son sobre todo fotografías deben ser JPG, donde el PNG sería varias veces mayor sin ganancia visible. Un documento mixto suele quedar mejor en PNG, porque el texto dañado se nota más que un archivo algo más grande.",
+
+    # --- /heic-to-jpg/ DEEP -------------------------------------------------
+    "Converting iPhone photos without wasting quality": "Convertir fotos del iPhone sin desperdiciar calidad",
+    "What you give up in the conversion": "Lo que pierdes en la conversión",
+    "HEIC stores 10 bits per colour channel; JPEG stores 8. That difference is invisible in most photographs and shows up as faint banding in large smooth gradients — a clear sky at dusk is the classic case. It cannot be recovered afterwards.":
+        "El HEIC guarda 10 bits por canal de color; el JPEG guarda 8. Esa diferencia es invisible en la mayoría de las fotografías y aparece como un leve bandeado en grandes degradados suaves — un cielo despejado al atardecer es el caso clásico. No se puede recuperar después.",
+    "The container also carries things a flat image format has nowhere to put: Live Photo motion, the depth map that portrait blur relies on, and the edit history that makes Revert possible on the phone. Converting produces a finished picture and discards the rest.":
+        "El contenedor también lleva cosas que un formato de imagen plano no tiene dónde guardar: el movimiento de las Live Photos, el mapa de profundidad del que depende el desenfoque de retrato, y el historial de edición que hace posible el Revertir en el móvil. Convertir produce una imagen terminada y descarta el resto.",
+    "Convert once, from the original": "Convierte una vez, desde el original",
+    "JPEG is lossy, so every encode discards a little more. Converting an already-converted file compounds that for no reason. Go back to the HEIC each time rather than re-exporting a JPG you made earlier.":
+        "El JPEG tiene pérdida, así que cada codificación descarta un poco más. Convertir un archivo ya convertido agrava eso sin motivo. Vuelve al HEIC cada vez, en lugar de reexportar un JPG que ya habías hecho.",
+    "Keep the originals until you have checked the output. Deleting the HEIC masters is the only irreversible step in this process, and it is the one people do first.":
+        "Conserva los originales hasta haber revisado el resultado. Borrar los HEIC originales es el único paso irreversible de este proceso, y es el que la gente hace primero.",
+    "JPG or PNG out": "Salir en JPG o PNG",
+    "Pick JPG when the destination is an upload form, an email or long-term storage — the size saving is the entire reason the format exists and the quality cost at a high setting is not visible.":
+        "Elige JPG cuando el destino es un formulario de subida, un correo o almacenamiento a largo plazo — el ahorro de tamaño es la razón de existir del formato y el coste en calidad con un ajuste alto no se ve.",
+    "Pick PNG when the photo is going into further editing. It is lossless, so the conversion adds no generational damage, at the cost of a file several times larger than the HEIC you started with.":
+        "Elige PNG cuando la foto va a seguir editándose. Es sin pérdida, así que la conversión no añade daño generacional, a cambio de un archivo varias veces mayor que el HEIC del que partiste.",
+    "Order of operations for a camera roll": "Orden de operaciones para un carrete",
+    "A holiday folder is the real case, and a few habits keep it clean.":
+        "Una carpeta de vacaciones es el caso real, y unos pocos hábitos la mantienen limpia.",
+    "Convert the whole batch in one pass so the generational loss happens once.":
+        "Convierte todo el lote en una sola pasada, para que la pérdida generacional ocurra una vez.",
+    "Convert first and compress second, as separate decisions — a converter that silently shrinks to hit a size target has chosen quality for you.":
+        "Convierte primero y comprime después, como decisiones separadas — un conversor que encoge en silencio para cumplir un tamaño ya ha elegido la calidad por ti.",
+    "Strip metadata at the same time if the photos are going somewhere public; every file is being rewritten anyway.":
+        "Elimina los metadatos al mismo tiempo si las fotos van a un sitio público; todos los archivos se están reescribiendo de todos modos.",
+    "Check a few outputs before deleting anything.":
+        "Revisa algunos resultados antes de borrar nada.",
+
+    # --- /upscale/ DEEP -----------------------------------------------------
+    "What enlarging an image can and cannot do": "Lo que ampliar una imagen puede y no puede hacer",
+    "Resampling is interpolation, not invention": "El remuestreo es interpolación, no invención",
+    "Enlarging computes new pixels from the ones around them. A good filter — Lanczos, here — weights a neighbourhood of source pixels to estimate each new one, which keeps edges clean where a naive method would produce stair-stepping or blur.":
+        "Ampliar calcula nuevos píxeles a partir de los que están alrededor. Un buen filtro — aquí, Lanczos — pondera un vecindario de píxeles de origen para estimar cada píxel nuevo, lo que mantiene los bordes limpios donde un método ingenuo produciría escalonado o desenfoque.",
+    "What it cannot do is add detail that was never captured. If a face occupies forty pixels in the original, no filter recovers the eyelashes, because that information does not exist in the file. Enlargement makes an image bigger and, done well, keeps it looking deliberate rather than stretched.":
+        "Lo que no puede hacer es añadir detalle que nunca se capturó. Si una cara ocupa cuarenta píxeles en el original, ningún filtro recupera las pestañas, porque esa información no existe en el archivo. La ampliación hace la imagen más grande y, bien hecha, la mantiene con aspecto intencionado en vez de estirado.",
+    "Why this is not an AI upscaler, on purpose": "Por qué esto no es un ampliador con IA, a propósito",
+    "Model-based super-resolution genuinely can hallucinate plausible detail, and on the right image it is impressive. In a browser tab it is also slow enough to lock the page for tens of seconds on a large photo, and memory-hungry enough to crash a phone.":
+        "La superresolución basada en modelos puede realmente alucinar detalle plausible, y en la imagen adecuada resulta impresionante. En una pestaña del navegador es también lo bastante lenta para bloquear la página durante decenas de segundos en una foto grande, y lo bastante ávida de memoria para tumbar un móvil.",
+    "There is a second, less discussed cost: an AI upscaler invents detail, and invented detail is wrong detail. On a document, a licence plate or a face, that is a liability rather than a feature. A resampled enlargement is honest about what it knows.":
+        "Hay un segundo coste, menos comentado: un ampliador con IA inventa detalle, y el detalle inventado es detalle equivocado. En un documento, una matrícula o una cara, eso es un riesgo y no una ventaja. Una ampliación por remuestreo es honesta sobre lo que sabe.",
+    "Sharpening after, not before": "Enfocar después, no antes",
+    "Enlargement softens edges slightly no matter how good the filter is, so a gentle unsharp pass afterwards restores the appearance of crispness. Applied before enlargement, the same sharpening gets magnified along with everything else and turns into visible haloes.":
+        "La ampliación suaviza ligeramente los bordes por bueno que sea el filtro, así que una pasada suave de enfoque después devuelve la apariencia de nitidez. Aplicado antes de ampliar, ese mismo enfoque se magnifica junto con todo lo demás y se convierte en halos visibles.",
+    "Overdoing it is the common mistake. Sharpening amplifies noise and JPEG artefacts as readily as detail, so an already-compressed source will show its blocking pattern long before it looks sharp.":
+        "Pasarse es el error común. El enfoque amplifica el ruido y los artefactos JPEG con la misma facilidad que el detalle, así que un origen ya comprimido mostrará su patrón de bloques mucho antes de parecer nítido.",
+    "When enlargement is the wrong answer": "Cuándo la ampliación es la respuesta equivocada",
+    "If you need a larger image for print and have access to the original file, go back to it. A camera original or a vector source beats any enlargement of a downscaled copy, and the difference is not subtle.":
+        "Si necesitas una imagen más grande para imprimir y tienes acceso al archivo original, vuelve a él. Un original de cámara o una fuente vectorial supera cualquier ampliación de una copia reducida, y la diferencia no es sutil.",
+    "Logos and icons: find the SVG and rasterise it instead — infinitely better than any enlargement.":
+        "Logotipos e iconos: busca el SVG y rasterízalo — infinitamente mejor que cualquier ampliación.",
+    "Screenshots of text: retake at a higher zoom rather than enlarging.":
+        "Capturas de pantalla de texto: vuelve a capturar con más zoom en vez de ampliar.",
+    "Heavily compressed images: compress artefacts enlarge too, and sharpening makes them worse.":
+        "Imágenes muy comprimidas: los artefactos de compresión también se amplían, y el enfoque los empeora.",
+    "Print: 2x from a good original is usually plenty; 4x from a thumbnail will not rescue it.":
+        "Impresión: 2× desde un buen original suele bastar; 4× desde una miniatura no la salva.",
+
     # --- /resize-image/ DEEP ------------------------------------------------
     "Resizing well": "Redimensionar bien",
     "Down is safe, up is not": "Reducir es seguro, ampliar no",
