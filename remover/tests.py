@@ -1412,6 +1412,22 @@ class TranslationCoverageTests(SimpleTestCase):
                 )
 
 
+def untranslated_tool_path():
+    """A tool path that is genuinely not translated yet.
+
+    Derived rather than hard-coded. Several tests need an example of a page that
+    still serves English under a language prefix; they used to name /crop/, and
+    translating that page turned six of them red for the right reason but with a
+    thoroughly misleading message. Reading the real gate means the example can
+    never go stale, whichever pages get translated next.
+    """
+    from remover.views import TOOL_PATHS, _CORE_TRANSLATED
+
+    remaining = [p for p in TOOL_PATHS if p not in _CORE_TRANSLATED]
+    assert remaining, "every tool page is translated — these tests need a new subject"
+    return remaining[0]
+
+
 class HreflangGateTests(SimpleTestCase):
     """Only genuinely translated pages may advertise an alternate."""
 
@@ -1424,7 +1440,7 @@ class HreflangGateTests(SimpleTestCase):
                     self.assertContains(response, f'rel="alternate" hreflang="{lang}"')
 
     def test_untranslated_page_declares_no_alternates(self):
-        paths = ["/crop/", "/about/"]
+        paths = [untranslated_tool_path(), "/about/"]
         paths += [f"/{lang}{p}" for lang in LANGUAGES for p in paths]
         for path in paths:
             with self.subTest(path=path):
@@ -1432,13 +1448,15 @@ class HreflangGateTests(SimpleTestCase):
                 self.assertNotContains(response, 'rel="alternate" hreflang')
 
     def test_untranslated_page_canonicalises_to_its_english_twin(self):
-        # /pt/crop/ serves the English page, so pointing it at itself would put
-        # two URLs with the same content in the index competing for one query.
+        # /pt/<untranslated>/ serves the English page, so pointing it at itself
+        # would put two URLs with the same content in the index competing for one
+        # query.
+        path = untranslated_tool_path()
         for lang in LANGUAGES:
             with self.subTest(lang=lang):
-                response = self.client.get(f"/{lang}/crop/").content.decode()
+                response = self.client.get(f"/{lang}{path}").content.decode()
                 canonical = re.search(r'rel="canonical" href="([^"]+)"', response).group(1)
-                self.assertTrue(canonical.endswith("/crop/"))
+                self.assertTrue(canonical.endswith(path))
                 self.assertNotIn(f"/{lang}/", canonical)
 
     def test_translated_page_canonicalises_to_itself(self):
@@ -1450,10 +1468,10 @@ class HreflangGateTests(SimpleTestCase):
 
     def test_language_switcher_survives_on_untranslated_pages(self):
         # The switcher is a UX affordance, not an SEO claim: a Spanish visitor
-        # who lands on /crop/ must still be able to reach the translated part of
-        # the site. It used to share the hreflang flag, so gating that would have
-        # silently removed the switcher from most of the site.
-        for path in ("/crop/", "/about/"):
+        # who lands on an untranslated tool must still be able to reach the
+        # translated part of the site. It used to share the hreflang flag, so
+        # gating that would have silently removed the switcher from most of the site.
+        for path in (untranslated_tool_path(), "/about/"):
             with self.subTest(path=path):
                 response = self.client.get(path)
                 for lang, label in LANGUAGE_NAMES.items():
@@ -1478,7 +1496,7 @@ class RobotsMetaTests(SimpleTestCase):
 
     def test_untranslated_page_is_noindex(self):
         for lang in LANGUAGES:
-            for path in ("/crop/", "/qr-code-generator/", "/about/"):
+            for path in (untranslated_tool_path(), "/qr-code-generator/", "/about/"):
                 with self.subTest(path=f"/{lang}{path}"):
                     self.assertEqual(self._robots(f"/{lang}{path}"), "noindex, follow")
 
@@ -1499,7 +1517,7 @@ class RobotsMetaTests(SimpleTestCase):
         # Submitting a URL we tell Google not to index is a contradictory signal.
         sitemap = self.client.get(reverse("remover:sitemap")).content.decode()
         for lang in LANGUAGES:
-            for path in ("/crop/", "/qr-code-generator/"):
+            for path in (untranslated_tool_path(), "/qr-code-generator/"):
                 with self.subTest(path=f"/{lang}{path}"):
                     self.assertNotIn(
                         f"<loc>{settings.SITE_URL.rstrip('/')}/{lang}{path}</loc>", sitemap
@@ -1966,8 +1984,29 @@ class NewToolSpecificsTests(SimpleTestCase):
                 )
 
     def test_untitled_pages_fall_back_to_the_default_og_image(self):
-        body = self.client.get(reverse("remover:crop")).content.decode()
+        # Every *tool* now has a generated card (scripts/make-og-cards.py), so the
+        # example here has to be a page OG_IMAGES cannot cover: it is keyed by tool
+        # url_name, and a guide is not a tool. This still exercises the fallback,
+        # which the guides, use-case and info pages all rely on.
+        body = self.client.get(
+            reverse("remover:guide", args=["image-formats-explained"])
+        ).content.decode()
         self.assertIn("img/og-image.png", body)
+
+    def test_every_tool_has_its_own_og_card(self):
+        # The other half of the same contract: a tool falling back to the generic
+        # card shares a link that says only "ClearBG" and nothing about the tool.
+        from remover.context_processors import OG_IMAGES
+
+        for item in TOOL_NAV:
+            if item["name"] == "index":
+                continue  # keeps the purpose-built site-wide card on purpose
+            with self.subTest(tool=item["name"]):
+                self.assertIn(item["name"], OG_IMAGES)
+                self.assertTrue(
+                    (settings.BASE_DIR / "static" / OG_IMAGES[item["name"]]).exists(),
+                    f"{item['name']} is registered in OG_IMAGES but its file is missing",
+                )
 
     def test_stale_twitter_title_is_gone(self):
         # It used to hard-code a generic title on every page; Twitter now falls

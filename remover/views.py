@@ -1022,6 +1022,10 @@ _CORE_TRANSLATED = frozenset(
     # pages on the site, and the ones whose queries are least competitive in
     # Spanish and Portuguese.
     + ["/resize-image/", "/exif-remover/", "/convert/", "/compress/"]
+    # 1.12 adds the cropper — the highest-volume generic term of the untranslated
+    # set, and the tool most often reached from a search rather than from another
+    # page here.
+    + ["/crop/"]
 )
 
 TRANSLATED_PATHS = {lang: _CORE_TRANSLATED for lang in LANGUAGES}
@@ -1280,8 +1284,8 @@ def instagram(request):
 def crop(request):
     """Render the standalone client-side crop tool (no background removal)."""
     return render(request, "remover/crop.html", {
-        "faqs": CROP_FAQS,
-        "faq_jsonld": faq_jsonld(CROP_FAQS),
+        "faqs": localize_faqs(CROP_FAQS),
+        "faq_jsonld": faq_jsonld(localize_faqs(CROP_FAQS)),
     })
 
 

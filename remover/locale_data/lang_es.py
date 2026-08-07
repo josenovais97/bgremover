@@ -68,6 +68,61 @@ UI = {
     "Every tool runs the same way the background remover does — on your device, free, with nothing uploaded.":
         "Todas las herramientas funcionan igual que el quitafondos — en tu dispositivo, gratis y sin subir nada.",
     "Cut out any subject into a transparent PNG": "Recorta cualquier sujeto en un PNG transparente",
+    "What are you removing the background from?": "¿A qué le vas a quitar el fondo?",
+
+    # --- /crop/ -------------------------------------------------------------
+    "Free Image Crop Tool — Circle, Square & Custom Ratio":
+        "Recortar Imágenes Gratis — Círculo, Cuadrado y Proporción Personalizada",
+    "Free Image Crop Tool — Circle, Square, Custom Ratio & Rotate":
+        "Recortar Imágenes Gratis — Círculo, Cuadrado, Proporción Personalizada y Rotar",
+    "Crop images free in your browser — square, circle, rounded, 4:5, 16:9, 9:16 or any custom ratio, with rotate, flip and zoom. Nothing leaves your device.":
+        "Recorta imágenes gratis en tu navegador — cuadrado, círculo, esquinas redondeadas, 4:5, 16:9, 9:16 o cualquier proporción personalizada, con rotar, voltear y zoom. Nada sale de tu dispositivo.",
+    "Crops locally — nothing is uploaded": "Recorta en local — no se sube nada",
+    "Crop an": "Recortar una",
+    "Square, circle, rounded or any custom ratio — with rotate, flip, zoom and drag. No background removal needed. Export a transparent PNG or a JPG, 100% in your browser.":
+        "Cuadrado, círculo, esquinas redondeadas o cualquier proporción personalizada — con rotar, voltear, zoom y arrastrar. Sin necesidad de quitar el fondo. Exporta un PNG transparente o un JPG, 100% en tu navegador.",
+    "Drop a photo to crop": "Suelta una foto para recortar",
+    "or click to browse — JPG, PNG or WEBP · pick several to crop a batch":
+        "o haz clic para buscar — JPG, PNG o WEBP · elige varias para recortar en lote",
+    "Drag the photo to reposition · scroll or use the slider to zoom":
+        "Arrastra la foto para recolocarla · usa la rueda o el control para el zoom",
+    "Shape": "Forma",
+    "Rectangle": "Rectángulo",
+    "Rounded": "Redondeado",
+    "Circle": "Círculo",
+    "Ratio": "Proporción",
+    "Custom": "Personalizada",
+    "ratio": "proporción",
+    "Rotate & flip": "Rotar y voltear",
+    "Left": "Izquierda",
+    "Right": "Derecha",
+    "Flip H": "Voltear H",
+    "Flip V": "Voltear V",
+    "Straighten": "Enderezar",
+    "Export as": "Exportar como",
+    "Next-gen, smallest files (Chromium)": "Nueva generación, archivos más pequeños (Chromium)",
+    "PNG keeps transparent corners on rounded/circle crops.":
+        "El PNG conserva las esquinas transparentes en recortes redondeados y circulares.",
+    "Download crop": "Descargar recorte",
+    "Crop any image, right in your browser": "Recorta cualquier imagen, en tu propio navegador",
+    "Circle & rounded": "Círculo y redondeado",
+    "Perfect avatars with transparent corners, saved as PNG.":
+        "Avatares perfectos con esquinas transparentes, guardados en PNG.",
+    "Any ratio": "Cualquier proporción",
+    "1:1, 4:5, 16:9, 9:16 or your own custom width : height.":
+        "1:1, 4:5, 16:9, 9:16 o tu propio ancho : alto.",
+    "Private": "Privado",
+    "No upload and no background removal — the crop runs on your device.":
+        "Sin subidas y sin quitar el fondo — el recorte se ejecuta en tu dispositivo.",
+    "Upload a photo, pick a shape and ratio, rotate or flip, then drag and zoom to frame it. Download a full-resolution crop as a transparent PNG or a JPG — nothing ever leaves your browser.":
+        "Elige una foto, define la forma y la proporción, rota o voltea, luego arrastra y haz zoom para encuadrar. Descarga el recorte a resolución completa como PNG transparente o JPG — nada sale de tu navegador.",
+    "Each of these has its own guide, with the sizes and rules that apply to it.":
+        "Cada uno tiene su propia guía, con los tamaños y las reglas que le corresponden.",
+    "Or read the": "O lee las",
+    "guides": "guías",
+    "— explanations of how image formats, compression, metadata and cut-outs actually work.":
+        "— explicaciones de cómo funcionan realmente los formatos de imagen, la compresión, los metadatos y los recortes.",
+    "Instagram": "Instagram",
     "Swap between PNG, JPG, WEBP and AVIF": "Cambia entre PNG, JPG, WEBP y AVIF",
     "Shrink file size without visible quality loss": "Reduce el peso sin pérdida visible de calidad",
     "Scale to exact pixel dimensions": "Ajusta a medidas exactas en píxeles",
@@ -1121,6 +1176,26 @@ USE_CASES = {
 # Each value is a (question, answer) pair — the question is translated too, so
 # the accordion and the FAQPage JSON-LD both speak Spanish.
 FAQS = {
+    # --- /crop/ -------------------------------------------------------------
+    "Is this image cropper free and private?":
+        ("¿Este recortador de imágenes es gratis y privado?",
+         "Sí — es totalmente gratuito, sin marca de agua ni registro, y el recorte se hace por completo en tu navegador, así que tu foto nunca se sube."),
+    "How do I crop an image to a circle?":
+        ("¿Cómo recorto una imagen en círculo?",
+         "Elige la forma circular y la herramienta enmascara tu foto en un círculo perfecto, con las esquinas transparentes. Expórtala en PNG para conservar la transparencia — en JPG las esquinas saldrán blancas, porque el formato JPG no admite transparencia."),
+    "Can I crop to a specific aspect ratio?":
+        ("¿Puedo recortar a una proporción concreta?",
+         "Sí. Elige una proporción predefinida como 1:1, 4:5, 16:9 o 9:16, o introduce tu propio ancho:alto. La caja de recorte queda fijada a esa proporción mientras arrastras y haces zoom, de modo que el encuadre nunca la rompe."),
+    "Does cropping reduce the image resolution?":
+        ("¿El recorte reduce la resolución de la imagen?",
+         "Nunca se amplía nada. El archivo se exporta a la resolución nativa de la región recortada, así que conservas todos los píxeles dentro del recorte con la calidad original."),
+    "Can I rotate or flip while cropping?":
+        ("¿Puedo rotar o voltear mientras recorto?",
+         "Sí — rota en pasos de 90° y voltea en horizontal o en vertical antes de exportar, para que una foto tomada de lado salga bien orientada."),
+    "What format should I export a cropped image as?":
+        ("¿En qué formato debo exportar una imagen recortada?",
+         "Usa PNG en recortes circulares o redondeados, para preservar las esquinas transparentes. Usa JPG para un archivo más pequeño cuando no necesites transparencia, o AVIF para los archivos más pequeños en navegadores Chromium."),
+
     # Home — trust questions ("what's the catch", the tech, the device)
     "What's the catch — how can it be free and unlimited?":
         ("¿Dónde está la trampa? ¿Cómo puede ser gratis e ilimitado?",
