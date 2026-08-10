@@ -53,6 +53,16 @@ const MODEL_CDN = 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/
 const SUB_MIN = 0.5;
 const SUB_MAX = 3;
 
+// WhatsApp's own pack rules, enforced in the UI so a user never assembles 2 or 31.
+const PACK_MIN = 3;
+const PACK_MAX = 30;
+
+const EMOJI = ['😂', '❤️', '🔥', '👍', '😍', '😎', '💀', '✨', '🎉',
+               '💯', '👀', '🙏', '🤣', '😭', '🤔', '⭐', '💖', '👑'];
+
+// The platform emoji font, in the order the platforms actually ship them.
+const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+
 const App = {
   cutout: null,
   outline: { on: true, color: '#ffffff', width: 3.5 }, // width = % of the 512 frame
@@ -62,6 +72,12 @@ const App = {
   sub: { scale: 1, dx: 0, dy: 0, rot: 0, flip: false },
   text: { content: '', font: 'Anton', color: '#ffffff', size: 12, x: 0.5, y: 0.84,
           pill: false, pillColor: '#000000' },
+  // Emoji stamped on top of the cut-out. Fractions of the frame again, so one
+  // list paints the preview and the export identically.
+  decos: [],      // {id, char, x, y, size, rot}
+  selected: null, // id of the deco being edited, or null
+  pack: [],       // {id, blob, url} — assembled stickers, in memory only
+  _nextId: 1,
   _textBox: null,
 
   init() {
@@ -121,6 +137,30 @@ const App = {
     $('#stk-text-pill').addEventListener('change', (e) => { this.text.pill = e.target.checked; this.render(); });
     $('#stk-pill-color').addEventListener('input', (e) => { this.text.pillColor = e.target.value; render(); });
 
+    // Decorations: the palette is built from EMOJI rather than written out in the
+    // template, so adding one is a single-array edit.
+    const palette = $('#stk-emoji');
+    EMOJI.forEach((ch) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+      b.textContent = ch;
+      b.setAttribute('aria-label', `Add ${ch}`);
+      b.addEventListener('click', () => this.addDeco(ch));
+      palette.appendChild(b);
+    });
+    $('#stk-deco-size').addEventListener('input', (e) => this.updateDeco('size', +e.target.value));
+    $('#stk-deco-rot').addEventListener('input', (e) => this.updateDeco('rot', +e.target.value));
+    $('#stk-deco-del').addEventListener('click', () => {
+      this.decos = this.decos.filter((d) => d.id !== this.selected);
+      this.selectDeco(null);
+    });
+
+    // Pack.
+    $('#stk-pack-add').addEventListener('click', () => this.addToPack());
+    $('#stk-pack-dl').addEventListener('click', () => this.downloadPack());
+    this.syncPack();
+
     /* Pointer gestures. Grabbing the caption drags the caption; grabbing anywhere
        else moves the subject — which is what a user reaches for first, and there
        is nothing else on the canvas to hit. Two fingers pinch-zoom. */
@@ -134,7 +174,17 @@ const App = {
         this.drag = null;
         return;
       }
-      this.drag = { x: e.clientX, y: e.clientY, target: this.hitText(e) ? 'text' : 'subject' };
+      // Topmost first: a decoration you can see above the caption is the one you
+      // meant to grab. Clicking bare canvas deselects and falls through to the
+      // subject, so there is no mode to get stuck in.
+      const deco = this.hitDeco(e);
+      if (deco) {
+        if (this.selected !== deco.id) this.selectDeco(deco.id);
+        this.drag = { x: e.clientX, y: e.clientY, target: 'deco', id: deco.id };
+      } else {
+        if (this.selected !== null) this.selectDeco(null);
+        this.drag = { x: e.clientX, y: e.clientY, target: this.hitText(e) ? 'text' : 'subject' };
+      }
       this.canvas.classList.add('cursor-grabbing');
     });
     this.canvas.addEventListener('pointermove', (e) => {
@@ -202,13 +252,18 @@ const App = {
     $('#stk-download').disabled = busy || !this.cutout;
     $('#stk-download-png').disabled = busy || !this.cutout;
     $('#stk-share').disabled = busy || !this.cutout;
+    $('#stk-pack-add').disabled = busy || !this.cutout || this.pack.length >= PACK_MAX;
   },
 
   async load(file) {
     this.input.value = '';
     if (!file || !/^image\//.test(file.type)) { Toast.show(t('Please choose an image'), 'error'); return; }
     this.cutout = null;
-    // A new photo gets the automatic framing, not the last photo's zoom.
+    // A new photo gets the automatic framing, not the last photo's zoom, and a
+    // clean canvas — but NOT a cleared pack: loading the next photo is exactly
+    // how you build one.
+    this.decos = [];
+    this.selectDeco(null);
     this.resetSubject();
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
@@ -228,6 +283,7 @@ const App = {
       this.cutout = await loadImage(this.cutoutUrl);
       this.setBusy(false);
       this.ensureFont();
+      this.syncPack();  // a cut-out exists now, so "Add to pack" comes alive
       this.render();
       // The sticker frame insets and centres the cut-out, so pass that rect.
       CBG.sparkleOver(this.canvas, this.cutout, {
@@ -304,7 +360,89 @@ const App = {
       }
     }
     ctx.drawImage(layer, 0, 0);
+    this.drawDecos(ctx, size);
     this.drawText(ctx, size);
+  },
+
+  /** Bounding box of a decoration, in frame pixels. */
+  decoBox(d, size) {
+    const fs = (d.size / 100) * size;
+    return { x: d.x * size - fs / 2, y: d.y * size - fs / 2, w: fs, h: fs, fs };
+  },
+
+  drawDecos(ctx, size) {
+    for (const d of this.decos) {
+      const fs = (d.size / 100) * size;
+      ctx.save();
+      ctx.translate(d.x * size, d.y * size);
+      ctx.rotate((d.rot * Math.PI) / 180);
+      ctx.font = `${fs}px ${EMOJI_FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(d.char, 0, 0);
+      ctx.restore();
+    }
+  },
+
+  /**
+   * Paint the selection marquee onto the overlay canvas.
+   *
+   * Separate from paint() on purpose — see the template comment. The overlay is
+   * cleared and redrawn on every render, so a deselect leaves nothing behind.
+   */
+  drawChrome() {
+    const ov = $('#stk-overlay');
+    if (!ov) return;
+    const ctx = ov.getContext('2d');
+    ctx.clearRect(0, 0, ov.width, ov.height);
+    const d = this.decos.find((x) => x.id === this.selected);
+    if (!d) return;
+    const b = this.decoBox(d, ov.width);
+    const pad = b.fs * 0.12;
+    ctx.save();
+    ctx.translate(d.x * ov.width, d.y * ov.width);
+    ctx.rotate((d.rot * Math.PI) / 180);
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = Math.max(2, ov.width * 0.005);
+    ctx.setLineDash([ov.width * 0.02, ov.width * 0.015]);
+    ctx.strokeRect(-b.w / 2 - pad, -b.h / 2 - pad, b.w + pad * 2, b.h + pad * 2);
+    ctx.restore();
+  },
+
+  addDeco(char) {
+    if (!this.cutout) return;
+    const d = { id: this._nextId++, char, x: 0.5, y: 0.3, size: 18, rot: 0 };
+    this.decos.push(d);
+    this.selectDeco(d.id);
+  },
+
+  selectDeco(id) {
+    this.selected = id;
+    const d = this.decos.find((x) => x.id === id);
+    $('#stk-deco-opts').classList.toggle('hidden', !d);
+    $('#stk-deco-del').hidden = !d;
+    $('#stk-deco-hint').classList.toggle('hidden', !!d);
+    if (d) { $('#stk-deco-size').value = d.size; $('#stk-deco-rot').value = d.rot; }
+    this.render();
+  },
+
+  updateDeco(key, value) {
+    const d = this.decos.find((x) => x.id === this.selected);
+    if (!d) return;
+    d[key] = value;
+    this.render();
+  },
+
+  /** Topmost decoration under the pointer, or null. */
+  hitDeco(e) {
+    const { px, py } = this.pointerPixel(e);
+    const size = this.canvas.width;
+    // Reverse order: the last drawn is the one on top, so it wins the hit.
+    for (let i = this.decos.length - 1; i >= 0; i--) {
+      const b = this.decoBox(this.decos[i], size);
+      if (px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) return this.decos[i];
+    }
+    return null;
   },
 
   drawText(ctx, size) {
@@ -363,7 +501,13 @@ const App = {
     const r = this.canvas.getBoundingClientRect();
     const dx = (e.clientX - this.drag.x) * (this.canvas.width / r.width);
     const dy = (e.clientY - this.drag.y) * (this.canvas.height / r.height);
-    if (this.drag.target === 'text') {
+    if (this.drag.target === 'deco') {
+      const d = this.decos.find((x) => x.id === this.drag.id);
+      if (d) {
+        d.x = clamp(d.x + dx / this.canvas.width, 0, 1);
+        d.y = clamp(d.y + dy / this.canvas.height, 0, 1);
+      }
+    } else if (this.drag.target === 'text') {
       this.text.x = clamp(this.text.x + dx / this.canvas.width, 0, 1);
       this.text.y = clamp(this.text.y + dy / this.canvas.height, 0, 1);
     } else {
@@ -405,6 +549,7 @@ const App = {
 
   render() {
     this.paint(this.canvas, SIZE);
+    this.drawChrome();
     this.paintChips();
   },
 
@@ -490,6 +635,124 @@ const App = {
     if (await share(blob, name)) this.note('Shared', name.split('.').pop(), blob.size);
   },
 
+  /* --------------------------------------------------------------- pack */
+
+  /**
+   * Freeze the current sticker into the pack.
+   *
+   * The bytes are encoded once, here — not at download time — so the thumbnail
+   * you see in the strip is exactly what ships, and editing on for the next
+   * sticker cannot retroactively change one you already added.
+   */
+  async addToPack() {
+    if (!this.cutout || this.pack.length >= PACK_MAX) return;
+    const blob = await this.encode('image/webp');
+    if (!blob) { Toast.show(t('Export failed'), 'error'); return; }
+    this.pack.push({ id: this._nextId++, blob, url: URL.createObjectURL(blob) });
+    this.syncPack();
+    Toast.show(t('Added to pack'), 'success');
+  },
+
+  removeFromPack(id) {
+    const i = this.pack.findIndex((s) => s.id === id);
+    if (i < 0) return;
+    URL.revokeObjectURL(this.pack[i].url);
+    this.pack.splice(i, 1);
+    this.syncPack();
+  },
+
+  /** Repaint the strip, the counter and the enabled/disabled states. */
+  syncPack() {
+    const n = this.pack.length;
+    $('#stk-pack-count').textContent = `${n} / ${PACK_MAX}`;
+    $('#stk-pack-add').disabled = !this.cutout || n >= PACK_MAX;
+    $('#stk-pack-dl').disabled = n < PACK_MIN;
+    $('#stk-pack-hint').textContent = n === 0
+      ? `WhatsApp packs need at least ${PACK_MIN} stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly.`
+      : n < PACK_MIN
+        ? `${PACK_MIN - n} more to go — WhatsApp packs need at least ${PACK_MIN} stickers.`
+        : `${n} sticker${n === 1 ? '' : 's'} ready. Import the ZIP with a sticker app like WSTick or Sticker.ly.`;
+
+    const strip = $('#stk-pack-strip');
+    strip.textContent = '';
+    this.pack.forEach((s, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'relative group';
+      const img = document.createElement('img');
+      img.src = s.url;
+      img.alt = `Sticker ${i + 1}`;
+      img.className = 'w-full aspect-square object-contain rounded-lg checkerboard';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-900/80 text-white text-[10px] leading-none opacity-0 group-hover:opacity-100 focus:opacity-100 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+      del.innerHTML = '&times;';
+      del.setAttribute('aria-label', `Remove sticker ${i + 1}`);
+      del.addEventListener('click', () => this.removeFromPack(s.id));
+      cell.append(img, del);
+      strip.appendChild(cell);
+    });
+  },
+
+  /** 96×96 PNG tray icon, which WhatsApp shows in the sticker drawer. */
+  async trayIcon() {
+    const src = await loadImage(this.pack[0].url);
+    const c = document.createElement('canvas');
+    c.width = c.height = 96;
+    c.getContext('2d').drawImage(src, 0, 0, 96, 96);
+    return new Promise((res) => c.toBlob(res, 'image/png'));
+  },
+
+  /**
+   * Bundle the pack as the ZIP the sticker apps import.
+   *
+   * WhatsApp itself cannot be handed a pack from a web page — the platform only
+   * accepts them from an installed app — so the honest deliverable is the folder
+   * layout those apps read, plus a README saying so. contents.json follows the
+   * schema from WhatsApp's own sample app.
+   */
+  async downloadPack() {
+    if (this.pack.length < PACK_MIN) return;
+    const stamp = Date.now();
+    const files = this.pack.map((s, i) => ({ name: `sticker-${i + 1}.webp`, blob: s.blob }));
+    const tray = await this.trayIcon();
+    if (tray) files.push({ name: 'tray.png', blob: tray });
+
+    const manifest = {
+      android_play_store_link: '',
+      ios_app_store_link: '',
+      sticker_packs: [{
+        identifier: `clearbg-${stamp}`,
+        name: 'My ClearBG pack',
+        publisher: 'ClearBG',
+        tray_image_file: 'tray.png',
+        image_data_version: '1',
+        avoid_cache: false,
+        publisher_email: '',
+        publisher_website: '',
+        privacy_policy_website: '',
+        license_agreement_website: '',
+        stickers: this.pack.map((s, i) => ({ image_file: `sticker-${i + 1}.webp`, emojis: ['😀'] })),
+      }],
+    };
+    files.push({ name: 'contents.json', blob: new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' }) });
+    files.push({ name: 'README.txt', blob: new Blob([
+      'ClearBG sticker pack\n',
+      '====================\n\n',
+      `${this.pack.length} stickers, 512x512 transparent WebP, plus a 96x96 tray icon.\n\n`,
+      'WhatsApp cannot install a pack straight from a web page — only an app can\n',
+      'add one. To use these:\n\n',
+      '  1. Copy this folder to your phone.\n',
+      '  2. Open a sticker app (WSTick, Sticker.ly, Sticker Maker).\n',
+      '  3. Create a new pack and add sticker-1.webp ... in order.\n\n',
+      'contents.json follows the manifest format from WhatsApp\'s sample sticker\n',
+      'app, so it can also be dropped straight into that project.\n\n',
+      'Made at https://clearbg.pt/sticker-maker/ — nothing was uploaded.\n',
+    ], { type: 'text/plain' }) });
+
+    await CBG.zipDownload(files, `clearbg-stickers-${stamp}.zip`);
+    Toast.show(t('Pack downloaded'), 'success');
+  },
+
   reset() {
     this.editor.classList.add('hidden');
     this.dropzone.parentElement.classList.remove('hidden');
@@ -497,7 +760,10 @@ const App = {
     this.cutout = null;
     this.text.content = '';
     $('#stk-text').value = '';
+    this.decos = [];
+    this.selectDeco(null);
     this.resetSubject();
+    this.syncPack();  // the Add button has nothing to add until a photo is loaded
   },
 };
 

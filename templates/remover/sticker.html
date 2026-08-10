@@ -92,6 +92,11 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
         <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 flex flex-col items-center gap-3 lg:sticky lg:top-4">
             <div class="relative w-full mx-auto" style="max-width:32rem">
                 <canvas id="stk-canvas" width="512" height="512" class="w-full aspect-square rounded-xl checkerboard touch-none cursor-grab" aria-label="Sticker preview"></canvas>
+                {% comment %}Selection handles live on their own canvas rather than on
+                the sticker. The export and the chat chips both read the sticker canvas
+                directly, so anything painted there ships — a dashed marquee around the
+                emoji you last touched would end up in the downloaded WebP.{% endcomment %}
+                <canvas id="stk-overlay" width="512" height="512" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
                 <div id="stk-status" class="absolute inset-0 grid place-items-center rounded-xl bg-white/70 dark:bg-gray-950/70 backdrop-blur-sm text-sm font-medium">
                     <span class="flex items-center gap-2 text-primaryText"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span id="stk-status-text">Removing background…</span></span>
                 </div>
@@ -197,6 +202,30 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
                 </div>
             </div>
 
+            {% comment %}Emoji are drawn with fillText in the system emoji font rather
+            than shipped as images: the platform already has them, they stay crisp at
+            any size, and the page adds no payload for a feature most users skip.{% endcomment %}
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Decorations</span>
+                    <button id="stk-deco-del" type="button" hidden class="text-xs text-red-500 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1">
+                        <i class="fa-solid fa-trash-can mr-1" aria-hidden="true"></i>Delete
+                    </button>
+                </div>
+                <div id="stk-emoji" class="grid grid-cols-9 gap-1 text-lg leading-none"></div>
+                <div id="stk-deco-opts" class="space-y-2 hidden">
+                    <label class="flex items-center gap-2 text-xs">
+                        <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Size</span>
+                        <input id="stk-deco-size" type="range" min="6" max="60" step="1" value="18" class="w-full accent-primary" aria-label="Decoration size">
+                    </label>
+                    <label class="flex items-center gap-2 text-xs">
+                        <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Rotate</span>
+                        <input id="stk-deco-rot" type="range" min="-180" max="180" step="1" value="0" class="w-full accent-primary" aria-label="Decoration rotation">
+                    </label>
+                </div>
+                <p id="stk-deco-hint" class="text-[11px] text-gray-400">Tap an emoji to drop it on the sticker, then drag it into place.</p>
+            </div>
+
             {% comment %}Share is the primary action on a phone and hidden everywhere
             else. A sticker's whole point is landing in a chat, and on mobile the
             download button ends that journey in a Files app the user then has to go
@@ -216,6 +245,26 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
                 <button id="stk-new" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                     <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New
                 </button>
+            </div>
+
+            {% comment %}A sticker pack, not a sticker, is what people actually install —
+            and WhatsApp will not take one from a browser, so the deliverable is the ZIP
+            that WSTick / Sticker.ly / the official sample app import: 512×512 WebPs, a
+            96×96 tray icon and a contents.json manifest. The 3-30 range is WhatsApp's
+            own rule, enforced here rather than discovered after the download.{% endcomment %}
+            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pack</span>
+                    <span id="stk-pack-count" class="text-xs text-gray-400">0 / 30</span>
+                </div>
+                <button id="stk-pack-add" type="button" class="w-full px-3 py-2 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>Add this sticker to the pack
+                </button>
+                <div id="stk-pack-strip" class="grid grid-cols-5 gap-1.5"></div>
+                <button id="stk-pack-dl" type="button" disabled class="w-full px-3 py-2 rounded-lg text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                    <i class="fa-solid fa-file-arrow-down mr-1.5" aria-hidden="true"></i>Download pack (.zip)
+                </button>
+                <p id="stk-pack-hint" class="text-[11px] text-gray-400">WhatsApp packs need at least 3 stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly.</p>
             </div>
         </div>
     </section>

@@ -1211,6 +1211,8 @@ JS_UI = {
     "Copy not supported here — use Download": "Copiar no funciona aquí — usa Descargar",
     # --- Background removal ---
     "Background removal failed": "No se pudo quitar el fondo",
+    "Added to pack": "Añadido al paquete",
+    "Pack downloaded": "Paquete descargado",
     "Background removed": "Fondo eliminado",
     # Live status on the result card while a cut-out is being made.
     "Removing background…": "Quitando el fondo…",
