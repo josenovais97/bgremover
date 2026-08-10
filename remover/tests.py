@@ -1533,6 +1533,42 @@ class RobotsMetaTests(SimpleTestCase):
                     expected = "index, follow" if is_translated_path(url) else "noindex, follow"
                     self.assertEqual(self._robots(url), expected)
 
+    def _switcher(self, path, lang):
+        """The footer switcher's href for `lang`, on the page at `path`."""
+        html = self.client.get(path).content.decode()
+        m = re.search(rf'<a href="([^"]+)" hreflang="{lang}"', html)
+        return m.group(1) if m else None
+
+    def test_switcher_links_the_real_page_where_it_is_translated(self):
+        # /crop/ and / have real bodies in every language, so the switcher must
+        # still hand the visitor the same page — this is the case the fix below
+        # must not break.
+        base = settings.SITE_URL.rstrip("/")
+        for lang in LANGUAGES:
+            for path in ("/", "/crop/"):
+                with self.subTest(path=path, lang=lang):
+                    want = f"{base}/{lang}/" if path == "/" else f"{base}/{lang}{path}"
+                    self.assertEqual(self._switcher(path, lang), want)
+
+    def test_switcher_links_the_language_home_where_it_is_not_translated(self):
+        # An untranslated prefixed URL serves English, is noindexed and is out of
+        # the sitemap — linking it from every page fed the crawler a dead end per
+        # page per language. The switcher points at that language's front door
+        # instead, which is both cheaper to crawl and the more useful link.
+        base = settings.SITE_URL.rstrip("/")
+        for lang in LANGUAGES:
+            for path in ("/about/", "/qr-code-generator/", untranslated_tool_path()):
+                with self.subTest(path=path, lang=lang):
+                    self.assertEqual(self._switcher(path, lang), f"{base}/{lang}/")
+
+    def test_switcher_still_offers_every_language_everywhere(self):
+        # The point is where the links GO, not how many there are: a visitor who
+        # lands deep in the site must still be able to reach their language.
+        html = self.client.get("/about/").content.decode()
+        for lang in ("en",) + tuple(LANGUAGES):
+            with self.subTest(lang=lang):
+                self.assertIn(f'hreflang="{lang}"', html)
+
 
 class LanguageRegistryTests(SimpleTestCase):
     """The four places that must agree on which languages exist.

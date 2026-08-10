@@ -472,6 +472,40 @@ def _alternate_urls(request):
         return {}
 
 
+def _switcher_urls(request, alternates):
+    """Footer language-switcher targets, one per language.
+
+    A language whose body is really translated gets the same page. A language
+    that is not gets that language's HOME page instead of the prefixed twin.
+
+    The prefixed twin is a real, reachable, English-serving URL, and linking it
+    from every page in the site was manufacturing crawl work at the rate of one
+    dead end per page per untranslated language — 154 of them here, against 149
+    URLs actually worth indexing. Search Console showed the cost: 25 already
+    crawled and discarded as `noindex`, ~22 more sitting in "discovered, not
+    crawled", while 34 real pages waited in the same queue.
+
+    Sending the visitor to that language's front door instead is also the more
+    honest link: the page they would have landed on does not speak their
+    language, and the home page does. `noindex` and the canonical still cover
+    any prefixed URL reached some other way — this stops advertising them.
+    """
+    base = settings.SITE_URL.rstrip("/")
+    bare = strip_language(request.path)
+    out = {}
+    for code, url in alternates.items():
+        # English is the source language: every page has it, so it always links
+        # to the real page.
+        if code == "en" or is_translated_path(bare, code):
+            out[code] = url
+        else:
+            try:
+                out[code] = base + translate_url("/", code)
+            except Exception:
+                out[code] = url
+    return out
+
+
 def seo(request):
     """Expose SEO verification tokens and shared nav/ad/i18n data to templates."""
     # Ads run on the marketing / SEO landing pages ONLY — the interactive tool
@@ -491,6 +525,7 @@ def seo(request):
     # Ads follow the editorial, not the traffic.
     ads_allowed = url_name in {"guide", "guides"} and url_name not in ISOLATED_VIEWS
     alternates = _alternate_urls(request)
+    switcher = _switcher_urls(request, alternates)
     canonical_url = _canonical_url(request)
     accent, accent_hover, accent_text_dark, accent_text_dark_alt = TOOL_ACCENTS.get(
         url_name, _DEFAULT_ACCENT
@@ -549,7 +584,9 @@ def seo(request):
         # i18n. `languages` drives the footer switcher and lists every language
         # — each page is reachable in all of them, and a Spanish visitor who
         # lands deep in the site should still be able to get to the part of it
-        # that speaks Spanish.
+        # that speaks Spanish. Where this page is NOT translated the link goes to
+        # that language's home page rather than to an English-serving prefixed
+        # twin; see _switcher_urls.
         #
         # `hreflang_alternates` is the SEO signal and is deliberately narrower:
         # it lists only the languages whose page BODY is really translated. The
@@ -557,9 +594,9 @@ def seo(request):
         # Portuguese version existed while serving English.
         "LANGUAGE_CODE": get_language() or "en",
         "languages": [
-            {"code": code, "label": label, "url": alternates.get(code)}
+            {"code": code, "label": label, "url": switcher.get(code)}
             for code, label in (("en", "English"),) + tuple(LANGUAGE_NAMES.items())
-            if alternates.get(code)
+            if switcher.get(code)
         ],
         "hreflang_alternates": [
             {"code": code, "url": alternates[code]}
