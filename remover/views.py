@@ -2090,6 +2090,55 @@ def robots_txt(request):
 
 
 @require_safe
+@cache_control(max_age=86400)
+def indexnow_key(request):
+    """Serve the IndexNow key file at /<key>.txt.
+
+    The protocol's entire ownership check is this file: a ping names a key, the
+    engine fetches https://<host>/<key>.txt, and accepts the ping only if the
+    file's contents match. The body must therefore be the bare key with nothing
+    around it — no trailing newline is required, but stray markup or a redirect
+    fails the check silently, which is why this is a view rather than a static
+    file (Vercel routes everything through Django, see the robots.txt/sw.js
+    precedent).
+    """
+    return HttpResponse(settings.INDEXNOW_KEY, content_type="text/plain")
+
+
+@require_safe
+@cache_control(max_age=3600)
+def llms_txt(request):
+    """Serve /llms.txt — a plain-language site guide for AI crawlers.
+
+    An emerging convention (llmstxt.org) that answers, in markdown a model can
+    read cheaply, what this site is and which URLs matter. Worth having here for
+    a reason specific to this site: assistants field a lot of "free tool that
+    removes a background without uploading my photo" questions, and that claim is
+    the one thing about ClearBG a model cannot infer from a rendered tool page.
+
+    Honest about its status: this is a punt, not a proven channel. It costs one
+    template and one route.
+    """
+    # Lazy, like _guide_tool_links: context_processors imports this module at
+    # import time, so a module-level import here would be circular.
+    from .context_processors import TOOL_NAV
+
+    return render(
+        request,
+        "seo/llms.txt",
+        {
+            "site_url": settings.SITE_URL.rstrip("/"),
+            "tools": [
+                {"label": t["label"], "url": reverse(f"remover:{t['name']}"), "blurb": t["blurb"]}
+                for t in TOOL_NAV
+            ],
+            "guides": GUIDES,
+        },
+        content_type="text/plain; charset=utf-8",
+    )
+
+
+@require_safe
 def yandex_verify(request):
     """Yandex Webmaster site-ownership verification file (served at the root)."""
     return HttpResponse(

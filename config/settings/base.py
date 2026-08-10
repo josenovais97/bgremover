@@ -47,6 +47,16 @@ if SITE_URL and "://" not in SITE_URL:
 GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")
 BING_SITE_VERIFICATION = env("BING_SITE_VERIFICATION", default="")
 
+# IndexNow: ping Bing and Yandex the moment a URL changes instead of waiting for
+# them to come back on their own. The key is NOT a secret — the protocol works by
+# publishing it at https://<host>/<key>.txt so the receiving engine can verify the
+# ping came from someone who controls the domain. It therefore ships as a default
+# rather than as another Vercel variable to remember; override it only to rotate.
+#
+# Google does not participate in IndexNow, so this speeds up Bing (and the engines
+# it feeds: DuckDuckGo, Ecosia, Yahoo) and Yandex, and does nothing for Google.
+INDEXNOW_KEY = env("INDEXNOW_KEY", default="a7f3c1e94b8d42a6905e17bc3d6f8e20")
+
 # --- Monetization ------------------------------------------------------------
 # Google AdSense publisher ID (ca-pub-…). When set, the AdSense loader is
 # injected on the marketing / SEO pages ONLY — never on the cross-origin-isolated

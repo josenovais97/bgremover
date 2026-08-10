@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.templatetags.static import static
 from django.urls import path
 from django.views.generic.base import RedirectView
@@ -90,6 +91,12 @@ urlpatterns = [
     path("ads.txt", views.ads_txt, name="ads_txt"),
     path("robots.txt", views.robots_txt, name="robots"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap"),
+    # A plain-language site description for AI crawlers (llmstxt.org).
+    path("llms.txt", views.llms_txt, name="llms_txt"),
+    # IndexNow ownership file. The route is built from the key itself, so
+    # rotating INDEXNOW_KEY moves the URL with it and the old one 404s — which
+    # is exactly what should happen to a retired key.
+    path(f"{settings.INDEXNOW_KEY}.txt", views.indexnow_key, name="indexnow_key"),
     # Yandex Webmaster site-ownership verification file.
     path("yandex_ee6a725348d1a333.html", views.yandex_verify, name="yandex_verify"),
 ]

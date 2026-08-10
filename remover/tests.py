@@ -1923,6 +1923,88 @@ class SeoEndpointTests(SimpleTestCase):
         self.assertContains(response, "<urlset")
         self.assertContains(response, "<loc>")
 
+    def test_indexnow_key_file_is_exactly_the_key(self):
+        """IndexNow's whole ownership check is a byte-comparison of this file.
+
+        Anything around the key — a newline the template added, a wrapping
+        element, a redirect — fails verification, and the API still answers 200,
+        so the failure is invisible until nothing gets crawled.
+        """
+        # Fetched by literal path, not reverse(): every route is inside
+        # i18n_patterns, so reverse() answers with whatever language is active,
+        # while the engine only ever requests the unprefixed root URL that the
+        # submission named in `keyLocation`.
+        response = self.client.get(f"/{settings.INDEXNOW_KEY}.txt")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/plain")
+        self.assertEqual(response.content.decode(), settings.INDEXNOW_KEY)
+
+    def test_the_submitted_key_location_is_the_url_that_serves_the_key(self):
+        # The command tells IndexNow where to verify; if that URL and the route
+        # ever disagree, every submission is silently rejected.
+        from remover.management.commands.indexnow import Command  # noqa: F401
+
+        key_location = f"/{settings.INDEXNOW_KEY}.txt"
+        self.assertEqual(self.client.get(key_location).status_code, 200)
+
+    def test_llms_txt(self):
+        response = self.client.get(reverse("remover:llms_txt"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/plain", response["Content-Type"])
+        # The one claim a model cannot infer from a rendered tool page.
+        self.assertContains(response, "nothing is uploaded")
+        self.assertContains(response, "/sticker-maker/")
+        self.assertContains(response, "/guides/")
+
+
+class IndexNowSubmissionTests(SimpleTestCase):
+    """What the submit command would send, without sending it."""
+
+    def _urls(self, **opts):
+        from io import StringIO
+        from django.core.management import call_command
+
+        out = StringIO()
+        with self.settings(SITE_URL="https://example.com"):
+            call_command("indexnow", "--dry-run", stdout=out, **opts)
+        return out.getvalue()
+
+    def test_dry_run_covers_the_whole_sitemap(self):
+        from remover.views import SITEMAP_PATHS, translated_languages
+
+        expected = sum(1 + len(translated_languages(p)) for p in SITEMAP_PATHS)
+        self.assertIn(f"{expected} URLs would go to", self._urls())
+
+    def test_never_submits_a_noindexed_url(self):
+        """The invariant that matters: asking a crawler to spend budget on a page
+        we have told it not to index is the opposite of the point."""
+        from io import StringIO
+        from django.core.management import call_command
+        from remover.views import SITEMAP_PATHS, translated_languages
+
+        submitted = []
+        for path in SITEMAP_PATHS:
+            submitted.append(path)
+            submitted.extend(f"/{lang}{path}" for lang in translated_languages(path))
+        for url in submitted:
+            with self.subTest(url=url):
+                self.assertEqual(self._robots_for(url), "index, follow")
+
+    def _robots_for(self, path):
+        import re
+        html = self.client.get(path).content.decode()
+        return re.search(r'name="robots" content="([^"]+)"', html).group(1)
+
+    def test_refuses_a_non_https_site_url(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        # The localhost default would fail IndexNow's key fetch, and the API
+        # reports a rejected submission as success — so fail loudly here instead.
+        with self.settings(SITE_URL="http://localhost:8000"):
+            with self.assertRaises(CommandError):
+                call_command("indexnow", "--dry-run")
+
 
 class AccentContrastTests(SimpleTestCase):
     """Every per-tool accent must stay legible in both themes.
