@@ -1,9 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Free WhatsApp Sticker Maker — Remove Background &amp; Add Text{% endblock %}
-{% block description %}Make WhatsApp &amp; Telegram stickers free in your browser — remove the background, add an outline and text, export a 512×512 transparent WebP.{% endblock %}
-{% block og_title %}WhatsApp Sticker Maker — Cut Out, Outline &amp; Caption, Free{% endblock %}
+{% comment %}This page's snippet competes against Photoroom, remove.bg and a row of
+App Store listings, and it was losing: 94 impressions at position ~14 for a 1.06%
+CTR, with "remove background for whatsapp sticker" ranking 7th and earning zero
+clicks. The old title led with what the page IS ("Sticker Maker"), which every
+competitor also says. These lead with what they can't say — no app to install and
+nothing uploaded — and carry the query's own wording.{% endcomment %}
+{% block title %}WhatsApp Sticker Maker — Remove Background Free, No App{% endblock %}
+{% block description %}Turn a photo into a WhatsApp or Telegram sticker free — no app, no sign-up, nothing uploaded. The background comes off in your browser; exports a 512×512 transparent WebP.{% endblock %}
+{% block og_title %}WhatsApp Sticker Maker — Remove Background Free, No App{% endblock %}
 
 {% block extra_seo %}
 <!-- Display fonts for the canvas artwork. Google Fonts is only requested on the

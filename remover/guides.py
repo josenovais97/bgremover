@@ -669,18 +669,34 @@ GUIDES = [
     ),
     _guide(
         slug="transparent-backgrounds-explained",
-        title="How Transparent Backgrounds Work — Alpha Channels Explained",
-        h1="How transparent backgrounds actually work",
-        description="What an alpha channel is, why cut-outs get white or black fringes, straight vs premultiplied alpha, and which formats carry transparency at all.",
+        # Titled as the question people actually type. Search Console shows this
+        # article's impressions arriving almost entirely on definitional queries
+        # ("what is an image with no background called", "are png transparent",
+        # "what file types have transparent backgrounds") rather than on the
+        # alpha-channel theory it used to lead with — so the naming question is
+        # answered first, in the words it is asked in, and the theory follows.
+        title="What Is a Transparent Background? Names, Formats & Fixes",
+        h1="What is a transparent background?",
+        description="What an image with no background is called, which file formats support transparency, why cut-outs get white fringes, and why a JPG can never be transparent.",
         category="Formats",
-        updated="2026-07-28",
+        updated="2026-08-10",
         intro=[
-            "Transparency is the source of more confusion than any other image concept. A cut-out looks perfect in one program and has a white halo in another. A logo saved as JPG mysteriously gains a black background. A PNG with a transparent background prints as a solid white rectangle.",
+            "A transparent background is the absence of any background at all: the pixels behind the subject carry no colour, so whatever sits underneath the image — a web page, a slide, another photo — shows through instead of a white or coloured rectangle.",
+            "Transparency is also the source of more confusion than any other image concept. A cut-out looks perfect in one program and has a white halo in another. A logo saved as JPG mysteriously gains a black background. A PNG with a transparent background prints as a solid white rectangle.",
             "All of these have the same underlying explanation, and it is worth understanding, because the fixes are simple once you know what is happening.",
         ],
         sections=[
             {
-                "h": "The fourth channel",
+                "h": "What is an image with no background called?",
+                "p": [
+                    "There is no single official term, which is exactly why the question gets asked so often. Four names are in common use, and which one you hear depends on who you are talking to.",
+                    "Most people say transparent PNG, naming the image after the file format that carries it. This is the term to use with a designer, a printer or a marketplace listing, and it is what stock libraries mean by \"PNG with transparent background\".",
+                    "Editors and retouchers say cut-out (or cutout) — the subject cut away from its original scene. Print and prepress call the same thing a knockout, because the background is knocked out of the plate. Developers and compositing software say alpha image or image with an alpha channel, after the data layer described in the next section.",
+                    "One distinction is worth keeping straight, because the two words are not interchangeable: transparent means fully see-through — no colour at all — while translucent means partially see-through, letting some colour through like frosted glass. A cut-out has a transparent background. A watermark or a soft shadow is translucent. Both are stored in the same alpha channel; they differ only in value.",
+                ],
+            },
+            {
+                "h": "What image transparency actually is",
                 "p": [
                     "A normal colour image stores three numbers per pixel: red, green and blue. An image with transparency stores a fourth, the alpha channel, which records how opaque that pixel is — 0 for fully transparent, 255 for fully opaque, and everything between for partial.",
                     "Partial transparency is the important part and the part people forget. A cut-out is not a binary mask where each pixel is either subject or background. Around every edge there is a band of pixels that are genuinely part-subject and part-background, because a single sensor pixel covering the boundary captured light from both. Hair, fur, motion blur and out-of-focus edges can be dozens of pixels wide in this in-between state.",
@@ -706,9 +722,9 @@ GUIDES = [
                 ],
             },
             {
-                "h": "Which formats can carry transparency",
+                "h": "Which image formats have transparent backgrounds",
                 "p": [
-                    "Not many, and this trips people up constantly.",
+                    "Not many, and this trips people up constantly. Note that supporting transparency is not the same as being transparent: a PNG is perfectly capable of holding a solid white background, and most PNGs do. The format permits transparency; the file either uses it or does not.",
                 ],
                 "list": [
                     "PNG: full 8-bit alpha, lossless. The universal safe choice.",
@@ -729,6 +745,15 @@ GUIDES = [
                 ],
             },
             {
+                "h": "How to check whether an image really has a transparent background",
+                "p": [
+                    "A transparent area is drawn as *something* on screen, and most software chooses white — so an image with a transparent background and an image with a white one look identical in a viewer. Three checks settle it.",
+                    "Check the format first, because it answers most cases immediately: if the file is a JPG, the background is not transparent and cannot be, whatever it looks like. Only PNG, WebP, AVIF, GIF, TIFF, PSD and SVG can carry transparency at all.",
+                    "Then open the image over a coloured backdrop. Drop it into a slide with a dark fill, or paste it over a coloured shape in any editor. A transparent background lets the colour through; a white background stays a white rectangle. This is the fastest reliable test and needs no special software.",
+                    "Finally, watch for the checkerboard. Nearly every image editor renders transparent pixels as a grey-and-white chequered pattern, and that pattern is a display convention rather than part of the image — it will not appear in the exported file. If you see the checkerboard, the transparency is real.",
+                ],
+            },
+            {
                 "h": "Practical rules",
                 "p": [
                     "Condensed to the decisions you actually make:",
@@ -744,6 +769,8 @@ GUIDES = [
             },
         ],
         takeaways=[
+            "An image with no background goes by four names: transparent PNG, cut-out, knockout, or alpha image — all the same thing.",
+            "Transparent means fully see-through; translucent means partially see-through. Same channel, different values.",
             "Transparency is a fourth channel per pixel, and the semi-transparent band around edges is where cut-out quality lives or dies.",
             "White and dark fringes come from background colour contaminating edge pixels; good removal decontaminates rather than just masking.",
             "Always check a cut-out against a background unlike the original — errors are invisible against the colour they came from.",
@@ -752,6 +779,16 @@ GUIDES = [
         ],
         tools=["index", "convert", "sticker"],
         faqs=[
+            {"q": "What is an image with no background called?",
+             "a": "Most commonly a transparent PNG, after the format that carries it. Editors call it a cut-out, print and prepress call it a knockout, and developers call it an alpha image or an image with an alpha channel. All four describe the same thing: a subject with no background pixels behind it."},
+            {"q": "What is the difference between a transparent and a translucent background?",
+             "a": "Transparent means fully see-through, with no colour at all — a cut-out. Translucent means partially see-through, letting some colour through like frosted glass — a watermark or a soft shadow. Both are stored in the same alpha channel and differ only in value."},
+            {"q": "Are PNG files transparent?",
+             "a": "PNG supports transparency, but a PNG is not automatically transparent. Most PNGs have a solid background. The format gives you the option of an alpha channel; whether a particular file uses it depends on how it was made."},
+            {"q": "What file types have transparent backgrounds?",
+             "a": "PNG, WebP, AVIF, TIFF, PSD and SVG all carry full partial transparency. GIF supports only a single fully transparent colour, so its cut-outs have hard, jagged edges. JPG supports none at all."},
+            {"q": "How can I tell if an image has a transparent background?",
+             "a": "Place it over a coloured backdrop — a dark slide or a coloured shape in any editor. Transparency lets the colour through; a white background stays a white rectangle. Most editors also draw transparent pixels as a grey chequerboard, which is a display convention and never appears in the exported file."},
             {"q": "Why does my transparent PNG have a white background when I open it?",
              "a": "Either it was converted to JPG at some point, which discards the alpha channel entirely, or the program you are viewing it in composites transparency onto white for display. Check the file format first."},
             {"q": "Can a JPG have a transparent background?",

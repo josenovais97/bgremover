@@ -262,8 +262,13 @@ USE_CASES = [
     {
         "slug": "youtube-thumbnail",
         "nav": "YouTube thumbnails",
-        "title": "Remove Background for YouTube Thumbnails — Free",
-        "description": "Cut yourself out of a photo for a click-worthy YouTube thumbnail. Free transparent PNGs to drop over any background — private, in your browser.",
+        # 54 impressions at position ~17 and no clicks: the snippet was reaching
+        # page two of a SERP held by remove.bg, Canva and Photoroom and giving a
+        # creator no reason to pick it. "Unlimited" and "full resolution" are the
+        # two things those free tiers specifically do not offer, and thumbnails
+        # are the use case where both bite — 1280×720 exports, made constantly.
+        "title": "Remove Background for YouTube Thumbnails — Free, Unlimited",
+        "description": "Cut yourself out for a YouTube thumbnail — free, unlimited and full resolution. No sign-up, no watermark, nothing uploaded: the AI runs in your browser.",
         "h1": "Remove Backgrounds for YouTube Thumbnails",
         "tagline": "Cut yourself or your subject out cleanly and drop it over a bold background for thumbnails that get the click — free and unlimited.",
         "intro": [

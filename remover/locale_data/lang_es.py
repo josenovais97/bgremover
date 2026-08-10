@@ -1466,8 +1466,8 @@ USE_CASES = {
     },
     "youtube-thumbnail": {
         "nav": "Miniaturas de YouTube",
-        "title": "Quitar el Fondo para Miniaturas de YouTube — Gratis",
-        "description": "Recórtate de una foto para una miniatura de YouTube que invite a hacer clic. PNG transparentes gratis para cualquier fondo — privado, en tu navegador.",
+        "title": "Quitar el Fondo para Miniaturas de YouTube — Gratis e Ilimitado",
+        "description": "Recórtate para una miniatura de YouTube — gratis, ilimitado y en resolución completa. Sin registro, sin marca de agua y sin subir nada: la IA funciona en tu navegador.",
         "h1": "Quita el Fondo para Miniaturas de YouTube",
         "tagline": "Recórtate a ti o a tu sujeto con limpieza y ponlo sobre un fondo llamativo para miniaturas que se ganan el clic — gratis e ilimitado.",
         "intro": [
