@@ -833,10 +833,14 @@ UI = {
     "Language": "Idioma",
     # Home page
     "Private & free — runs in your browser": "Privado y gratis — funciona en tu navegador",
-    "Remove Image Backgrounds": "Quita el Fondo de Tus Imágenes",
-    "Automatically & Free": "Automático y Gratis",
-    "Drop an image and get a clean, transparent PNG in seconds. No sign-up, no watermarks, no quality loss — the AI runs entirely on your device.":
-        "Suelta una imagen y obtén un PNG limpio y transparente en segundos. Sin registro, sin marcas de agua y sin pérdida de calidad — la IA funciona por completo en tu dispositivo.",
+    "Free Background Remover — No Upload, No Signup, No Watermark":
+        "Eliminador de Fondos Gratis — Sin Subir Nada, Sin Registro, Sin Marca de Agua",
+    "Remove image backgrounds free and unlimited — your photo never leaves your device. No upload, no sign-up, no watermark, full resolution.":
+        "Quita el fondo de tus imágenes gratis y sin límites — tu foto nunca sale de tu dispositivo. Sin subir nada, sin registro, sin marca de agua, resolución completa.",
+    "Free Background Remover": "Eliminador de Fondos Gratis",
+    "No Upload Required": "Sin Subir Nada",
+    "Remove image backgrounds automatically in seconds. 100% free, unlimited and private — your images never leave your device.":
+        "Quita el fondo de tus imágenes automáticamente en segundos. 100% gratis, ilimitado y privado — tus imágenes nunca salen de tu dispositivo.",
     "Drag & drop your images": "Arrastra y suelta tus imágenes",
     "or click to browse — you can select multiple files":
         "o haz clic para buscar — puedes seleccionar varios archivos",

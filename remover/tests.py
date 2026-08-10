@@ -35,7 +35,7 @@ class PageTests(SimpleTestCase):
         response = self.client.get(reverse("remover:index"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "remover/index.html")
-        self.assertContains(response, "Remove Image Backgrounds")
+        self.assertContains(response, "Free Background Remover")
 
     def test_index_has_seo_tags(self):
         response = self.client.get(reverse("remover:index"))
@@ -847,13 +847,13 @@ class I18nTests(SimpleTestCase):
     def test_portuguese_home_renders(self):
         response = self.client.get("/pt/")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Remova Fundos de Imagens")   # translated H1
+        self.assertContains(response, "Removedor de Fundo Grátis")  # translated H1
         self.assertContains(response, 'lang="pt"')
 
     def test_english_home_unprefixed(self):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Remove Image Backgrounds")
+        self.assertContains(response, "Free Background Remover")
 
     def test_portuguese_landing_page_translated(self):
         response = self.client.get("/pt/remove-background/product-photos/")
