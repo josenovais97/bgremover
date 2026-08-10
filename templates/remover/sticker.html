@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n_extras %}
 
 {% comment %}This page's snippet competes against Photoroom, remove.bg and a row of
 App Store listings, and it was losing: 94 impressions at position ~14 for a 1.06%
@@ -50,15 +50,14 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
     <section class="max-w-5xl mx-auto space-y-8">
         <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Made locally — nothing is uploaded
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i> {% t "Made locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Sticker
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Maker</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Sticker Maker" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                Turn any photo into a WhatsApp &amp; Telegram sticker — we remove the background automatically, add a
-                clean outline and your caption, and export a ready-to-use <strong>512×512 transparent WebP</strong>.
+                {% t "Turn any photo into a WhatsApp & Telegram sticker — we remove the background automatically, add a clean outline and your caption, and export a" %}
+                <strong>{% t "ready-to-use 512×512 transparent WebP" %}</strong>.
             </p>
         </div>
 
@@ -70,10 +69,10 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
                 <div id="stk-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-solid fa-note-sticky" aria-hidden="true"></i>
                 </div>
-                <h2 class="text-2xl font-semibold">Drop a photo</h2>
-                <p class="text-gray-500 dark:text-gray-400">or click to browse — a clear subject (a person, pet or object) works best</p>
+                <h2 class="text-2xl font-semibold">{% t "Drop a photo" %}</h2>
+                <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — a clear subject (a person, pet or object) works best" %}</p>
                 <button id="stk-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select a photo" %}
                 </button>
                 {% include 'remover/partials/dropzone_footer.html' %}
             </div>
@@ -98,7 +97,7 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
                 emoji you last touched would end up in the downloaded WebP.{% endcomment %}
                 <canvas id="stk-overlay" width="512" height="512" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
                 <div id="stk-status" class="absolute inset-0 grid place-items-center rounded-xl bg-white/70 dark:bg-gray-950/70 backdrop-blur-sm text-sm font-medium">
-                    <span class="flex items-center gap-2 text-primaryText"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span id="stk-status-text">Removing background…</span></span>
+                    <span class="flex items-center gap-2 text-primaryText"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span id="stk-status-text">{% t "Removing background…" %}</span></span>
                 </div>
             </div>
 
@@ -110,7 +109,7 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
             rather than Tailwind classes: they are photographic constants, not part
             of the site's palette.{% endcomment %}
             <div id="stk-chat" class="w-full mx-auto space-y-1.5" style="max-width:32rem">
-                <p class="text-[11px] text-gray-400 text-center">How it lands in a chat</p>
+                <p class="text-[11px] text-gray-400 text-center">{% t "How it lands in a chat" %}</p>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="rounded-xl p-2 flex flex-col items-end gap-0.5" style="background:#e5ddd5">
                         <canvas id="stk-chip-light" width="256" height="256" class="w-24 h-24" aria-label="Sticker on a light chat background"></canvas>
@@ -123,8 +122,8 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
                 </div>
             </div>
 
-            <p id="stk-size-note" class="text-xs text-gray-400 text-center"><i class="fa-brands fa-whatsapp mr-1" aria-hidden="true"></i>512×512 transparent WebP — WhatsApp ready</p>
-            <p class="text-[11px] text-gray-400 text-center"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Drag to move · scroll or pinch to zoom · drag the text to place it</p>
+            <p id="stk-size-note" class="text-xs text-gray-400 text-center"><i class="fa-brands fa-whatsapp mr-1" aria-hidden="true"></i>{% t "512×512 transparent WebP — WhatsApp ready" %}</p>
+            <p class="text-[11px] text-gray-400 text-center"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>{% t "Drag to move · scroll or pinch to zoom · drag the text to place it" %}</p>
         </div>
 
         <!-- Options -->
@@ -136,59 +135,59 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
             a pointer user has no pinch and a touch user cannot scroll-wheel.{% endcomment %}
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Subject</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Subject" %}</span>
                     <button id="stk-reset-sub" type="button" class="text-xs text-gray-500 dark:text-gray-400 hover:text-primaryText focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1">
-                        <i class="fa-solid fa-arrow-rotate-left mr-1" aria-hidden="true"></i>Reset
+                        <i class="fa-solid fa-arrow-rotate-left mr-1" aria-hidden="true"></i>{% t "Reset" %}
                     </button>
                 </div>
                 <label class="flex items-center gap-2 text-xs">
-                    <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Zoom</span>
+                    <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">{% t "Zoom" %}</span>
                     <input id="stk-zoom" type="range" min="50" max="300" step="1" value="100" class="w-full accent-primary" aria-label="Subject zoom">
                     <span id="stk-zoom-val" class="w-10 shrink-0 text-right tabular-nums text-gray-500 dark:text-gray-400">100%</span>
                 </label>
                 <label class="flex items-center gap-2 text-xs">
-                    <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Rotate</span>
+                    <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">{% t "Rotate" %}</span>
                     <input id="stk-rotate" type="range" min="-180" max="180" step="1" value="0" class="w-full accent-primary" aria-label="Subject rotation">
                     <span id="stk-rot-val" class="w-10 shrink-0 text-right tabular-nums text-gray-500 dark:text-gray-400">0°</span>
                 </label>
                 <button id="stk-flip" type="button" class="w-full px-3 py-2 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    <i class="fa-solid fa-arrows-left-right mr-1.5" aria-hidden="true"></i>Flip horizontally
+                    <i class="fa-solid fa-arrows-left-right mr-1.5" aria-hidden="true"></i>{% t "Flip horizontally" %}
                 </button>
             </div>
 
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Outline</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Outline" %}</span>
                     <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer select-none">
-                        <input id="stk-outline-on" type="checkbox" class="accent-primary w-4 h-4" checked> Show
+                        <input id="stk-outline-on" type="checkbox" class="accent-primary w-4 h-4" checked> {% t "Show" %}
                     </label>
                 </div>
                 <div id="stk-outline-opts" class="space-y-3">
                     <div class="flex items-center gap-2 text-xs">
-                        <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Colour</span>
+                        <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">{% t "Colour" %}</span>
                         <input id="stk-outline-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Outline colour">
                     </div>
                     <label class="flex items-center gap-2 text-xs">
-                        <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Thickness</span>
+                        <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">{% t "Thickness" %}</span>
                         <input id="stk-outline-width" type="range" min="1" max="8" step="0.5" value="3.5" class="w-full accent-primary" aria-label="Outline thickness">
                     </label>
                 </div>
             </div>
 
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Text</span>
-                <textarea id="stk-text" rows="2" placeholder="Add a caption (optional)…" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"></textarea>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Text" %}</span>
+                <textarea id="stk-text" rows="2" placeholder="{% t 'Add a caption (optional)…' %}" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"></textarea>
                 <div class="grid grid-cols-3 gap-2">
-                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none ring-2 ring-primary" data-font="Anton" style="font-family:Anton" title="Bold">BOLD</button>
-                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none" data-font="Inter" style="font-family:Inter" title="Clean">Clean</button>
-                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none tracking-wide" data-font="'Bebas Neue'" style="font-family:'Bebas Neue'" title="Tall">TALL</button>
-                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none" data-font="Pacifico" style="font-family:Pacifico" title="Script">Script</button>
-                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs leading-none" data-font="'Luckiest Guy'" style="font-family:'Luckiest Guy'" title="Comic">COMIC</button>
-                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="Caveat" style="font-family:Caveat" title="Handwritten">Hand</button>
+                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none ring-2 ring-primary" data-font="Anton" style="font-family:Anton" title="Bold">{% t "BOLD" %}</button>
+                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none" data-font="Inter" style="font-family:Inter" title="Clean">{% t "Clean" %}</button>
+                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none tracking-wide" data-font="'Bebas Neue'" style="font-family:'Bebas Neue'" title="Tall">{% t "TALL" %}</button>
+                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm leading-none" data-font="Pacifico" style="font-family:Pacifico" title="Script">{% t "Script" %}</button>
+                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs leading-none" data-font="'Luckiest Guy'" style="font-family:'Luckiest Guy'" title="Comic">{% t "COMIC" %}</button>
+                    <button type="button" class="stk-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="Caveat" style="font-family:Caveat" title="Handwritten">{% t "Hand" %}</button>
                 </div>
                 <div class="flex items-center justify-between gap-2 text-xs">
-                    <label class="flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">Colour</span><input id="stk-text-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Text colour"></label>
-                    <label class="flex items-center gap-2 grow"><span class="text-gray-500 dark:text-gray-400 shrink-0">Size</span><input id="stk-text-size" type="range" min="6" max="24" step="0.5" value="12" class="w-full accent-primary" aria-label="Text size"></label>
+                    <label class="flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">{% t "Colour" %}</span><input id="stk-text-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Text colour"></label>
+                    <label class="flex items-center gap-2 grow"><span class="text-gray-500 dark:text-gray-400 shrink-0">{% t "Size" %}</span><input id="stk-text-size" type="range" min="6" max="24" step="0.5" value="12" class="w-full accent-primary" aria-label="Text size"></label>
                 </div>
                 {% comment %}A caption over a busy cut-out is unreadable at sticker size
                 even with the letter stroke; the pill is the fix every sticker app
@@ -196,9 +195,9 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
                 and black-on-yellow are both one click away.{% endcomment %}
                 <div class="flex items-center justify-between gap-2 text-xs">
                     <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
-                        <input id="stk-text-pill" type="checkbox" class="accent-primary w-4 h-4"> Highlight
+                        <input id="stk-text-pill" type="checkbox" class="accent-primary w-4 h-4"> {% t "Highlight" %}
                     </label>
-                    <label class="flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">Fill</span><input id="stk-pill-color" type="color" value="#000000" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Highlight colour"></label>
+                    <label class="flex items-center gap-1.5"><span class="text-gray-500 dark:text-gray-400">{% t "Fill" %}</span><input id="stk-pill-color" type="color" value="#000000" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Highlight colour"></label>
                 </div>
             </div>
 
@@ -207,23 +206,23 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
             any size, and the page adds no payload for a feature most users skip.{% endcomment %}
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Decorations</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Decorations" %}</span>
                     <button id="stk-deco-del" type="button" hidden class="text-xs text-red-500 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-1">
-                        <i class="fa-solid fa-trash-can mr-1" aria-hidden="true"></i>Delete
+                        <i class="fa-solid fa-trash-can mr-1" aria-hidden="true"></i>{% t "Delete" %}
                     </button>
                 </div>
                 <div id="stk-emoji" class="grid grid-cols-9 gap-1 text-lg leading-none"></div>
                 <div id="stk-deco-opts" class="space-y-2 hidden">
                     <label class="flex items-center gap-2 text-xs">
-                        <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Size</span>
+                        <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">{% t "Size" %}</span>
                         <input id="stk-deco-size" type="range" min="6" max="60" step="1" value="18" class="w-full accent-primary" aria-label="Decoration size">
                     </label>
                     <label class="flex items-center gap-2 text-xs">
-                        <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Rotate</span>
+                        <span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">{% t "Rotate" %}</span>
                         <input id="stk-deco-rot" type="range" min="-180" max="180" step="1" value="0" class="w-full accent-primary" aria-label="Decoration rotation">
                     </label>
                 </div>
-                <p id="stk-deco-hint" class="text-[11px] text-gray-400">Tap an emoji to drop it on the sticker, then drag it into place.</p>
+                <p id="stk-deco-hint" class="text-[11px] text-gray-400">{% t "Tap an emoji to drop it on the sticker, then drag it into place." %}</p>
             </div>
 
             {% comment %}Share is the primary action on a phone and hidden everywhere
@@ -233,17 +232,17 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
             accepts an actual WebP file, so it never appears as a button that cannot
             work.{% endcomment %}
             <button id="stk-share" type="button" hidden class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
-                <i class="fa-brands fa-whatsapp mr-1.5" aria-hidden="true"></i>Send sticker to a chat
+                <i class="fa-brands fa-whatsapp mr-1.5" aria-hidden="true"></i>{% t "Send sticker to a chat" %}
             </button>
             <button id="stk-download" type="button" class="w-full px-4 py-3 rounded-xl font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 text-white shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110" data-primary>
-                <i class="fa-brands fa-whatsapp mr-1.5" aria-hidden="true"></i>Download sticker (WebP)
+                <i class="fa-brands fa-whatsapp mr-1.5" aria-hidden="true"></i>{% t "Download sticker (WebP)" %}
             </button>
             <div class="flex gap-2">
                 <button id="stk-download-png" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-50">
                     <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i>PNG
                 </button>
                 <button id="stk-new" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New
+                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "New" %}
                 </button>
             </div>
 
@@ -254,32 +253,31 @@ nothing uploaded — and carry the query's own wording.{% endcomment %}
             own rule, enforced here rather than discovered after the download.{% endcomment %}
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pack</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Pack" %}</span>
                     <span id="stk-pack-count" class="text-xs text-gray-400">0 / 30</span>
                 </div>
                 <button id="stk-pack-add" type="button" class="w-full px-3 py-2 rounded-lg text-xs font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
-                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>Add this sticker to the pack
+                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>{% t "Add this sticker to the pack" %}
                 </button>
                 <div id="stk-pack-strip" class="grid grid-cols-5 gap-1.5"></div>
                 <button id="stk-pack-dl" type="button" disabled class="w-full px-3 py-2 rounded-lg text-xs font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
-                    <i class="fa-solid fa-file-arrow-down mr-1.5" aria-hidden="true"></i>Download pack (.zip)
+                    <i class="fa-solid fa-file-arrow-down mr-1.5" aria-hidden="true"></i>{% t "Download pack (.zip)" %}
                 </button>
-                <p id="stk-pack-hint" class="text-[11px] text-gray-400">WhatsApp packs need at least 3 stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly.</p>
+                <p id="stk-pack-hint" class="text-[11px] text-gray-400">{% t "WhatsApp packs need at least 3 stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly." %}</p>
             </div>
         </div>
     </section>
 
     <!-- SEO / help content -->
     <section aria-labelledby="stk-how" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="stk-how" class="text-2xl font-bold text-center">How to make a sticker</h2>
+        <h2 id="stk-how" class="text-2xl font-bold text-center">{% t "How to make a sticker" %}</h2>
         <div class="grid gap-5 sm:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>Drop a photo</div><p class="text-sm text-gray-500 dark:text-gray-400">We cut out the subject automatically — no green screen, no manual masking.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>Frame, outline &amp; caption</div><p class="text-sm text-gray-500 dark:text-gray-400">Zoom and rotate to frame the subject, add the classic white border, and drag your caption anywhere.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>Export &amp; add</div><p class="text-sm text-gray-500 dark:text-gray-400">Download the 512×512 WebP and add it via a sticker app like Sticker.ly or WSTick.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">1.</span>{% t "Drop a photo" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "We cut out the subject automatically — no green screen, no manual masking." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">2.</span>{% t "Frame, outline & caption" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Zoom and rotate to frame the subject, add the classic white border, and drag your caption anywhere." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><span class="text-primaryText mr-1.5">3.</span>{% t "Export & add" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Download the 512×512 WebP and add it via a sticker app like Sticker.ly or WSTick." %}</p></div>
         </div>
         <p class="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-sm">
-            The exported sticker is a transparent 512×512 WebP with a small margin — exactly what WhatsApp and Telegram
-            expect. Everything runs in your browser, so your photo never leaves your device.
+            {% t "The exported sticker is a transparent 512×512 WebP with a small margin — exactly what WhatsApp and Telegram expect. Everything runs in your browser, so your photo never leaves your device." %}
         </p>
     </section>
 

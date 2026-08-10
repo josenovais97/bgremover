@@ -734,6 +734,26 @@ class GuideContentTests(SimpleTestCase):
                     f"{guide['slug']} names a tool that does not resolve: {guide['tools']}",
                 )
 
+    def test_every_referenced_landing_resolves(self):
+        """Same guarantee for `landings`, which the guide view filters silently."""
+        from remover.views import USE_CASES_BY_SLUG
+
+        for guide in GUIDES:
+            for slug in guide["landings"]:
+                with self.subTest(guide=guide["slug"], landing=slug):
+                    self.assertIn(
+                        slug, USE_CASES_BY_SLUG,
+                        f"{guide['slug']} names a use case that does not exist: {slug}",
+                    )
+
+    def test_landing_links_reach_the_page(self):
+        """The links must actually render — a context typo would drop them silently."""
+        for guide in (g for g in GUIDES if g["landings"]):
+            html = self.client.get(reverse("remover:guide", args=[guide["slug"]])).content.decode()
+            for slug in guide["landings"]:
+                with self.subTest(guide=guide["slug"], landing=slug):
+                    self.assertIn(f'href="/remove-background/{slug}/"', html)
+
     def test_every_guide_has_a_footer_label(self):
         for guide in GUIDES:
             with self.subTest(guide=guide["slug"]):

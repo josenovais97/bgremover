@@ -140,6 +140,26 @@ before the cross-links, so it never separates a heading from its own text.
     </section>
     {% endif %}
 
+    {% comment %}The use-case pages this article covers. A text row rather than
+    cards: the tool grid above is the primary call to action and this must not
+    compete with it. It exists because these pages sit at position 16-18 on real
+    impressions with a single in-content link each, and a guide is the most
+    topically relevant place a link to them can come from.{% endcomment %}
+    {% if guide_landings %}
+    <section aria-labelledby="guide-landings-title" class="max-w-3xl mx-auto text-center space-y-3">
+        <h2 id="guide-landings-title" class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Put it into practice
+        </h2>
+        <div class="flex flex-wrap justify-center gap-3">
+            {% for l in guide_landings %}
+            <a href="{{ l.url }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:border-primary hover:text-primaryText transition">
+                {{ l.nav }} <i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <!-- Keep reading -->
     {% if related_guides %}
     <section aria-labelledby="more-title" class="max-w-4xl mx-auto space-y-6">

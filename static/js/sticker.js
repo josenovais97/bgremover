@@ -11,7 +11,7 @@
  * so nothing here needs an import to reach them.
  */
 
-const { $, $$, Toast, loadImage, download, share, canShare, t } = CBG;
+const { $, $$, Toast, loadImage, download, share, canShare, t, plural } = CBG;
 
 /* --------------------------------------------------------------- helpers */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -267,7 +267,7 @@ const App = {
     this.resetSubject();
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
-    this.setBusy(true, 'Removing background…');
+    this.setBusy(true, t('Removing background…'));
     this.render();
     try {
       const [{ removeBackground }, { removalConfig, markRemovalSucceeded }] = await Promise.all([
@@ -667,11 +667,16 @@ const App = {
     $('#stk-pack-count').textContent = `${n} / ${PACK_MAX}`;
     $('#stk-pack-add').disabled = !this.cutout || n >= PACK_MAX;
     $('#stk-pack-dl').disabled = n < PACK_MIN;
+    // The empty-state line is the same literal the template renders, so the two
+    // share one catalogue entry. It spells out PACK_MIN rather than interpolating
+    // it because a Django template cannot interpolate — keep them in step.
     $('#stk-pack-hint').textContent = n === 0
-      ? `WhatsApp packs need at least ${PACK_MIN} stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly.`
+      ? t('WhatsApp packs need at least 3 stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly.')
       : n < PACK_MIN
-        ? `${PACK_MIN - n} more to go — WhatsApp packs need at least ${PACK_MIN} stickers.`
-        : `${n} sticker${n === 1 ? '' : 's'} ready. Import the ZIP with a sticker app like WSTick or Sticker.ly.`;
+        ? t('{k} more to go — WhatsApp packs need at least {min} stickers.', { k: PACK_MIN - n, min: PACK_MIN })
+        : plural(n,
+                 '{n} sticker ready. Import the ZIP with a sticker app like WSTick or Sticker.ly.',
+                 '{n} stickers ready. Import the ZIP with a sticker app like WSTick or Sticker.ly.');
 
     const strip = $('#stk-pack-strip');
     strip.textContent = '';

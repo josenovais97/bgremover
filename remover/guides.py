@@ -55,7 +55,7 @@ _NAV_LABELS = {
 
 
 def _guide(slug, title, h1, description, category, updated, intro, sections,
-           takeaways, tools, faqs):
+           takeaways, tools, faqs, landings=()):
     """One article.
 
     intro      list of paragraphs, rendered above the contents box
@@ -63,6 +63,11 @@ def _guide(slug, title, h1, description, category, updated, intro, sections,
                — "list" optional; headings become the in-page contents links
     takeaways  the summary box; must be genuinely substantive, not a recap
     tools      url_names of tools the article legitimately points at
+    landings   use-case slugs (views.USE_CASES) the article legitimately points
+               at — kept separate from `tools` because those are reversed with
+               no arguments, and because a landing is a framing of the remover
+               rather than a tool of its own. Same editorial rule as `tools`:
+               only list one the article actually covers.
     """
     # `updated` is an ISO date so the sitemap can use it directly; the human label
     # is derived rather than stored twice, so the two can never disagree.
@@ -89,6 +94,7 @@ def _guide(slug, title, h1, description, category, updated, intro, sections,
         "sections": [{**s, "id": _anchor(s["h"])} for s in sections],
         "takeaways": takeaways,
         "tools": tools,
+        "landings": list(landings),
         "faqs": faqs,
         "words": words,
         "minutes": max(1, round(words / _WORDS_PER_MINUTE)),
@@ -291,6 +297,7 @@ GUIDES = [
             "Check cut-out edges at full zoom before listing; haloes and jagged edges are what make an edited photo look edited.",
         ],
         tools=["ecommerce", "index", "resize", "compress"],
+        landings=["product-photos", "ebay", "clothing"],
         faqs=[
             {"q": "Do I need a DSLR for product photography?",
              "a": "No. A recent phone has ample resolution and dynamic range for marketplace listings. Lighting, background and framing account for nearly all of the visible difference between amateur and professional product shots."},
@@ -778,6 +785,7 @@ GUIDES = [
             "GIF supports only one fully transparent colour, so GIF cut-outs always have hard, jagged edges.",
         ],
         tools=["index", "convert", "sticker"],
+        landings=["logo", "signature"],
         faqs=[
             {"q": "What is an image with no background called?",
              "a": "Most commonly a transparent PNG, after the format that carries it. Editors call it a cut-out, print and prepress call it a knockout, and developers call it an alpha image or an image with an alpha channel. All four describe the same thing: a subject with no background pixels behind it."},
@@ -957,6 +965,7 @@ GUIDES = [
             "Keep content out of the top and bottom 250 pixels of any 9:16 vertical, where the interface sits.",
         ],
         tools=["instagram", "resize", "crop", "compress"],
+        landings=["youtube-thumbnail", "profile-picture", "twitch", "discord-pfp"],
         faqs=[
             {"q": "What is the best image size for Instagram?",
              "a": "1080 × 1350 (4:5) for feed posts — the tallest ratio Instagram displays without cropping, so it takes up the most screen space as people scroll. Use 1080 × 1920 (9:16) for stories and reels."},
@@ -1134,6 +1143,7 @@ GUIDES = [
             "Always check a cut-out against a background unlike the original — a white fringe is invisible against white.",
         ],
         tools=["index", "ecommerce", "blur"],
+        landings=["pet-photos", "product-photos", "clothing"],
         faqs=[
             {"q": "What background is best for background removal?",
              "a": "A plain, untextured one that contrasts strongly in brightness with your subject, and that does not share colours with it. Green screens work not because of the colour itself but because green rarely appears in skin, hair or clothing."},

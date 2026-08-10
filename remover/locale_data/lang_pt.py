@@ -870,6 +870,95 @@ UI = {
     "Buy me a coffee": "Pague-me um café",
     "Free, private, and unlimited.": "Gratuito, privado e ilimitado.",
     "Language": "Idioma",
+    # Shared demo captions, badges and dropzone hints — these were wrapped in
+    # {% t %} but had no entry, so they rendered English on every /pt/ and /es/ page.
+    "Drag the handle — sample photo, nothing uploaded":
+        "Arraste o cursor — foto de exemplo, nada é carregado",
+    "Drag the handle — sample product, nothing uploaded":
+        "Arraste o cursor — produto de exemplo, nada é carregado",
+    "Drag the handle — made with this tool, nothing uploaded":
+        "Arraste o cursor — feito com esta ferramenta, nada é carregado",
+    "Clean white": "Branco limpo",
+    "Redacted": "Censurado",
+    "PNG": "PNG",
+    "WEBP": "WEBP",
+    "Same pixels, smaller & web-ready — no visible quality loss":
+        "Os mesmos pixéis, mais pequeno e pronto para a web — sem perda visível de qualidade",
+    "Resized": "Redimensionada",
+    "Exact pixels, nothing stretched — nothing uploaded":
+        "Pixéis exatos, nada esticado — nada é carregado",
+    "Passport photo": "Fotografia de passaporte",
+    "Compressed": "Comprimida",
+    "Same quality, ~12× smaller — nothing uploaded":
+        "A mesma qualidade, ~12× mais pequena — nada é carregado",
+    "Tiled watermark": "Marca de água repetida",
+    "Cropped": "Recortada",
+    "Text behind": "Texto atrás",
+    "Background blurred": "Fundo desfocado",
+    "App icon": "Ícone da app",
+    "Related reading": "Leitura relacionada",
+    "min read": "min de leitura",
+    "Press": "Prima",
+    "to paste": "para colar",
+    "Post": "Publicação",
+    "One photo, every size — nothing cropped off, nothing uploaded":
+        "Uma foto, todos os tamanhos — nada cortado, nada carregado",
+    "The same photo fitted to a square Instagram post":
+        "A mesma foto ajustada a uma publicação quadrada do Instagram",
+    "The same photo fitted to a 4:5 Instagram portrait":
+        "A mesma foto ajustada a um retrato 4:5 do Instagram",
+    "The same photo fitted to a 9:16 Instagram story":
+        "A mesma foto ajustada a uma story 9:16 do Instagram",
+    # Sticker maker
+    "Sticker Maker": "Criador de Autocolantes",
+    "Made locally — nothing is uploaded": "Feito localmente — nada é carregado",
+    "Turn any photo into a WhatsApp & Telegram sticker — we remove the background automatically, add a clean outline and your caption, and export a":
+        "Transforme qualquer foto num autocolante de WhatsApp e Telegram — removemos o fundo automaticamente, adicionamos um contorno limpo e a sua legenda, e exportamos um",
+    "ready-to-use 512×512 transparent WebP": "WebP transparente 512×512 pronto a usar",
+    "or click to browse — a clear subject (a person, pet or object) works best":
+        "ou clique para procurar — um assunto nítido (uma pessoa, animal ou objeto) funciona melhor",
+    "How it lands in a chat": "Como fica numa conversa",
+    "512×512 transparent WebP — WhatsApp ready": "WebP transparente 512×512 — pronto para WhatsApp",
+    "Drag to move · scroll or pinch to zoom · drag the text to place it":
+        "Arraste para mover · role ou belisque para ampliar · arraste o texto para o posicionar",
+    "Subject": "Assunto",
+    "Flip horizontally": "Inverter horizontalmente",
+    "Show": "Mostrar",
+    "Colour": "Cor",
+    "Thickness": "Espessura",
+    "Text": "Texto",
+    "BOLD": "NEGRITO",
+    "Clean": "Limpa",
+    "TALL": "ALTA",
+    "Script": "Manuscrita",
+    "COMIC": "BANDA",
+    "Hand": "Mão",
+    "Size": "Tamanho",
+    "Highlight": "Destaque",
+    "Fill": "Preenchimento",
+    "Decorations": "Decorações",
+    "Delete": "Eliminar",
+    "Tap an emoji to drop it on the sticker, then drag it into place.":
+        "Toque num emoji para o colocar no autocolante e depois arraste-o para o sítio certo.",
+    "Send sticker to a chat": "Enviar autocolante para uma conversa",
+    "Download sticker (WebP)": "Transferir autocolante (WebP)",
+    "Pack": "Pacote",
+    "Add this sticker to the pack": "Adicionar este autocolante ao pacote",
+    "Download pack (.zip)": "Transferir pacote (.zip)",
+    "WhatsApp packs need at least 3 stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly.":
+        "Os pacotes do WhatsApp precisam de pelo menos 3 autocolantes. Importe o ZIP com uma app de autocolantes como o WSTick ou o Sticker.ly.",
+    "How to make a sticker": "Como fazer um autocolante",
+    "We cut out the subject automatically — no green screen, no manual masking.":
+        "Recortamos o assunto automaticamente — sem fundo verde, sem máscaras manuais.",
+    "Frame, outline & caption": "Enquadrar, contornar e legendar",
+    "Zoom and rotate to frame the subject, add the classic white border, and drag your caption anywhere.":
+        "Amplie e rode para enquadrar o assunto, adicione o clássico contorno branco e arraste a legenda para onde quiser.",
+    "Export & add": "Exportar e adicionar",
+    "Download the 512×512 WebP and add it via a sticker app like Sticker.ly or WSTick.":
+        "Transfira o WebP 512×512 e adicione-o através de uma app de autocolantes como o Sticker.ly ou o WSTick.",
+    "The exported sticker is a transparent 512×512 WebP with a small margin — exactly what WhatsApp and Telegram expect. Everything runs in your browser, so your photo never leaves your device.":
+        "O autocolante exportado é um WebP transparente de 512×512 com uma pequena margem — exatamente o que o WhatsApp e o Telegram esperam. Tudo corre no seu navegador, por isso a sua foto nunca sai do seu dispositivo.",
+    "Add a caption (optional)…": "Adicione uma legenda (opcional)…",
     # Home page
     "Private & free — runs in your browser": "Privado e gratuito — corre no seu navegador",
     "Free Background Remover — No Upload, No Signup, No Watermark":
@@ -889,6 +978,7 @@ UI = {
     "Frequently asked questions": "Perguntas frequentes",
     # Shared landing-page strings
     "Why use it": "Porquê usar",
+    "Remove a background from something else": "Remover o fundo de outra coisa",
     "Ready to try it?": "Pronto para experimentar?",
     "It's free, unlimited, and completely private.": "É gratuito, ilimitado e totalmente privado.",
     "Remove a background now": "Remover um fundo agora",
@@ -1248,6 +1338,15 @@ JS_UI = {
     "Copy not supported here — use Download":
         "Cópia não suportada aqui — use Descarregar",
     # --- Background removal ---
+    # Sticker pack
+    "WhatsApp packs need at least 3 stickers. Import the ZIP with a sticker app like WSTick or Sticker.ly.":
+        "Os pacotes do WhatsApp precisam de pelo menos 3 autocolantes. Importe o ZIP com uma app de autocolantes como o WSTick ou o Sticker.ly.",
+    "{k} more to go — WhatsApp packs need at least {min} stickers.":
+        "Faltam {k} — os pacotes do WhatsApp precisam de pelo menos {min} autocolantes.",
+    "{n} sticker ready. Import the ZIP with a sticker app like WSTick or Sticker.ly.":
+        "{n} autocolante pronto. Importe o ZIP com uma app de autocolantes como o WSTick ou o Sticker.ly.",
+    "{n} stickers ready. Import the ZIP with a sticker app like WSTick or Sticker.ly.":
+        "{n} autocolantes prontos. Importe o ZIP com uma app de autocolantes como o WSTick ou o Sticker.ly.",
     "Background removal failed": "A remoção do fundo falhou",
     "Added to pack": "Adicionado ao pacote",
     "Pack downloaded": "Pacote transferido",

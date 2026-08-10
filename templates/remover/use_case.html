@@ -92,6 +92,25 @@
 
     {% include 'remover/partials/faq.html' %}
 
+    {% comment %}Sibling cross-links, the same block the privacy and compress
+    landings carry. These eleven pages held one in-content link each — the single
+    link down from the home page — while /convert/, /compress/ and /resize-image/
+    held 214 between them. See views.use_case for the measurement.{% endcomment %}
+    {% if siblings %}
+    <section aria-labelledby="uc-siblings-title" class="max-w-3xl mx-auto text-center space-y-3">
+        <h2 id="uc-siblings-title" class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            {% t "Remove a background from something else" %}
+        </h2>
+        <div class="flex flex-wrap justify-center gap-3">
+            {% for s in siblings %}
+            <a href="{{ s.url }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:border-primary hover:text-primaryText transition">
+                {{ s.nav }} <i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <!-- CTA -->
     <section class="max-w-3xl mx-auto text-center glass rounded-3xl border border-gray-200/70 dark:border-gray-800/70 p-10 space-y-4">
         <h2 class="text-2xl font-bold">{% t "Ready to try it?" %}</h2>

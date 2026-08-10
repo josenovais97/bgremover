@@ -1075,6 +1075,13 @@ _CORE_TRANSLATED = frozenset(
     # set, and the tool most often reached from a search rather than from another
     # page here.
     + ["/crop/"]
+    # 1.13 adds the sticker maker. It is the site's single biggest page by
+    # impressions (94 at position ~14), and Search Console shows the .pt domain
+    # ranking at position 2.96 in Portugal against 59.31 in the United States —
+    # so the translated URL is competing where the ccTLD helps rather than where
+    # it hurts. Chat stickers are also a heavily Portuguese- and Spanish-speaking
+    # use case, which is not true of, say, the PDF tools.
+    + ["/sticker-maker/"]
 )
 
 TRANSLATED_PATHS = {lang: _CORE_TRANSLATED for lang in LANGUAGES}
@@ -1229,13 +1236,31 @@ def index(request):
 
 @require_safe
 def use_case(request, slug):
-    """Render a keyword-targeted landing page for a specific audience."""
+    """Render a keyword-targeted landing page for a specific audience.
+
+    `siblings` is the same cross-link block the privacy and compress landings
+    already carry, and it is here for the same reason. Measured in-content links
+    (footer and mega-menu excluded, since those are discounted): /convert/,
+    /compress/ and /resize-image/ held 214 between them while every use-case page
+    held exactly one — the single link down from the home page. Those eleven are
+    also the pages Search Console puts closest to page one, several sitting at
+    position 16-18 on real impressions, so the site's own authority was pointing
+    almost entirely away from the pages best placed to use it.
+    """
     case = USE_CASES_BY_SLUG.get(slug)
     if case is None:
         raise Http404("Unknown use case")
     faqs = USE_CASE_FAQS.get(slug, [])
+    # localize_use_case, not t(): these nav labels live in the per-slug USE_CASES
+    # catalogue, so t() would look them up in UI, miss, and leave the row English
+    # under a translated heading.
+    siblings = [
+        {"nav": localize_use_case(c)["nav"], "url": reverse("remover:use_case", args=[c["slug"]])}
+        for c in USE_CASES if c["slug"] != slug
+    ]
     return render(request, "remover/use_case.html", {
         "case": localize_use_case(case),
+        "siblings": siblings,
         "faqs": faqs,
         "faq_jsonld": faq_jsonld(faqs) if faqs else "",
     })
@@ -1461,6 +1486,15 @@ def guide_detail(request, slug):
     return render(request, "remover/guide.html", {
         "guide": guide,
         "guide_tools": _guide_tool_links(guide["tools"]),
+        # The use-case landings this article legitimately covers. Separate from
+        # guide_tools because a landing is a framing of the remover rather than a
+        # tool, and because these are the pages Search Console shows closest to
+        # page one with almost no in-content links pointing at them.
+        "guide_landings": [
+            {"url": reverse("remover:use_case", args=[s]),
+             "nav": localize_use_case(USE_CASES_BY_SLUG[s])["nav"]}
+            for s in guide["landings"] if s in USE_CASES_BY_SLUG
+        ],
         "related_guides": related_guides(slug),
         "faqs": guide["faqs"],
         "faq_jsonld": faq_jsonld(guide["faqs"]),

@@ -9,7 +9,9 @@ from config.middleware import ISOLATED_VIEWS
 
 from .guides import GUIDES, guides_for_tool
 from .page_content import deep_for
-from .translations import LANGUAGE_NAMES, LANGUAGES, js_catalogue, path_language, strip_language
+from .translations import (
+    LANGUAGE_NAMES, LANGUAGES, js_catalogue, localize_use_case, path_language, strip_language,
+)
 from .translations import t as tr
 from .views import LANDINGS_BY_PARENT, USE_CASES, is_translated_path, translated_languages
 
@@ -566,7 +568,12 @@ def seo(request):
         "og_image": OG_IMAGES.get(url_name, _DEFAULT_OG_IMAGE),
         # Landing pages are surfaced in the footer of every page; the nav label is
         # translated so the footer localises too.
-        "use_cases": [{"slug": c["slug"], "nav": tr(c["nav"])} for c in USE_CASES],
+        # localize_use_case, not tr(): these labels live in the per-slug USE_CASES
+        # catalogue rather than in UI, so tr() missed every one of them and the
+        # footer listed eleven English labels on every /pt/ and /es/ page.
+        "use_cases": [
+            {"slug": c["slug"], "nav": localize_use_case(c)["nav"]} for c in USE_CASES
+        ],
         # The guides get a footer column of their own. A new section needs internal
         # links from established pages before it will be crawled at any speed, and
         # the footer is the only block that appears on all of them. Not translated:
