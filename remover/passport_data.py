@@ -140,6 +140,47 @@ COUNTRIES = [
             "Glare on glasses, or frames covering any part of the eyes.",
         ],
     ),
+    # France is the one 35×45 country that does NOT want a white background, which
+    # is why it earns a page where Germany and Ireland did not: the single most
+    # common thing a user arrives here already holding — a cut-out on white — is
+    # automatically wrong for France, and no generic 35×45 page tells them so.
+    _entry(
+        # `bg` is interpolated mid-sentence ("set a {bg} backdrop"), so it has to
+        # stay a noun phrase — the white-is-forbidden rule is carried by the intro
+        # and the rules table, where it can be a sentence.
+        "france", "France", "🇫🇷", 35, 45, bg="plain light grey or light blue (never white)",
+        note="The 35×45 mm photo is used for the French passport, the CNI identity card and the driving licence.",
+        authority="Service-Public / ANTS (Agence nationale des titres sécurisés)",
+        authority_url="https://www.service-public.gouv.fr/particuliers/vosdroits/F10619",
+        recency="the last 6 months",
+        intro=[
+            "France uses the same 35 × 45 mm frame as the rest of Europe and then breaks the rule everyone assumes is universal: a white background is explicitly forbidden. Service-Public states it flatly — «le fond blanc est interdit». The background must be a plain light grey or light blue, and a photo that would sail through a UK, German or Schengen visa application is refused here for the one thing most people never think to check.",
+            "This catches out anyone reusing a photo, and it catches out anyone who has just removed a background, because a transparent cut-out exported straight to a print or a JPG almost always lands on white. If you are preparing a French photo, the background is the setting to change first, not last.",
+            "There is a second requirement worth knowing before you spend any time on this: for the passport itself, the photo must come from a photographer or a photo booth approved by ANTS. A photo you produce at home does not satisfy that rule, however precisely it matches the spec.",
+        ],
+        rules=[
+            ("Background", "Plain light grey or light blue. White is forbidden outright, and so is any pattern, texture or visible shadow. This is the rule that most distinguishes France from its neighbours, and the most common reason a reused photo fails."),
+            ("Approved source", "For a passport, CNI or driving licence, the photo must come from an ANTS-approved photographer or booth — the ones marked with the official blue pictogram. An approved source can also issue a digital ePhoto code you enter into your ANTS application instead of handing over prints."),
+            ("Glasses", "Permitted, unlike in the United States or Canada. The frames must be thin and must not cover the eyes, and the lenses must not be tinted, coloured or reflective. Glare on the lens is still a refusal."),
+            ("Expression", "Neutral with the mouth closed, head straight, facing the camera, both eyes open. A smile that would be acceptable on a US photo fails here."),
+            ("Headwear", "Not permitted. The head must be bare — «la tête doit être nue» — which explicitly includes hats, headscarves and even hairbands."),
+            ("Head size", "32 to 36 mm from chin to crown, about 70–80% of the frame height — the standard European window, so the framing of a Schengen photo is right even when its background is not."),
+        ],
+        children="A child needs their own photo meeting the same rules, and nobody else may appear in the frame — no supporting hands, no parent holding the child up. For babies, the practical approach is to lay the child on a plain light grey or light blue sheet and shoot from directly above, which gets the even background and the head-on angle at once. Children are not exempt from the neutral expression in the way UK rules exempt under-6s, though in practice a sleeping infant's closed eyes are tolerated. A minor's application is made by a parent or guardian, who must attend with them.",
+        process=[
+            "A passport application starts as a pre-demande on the ANTS website, but it cannot be finished there: you must book an appointment at a mairie equipped with a biometric station to give fingerprints in person. Not every town hall has one, and in cities the wait for a slot is often the longest part of the process.",
+            "At the photo step ANTS asks whether you have an ePhoto code. If you do, you type it in and the photo is pulled from ANTS's own servers — no prints change hands. If you do not, you bring a printed photo to the appointment. The code is issued by approved booths and by a small number of approved online services, and it expires after six months like the photo itself.",
+            "Where this tool genuinely helps is everything that is not the passport: French administrative forms, school and workplace ID, visa applications abroad that ask for a French-format photo, and preparing a compliant image so you know what you are getting before you pay at a booth. For the passport, CNI or driving licence, use an approved source — we would rather say so than have your appointment wasted.",
+        ],
+        rejections=[
+            "A white background — the single most common French rejection, and the one that surprises people who have applied elsewhere.",
+            "A photo not taken by an ANTS-approved photographer or booth, for a passport, CNI or driving licence.",
+            "Glare on glasses, tinted lenses, or thick frames covering part of the eyes.",
+            "Any headwear at all, including a hairband, since the head must be bare.",
+            "A visible shadow on the background from standing too close to the wall.",
+            "An ePhoto code more than six months old, which ANTS invalidates automatically.",
+        ],
+    ),
     _entry(
         "canada", "Canada", "🇨🇦", 50, 70,
         note="Canada uses a larger 50×70 mm photo for passports.",
@@ -359,7 +400,11 @@ COUNTRIES_BY_SLUG = {c["slug"]: c for c in COUNTRIES}
 # content). They 301 to the main passport tool so any link equity and stray index
 # entries consolidate onto a page that can actually rank, instead of 404-ing.
 FOLDED_COUNTRY_SLUGS = frozenset({
-    "germany", "france", "italy", "ireland", "netherlands", "japan",
+    # France came back (2026-08): not as the 35×45/white near-duplicate that was
+    # folded, but on the strength of a spec that genuinely differs — white
+    # backgrounds are forbidden — plus the ANTS approved-source rule. It also had
+    # live search demand while folded ("french passport size photo").
+    "germany", "italy", "ireland", "netherlands", "japan",
     "new-zealand", "south-africa", "singapore", "philippines",
     "south-korea", "nigeria", "pakistan",
 })
