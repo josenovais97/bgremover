@@ -21,6 +21,19 @@ function rafThrottle(fn) {
   return () => { if (scheduled) return; scheduled = true; requestAnimationFrame(() => { scheduled = false; fn(); }); };
 }
 
+/** Rounded-rect path, for the caption highlight. */
+function roundRectPath(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
 /** Recolour a sprite to a solid tint, keeping its alpha (for the outline). */
 function tintCanvas(src, color) {
   const c = document.createElement('canvas');
@@ -37,10 +50,18 @@ const SIZE = 512;
 const MODEL_CDN = 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.6.0/+esm';
 
 /* --------------------------------------------------------------------- app */
+const SUB_MIN = 0.5;
+const SUB_MAX = 3;
+
 const App = {
   cutout: null,
   outline: { on: true, color: '#ffffff', width: 3.5 }, // width = % of the 512 frame
-  text: { content: '', font: 'Anton', color: '#ffffff', size: 12, x: 0.5, y: 0.84 },
+  // Subject transform, applied on top of the automatic fit. dx/dy are fractions
+  // of the frame so the whole thing is resolution-independent — the same numbers
+  // paint the 512 export, the on-screen preview and the chat chips.
+  sub: { scale: 1, dx: 0, dy: 0, rot: 0, flip: false },
+  text: { content: '', font: 'Anton', color: '#ffffff', size: 12, x: 0.5, y: 0.84,
+          pill: false, pillColor: '#000000' },
   _textBox: null,
 
   init() {
@@ -89,14 +110,55 @@ const App = {
     $('#stk-text-color').addEventListener('input', (e) => { this.text.color = e.target.value; render(); });
     $('#stk-text-size').addEventListener('input', (e) => { this.text.size = +e.target.value; this.render(); });
 
-    // Drag the caption on the sticker.
+    // Subject controls. The sliders and the gestures below drive the same state,
+    // so each has to write the other's UI back — syncSub() is that one direction.
+    $('#stk-zoom').addEventListener('input', (e) => { this.sub.scale = +e.target.value / 100; this.syncSubLabels(); render(); });
+    $('#stk-rotate').addEventListener('input', (e) => { this.sub.rot = +e.target.value; this.syncSubLabels(); render(); });
+    $('#stk-flip').addEventListener('click', () => { this.sub.flip = !this.sub.flip; this.render(); });
+    $('#stk-reset-sub').addEventListener('click', () => this.resetSubject());
+
+    // Text pill.
+    $('#stk-text-pill').addEventListener('change', (e) => { this.text.pill = e.target.checked; this.render(); });
+    $('#stk-pill-color').addEventListener('input', (e) => { this.text.pillColor = e.target.value; render(); });
+
+    /* Pointer gestures. Grabbing the caption drags the caption; grabbing anywhere
+       else moves the subject — which is what a user reaches for first, and there
+       is nothing else on the canvas to hit. Two fingers pinch-zoom. */
+    this._pointers = new Map();
     this.canvas.addEventListener('pointerdown', (e) => {
-      if (!this.hitText(e)) return;
+      if (!this.cutout) return;
       this.canvas.setPointerCapture?.(e.pointerId);
-      this.drag = { x: e.clientX, y: e.clientY };
+      this._pointers.set(e.pointerId, e);
+      if (this._pointers.size === 2) {
+        this._pinch = { dist: this.pinchDist(), scale: this.sub.scale };
+        this.drag = null;
+        return;
+      }
+      this.drag = { x: e.clientX, y: e.clientY, target: this.hitText(e) ? 'text' : 'subject' };
+      this.canvas.classList.add('cursor-grabbing');
     });
-    this.canvas.addEventListener('pointermove', (e) => this.onDrag(e));
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => this.canvas.addEventListener(ev, () => { this.drag = null; }));
+    this.canvas.addEventListener('pointermove', (e) => {
+      if (this._pointers.has(e.pointerId)) this._pointers.set(e.pointerId, e);
+      if (this._pinch && this._pointers.size === 2) {
+        const d = this.pinchDist();
+        if (this._pinch.dist > 0) this.setScale(this._pinch.scale * (d / this._pinch.dist));
+        return;
+      }
+      this.onDrag(e);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) =>
+      this.canvas.addEventListener(ev, (e) => {
+        this._pointers.delete(e.pointerId);
+        if (this._pointers.size < 2) this._pinch = null;
+        this.drag = null;
+        this.canvas.classList.remove('cursor-grabbing');
+      }));
+    // passive:false — zooming the sticker has to win over scrolling the page.
+    this.canvas.addEventListener('wheel', (e) => {
+      if (!this.cutout) return;
+      e.preventDefault();
+      this.setScale(this.sub.scale * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+    }, { passive: false });
 
     $('#stk-download').addEventListener('click', () => this.export('image/webp'));
     $('#stk-download-png').addEventListener('click', () => this.export('image/png'));
@@ -146,6 +208,8 @@ const App = {
     this.input.value = '';
     if (!file || !/^image\//.test(file.type)) { Toast.show(t('Please choose an image'), 'error'); return; }
     this.cutout = null;
+    // A new photo gets the automatic framing, not the last photo's zoom.
+    this.resetSubject();
     this.dropzone.parentElement.classList.add('hidden');
     this.editor.classList.remove('hidden');
     this.setBusy(true, 'Removing background…');
@@ -199,6 +263,28 @@ const App = {
     return { x: (size - w) / 2, y: (size - h) / 2, w, h };
   },
 
+  /**
+   * The transformed cut-out, alone, on its own `size`×`size` layer.
+   *
+   * Rendering the subject to a full-frame layer first is what lets zoom, rotate
+   * and flip exist at all: the outline is stamped by offsetting a silhouette,
+   * and offsetting a *rotated* sprite around its own centre would swing the
+   * outline with it. Against a square layer the stamp is always frame-aligned,
+   * so the die-cut border stays an even width at any angle.
+   */
+  subjectLayer(size) {
+    const layer = document.createElement('canvas');
+    layer.width = layer.height = size;
+    const lx = layer.getContext('2d');
+    const { w, h } = this.spriteRect(size);
+    const s = this.sub;
+    lx.translate(size / 2 + s.dx * size, size / 2 + s.dy * size);
+    lx.rotate((s.rot * Math.PI) / 180);
+    lx.scale(s.flip ? -s.scale : s.scale, s.scale);
+    lx.drawImage(this.cutout, -w / 2, -h / 2, w, h);
+    return layer;
+  },
+
   /** Composite the sticker (cut-out + outline + text) into `canvas` at `size`. */
   paint(canvas, size) {
     canvas.width = size; canvas.height = size;
@@ -207,23 +293,17 @@ const App = {
     if (!this.cutout) return;
 
     const ow = this.outlinePx(size);
-    const { x: dx, y: dy, w: dw, h: dh } = this.spriteRect(size);
-
-    // Scaled sprite of the cut-out (outline is stamped from its silhouette).
-    const sprite = document.createElement('canvas');
-    sprite.width = Math.max(1, Math.round(dw));
-    sprite.height = Math.max(1, Math.round(dh));
-    sprite.getContext('2d').drawImage(this.cutout, 0, 0, sprite.width, sprite.height);
+    const layer = this.subjectLayer(size);
 
     if (ow > 0) {
-      const sil = tintCanvas(sprite, this.outline.color);
+      const sil = tintCanvas(layer, this.outline.color);
       const steps = 48;
       for (let i = 0; i < steps; i++) {
         const a = (i / steps) * Math.PI * 2;
-        ctx.drawImage(sil, dx + Math.cos(a) * ow, dy + Math.sin(a) * ow);
+        ctx.drawImage(sil, Math.cos(a) * ow, Math.sin(a) * ow);
       }
     }
-    ctx.drawImage(sprite, dx, dy);
+    ctx.drawImage(layer, 0, 0);
     this.drawText(ctx, size);
   },
 
@@ -245,11 +325,22 @@ const App = {
     lines.forEach((l) => { maxW = Math.max(maxW, ctx.measureText(l || ' ').width); });
     this._textBox = { x: cx - maxW / 2 - fs * 0.2, y: cy - blockH / 2 - fs * 0.1, w: maxW + fs * 0.4, h: blockH + fs * 0.2 };
 
-    // Black outline around the letters so any colour reads on any sticker.
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-    ctx.lineWidth = fs * 0.18;
-    lines.forEach((l, i) => ctx.strokeText(l, cx, cy - blockH / 2 + lh * (i + 0.5)));
+    if (t.pill) {
+      const b = this._textBox;
+      // A little wider than the hit box, so the letters are not touching the edge.
+      const pad = fs * 0.25;
+      ctx.fillStyle = t.pillColor;
+      roundRectPath(ctx, b.x - pad, b.y - pad * 0.6, b.w + pad * 2, b.h + pad * 1.2, fs * 0.45);
+      ctx.fill();
+    } else {
+      // Black outline around the letters so any colour reads on any sticker. The
+      // pill already guarantees contrast, and stroking on top of it reads as a
+      // heavy drop shadow rather than as a caption.
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+      ctx.lineWidth = fs * 0.18;
+      lines.forEach((l, i) => ctx.strokeText(l, cx, cy - blockH / 2 + lh * (i + 0.5)));
+    }
     ctx.fillStyle = t.color;
     lines.forEach((l, i) => ctx.fillText(l, cx, cy - blockH / 2 + lh * (i + 0.5)));
     ctx.restore();
@@ -272,14 +363,67 @@ const App = {
     const r = this.canvas.getBoundingClientRect();
     const dx = (e.clientX - this.drag.x) * (this.canvas.width / r.width);
     const dy = (e.clientY - this.drag.y) * (this.canvas.height / r.height);
-    this.text.x = clamp(this.text.x + dx / this.canvas.width, 0, 1);
-    this.text.y = clamp(this.text.y + dy / this.canvas.height, 0, 1);
+    if (this.drag.target === 'text') {
+      this.text.x = clamp(this.text.x + dx / this.canvas.width, 0, 1);
+      this.text.y = clamp(this.text.y + dy / this.canvas.height, 0, 1);
+    } else {
+      // Half a frame of travel in each direction: enough to push any part of the
+      // subject to any corner, without letting it be dragged out of sight.
+      this.sub.dx = clamp(this.sub.dx + dx / this.canvas.width, -0.5, 0.5);
+      this.sub.dy = clamp(this.sub.dy + dy / this.canvas.height, -0.5, 0.5);
+    }
     this.drag = { x: e.clientX, y: e.clientY };
+    this.render();
+  },
+
+  /** Distance between the two active pointers, for pinch-zoom. */
+  pinchDist() {
+    const [a, b] = [...this._pointers.values()];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  },
+
+  /** Numbers beside the sliders — a gesture moves the slider, so it moves these too. */
+  syncSubLabels() {
+    $('#stk-zoom-val').textContent = `${Math.round(this.sub.scale * 100)}%`;
+    $('#stk-rot-val').textContent = `${Math.round(this.sub.rot)}°`;
+  },
+
+  setScale(v) {
+    this.sub.scale = clamp(v, SUB_MIN, SUB_MAX);
+    $('#stk-zoom').value = Math.round(this.sub.scale * 100);
+    this.syncSubLabels();
+    this.render();
+  },
+
+  resetSubject() {
+    this.sub = { scale: 1, dx: 0, dy: 0, rot: 0, flip: false };
+    $('#stk-zoom').value = 100;
+    $('#stk-rotate').value = 0;
+    this.syncSubLabels();
     this.render();
   },
 
   render() {
     this.paint(this.canvas, SIZE);
+    this.paintChips();
+  },
+
+  /**
+   * Redraw the two chat-wallpaper thumbnails from the main canvas.
+   *
+   * A straight downscale of what was just painted, rather than a second
+   * composite — the chips can never disagree with the preview, and the cost is
+   * one drawImage each. The chip canvases stay transparent so the wallpaper
+   * colour behind them (set on the wrapper in the template) shows through.
+   */
+  paintChips() {
+    ['#stk-chip-light', '#stk-chip-dark'].forEach((sel) => {
+      const chip = $(sel);
+      if (!chip) return;
+      const cx = chip.getContext('2d');
+      cx.clearRect(0, 0, chip.width, chip.height);
+      if (this.cutout) cx.drawImage(this.canvas, 0, 0, chip.width, chip.height);
+    });
   },
 
   /* ------------------------------------------------------------- export */
@@ -353,6 +497,7 @@ const App = {
     this.cutout = null;
     this.text.content = '';
     $('#stk-text').value = '';
+    this.resetSubject();
   },
 };
 
