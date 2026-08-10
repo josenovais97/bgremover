@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n_extras %}
 
 {% block title %}Free Instagram Photo Editor — Resize, Crop &amp; Filter for IG{% endblock %}
 {% block description %}Edit photos for Instagram free in your browser — one-tap filters, exact Post, Story and Reel sizes, borders, a carousel splitter. Nothing is uploaded.{% endblock %}
@@ -22,15 +22,13 @@
     <section class="max-w-5xl mx-auto space-y-8">
         <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-[#d62976]/10 text-[#d62976]">
-                <i class="fa-brands fa-instagram" aria-hidden="true"></i> Edit locally — nothing is uploaded
+                <i class="fa-brands fa-instagram" aria-hidden="true"></i> {% t "Edit locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Instagram Photo
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#feda75] via-[#d62976] to-[#4f5bd5]">Editor</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#feda75] via-[#d62976] to-[#4f5bd5]">{% t "Instagram Photo Editor" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                Filters, adjustments, exact Post, Story, Reel &amp; Portrait sizes, fit-without-cropping,
-                borders and a carousel splitter — ready to upload. No background removal needed. 100% private.
+                {% t "Filters, adjustments, exact Post, Story, Reel & Portrait sizes, fit-without-cropping, borders and a carousel splitter — ready to upload. No background removal needed. 100% private." %}
             </p>
         </div>
 
@@ -42,10 +40,10 @@
                 <div id="ig-icon" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl text-white bg-gradient-to-br from-[#feda75] via-[#d62976] to-[#4f5bd5] group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-brands fa-instagram" aria-hidden="true"></i>
                 </div>
-                <h2 class="text-2xl font-semibold">Drop a photo to edit</h2>
-                <p class="text-gray-500 dark:text-gray-400">or click to browse — JPG, PNG or WEBP</p>
+                <h2 class="text-2xl font-semibold">{% t "Drop a photo to edit" %}</h2>
+                <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — JPG, PNG or WEBP" %}</p>
                 <button id="ig-browse" type="button" class="mt-2 px-8 py-3 text-white font-medium rounded-xl shadow-lg transition-transform hover:scale-105 bg-gradient-to-r from-[#d62976] to-[#4f5bd5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select a photo
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select a photo" %}
                 </button>
                 {% include 'remover/partials/dropzone_footer.html' %}
             </div>
@@ -69,16 +67,16 @@
             </div>
             <div class="flex items-center justify-center flex-wrap gap-1.5 text-xs">
                 <button id="ig-compare" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 select-none touch-none" title="Hold to see the original">
-                    <i class="fa-solid fa-eye sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Hold to compare</span>
+                    <i class="fa-solid fa-eye sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">{% t "Hold to compare" %}</span>
                 </button>
                 <button id="ig-safezones" type="button" aria-pressed="false" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Show where Instagram's Story/Reel UI covers the frame">
-                    <i class="fa-solid fa-mobile-screen sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Safe zones</span>
+                    <i class="fa-solid fa-mobile-screen sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">{% t "Safe zones" %}</span>
                 </button>
                 <button id="ig-grid" type="button" aria-pressed="false" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rule-of-thirds composition grid">
-                    <i class="fa-solid fa-table-cells-large sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">Grid</span>
+                    <i class="fa-solid fa-table-cells-large sm:mr-1" aria-hidden="true"></i><span class="hidden sm:inline">{% t "Grid" %}</span>
                 </button>
             </div>
-            <p id="ig-hint" class="text-[11px] text-gray-400 text-center">Drag the photo to reposition · scroll or pinch-slider to zoom</p>
+            <p id="ig-hint" class="text-[11px] text-gray-400 text-center">{% t "Drag the photo to reposition · scroll or pinch-slider to zoom" %}</p>
         </div>
 
         <!-- Controls — tabbed so only one group shows at a time (far less
@@ -87,15 +85,15 @@
             <!-- Tab bar -->
             <div role="tablist" aria-label="Editing tools" class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-1.5 grid grid-cols-5 gap-1 text-[11px] font-medium shrink-0">
                 <button role="tab" aria-selected="true" data-tab="size" class="ig-tab flex flex-col items-center gap-1 py-2 rounded-lg bg-[#d62976] text-white">
-                    <i class="fa-solid fa-crop-simple text-sm" aria-hidden="true"></i>Size</button>
+                    <i class="fa-solid fa-crop-simple text-sm" aria-hidden="true"></i>{% t "Size" %}</button>
                 <button role="tab" aria-selected="false" data-tab="filters" class="ig-tab flex flex-col items-center gap-1 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <i class="fa-solid fa-wand-magic-sparkles text-sm" aria-hidden="true"></i>Filters</button>
+                    <i class="fa-solid fa-wand-magic-sparkles text-sm" aria-hidden="true"></i>{% t "Filters" %}</button>
                 <button role="tab" aria-selected="false" data-tab="text" class="ig-tab flex flex-col items-center gap-1 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <i class="fa-solid fa-font text-sm" aria-hidden="true"></i>Text</button>
+                    <i class="fa-solid fa-font text-sm" aria-hidden="true"></i>{% t "Text" %}</button>
                 <button role="tab" aria-selected="false" data-tab="brand" class="ig-tab flex flex-col items-center gap-1 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <i class="fa-solid fa-stamp text-sm" aria-hidden="true"></i>Brand</button>
+                    <i class="fa-solid fa-stamp text-sm" aria-hidden="true"></i>{% t "Brand" %}</button>
                 <button role="tab" aria-selected="false" data-tab="export" class="ig-tab flex flex-col items-center gap-1 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <i class="fa-solid fa-file-arrow-down text-sm" aria-hidden="true"></i>Export</button>
+                    <i class="fa-solid fa-file-arrow-down text-sm" aria-hidden="true"></i>{% t "Export" %}</button>
             </div>
 
             <!-- Tab bodies -->
@@ -104,7 +102,7 @@
             <!-- ============ SIZE ============ -->
             <div class="ig-panel space-y-4" data-panel="size" role="tabpanel">
               <div class="space-y-3">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Format</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Format" %}</span>
                 <div class="grid grid-cols-2 gap-2 text-sm">
                     {% for f in formats %}
                     <button type="button" class="ig-format px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-left {% if forloop.first %}ring-2 ring-[#d62976]{% endif %}"
@@ -117,30 +115,30 @@
               </div>
 
               <div class="space-y-3 pt-4 border-t border-gray-200/70 dark:border-white/10">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Frame</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Frame" %}</span>
                 <div class="grid grid-cols-2 gap-2 text-sm">
                     <button type="button" class="ig-fit px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-left ring-2 ring-[#d62976]" data-fit="fill">
-                        <span class="font-medium">Fill</span><span class="block text-[11px] text-gray-500 dark:text-gray-400">Crop to fit frame</span>
+                        <span class="font-medium">{% t "Fill" %}</span><span class="block text-[11px] text-gray-500 dark:text-gray-400">{% t "Crop to fit frame" %}</span>
                     </button>
                     <button type="button" class="ig-fit px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-left" data-fit="fit">
-                        <span class="font-medium">Fit</span><span class="block text-[11px] text-gray-500 dark:text-gray-400">Whole photo, no crop</span>
+                        <span class="font-medium">{% t "Fit" %}</span><span class="block text-[11px] text-gray-500 dark:text-gray-400">{% t "Whole photo, no crop" %}</span>
                     </button>
                 </div>
                 <div id="ig-fitbg-row" class="hidden flex flex-wrap items-center gap-2 text-xs">
-                    <span class="text-gray-500 dark:text-gray-400">Fill space with</span>
-                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-bg="blur">Blur</button>
-                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-bg="#ffffff">White</button>
-                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-bg="#000000">Black</button>
+                    <span class="text-gray-500 dark:text-gray-400">{% t "Fill space with" %}</span>
+                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-bg="blur">{% t "Blur" %}</button>
+                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-bg="#ffffff">{% t "White" %}</button>
+                    <button type="button" class="ig-fitbg px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-bg="#000000">{% t "Black" %}</button>
                 </div>
                 <label class="flex items-center gap-2 text-xs">
-                    <span class="w-16 shrink-0">Border</span>
+                    <span class="w-16 shrink-0">{% t "Border" %}</span>
                     <input id="ig-border" type="range" min="0" max="12" value="0" data-range="px" class="w-full accent-[#d62976]" aria-label="Border thickness">
                     <input id="ig-border-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Border colour">
                 </label>
               </div>
 
               <div class="space-y-3 pt-4 border-t border-gray-200/70 dark:border-white/10">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Transform</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Transform" %}</span>
                 <div class="grid grid-cols-4 gap-2 text-sm">
                     <button id="ig-rot-l" type="button" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rotate left 90°" aria-label="Rotate left 90 degrees"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i></button>
                     <button id="ig-rot-r" type="button" class="flex items-center justify-center py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" title="Rotate right 90°" aria-label="Rotate right 90 degrees"><i class="fa-solid fa-arrow-rotate-left inline-block -scale-x-100" aria-hidden="true"></i></button>
@@ -150,10 +148,10 @@
               </div>
 
               <div class="space-y-3 pt-4 border-t border-gray-200/70 dark:border-white/10">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Carousel</span>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">Split a wide photo into seamless swipeable tiles.</p>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Carousel" %}</span>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">{% t "Split a wide photo into seamless swipeable tiles." %}</p>
                 <div class="flex gap-2 text-xs font-medium">
-                    <button type="button" class="ig-carousel px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-n="1">Off</button>
+                    <button type="button" class="ig-carousel px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-n="1">{% t "Off" %}</button>
                     <button type="button" class="ig-carousel px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-n="2">2 tiles</button>
                     <button type="button" class="ig-carousel px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-n="3">3 tiles</button>
                 </div>
@@ -163,38 +161,38 @@
             <!-- ============ FILTERS ============ -->
             <div class="ig-panel hidden space-y-4" data-panel="filters" role="tabpanel">
               <div class="space-y-3">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Looks</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Looks" %}</span>
                 <!-- Live preview thumbnails (built + tinted from the loaded photo in instagram.js). -->
                 <div id="ig-filters" class="grid grid-cols-4 gap-1.5"></div>
                 <label class="flex items-center gap-2 text-xs pt-1">
-                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Strength</span>
+                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">{% t "Strength" %}</span>
                     <input id="ig-strength" type="range" min="0" max="100" value="100" class="w-full accent-[#d62976]" aria-label="Filter strength">
                 </label>
                 <div class="pt-2 border-t border-gray-200/70 dark:border-white/10 space-y-2">
                     <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">My looks</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "My looks" %}</span>
                         <button id="ig-preset-save" type="button" class="inline-flex items-center gap-1 text-xs text-[#d62976] hover:underline font-medium">
                             <i class="fa-solid fa-bookmark" aria-hidden="true"></i> Save current
                         </button>
                     </div>
                     <div id="ig-presets" class="flex flex-wrap gap-1.5"></div>
-                    <p id="ig-presets-empty" class="text-[11px] text-gray-400">Save the current look + adjustments to reuse on any photo.</p>
+                    <p id="ig-presets-empty" class="text-[11px] text-gray-400">{% t "Save the current look + adjustments to reuse on any photo." %}</p>
                 </div>
               </div>
 
               <div class="space-y-3 pt-4 border-t border-gray-200/70 dark:border-white/10">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Adjust</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Adjust" %}</span>
                     <button id="ig-reset" type="button" class="text-xs text-[#d62976] hover:underline">Reset</button>
                 </div>
                 <div class="space-y-2.5 text-xs">
-                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Brightness</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="brightness" min="50" max="150" value="100"></label>
-                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Contrast</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="contrast" min="50" max="150" value="100"></label>
-                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Saturation</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="saturate" min="0" max="200" value="100"></label>
-                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Warmth</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="warmth" min="-100" max="100" value="0"></label>
-                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Sharpen</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="sharpen" min="0" max="100" value="0"></label>
-                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Grain</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="grain" min="0" max="100" value="0"></label>
-                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">Vignette</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="vignette" min="0" max="100" value="0"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">{% t "Brightness" %}</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="brightness" min="50" max="150" value="100"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">{% t "Contrast" %}</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="contrast" min="50" max="150" value="100"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">{% t "Saturation" %}</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="saturate" min="0" max="200" value="100"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">{% t "Warmth" %}</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="warmth" min="-100" max="100" value="0"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">{% t "Sharpen" %}</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="sharpen" min="0" max="100" value="0"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">{% t "Grain" %}</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="grain" min="0" max="100" value="0"></label>
+                    <label class="flex items-center gap-2"><span class="w-20 shrink-0">{% t "Vignette" %}</span><input type="range" class="ig-adj w-full accent-[#d62976]" data-adj="vignette" min="0" max="100" value="0"></label>
                 </div>
               </div>
             </div>
@@ -217,13 +215,13 @@
                             <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <textarea id="ig-text" rows="2" placeholder="Add a caption or title…" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976]"></textarea>
+                    <textarea id="ig-text" rows="2" placeholder="{% t 'Add a caption or title…' %}" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976]"></textarea>
                     <div id="ig-fonts" class="grid grid-cols-3 gap-2">
-                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none ring-2 ring-[#d62976]" data-font="Inter" style="font-family:Inter" title="Clean">Clean</button>
-                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="Anton" style="font-family:Anton" title="Bold">BOLD</button>
-                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-lg leading-none tracking-wide" data-font="'Bebas Neue'" style="font-family:'Bebas Neue'" title="Condensed">TALL</button>
-                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="'Playfair Display'" style="font-family:'Playfair Display'" title="Elegant serif">Elegant</button>
-                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="Pacifico" style="font-family:Pacifico" title="Handwritten script">Script</button>
+                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none ring-2 ring-[#d62976]" data-font="Inter" style="font-family:Inter" title="Clean">{% t "Clean" %}</button>
+                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="Anton" style="font-family:Anton" title="Bold">{% t "BOLD" %}</button>
+                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-lg leading-none tracking-wide" data-font="'Bebas Neue'" style="font-family:'Bebas Neue'" title="Condensed">{% t "TALL" %}</button>
+                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="'Playfair Display'" style="font-family:'Playfair Display'" title="Elegant serif">{% t "Elegant" %}</button>
+                        <button type="button" class="ig-font px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-base leading-none" data-font="Pacifico" style="font-family:Pacifico" title="Handwritten script">{% t "Script" %}</button>
                     </div>
                     <label class="flex items-center gap-2 text-xs"><span class="w-14 shrink-0 text-gray-500 dark:text-gray-400">Size</span><input id="ig-text-size" type="range" min="3" max="18" step="0.5" value="7" class="w-full accent-[#d62976]" aria-label="Text size"></label>
                     <div class="flex items-center justify-between gap-2 flex-wrap text-xs">
@@ -235,11 +233,11 @@
                         </div>
                     </div>
                     <div class="flex gap-2 text-xs font-medium">
-                        <button type="button" id="ig-text-bold" class="ig-text-style px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-pressed="false">Bold</button>
-                        <button type="button" id="ig-text-shadow" class="ig-text-style px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-pressed="false">Shadow</button>
-                        <button type="button" id="ig-text-hl" class="ig-text-style px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-pressed="false">Highlight</button>
+                        <button type="button" id="ig-text-bold" class="ig-text-style px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-pressed="false">{% t "Bold" %}</button>
+                        <button type="button" id="ig-text-shadow" class="ig-text-style px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-pressed="false">{% t "Shadow" %}</button>
+                        <button type="button" id="ig-text-hl" class="ig-text-style px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" aria-pressed="false">{% t "Highlight" %}</button>
                     </div>
-                    <p class="text-[11px] text-gray-400"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Drag any text on the photo to move it, or tap it to select.</p>
+                    <p class="text-[11px] text-gray-400"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>{% t "Drag any text on the photo to move it, or tap it to select." %}</p>
                 </div>
             </div>
 
@@ -247,7 +245,7 @@
             <div class="ig-panel hidden space-y-4" data-panel="brand" role="tabpanel">
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Watermark</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Watermark" %}</span>
                     <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer select-none">
                         <input id="ig-wm-on" type="checkbox" class="accent-[#d62976] w-4 h-4"> Show
                     </label>
@@ -259,10 +257,10 @@
                             <i class="fa-solid fa-image" aria-hidden="true"></i> Logo
                             <input id="ig-wm-logo" type="file" accept="image/*" class="sr-only" aria-label="Upload a logo image">
                         </label>
-                        <button id="ig-wm-logo-clear" type="button" class="hidden px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Remove logo</button>
+                        <button id="ig-wm-logo-clear" type="button" class="hidden px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">{% t "Remove logo" %}</button>
                     </div>
                     <div class="flex items-center gap-2 text-xs">
-                        <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Position</span>
+                        <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">{% t "Position" %}</span>
                         <div class="grid grid-cols-4 gap-1.5 grow">
                             <button type="button" class="ig-wm-pos py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="tl" aria-label="Top left"><i class="fa-solid fa-up-long fa-rotate-by" style="--fa-rotate-angle:-45deg" aria-hidden="true"></i></button>
                             <button type="button" class="ig-wm-pos py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-pos="tr" aria-label="Top right"><i class="fa-solid fa-up-long fa-rotate-by" style="--fa-rotate-angle:45deg" aria-hidden="true"></i></button>
@@ -271,33 +269,33 @@
                         </div>
                     </div>
                     <label class="flex items-center gap-2 text-xs"><span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Size</span><input id="ig-wm-size" type="range" min="3" max="12" step="0.5" value="6" class="w-full accent-[#d62976]" aria-label="Watermark size"></label>
-                    <label class="flex items-center gap-2 text-xs"><span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Opacity</span><input id="ig-wm-opacity" type="range" min="20" max="100" value="90" class="w-full accent-[#d62976]" aria-label="Watermark opacity"></label>
+                    <label class="flex items-center gap-2 text-xs"><span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">{% t "Opacity" %}</span><input id="ig-wm-opacity" type="range" min="20" max="100" value="90" class="w-full accent-[#d62976]" aria-label="Watermark opacity"></label>
                 </div>
               </div>
 
               <div class="space-y-3 pt-4 border-t border-gray-200/70 dark:border-white/10">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Background <span class="normal-case text-gray-400">(optional)</span></span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Background <span class="normal-case text-gray-400">{% t "(optional)" %}</span></span>
                 <div class="flex items-center gap-2 flex-wrap text-xs">
-                    <button id="ig-remove-bg" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-1" aria-hidden="true"></i>Remove background</button>
+                    <button id="ig-remove-bg" type="button" class="px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-1" aria-hidden="true"></i>{% t "Remove background" %}</button>
                     <label class="flex items-center gap-1.5" title="Background colour when removed"><span>Colour</span><input id="ig-bg-color" type="color" value="#ffffff" class="w-7 h-7 rounded cursor-pointer bg-transparent"></label>
-                    <button id="ig-restore-bg" type="button" class="hidden px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">Undo</button>
+                    <button id="ig-restore-bg" type="button" class="hidden px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">{% t "Undo" %}</button>
                 </div>
               </div>
             </div>
 
             <!-- ============ EXPORT ============ -->
             <div class="ig-panel hidden space-y-3" data-panel="export" role="tabpanel">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Export format</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Export format" %}</span>
                 <div class="flex gap-2 text-xs font-medium">
-                    <button type="button" class="ig-expfmt px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-fmt="image/jpeg">JPG <span class="text-gray-400 font-normal">· smaller</span></button>
-                    <button type="button" class="ig-expfmt px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-fmt="image/png">PNG <span class="text-gray-400 font-normal">· sharp</span></button>
+                    <button type="button" class="ig-expfmt px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-[#d62976]" data-fmt="image/jpeg">JPG <span class="text-gray-400 font-normal">{% t "· smaller" %}</span></button>
+                    <button type="button" class="ig-expfmt px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-fmt="image/png">PNG <span class="text-gray-400 font-normal">{% t "· sharp" %}</span></button>
                 </div>
                 <label id="ig-quality-row" class="flex items-center gap-2 text-xs">
-                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Quality</span>
+                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">{% t "Quality" %}</span>
                     <input id="ig-quality" type="range" min="60" max="100" value="92" class="w-full accent-[#d62976]" aria-label="JPEG quality">
                     <span id="ig-quality-val" class="w-8 text-right tabular-nums text-gray-500 dark:text-gray-400">92</span>
                 </label>
-                <p class="text-[11px] text-gray-400 pt-1">Your photo is exported at the exact pixel size Instagram recommends for the chosen format.</p>
+                <p class="text-[11px] text-gray-400 pt-1">{% t "Your photo is exported at the exact pixel size Instagram recommends for the chosen format." %}</p>
             </div>
 
             </div><!-- /tab bodies -->
@@ -306,10 +304,10 @@
                  is always one tap away; sits at the column's end on desktop. -->
             <div class="sticky bottom-0 z-10 flex flex-col gap-2 pt-3 pb-1 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-gray-950 dark:via-gray-950/90 lg:static lg:from-transparent lg:via-transparent lg:pt-0 lg:pb-0 shrink-0">
                 <button id="ig-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg bg-gradient-to-r from-[#d62976] to-[#4f5bd5] hover:opacity-95 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d62976]">
-                    <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i><span id="ig-download-label">Download for Instagram</span>
+                    <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i><span id="ig-download-label">{% t "Download for Instagram" %}</span>
                 </button>
                 <button id="ig-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New photo
+                    <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "New photo" %}
                 </button>
             </div>
         </div>
@@ -317,7 +315,7 @@
 
     <!-- SEO / help content -->
     <section aria-labelledby="ig-sizes" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="ig-sizes" class="text-2xl font-bold text-center">Instagram photo sizes (2026)</h2>
+        <h2 id="ig-sizes" class="text-2xl font-bold text-center">{% t "Instagram photo sizes (2026)" %}</h2>
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {% for f in formats %}
             <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 flex flex-col items-center gap-3 text-center">
@@ -334,10 +332,7 @@
             {% endfor %}
         </div>
         <p class="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Upload once, then pick a format to crop and size it exactly, or switch to <strong>Fit</strong> to post the
-            whole photo without cropping. Apply a one-tap filter, fine-tune brightness, contrast, warmth and sharpness,
-            add a clean border, or split a panorama into a swipeable carousel. Everything runs in your browser — your
-            photo never leaves your device.
+            {% t "Upload once, then pick a format to crop and size it exactly, or switch to Fit to post the whole photo without cropping. Apply a one-tap filter, fine-tune brightness, contrast, warmth and sharpness, add a clean border, or split a panorama into a swipeable carousel. Everything runs in your browser — your photo never leaves your device." %}
         </p>
     </section>
 

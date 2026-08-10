@@ -1082,6 +1082,17 @@ _CORE_TRANSLATED = frozenset(
     # it hurts. Chat stickers are also a heavily Portuguese- and Spanish-speaking
     # use case, which is not true of, say, the PDF tools.
     + ["/sticker-maker/"]
+    # …then the portrait blur and the meme generator, on the same reasoning: both
+    # already rank top-10 for the little English volume they see, both are
+    # everyday consumer use cases rather than office ones, and both are small
+    # enough pages that the translation is a page of copy rather than a project.
+    + ["/blur-background/", "/meme-maker/"]
+    # …and the last two consumer tools with real impressions behind them. The
+    # queue stops here deliberately: what remains untranslated is the office and
+    # developer set (/base64-image/, /csv-to-excel/, /word-to-pdf/, /merge-pdf/),
+    # which has no impressions in English either. Translating those would buy two
+    # indexable URLs apiece for queries nobody is running.
+    + ["/favicon-generator/", "/instagram/"]
 )
 
 TRANSLATED_PATHS = {lang: _CORE_TRANSLATED for lang in LANGUAGES}

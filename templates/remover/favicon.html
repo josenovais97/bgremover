@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n_extras %}
 
 {% block title %}Free Favicon &amp; App Icon Generator — Every Size + Manifest{% endblock %}
 {% block description %}Turn one image into a complete favicon and app-icon set — favicon.ico, every PNG size, Apple touch icon, maskable PWA icons and the HTML to paste.{% endblock %}
@@ -12,16 +12,14 @@
     <section class="max-w-5xl mx-auto space-y-8">
         <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                <i class="fa-solid fa-lock" aria-hidden="true"></i> Generated locally — nothing is uploaded
+                <i class="fa-solid fa-lock" aria-hidden="true"></i> {% t "Generated locally — nothing is uploaded" %}
             </span>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
-                Favicon &amp; App Icon
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">Generator</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Favicon & App Icon Generator" %}</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300">
-                Drop one image and get a complete icon set — <code class="text-sm">favicon.ico</code>, every PNG size,
-                Apple touch icon, maskable PWA icons, a <code class="text-sm">site.webmanifest</code> and the exact
-                HTML to paste. Downloads as a ready-to-ship ZIP.
+                {% t "Drop one image and get a complete icon set —" %} <code class="text-sm">favicon.ico</code>{% t ", every PNG size, Apple touch icon, maskable PWA icons, a" %}
+                <code class="text-sm">site.webmanifest</code> {% t "and the exact HTML to paste. Downloads as a ready-to-ship ZIP." %}
             </p>
         </div>
 
@@ -33,10 +31,10 @@
                 <div id="fav-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
                     <i class="fa-solid fa-star" aria-hidden="true"></i>
                 </div>
-                <h2 class="text-2xl font-semibold">Drop your logo or image</h2>
-                <p class="text-gray-500 dark:text-gray-400">or click to browse — PNG, JPG, WEBP or SVG · a square image works best</p>
+                <h2 class="text-2xl font-semibold">{% t "Drop your logo or image" %}</h2>
+                <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — PNG, JPG, WEBP or SVG · a square image works best" %}</p>
                 <button id="fav-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>Select an image
+                    <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select an image" %}
                 </button>
                 {% include 'remover/partials/dropzone_footer.html' %}
             </div>
@@ -56,14 +54,14 @@
                 <!-- Browser-tab mockup with the real 16px favicon -->
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-t-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300">
                     <canvas id="fav-tab" width="16" height="16" class="w-4 h-4" aria-hidden="true"></canvas>
-                    <span id="fav-tab-name" class="truncate max-w-[10rem]">Your Site</span>
+                    <span id="fav-tab-name" class="truncate max-w-[10rem]">{% t "Your Site" %}</span>
                     <i class="fa-solid fa-xmark text-gray-400" aria-hidden="true"></i>
                 </div>
             </div>
 
             <!-- Actual-size previews -->
             <div>
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Actual sizes</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Actual sizes" %}</span>
                 <div id="fav-thumbs" class="mt-3 flex items-end flex-wrap gap-4">
                     <figure class="flex flex-col items-center gap-1"><canvas class="fav-thumb" data-size="16" width="16" height="16"></canvas><figcaption class="text-[10px] text-gray-400">16</figcaption></figure>
                     <figure class="flex flex-col items-center gap-1"><canvas class="fav-thumb" data-size="32" width="32" height="32"></canvas><figcaption class="text-[10px] text-gray-400">32</figcaption></figure>
@@ -77,7 +75,7 @@
         <div class="space-y-4">
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-4">
                 <div class="space-y-2.5">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Background</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Background" %}</span>
                     <div class="flex items-center gap-2 flex-wrap">
                         <button type="button" class="fav-bg w-8 h-8 rounded-lg checkerboard ring-2 ring-primary ring-offset-1 ring-offset-white dark:ring-offset-gray-900" data-bg="transparent" aria-label="Transparent" title="Transparent"></button>
                         <button type="button" class="fav-bg w-8 h-8 rounded-lg bg-white border border-gray-300" data-bg="#ffffff" aria-label="White" title="White"></button>
@@ -91,43 +89,43 @@
                 </div>
 
                 <div class="space-y-2.5">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Shape</span>
+                    <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Shape" %}</span>
                     <div class="grid grid-cols-3 gap-2 text-sm">
-                        <button type="button" class="fav-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-primary" data-shape="square">Square</button>
-                        <button type="button" class="fav-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="rounded">Rounded</button>
-                        <button type="button" class="fav-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="circle">Circle</button>
+                        <button type="button" class="fav-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 ring-2 ring-primary" data-shape="square">{% t "Square" %}</button>
+                        <button type="button" class="fav-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="rounded">{% t "Rounded" %}</button>
+                        <button type="button" class="fav-shape px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800" data-shape="circle">{% t "Circle" %}</button>
                     </div>
                 </div>
 
                 <label class="flex items-center gap-2 text-xs">
-                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">Padding</span>
+                    <span class="w-16 shrink-0 text-gray-500 dark:text-gray-400">{% t "Padding" %}</span>
                     <input id="fav-pad" type="range" min="0" max="30" value="0" class="w-full accent-primary" aria-label="Padding percentage">
                     <span id="fav-pad-val" class="w-8 text-right tabular-nums text-gray-500 dark:text-gray-400">0%</span>
                 </label>
             </div>
 
             <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 space-y-3">
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Web app manifest</span>
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Web app manifest" %}</span>
                 <label class="block space-y-1">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">App name</span>
-                    <input id="fav-name" type="text" value="My App" maxlength="60" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{% t "App name" %}</span>
+                    <input id="fav-name" type="text" value="{% t 'My App' %}" maxlength="60" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 </label>
                 <label class="block space-y-1">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">Short name</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{% t "Short name" %}</span>
                     <input id="fav-short" type="text" value="App" maxlength="12" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 </label>
                 <label class="flex items-center gap-2 text-xs">
-                    <span class="w-20 shrink-0 text-gray-500 dark:text-gray-400">Theme colour</span>
+                    <span class="w-20 shrink-0 text-gray-500 dark:text-gray-400">{% t "Theme colour" %}</span>
                     <input id="fav-theme" type="color" value="#4F46E5" class="w-7 h-7 rounded cursor-pointer bg-transparent" aria-label="Theme colour">
                     <span id="fav-theme-val" class="font-mono text-gray-500 dark:text-gray-400">#4F46E5</span>
                 </label>
             </div>
 
             <button id="fav-download" type="button" class="w-full px-4 py-3 rounded-xl text-white font-semibold shadow-lg shadow-primary/30 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>Download icon pack (ZIP)
+                <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>{% t "Download icon pack (ZIP)" %}
             </button>
             <button id="fav-new" type="button" class="w-full px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>New image
+                <i class="fa-solid fa-arrow-rotate-left mr-1.5" aria-hidden="true"></i>{% t "New image" %}
             </button>
         </div>
     </section>
@@ -135,7 +133,7 @@
     <!-- HTML snippet -->
     <section id="fav-snippet-section" class="hidden max-w-5xl mx-auto space-y-3">
         <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">Paste this into your <code class="text-base">&lt;head&gt;</code></h2>
+            <h2 class="text-lg font-semibold">{% t "Paste this into your" %} <code class="text-base">&lt;head&gt;</code></h2>
             <button id="fav-copy" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium">
                 <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy
             </button>
@@ -145,14 +143,14 @@
 
     <!-- SEO / help content -->
     <section aria-labelledby="fav-what" class="max-w-4xl mx-auto space-y-6">
-        <h2 id="fav-what" class="text-2xl font-bold text-center">What's in the icon pack?</h2>
+        <h2 id="fav-what" class="text-2xl font-bold text-center">{% t "What's in the icon pack?" %}</h2>
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-star text-primaryText mr-1.5"></i>favicon.ico</div><p class="text-sm text-gray-500 dark:text-gray-400">Multi-size 16/32/48 — the classic browser-tab icon every site needs.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-brands fa-apple text-primaryText mr-1.5"></i>Apple touch icon</div><p class="text-sm text-gray-500 dark:text-gray-400">180×180 for iOS home-screen bookmarks, on a solid background.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-mobile-screen text-primaryText mr-1.5"></i>PWA + maskable</div><p class="text-sm text-gray-500 dark:text-gray-400">192, 512 and a maskable 512 with a safe zone for Android install icons.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-code text-primaryText mr-1.5"></i>site.webmanifest</div><p class="text-sm text-gray-500 dark:text-gray-400">A ready manifest with your app name, theme colour and icon references.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-clipboard text-primaryText mr-1.5"></i>HTML snippet</div><p class="text-sm text-gray-500 dark:text-gray-400">Copy-paste <code class="text-xs">&lt;link&gt;</code> tags — wired to the exact filenames.</p></div>
-            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-lock text-primaryText mr-1.5"></i>100% private</div><p class="text-sm text-gray-500 dark:text-gray-400">Everything is generated in your browser — your image never leaves your device.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-star text-primaryText mr-1.5"></i>favicon.ico</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Multi-size 16/32/48 — the classic browser-tab icon every site needs." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-brands fa-apple text-primaryText mr-1.5"></i>{% t "Apple touch icon" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "180×180 for iOS home-screen bookmarks, on a solid background." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-mobile-screen text-primaryText mr-1.5"></i>{% t "PWA + maskable" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "192, 512 and a maskable 512 with a safe zone for Android install icons." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-code text-primaryText mr-1.5"></i>site.webmanifest</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "A ready manifest with your app name, theme colour and icon references." %}</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-clipboard text-primaryText mr-1.5"></i>{% t "HTML snippet" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">Copy-paste <code class="text-xs">&lt;link&gt;</code> tags — wired to the exact filenames.</p></div>
+            <div class="glass rounded-2xl p-6 border border-gray-200/70 dark:border-gray-800/70 space-y-2"><div class="font-semibold"><i class="fa-solid fa-lock text-primaryText mr-1.5"></i>{% t "100% private" %}</div><p class="text-sm text-gray-500 dark:text-gray-400">{% t "Everything is generated in your browser — your image never leaves your device." %}</p></div>
         </div>
     </section>
 

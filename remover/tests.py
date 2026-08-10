@@ -1730,6 +1730,44 @@ class JsTranslationTests(SimpleTestCase):
                     + ", ".join(f"{k!r} ({f})" for k, f in sorted(missing.items())),
                 )
 
+    # --- the same guarantee for template copy -----------------------------
+    # `{% t %}` passes an unknown key straight through as English, which is the
+    # right runtime behaviour and a terrible failure mode to rely on: 27 strings
+    # were wrapped but never translated, and because they live in shared partials
+    # ("Press" / "to paste" in the dropzone, "Related reading" and "min read" on
+    # every page, every before/after demo caption) they leaked English onto every
+    # /pt/ and /es/ page on the site. TranslationCoverageTests could not catch it
+    # — it asks whether a page is translated, not whether every wrapped string
+    # resolves.
+    TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
+    T_TAG = re.compile(r"\{%\s*t\s+(['\"])(.+?)\1\s*%\}")
+    # Partials run some {% include ... with x='…' %} arguments through {% t %}
+    # (see partials/demo.html), so those literals are catalogue keys too.
+    T_ARG = re.compile(r"(?:caption|before_label|after_label)='([^']+)'")
+
+    def _template_keys(self):
+        found = {}
+        for path in sorted(self.TEMPLATE_DIR.rglob("*.html")):
+            source = path.read_text()
+            for _, key in self.T_TAG.findall(source):
+                found.setdefault(key, path.name)
+            for key in self.T_ARG.findall(source):
+                found.setdefault(key, path.name)
+        return found
+
+    def test_every_wrapped_template_string_is_in_the_catalogue(self):
+        used = self._template_keys()
+        for lang in LANGUAGES:
+            catalogue = CATALOGUES[lang].UI
+            missing = {k: f for k, f in used.items() if k not in catalogue}
+            with self.subTest(lang=lang):
+                self.assertFalse(
+                    missing,
+                    f"these strings are wrapped in {{% t %}} but have no entry in "
+                    f"lang_{lang}.UI, so they render English on /{lang}/ pages: "
+                    + ", ".join(f"{k!r} ({f})" for k, f in sorted(missing.items())),
+                )
+
     def test_no_catalogue_carries_a_string_the_tools_never_raise(self):
         # The other direction: a key nobody uses is either a typo in the JS or
         # dead weight shipped to every visitor of that language on every tool

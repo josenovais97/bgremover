@@ -909,6 +909,131 @@ UI = {
         "A mesma foto ajustada a um retrato 4:5 do Instagram",
     "The same photo fitted to a 9:16 Instagram story":
         "A mesma foto ajustada a uma story 9:16 do Instagram",
+    # Background blur + meme generator
+    "Get that phone-style portrait-mode look on any photo — the AI keeps your subject sharp and blurs the background for a clean depth effect. Free and 100% private.":
+        "Obtenha o efeito retrato dos telemóveis em qualquer foto — a IA mantém o assunto nítido e desfoca o fundo para um efeito de profundidade limpo. Grátis e 100% privado.",
+    "or click to browse — a clear subject (person, pet or product) works best":
+        "ou clique para procurar — um assunto nítido (pessoa, animal ou produto) funciona melhor",
+    "Finding the subject…": "A encontrar o assunto…",
+    "Blur strength": "Intensidade do desfoque",
+    "Drag to control how much the background is blurred.":
+        "Arraste para controlar o quanto o fundo é desfocado.",
+    "Download (JPG)": "Transferir (JPG)",
+    "Portrait mode for any camera": "Modo retrato para qualquer câmara",
+    "The AI finds your subject automatically — no manual masking or green screen.":
+        "A IA encontra o assunto automaticamente — sem máscaras manuais nem fundo verde.",
+    "Dial the blur": "Ajuste o desfoque",
+    "Slide from a subtle depth effect to a strong, dreamy background blur.":
+        "Deslize de um efeito de profundidade subtil até um desfoque forte e suave.",
+    "Full-resolution JPG or PNG with your subject crisp and the background soft.":
+        "JPG ou PNG em resolução total, com o assunto nítido e o fundo suave.",
+    "It all runs in your browser, so your photo never leaves your device — great for portraits that older phones or webcams shot flat.":
+        "Corre tudo no seu navegador, por isso a sua foto nunca sai do seu dispositivo — ideal para retratos que telemóveis antigos ou webcams captaram sem profundidade.",
+    "Meme Generator": "Gerador de Memes",
+    "Drop any image, add the classic top & bottom text, drag it where you want, and download a ready-to-share PNG or JPG. Free, no watermark, 100% private.":
+        "Largue qualquer imagem, adicione o clássico texto em cima e em baixo, arraste-o para onde quiser e transfira um PNG ou JPG pronto a partilhar. Grátis, sem marca de água, 100% privado.",
+    "or click to browse — a photo, screenshot or template":
+        "ou clique para procurar — uma foto, captura de ecrã ou modelo",
+    "Drag the text on the image to move it.": "Arraste o texto sobre a imagem para o mover.",
+    "Style": "Estilo",
+    "Download meme (PNG)": "Transferir meme (PNG)",
+    "JPG": "JPG",
+    "Copy": "Copiar",
+    "How to make a meme": "Como fazer um meme",
+    "Any photo, screenshot or classic template — it never leaves your device.":
+        "Qualquer foto, captura de ecrã ou modelo clássico — nunca sai do seu dispositivo.",
+    "Add the text": "Adicione o texto",
+    "Type top and bottom captions in the bold outlined meme font, then drag them into place.":
+        "Escreva as legendas de cima e de baixo na fonte de meme com contorno e arraste-as para o sítio certo.",
+    "Download & share": "Transferir e partilhar",
+    "Export a PNG or JPG, or copy straight to your clipboard. No watermark.":
+        "Exporte um PNG ou JPG, ou copie diretamente para a área de transferência. Sem marca de água.",
+    "Top text": "Texto de cima",
+    "Bottom text": "Texto de baixo",
+    # Favicon generator + Instagram editor
+    "Generated locally — nothing is uploaded": "Gerado localmente — nada é carregado",
+    "Favicon & App Icon Generator": "Gerador de Favicon e Ícones de App",
+    "Drop one image and get a complete icon set —":
+        "Largue uma imagem e obtenha um conjunto completo de ícones —",
+    ", every PNG size, Apple touch icon, maskable PWA icons, a":
+        ", todos os tamanhos PNG, ícone Apple touch, ícones PWA maskable, um",
+    "and the exact HTML to paste. Downloads as a ready-to-ship ZIP.":
+        "e o HTML exato para colar. Transfere como um ZIP pronto a usar.",
+    "Drop your logo or image": "Largue o seu logótipo ou imagem",
+    "or click to browse — PNG, JPG, WEBP or SVG · a square image works best":
+        "ou clique para procurar — PNG, JPG, WEBP ou SVG · uma imagem quadrada funciona melhor",
+    "Your Site": "O Seu Site",
+    "Actual sizes": "Tamanhos reais",
+    "Web app manifest": "Manifest da web app",
+    "App name": "Nome da app",
+    "Short name": "Nome curto",
+    "Theme colour": "Cor do tema",
+    "Download icon pack (ZIP)": "Transferir pacote de ícones (ZIP)",
+    "Paste this into your": "Cole isto no seu",
+    "What's in the icon pack?": "O que vem no pacote de ícones?",
+    "Multi-size 16/32/48 — the classic browser-tab icon every site needs.":
+        "Multitamanho 16/32/48 — o clássico ícone do separador que todos os sites precisam.",
+    "Apple touch icon": "Ícone Apple touch",
+    "180×180 for iOS home-screen bookmarks, on a solid background.":
+        "180×180 para atalhos no ecrã principal do iOS, sobre um fundo sólido.",
+    "PWA + maskable": "PWA + maskable",
+    "192, 512 and a maskable 512 with a safe zone for Android install icons.":
+        "192, 512 e um 512 maskable com zona segura para ícones de instalação Android.",
+    "A ready manifest with your app name, theme colour and icon references.":
+        "Um manifest pronto com o nome da app, a cor do tema e as referências aos ícones.",
+    "HTML snippet": "Excerto de HTML",
+    "100% private": "100% privado",
+    "Everything is generated in your browser — your image never leaves your device.":
+        "Tudo é gerado no seu navegador — a sua imagem nunca sai do seu dispositivo.",
+    "My App": "A Minha App",
+    "Edit locally — nothing is uploaded": "Edite localmente — nada é carregado",
+    "Instagram Photo Editor": "Editor de Fotos para Instagram",
+    "Filters, adjustments, exact Post, Story, Reel & Portrait sizes, fit-without-cropping, borders and a carousel splitter — ready to upload. No background removal needed. 100% private.":
+        "Filtros, ajustes, tamanhos exatos de Publicação, Story, Reel e Retrato, ajuste sem cortar, molduras e divisor de carrossel — prontos a publicar. Sem necessidade de remover o fundo. 100% privado.",
+    "Drop a photo to edit": "Largue uma foto para editar",
+    "Safe zones": "Zonas seguras",
+    "Grid": "Grelha",
+    "Drag the photo to reposition · scroll or pinch-slider to zoom":
+        "Arraste a foto para reposicionar · role ou use o cursor para ampliar",
+    "Brand": "Marca",
+    "Export": "Exportar",
+    "Frame": "Moldura",
+    "Crop to fit frame": "Cortar para caber na moldura",
+    "Fit": "Ajustar",
+    "Whole photo, no crop": "Foto inteira, sem cortes",
+    "Fill space with": "Preencher o espaço com",
+    "Black": "Preto",
+    "Border": "Contorno",
+    "Transform": "Transformar",
+    "Carousel": "Carrossel",
+    "Split a wide photo into seamless swipeable tiles.":
+        "Divida uma foto panorâmica em partes contínuas para deslizar.",
+    "Off": "Desligado",
+    "Strength": "Intensidade",
+    "My looks": "Os meus estilos",
+    "Save the current look + adjustments to reuse on any photo.":
+        "Guarde o estilo e os ajustes atuais para reutilizar em qualquer foto.",
+    "Adjust": "Ajustar",
+    "Elegant": "Elegante",
+    "Bold": "Negrito",
+    "Shadow": "Sombra",
+    "Drag any text on the photo to move it, or tap it to select.":
+        "Arraste qualquer texto sobre a foto para o mover, ou toque para o selecionar.",
+    "Remove logo": "Remover logótipo",
+    "Position": "Posição",
+    "Opacity": "Opacidade",
+    "(optional)": "(opcional)",
+    "Remove background": "Remover fundo",
+    "Export format": "Formato de exportação",
+    "· smaller": "· mais pequeno",
+    "· sharp": "· mais nítido",
+    "Your photo is exported at the exact pixel size Instagram recommends for the chosen format.":
+        "A sua foto é exportada no tamanho exato em pixéis que o Instagram recomenda para o formato escolhido.",
+    "Download for Instagram": "Transferir para o Instagram",
+    "Instagram photo sizes (2026)": "Tamanhos de fotos do Instagram (2026)",
+    "Upload once, then pick a format to crop and size it exactly, or switch to Fit to post the whole photo without cropping. Apply a one-tap filter, fine-tune brightness, contrast, warmth and sharpness, add a clean border, or split a panorama into a swipeable carousel. Everything runs in your browser — your photo never leaves your device.":
+        "Carregue uma vez, escolha um formato para cortar e dimensionar exatamente, ou mude para Ajustar e publique a foto inteira sem cortes. Aplique um filtro com um toque, afine brilho, contraste, temperatura e nitidez, adicione um contorno limpo, ou divida uma panorâmica num carrossel deslizante. Tudo corre no seu navegador — a sua foto nunca sai do seu dispositivo.",
+    "Add a caption or title…": "Adicione uma legenda ou título…",
     # Sticker maker
     "Sticker Maker": "Criador de Autocolantes",
     "Made locally — nothing is uploaded": "Feito localmente — nada é carregado",
