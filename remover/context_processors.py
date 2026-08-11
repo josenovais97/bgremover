@@ -394,18 +394,25 @@ def _tool_columns(tool_groups, n=2):
     """Split the tool groups into `n` height-balanced columns for the mega-menu.
 
     A plain CSS grid of groups makes every row as tall as its tallest group, so a
-    short group (e.g. "Remove & Edit") leaves a big empty gap before the next row
-    starts. Instead we pre-assign whole groups to columns — biggest first onto the
-    currently-shortest column — and let each column stack its groups with no
-    inter-row gap. Natural group order is preserved within each column.
+    short group (e.g. "Photos") leaves a big empty gap before the next row starts.
+    Instead we pre-assign whole groups to columns and let each column stack its
+    groups with no inter-row gap.
+
+    Groups are placed in TOOL_GROUPS order, each onto the currently-shortest
+    column. Order matters as much as balance: the pass used to run biggest-group-
+    first, which is better packing but put the 19-item "Convert & Optimize" group
+    in the first column — so the menu opened with the utilities on the left and
+    "Remove & Edit", the group holding the flagship, off to the right. Placing in
+    declared order reads top-left to bottom-right the way the list is written, and
+    with these group sizes it balances just as well (21 rows against 20).
     """
     heights = [0] * n
     buckets = [[] for _ in range(n)]
-    for idx, group in sorted(enumerate(tool_groups), key=lambda p: -len(p[1]["items"])):
+    for group in tool_groups:
         c = heights.index(min(heights))
-        buckets[c].append((idx, group))
+        buckets[c].append(group)
         heights[c] += len(group["items"]) + 1  # +1 approximates the group header
-    return [[g for _, g in sorted(col, key=lambda p: p[0])] for col in buckets]
+    return buckets
 
 
 def _canonical_url(request):

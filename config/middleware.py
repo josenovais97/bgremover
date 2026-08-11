@@ -91,8 +91,9 @@ COEP = "credentialless"
 # --- Edge caching for page HTML ----------------------------------------------
 # Every page here is anonymous and identical for all visitors: there is no
 # SessionMiddleware, no template renders {% csrf_token %}, nothing sets a cookie,
-# and the one number that changes (the social-proof counter) is fetched by
-# stats.js after load. Yet the pages sent no Cache-Control at all, so a CDN could
+# and nothing on a page varies per visitor (the usage counter stats.js talks to
+# is write-only now — it has no display). Yet the pages sent no Cache-Control at
+# all, so a CDN could
 # not touch them and EVERY view — including the 33 tool pages and ~40 SEO pages —
 # booted the Python function, cold start included.
 #

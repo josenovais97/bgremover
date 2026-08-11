@@ -10,6 +10,8 @@ which every rival in the category also claims.{% endcomment %}
 {% block description %}{% t "Remove image backgrounds free and unlimited — your photo never leaves your device. No upload, no sign-up, no watermark, full resolution." %}{% endblock %}
 {% block og_title %}{% t "Free Background Remover — No Upload, No Signup, No Watermark" %}{% endblock %}
 
+{% block main_pad %}pt-2 sm:pt-4 pb-10 sm:pb-14{% endblock %}
+
 {% block content %}
 <div class="space-y-16">
 
@@ -17,105 +19,115 @@ which every rival in the category also claims.{% endcomment %}
     <div id="landing" class="space-y-16">
 
         <!-- Hero + dropzone -->
-        <section class="space-y-8">
-            <div class="max-w-3xl mx-auto text-center space-y-5 animate-fade-in-up">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
-                    <i class="fa-solid fa-lock" aria-hidden="true"></i> {% t "Private & free — runs in your browser" %}
+        <section class="space-y-6 sm:space-y-8">
+            <div class="max-w-3xl mx-auto text-center space-y-4 animate-fade-in-up">
+                <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
+                    <i class="fa-solid fa-lock text-xs" aria-hidden="true"></i> {% t "Private & free — runs in your browser" %}
                 </span>
                 {% comment %}"Free Background Remover" carries the term this page is
                 trying to rank for; the gradient line carries the differentiator. The
                 old pairing ("Remove Image Backgrounds" / "Automatically & Free") spent
                 both lines on things every competitor also says.{% endcomment %}
-                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight !leading-[1.06]">
                     {% t "Free Background Remover" %}
                     <span class="block text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "No Upload Required" %}</span>
                 </h1>
-                <p class="text-lg text-gray-600 dark:text-gray-300">
-                    {% t "Remove image backgrounds automatically in seconds. 100% free, unlimited and private — your images never leave your device." %}
+                {% comment %}The first sentence is the whole product in eight words, and it
+                is the one sentence no cloud remover can copy — so it carries the weight,
+                and the rest of the claim trails it in the same line rather than in a
+                second paragraph.{% endcomment %}
+                <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    <b class="font-semibold text-gray-900 dark:text-gray-100">{% t "Remove backgrounds without uploading your photos." %}</b>
+                    {% t "Free, unlimited, and instant." %}
                 </p>
                 {% comment %}
-                A stat strip, not a sentence. As one line of prose the two numbers ran
-                together ("…this week 48,213 all time"), every part carried the same
-                weight, and the pill stretched to 768px — a rule of text competing with
-                the headline above it. Stacking each number over its own label makes the
-                figures the thing you see, in half the width, and lets the privacy claim
-                sit as its own cell instead of a tail on a sentence.
+                This replaces a live "N processed this week / N all time" counter. Those
+                numbers were real, but at this stage they were small, and a small number
+                is weaker proof than no number: it invites the visitor to size up the
+                product rather than to try it. What actually differentiates this tool is
+                four properties that are true on the first visit and every visit after —
+                and unlike a counter, each one is a promise the competition cannot match
+                without changing its business model.
 
-                Two numbers, because an all-time total alone says nothing about whether
-                the site is still busy today. The weekly cell (and its divider) stay
-                hidden until the count is non-zero — right after the Monday rollover
-                "0 this week" is worse social proof than no claim at all. stats.js fills
-                both and swaps the all-time label when the weekly cell appears.
+                Static markup, no JS: nothing here has to be fetched before it can be
+                believed, so it is present in the HTML the crawler and the first paint
+                both see. "Nothing uploaded" stays last and carries the shield, because
+                it is the claim the rest of the page then goes on to prove.
                 {% endcomment %}
-                <div id="social-proof" class="hidden animate-fade-in-up">
-                    <div class="inline-flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-5 gap-y-2 px-5 py-2.5 rounded-2xl glass border border-gray-200/70 dark:border-gray-800/70 shadow-sm">
-                        {% comment %}The live dot belongs to the strip, not to the weekly cell: it used
-                        to sit inside it, so the one state where the badge shows a bare all-time
-                        total — a fresh week — was also the state with no sign of life at all.{% endcomment %}
-                        <span class="relative flex h-2 w-2 -mr-1.5 sm:-mr-2" aria-hidden="true">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500/60"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                        </span>
-                        <div id="social-proof-week" class="hidden items-center gap-x-4 sm:gap-x-5">
-                            <div class="flex flex-col items-center leading-tight">
-                                <strong id="social-proof-week-count" class="text-lg font-bold text-gray-900 dark:text-white tabular-nums">0</strong>
-                                <span class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "this week" %}</span>
-                            </div>
-                            <span class="self-stretch w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
-                        </div>
-                        <div class="flex flex-col items-center leading-tight">
-                            <strong id="social-proof-count" class="text-lg font-bold text-gray-900 dark:text-white tabular-nums">0</strong>
-                            {% comment %}Both labels ship in the markup and stats.js picks one, so neither
-                            has to exist as a translatable string inside the JS.{% endcomment %}
-                            <span class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400"><span id="social-proof-total-long">{% t "images processed" %}</span><span id="social-proof-total-short" class="hidden">{% t "all time" %}</span></span>
-                        </div>
-                        <span class="self-stretch w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
-                        <span class="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400 text-xs font-semibold">
-                            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% t "nothing uploaded" %}
-                        </span>
-                    </div>
-                </div>
+                <ul class="flex flex-wrap justify-center items-center gap-x-4 gap-y-1.5 sm:gap-x-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+                    <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-check text-[11px] text-green-500" aria-hidden="true"></i>{% t "Free forever" %}</li>
+                    <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-check text-[11px] text-green-500" aria-hidden="true"></i>{% t "No signup" %}</li>
+                    <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-check text-[11px] text-green-500" aria-hidden="true"></i>{% t "No watermark" %}</li>
+                    <li class="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400"><i class="fa-solid fa-shield-halved text-[11px]" aria-hidden="true"></i>{% t "Nothing uploaded" %}</li>
+                </ul>
                 {% comment %} The Product Hunt badge lives in the footer only — a second copy here sat
                    directly under the primary CTA and competed with it for the first click. {% endcomment %}
             </div>
 
-            <div class="max-w-5xl mx-auto space-y-6">
-                <div class="grid lg:grid-cols-2 gap-6 items-stretch">
+            <div class="max-w-5xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-5 lg:gap-6 items-stretch">
+                    {% comment %}
+                    The dropzone is the product's front door, so it states all four ways
+                    in to get an image in — drag, browse, paste, sample — and nothing
+                    else. The order is deliberate: the headline names the gesture people
+                    will actually make on desktop, the button covers everyone who would
+                    rather click, and paste/sample sit on one quiet line underneath so
+                    they are discoverable without becoming a third and fourth call to
+                    action. The accepted formats moved to a footer strip alongside the
+                    privacy line — they answer a question ("will it take my file?")
+                    rather than asking for an action.
+                    {% endcomment %}
                     <div id="dropzone"
                          role="button" tabindex="0" aria-label="Upload images. Drag and drop, click to browse, or paste from clipboard."
-                         class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex flex-col justify-center">
+                         class="glass dropzone-hero group relative flex flex-col justify-center rounded-3xl p-6 sm:p-8 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
 
                         <input type="file" id="file-input" data-chain-input class="sr-only" accept="image/png,image/jpeg,image/webp" multiple aria-label="Choose a file">
 
-                        <div class="flex flex-col items-center justify-center space-y-4 text-center">
-                            <div id="upload-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                        <div class="flex flex-col items-center text-center">
+                            <div id="upload-icon" class="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] grid place-items-center rounded-2xl bg-primary/10 text-primaryText text-3xl shadow-sm shadow-primary/10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-0.5">
                                 <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
                             </div>
-                            <h2 class="text-2xl font-semibold">{% t "Drag & drop your images" %}</h2>
-                            <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — you can select multiple files" %}</p>
-                            <button id="browse-btn" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
-                                <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select images" %}
+                            <h2 class="mt-4 text-xl sm:text-2xl font-bold tracking-tight">{% t "Drop your images here" %}</h2>
+                            <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">{% t "or choose files from your device" %}</p>
+
+                            <button id="browse-btn" type="button" class="mt-5 inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                                <i class="fa-solid fa-image" aria-hidden="true"></i>{% t "Upload images" %}
                             </button>
-                            <button id="try-sample" type="button" data-src="{% static 'img/demo1-before.webp' %}"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-700 bg-white/60 dark:bg-gray-900/40 hover:border-primary hover:text-primaryText hover:-translate-y-0.5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {% t "No photo? Try a sample" %}
-                            </button>
-                            <div class="pt-4 text-sm text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
-                                <p>{% t "Supports JPG, PNG & WEBP · Full resolution preserved" %}</p>
-                                <p class="flex items-center gap-2">
-                                    <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
-                                    Press <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">Ctrl</kbd> + <kbd class="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-xs font-mono">V</kbd> to paste
+
+                            {% comment %}Paste and the sample share one quiet line. "Try a sample"
+                            is deliberately a text button, not a second bordered box: it is the
+                            fallback for a visitor with no photo to hand, not a peer of the
+                            upload CTA it used to sit directly beneath.{% endcomment %}
+                            <p class="mt-3.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[13px] text-gray-500 dark:text-gray-400">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <i class="fa-regular fa-clipboard text-[11px]" aria-hidden="true"></i>{% t "Paste with" %}
+                                    <kbd class="px-1.5 py-0.5 rounded border border-gray-200 bg-gray-100 text-[11px] font-mono dark:border-gray-700 dark:bg-gray-800">Ctrl</kbd><kbd class="px-1.5 py-0.5 rounded border border-gray-200 bg-gray-100 text-[11px] font-mono dark:border-gray-700 dark:bg-gray-800">V</kbd>
+                                </span>
+                                <span class="text-gray-300 dark:text-gray-600" aria-hidden="true">·</span>
+                                <button id="try-sample" type="button" data-src="{% static 'img/demo1-before.webp' %}"
+                                        class="inline-flex items-center gap-1.5 font-medium text-primaryText rounded hover:underline underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-[11px]" aria-hidden="true"></i>{% t "Try a sample" %}
+                                </button>
+                            </p>
+
+                            {% comment %}Two deliberate lines rather than one that wraps. As a
+                            single centred strip of "formats | multiple files | nothing
+                            uploaded" it broke after the second item at every width narrower
+                            than the panel, leaving a divider dangling at the end of the first
+                            line. Splitting it also puts the privacy line on its own, which is
+                            where the emphasis belongs.{% endcomment %}
+                            <div class="mt-5 pt-4 w-full border-t border-gray-200/70 dark:border-white/10 flex flex-col items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                                <p class="tracking-wide"><span class="font-medium">JPG · PNG · WEBP</span> · {% t "Multiple files" %} · {% t "Full resolution" %}</p>
+                                <p class="inline-flex items-center gap-1.5 font-medium text-green-600 dark:text-green-400">
+                                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>{% t "Your images never leave your device" %}
                                 </p>
-                                <p class="flex items-center gap-2 text-green-600 dark:text-green-400 font-medium">
-                                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {% t "Your images never leave your device" %}
-                                </p>
-                                <span id="model-status" class="hidden items-center gap-2 mt-1 px-3 py-1 rounded-full text-xs font-medium"></span>
                             </div>
+                            <span id="model-status" class="hidden items-center gap-2 mt-3 px-3 py-1 rounded-full text-xs font-medium"></span>
                         </div>
                     </div>
 
-                    <!-- Interactive before/after demo (sample product photo — no upload) -->
-                    <figure class="flex flex-col gap-3">
+                    <!-- Interactive before/after demo (sample photos — no upload) -->
+                    <figure class="flex flex-col gap-2.5">
                         {% comment %}
                         `data-subjects` carries the rotation set as resolved URLs.
                         landing.js used to derive them by string-swapping "demo1-"
@@ -124,40 +136,54 @@ which every rival in the category also claims.{% endcomment %}
                         name — and the rotator's onerror path would have swapped
                         the hero to broken images every few seconds. Let {% templatetag openblock %} static {% templatetag closeblock %}
                         name every file it is responsible for.
+
+                        Four subjects, in this order, because each answers a
+                        different doubt and the first is the one people arrive with:
+                        hair against a busy wall (the case cheap removers visibly
+                        fail on), then fur, then a product — a brushed metal cap and
+                        a hard edge against a blown-out window — then a silver car,
+                        for reflections and a fine grille.
+
+                        Every subject needs room around it: an earlier product
+                        candidate filled its frame edge to edge, so the reveal
+                        showed almost no background changing and the panel stopped
+                        making its point. demo4 is framed with headroom above the
+                        cap and the wall/floor junction visible to its left, which
+                        is the part you watch disappear.
                         {% endcomment %}
-                        <div id="demo" class="demo relative w-full flex-1 min-h-[16rem] aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70 select-none checkerboard"
+                        <div id="demo" class="demo group relative w-full flex-1 min-h-[15rem] aspect-[4/3] rounded-3xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 shadow-xl shadow-gray-900/5 dark:shadow-black/30 select-none checkerboard checkerboard-soft"
                              data-subjects='[
                                ["{% static 'img/demo1-after.webp' %}", "{% static 'img/demo1-before.webp' %}"],
                                ["{% static 'img/demo2-after.webp' %}", "{% static 'img/demo2-before.webp' %}"],
+                               ["{% static 'img/demo4-after.webp' %}", "{% static 'img/demo4-before.webp' %}"],
                                ["{% static 'img/demo3-after.webp' %}", "{% static 'img/demo3-before.webp' %}"]
                              ]'>
-                            <!-- Real product photo → transparent cut-out (the handle reveals it;
+                            <!-- Real photo → transparent cut-out (the handle reveals it;
                                  landing.js rotates through the data-subjects above).
                                  fetchpriority="high" because this pair IS the homepage's
                                  LCP element (measured), and the shared demo partial that
                                  every tool page uses already does the same. Without it
                                  Chrome starts an in-viewport <img> at Low priority and
                                  only boosts it after layout — behind ~40 subresources. -->
-                            <img id="demo-after-img" src="{% static 'img/demo1-after.webp' %}" width="820" height="616" fetchpriority="high" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500" alt="Product photo with the background removed" draggable="false">
+                            <img id="demo-after-img" src="{% static 'img/demo1-after.webp' %}" width="820" height="616" fetchpriority="high" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500" alt="Photo with the background removed" draggable="false">
                             <div id="demo-before" class="absolute inset-0" style="clip-path: inset(0 50% 0 0);">
-                                <img id="demo-before-img" src="{% static 'img/demo1-before.webp' %}" width="820" height="616" fetchpriority="high" class="w-full h-full object-cover transition-opacity duration-500" alt="Original product photo on a studio background" draggable="false">
+                                <img id="demo-before-img" src="{% static 'img/demo1-before.webp' %}" width="820" height="616" fetchpriority="high" class="w-full h-full object-cover transition-opacity duration-500" alt="The same photo on its original background" draggable="false">
                             </div>
                             <!-- Divider + handle -->
-                            <div id="demo-line" class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_8px_rgba(0,0,0,0.4)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
-                                <div class="on-light-surface absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg grid place-items-center text-primaryText">
+                            <div id="demo-line" class="absolute top-0 bottom-0 w-px bg-white/90 shadow-[0_0_10px_rgba(0,0,0,0.35)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
+                                <div class="on-light-surface absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white ring-1 ring-gray-900/5 shadow-[0_4px_16px_rgba(0,0,0,0.22)] grid place-items-center text-primaryText transition-transform duration-200 group-hover:scale-105">
                                     <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
                                 </div>
                             </div>
                             <input id="demo-range" type="range" min="0" max="100" value="50" class="compare-range absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20" aria-label="Drag to compare the original and the background-removed result">
-                            <span class="absolute top-3 left-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 text-white pointer-events-none">Original</span>
-                            <span class="absolute top-3 right-3 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/90 text-white pointer-events-none">Background removed</span>
+                            <span class="absolute top-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-gray-900/65 text-white backdrop-blur-sm pointer-events-none">{% t "Original" %}</span>
+                            <span class="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary text-white shadow-sm shadow-primary/30 pointer-events-none">{% t "Background removed" %}</span>
                         </div>
-                        <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
-                            <i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Drag the handle — live demo, nothing uploaded
+                        <figcaption class="text-center text-[13px] text-gray-500 dark:text-gray-400">
+                            <i class="fa-solid fa-hand-pointer mr-1.5 text-[11px]" aria-hidden="true"></i>{% t "Drag the handle — real results, nothing uploaded" %}
                         </figcaption>
                     </figure>
                 </div>
-
             </div>
         </section>
 

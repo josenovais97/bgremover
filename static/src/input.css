@@ -201,6 +201,76 @@
 }
 
 @layer components {
+  /* Header navigation ------------------------------------------------------
+     Four entries at every width (Remove BG · Tools · Use cases · Guides), so
+     the styles only have to distinguish two things: the flagship, and
+     everything else. */
+
+  /* A secondary nav entry — a link or a dropdown trigger. */
+  .nav-link {
+    @apply inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium
+           text-gray-600 transition-colors hover:text-gray-900 hover:bg-gray-100/80
+           dark:text-gray-300 dark:hover:text-white dark:hover:bg-white/[0.06]
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  }
+  .nav-link[data-active] {
+    @apply text-gray-900 bg-gray-100/80 dark:text-white dark:bg-white/[0.06];
+  }
+
+  /* The flagship. Tinted rather than solid: a filled button up here would
+     out-shout the hero's own CTA, which is where we actually want the click. */
+  .nav-cta {
+    @apply inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold
+           text-primaryText bg-primary/10 border border-primary/15 transition-colors
+           hover:bg-primary/[0.18] dark:bg-primary/20 dark:border-primary/25 dark:hover:bg-primary/30
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  }
+  .nav-cta-active {
+    @apply ring-1 ring-primary/25 dark:ring-primary/40;
+  }
+
+  /* The homepage dropzone ---------------------------------------------------
+     A dashed border says "drop here" in a way no amount of copy does, so it
+     stays — but at 2px of gray-300 it read as an unfinished form field. A softer
+     dash that firms up to the accent on hover/drag keeps the affordance and lets
+     the panel look built. Pair with `glass` in the markup (this only layers the
+     border and elevation on top), and note that app.js toggles `border-primary`
+     and `bg-primary/5` during a drag — both are utilities, so they win over
+     these component-layer rules without !important. */
+  .dropzone-hero {
+    @apply border-2 border-dashed border-gray-300/90 shadow-xl shadow-gray-900/5
+           transition-[border-color,box-shadow,transform] duration-300
+           hover:border-primary/60 hover:shadow-2xl hover:shadow-primary/10
+           dark:border-gray-700 dark:shadow-black/30 dark:hover:border-primary/70;
+  }
+
+  /* Dropdown / sheet surface for the header menus.
+     Deliberately NOT `.glass`: a translucent panel over the hero let a headline
+     and a photo read straight through a list of thirty links, which is the one
+     place on the site where legibility beats the effect. Opaque, with the
+     elevation doing the separating instead. */
+  .menu-surface {
+    @apply rounded-2xl border border-gray-200/80 bg-white shadow-2xl shadow-gray-900/10
+           dark:border-gray-800 dark:bg-[#15151d] dark:shadow-black/60;
+  }
+
+  /* While a header menu is open the sticky "Remove a background" CTA stands
+     down — fixed to the bottom of the viewport, it otherwise sits on top of the
+     mobile sheet's own tool list. The ID beats the opacity utilities landing.js
+     toggles, so the two don't fight. */
+  .nav-open #sticky-cta {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Round icon-only header control (search, shortcuts, theme, mobile menu). */
+  .icon-btn {
+    @apply grid place-items-center w-9 h-9 rounded-xl text-gray-500 transition-colors
+           hover:text-gray-900 hover:bg-gray-100/80
+           dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/[0.06]
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  }
+
   /* Glassmorphism -------------------------------------------------------- */
   .glass {
     background: rgba(255, 255, 255, 0.82);
@@ -387,6 +457,22 @@
   .on-dark-surface .checkerboard {
     --checker-bg: #18181b;
     --checker-sq: #27272a;
+  }
+  /* Quieter checkerboard for the marketing demo, where the point is the cut-out
+     and not the transparency notation. At full strength a 22px grid behind a
+     silver car or a white product reads as more contrast than the subject does,
+     which is the opposite of what the comparison is meant to show. Half the
+     square size and a much lower-contrast square keep "this really is
+     transparent" legible without competing. Only re-points the tokens — the
+     gradients themselves stay declared once, above. */
+  .checkerboard-soft {
+    --checker-sq: #f1f2f6;
+    background-size: 14px 14px;
+    background-position: 0 0, 0 7px, 7px -7px, -7px 0;
+  }
+  .dark .checkerboard-soft,
+  .on-dark-surface .checkerboard-soft {
+    --checker-sq: #1f1f26;
   }
 
   .zoomable { cursor: zoom-in; }

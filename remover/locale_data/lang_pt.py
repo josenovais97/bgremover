@@ -1086,6 +1086,29 @@ UI = {
     "Add a caption (optional)…": "Adicione uma legenda (opcional)…",
     # Home page
     "Private & free — runs in your browser": "Privado e gratuito — corre no seu navegador",
+    # Header navigation (Remove BG · Tools · Use cases · Guides) + mobile sheet.
+    "Main": "Principal",
+    "Menu": "Menu",
+    "Search": "Pesquisar",
+    "What are you cutting out?": "O que vai recortar?",
+    # Home hero, dropzone and before/after demo.
+    "Remove backgrounds without uploading your photos.":
+        "Remova fundos sem carregar as suas fotos.",
+    "Free, unlimited, and instant.": "Grátis, ilimitado e instantâneo.",
+    "Free forever": "Grátis para sempre",
+    "No signup": "Sem registo",
+    "No watermark": "Sem marca de água",
+    "Nothing uploaded": "Nada é carregado",
+    "Drop your images here": "Largue as suas imagens aqui",
+    "or choose files from your device": "ou escolha ficheiros do seu dispositivo",
+    "Upload images": "Carregar imagens",
+    "Paste with": "Cole com",
+    "Try a sample": "Experimente um exemplo",
+    "Multiple files": "Vários ficheiros",
+    "Full resolution": "Resolução total",
+    "Background removed": "Fundo removido",
+    "Drag the handle — real results, nothing uploaded":
+        "Arraste o cursor — resultados reais, nada é carregado",
     "Free Background Remover — No Upload, No Signup, No Watermark":
         "Removedor de Fundo Grátis — Sem Upload, Sem Registo, Sem Marca de Água",
     "Remove image backgrounds free and unlimited — your photo never leaves your device. No upload, no sign-up, no watermark, full resolution.":

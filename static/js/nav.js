@@ -1,81 +1,98 @@
 /**
- * Header tool switcher: pill row + "All tools" mega-menu.
+ * Header menus: the desktop "Tools" / "Use cases" dropdowns and the mobile sheet.
  *
- * The pill row shows as many tools as fit on the current screen (which varies by
- * width AND OS font metrics); pills that don't fit are hidden rather than clipped
- * or scrolled. Every tool — including any hidden pill — is always reachable from
- * the grouped "All tools" menu, which is server-rendered (see base.html) so its
- * contents are stable and don't shuffle as the window resizes.
+ * This replaces the old width-measuring pill row, which showed as many tools as
+ * happened to fit and hid the rest — a nav whose contents changed with the window
+ * and which, on a phone, collapsed to one or two arbitrary tools. The header now
+ * renders the same four entries at every width and this file only opens and
+ * closes panels.
  *
- * Progressive enhancement: with JS off, the nav keeps its `overflow-x-auto`
- * scroll fallback and every tool is still reachable from the footer.
+ * Progressive enhancement: every panel is a plain server-rendered list of links.
+ * With JS off they stay hidden, and every tool is still reachable from the footer
+ * (which lists all of them) and from the homepage tool grid.
  *
- * The nav KEEPS `overflow-x-auto`: it's what constrains `clientWidth` to the
- * space actually available (otherwise the row grows to fit its content and
- * would report that everything fits, colliding with the header's utilities).
- * The mega-menu panel lives outside `#tool-nav`, so it is never clipped by it.
+ * A button opts in with `data-menu-btn` + `aria-controls="<panel id>"`; the panel
+ * carries `data-menu-panel`. Only one is open at a time.
  */
 (function () {
-  const nav = document.getElementById('tool-nav');
-  const moreBtn = document.getElementById('tool-more-btn');
-  const panel = document.getElementById('tool-more-panel');
-  if (!nav || !moreBtn || !panel) return;
+  const buttons = [...document.querySelectorAll('[data-menu-btn]')];
+  if (!buttons.length) return;
 
-  const chevron = moreBtn.querySelector('[data-chevron]');
-  const pills = [...nav.querySelectorAll('[data-nav-item]')];
+  const pairs = buttons
+    .map((btn) => ({ btn, panel: document.getElementById(btn.getAttribute('aria-controls')) }))
+    .filter((p) => p.panel);
 
-  const closePanel = () => {
-    panel.classList.add('hidden');
-    moreBtn.setAttribute('aria-expanded', 'false');
-    if (chevron) chevron.style.transform = '';
-  };
-  const openPanel = () => {
-    panel.classList.remove('hidden');
-    moreBtn.setAttribute('aria-expanded', 'true');
-    if (chevron) chevron.style.transform = 'rotate(180deg)';
-  };
-
-  function layout() {
-    // Reveal every pill, then hide from the first one that doesn't fit onward.
-    // Use inline `display` (not the `hidden` attribute) — a Tailwind display
-    // utility like `inline-flex` would otherwise out-rank `[hidden]` and the
-    // pill would stay visible, leaving the row overflowing.
-    pills.forEach((el) => { el.style.display = ''; });
-    if (nav.scrollWidth <= nav.clientWidth + 1) return; // everything fits
-    // The Guides link is not a [data-nav-item] and so is never hidden — it is the
-    // site's only editorial entry point and the one thing in this row that must
-    // survive a narrow window. It still takes horizontal space, so reserve its
-    // width here; without that the tool pills would be measured against a limit
-    // that ignores it and the row would overflow behind it.
-    const guides = document.getElementById('nav-guides');
-    const reserved = moreBtn.offsetWidth + (guides ? guides.offsetWidth : 0) + 8;
-    const limit = nav.getBoundingClientRect().left + nav.clientWidth - reserved;
-
-    // Measure every pill BEFORE hiding any. Hiding reflows the row and pulls the
-    // later pills leftwards, so a measure-and-hide loop would find that a pill
-    // which didn't fit now does — leaving an arbitrary set on show (tools 1-8 and
-    // then #14). TOOL_NAV is ordered most-used first, so the row must be a stable
-    // prefix of it: cut at the first pill that overflows and hide the rest.
-    const rights = pills.map((el) => el.getBoundingClientRect().right);
-    const firstOverflowing = rights.findIndex((right) => right > limit);
-    if (firstOverflowing === -1) return;
-    pills.slice(firstOverflowing).forEach((el) => { el.style.display = 'none'; });
+  function setOpen(pair, open) {
+    pair.panel.classList.toggle('hidden', !open);
+    pair.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    const chevron = pair.btn.querySelector('[data-chevron]');
+    if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : '';
+    // The mobile button swaps a hamburger for a close cross, so the same control
+    // visibly undoes itself rather than looking inert while the sheet is open.
+    const closed = pair.btn.querySelector('[data-menu-icon="closed"]');
+    const opened = pair.btn.querySelector('[data-menu-icon="open"]');
+    if (closed && opened) {
+      closed.classList.toggle('hidden', open);
+      opened.classList.toggle('hidden', !open);
+    }
   }
 
-  moreBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (panel.classList.contains('hidden')) openPanel();
-    else closePanel();
+  function closeAll(except) {
+    pairs.forEach((p) => { if (p !== except) setOpen(p, false); });
+    syncSticky();
+  }
+
+  // The landing page's sticky CTA is fixed to the bottom of the viewport, where
+  // it lands on top of the mobile sheet's own tool list. A class on <html> lets
+  // CSS stand it down (see .nav-open in input.css) without this file having to
+  // know anything about landing.js's own show/hide logic.
+  function syncSticky() {
+    const anyOpen = pairs.some((p) => !p.panel.classList.contains('hidden'));
+    document.documentElement.classList.toggle('nav-open', anyOpen);
+  }
+
+  pairs.forEach((pair) => {
+    pair.btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = pair.panel.classList.contains('hidden');
+      closeAll(pair);
+      setOpen(pair, willOpen);
+      syncSticky();
+    });
+    // A click inside a panel that isn't on a link (a group heading, the padding)
+    // shouldn't dismiss the menu the visitor is still reading.
+    pair.panel.addEventListener('click', (e) => {
+      if (!e.target.closest('a')) e.stopPropagation();
+    });
   });
-  panel.addEventListener('click', (e) => e.stopPropagation());
-  document.addEventListener('click', closePanel);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
 
-  let raf;
-  const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(layout); };
-  window.addEventListener('resize', schedule);
-  // Font swaps change label widths — re-run once fonts are ready.
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  document.addEventListener('click', () => closeAll());
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const open = pairs.find((p) => !p.panel.classList.contains('hidden'));
+    if (!open) return;
+    setOpen(open, false);
+    syncSticky();
+    open.btn.focus();
+  });
 
-  layout();
+  // Crossing the lg breakpoint swaps which panels exist visually; leaving one
+  // open through the change strands it (the mobile sheet is `lg:hidden`, so it
+  // would simply vanish with its button still reading "expanded").
+  const wide = window.matchMedia('(min-width: 1024px)');
+  const onChange = () => closeAll();
+  if (wide.addEventListener) wide.addEventListener('change', onChange);
+  else if (wide.addListener) wide.addListener(onChange);
+
+  // The mobile sheet's Search row hands off to the Ctrl+K palette rather than
+  // duplicating it.
+  const mobileSearch = document.getElementById('mobile-search');
+  const cmdBtn = document.getElementById('cmd-btn');
+  if (mobileSearch && cmdBtn) {
+    mobileSearch.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeAll();
+      cmdBtn.click();
+    });
+  }
 })();

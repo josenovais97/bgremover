@@ -1,79 +1,19 @@
 /**
- * Global "images processed" social-proof counter (client side).
+ * Usage reporting (client side).
  *
- * Reads the live totals from /api/stats/ — all-time and this ISO week — and
- * shows them in the hero badge (if the page has one). Exposes
- * window.__clearbgReport(n) so the tools can increment the counter after a real
- * cut-out. If the server reports the counter disabled (Upstash not configured),
- * nothing is shown — no fabricated numbers.
+ * Exposes window.__clearbgReport(n, event) so the tools can record a real
+ * cut-out or export against /api/stats/. Fire-and-forget: no response is read
+ * and nothing is rendered.
+ *
+ * This file used to also drive a hero badge showing the live "N this week /
+ * N all time" totals. The numbers were real, but at this stage they were small,
+ * and a small number is weaker proof than none — it invites a visitor to size up
+ * the product instead of trying it. The homepage now states four properties that
+ * are true on every visit (free / no signup / no watermark / nothing uploaded),
+ * as static markup with nothing to fetch. The counter itself stays: the totals
+ * are still worth having, they simply are not a sales argument yet.
  */
 (function () {
-  const el = document.getElementById('social-proof');
-  const numEl = document.getElementById('social-proof-count');
-  const weekEl = document.getElementById('social-proof-week');
-  const weekNumEl = document.getElementById('social-proof-week-count');
-  const totalLong = document.getElementById('social-proof-total-long');
-  const totalShort = document.getElementById('social-proof-total-short');
-  const lang = document.documentElement.lang || 'en';
-
-  // Only show the badge once the count is worth showing. 1 = always show.
-  // Raise this (e.g. 500 or 1000) to keep the badge hidden until the number is
-  // genuinely impressive — a tiny count is weaker social proof than none.
-  const MIN_DISPLAY = 1;
-
-  // Full, concrete numbers up to 999,999 ("12,412") — more tangible than
-  // "12k"; compact "M" only once it gets truly large.
-  function fmt(n) {
-    if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
-    try { return n.toLocaleString(lang); } catch (e) { return String(n); }
-  }
-
-  // Count up from 0 to the real total the first time the badge appears — a
-  // small flourish that draws the eye without inventing any numbers.
-  function animateCount(target) {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      numEl.textContent = fmt(target);
-      return;
-    }
-    const duration = 900;
-    const start = performance.now();
-    function step(now) {
-      const p = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
-      numEl.textContent = fmt(Math.round(target * eased));
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  // "N this week" is the number that shows the site is alive; the all-time total
-  // is the one that shows it is established. Right after the Monday rollover the
-  // weekly count is 0, which reads worse than no claim, so it stays hidden until
-  // there is something to report — and the all-time label shortens to "all time"
-  // only while both are on screen, so the badge never says "processed" twice.
-  function showWeek(week) {
-    if (!weekEl || !weekNumEl || typeof week !== 'number' || week < 1) return;
-    weekNumEl.textContent = fmt(week);
-    // The cell holds its number and the divider that follows it, so revealing it
-    // has to restore the flex row `hidden` was suppressing.
-    weekEl.classList.remove('hidden');
-    weekEl.classList.add('flex');
-    if (totalLong && totalShort) {
-      totalLong.classList.add('hidden');
-      totalShort.classList.remove('hidden');
-    }
-  }
-
-  let revealed = false;
-  function show(count, week) {
-    showWeek(week);
-    if (!el || !numEl || typeof count !== 'number' || count < MIN_DISPLAY) return;
-    if (revealed) { numEl.textContent = fmt(count); return; }
-    revealed = true;
-    el.classList.remove('hidden');
-    animateCount(count);
-  }
-
   // Which tool the visitor is on, derived from the URL path (locale prefix
   // stripped) so per-tool conversion tracking needs no change in each tool's JS.
   // Keep in step with STATS_TOOLS in remover/views.py — the server drops any
@@ -112,15 +52,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ n: n || 1, tool: toolId(), event: event || 'processed' }),
         keepalive: true,
-      }).then((r) => r.json()).then((d) => { if (d && d.enabled) show(d.count, d.week); }).catch(() => {});
+      }).catch(() => {});
     } catch (e) { /* ignore */ }
   };
-
-  // Only fetch the display total on pages that show the badge (the home page).
-  if (el) {
-    fetch('/api/stats/')
-      .then((r) => r.json())
-      .then((d) => { if (d && d.enabled) show(d.count, d.week); })
-      .catch(() => {});
-  }
 })();

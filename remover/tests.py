@@ -51,8 +51,8 @@ class PageTests(SimpleTestCase):
     def test_index_has_landing_content(self):
         response = self.client.get(reverse("remover:index"))
         self.assertContains(response, "How it works")
-        self.assertContains(response, "Drag &amp; drop your images")
-        self.assertContains(response, "live demo, nothing uploaded")
+        self.assertContains(response, "Drop your images here")
+        self.assertContains(response, "real results, nothing uploaded")
 
     def test_index_sets_security_headers(self):
         response = self.client.get(reverse("remover:index"))
@@ -195,9 +195,18 @@ class StatsCounterTests(SimpleTestCase):
         self.assertEqual(post.status_code, 200)
         self.assertJSONEqual(post.content, {"enabled": False, "count": None})
 
-    def test_home_has_social_proof_placeholder(self):
-        response = self.client.get(reverse("remover:index"))
-        self.assertContains(response, 'id="social-proof"')
+    def test_home_shows_no_live_counter(self):
+        """The hero states properties, not totals.
+
+        The counter still runs — the tools POST to it — but it no longer has a
+        display. A small number is weaker proof than none, so the hero carries
+        four claims that are true on every visit instead. Asserted here because
+        the temptation to put the number back is exactly what this replaced.
+        """
+        body = self.client.get(reverse("remover:index")).content.decode()
+        self.assertNotIn('id="social-proof"', body)
+        self.assertIn("Free forever", body)
+        self.assertIn("Nothing uploaded", body)
 
     # The stats POST is the only public, unauthenticated write endpoint, so it
     # carries a per-IP fixed-window rate limit (Upstash-backed). These tests
