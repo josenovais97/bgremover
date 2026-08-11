@@ -292,7 +292,13 @@ WORKFLOW_STEPS = ["index", "crop", "resize", "compress"]
 # AccentContrastTests recomputes those ratios, so an edit below that dips under AA
 # fails the suite rather than shipping.
 TOOL_ACCENTS = {
-    "index": ("79 70 229", "67 56 202", "129 140 248", "165 180 252"),        # indigo 600/700/400/300 (brand)
+    # The brand. Electric violet rather than the old indigo 600: indigo is the
+    # default accent of roughly every tool in this category, and the identity
+    # work needs the brand colour to be one nobody else is already using. Same
+    # four-role structure and the same AA floor as every other row here —
+    # AccentContrastTests recomputes all of it (surface 6.73:1 on white,
+    # dark-theme text 6.89:1 on the dark glass).
+    "index": ("79 43 255", "63 31 214", "167 139 255", "196 181 255"),        # violet 4F2BFF/3F1FD6/A78BFF/C4B5FF (brand)
     "blur": ("3 105 161", "7 89 133", "2 132 199", "14 165 233"),            # sky 700/800/600/500
     "ecommerce": ("4 120 87", "6 95 70", "5 150 105", "16 185 129"),         # emerald 700/800/600/500
     "convert": ("124 58 237", "109 40 217", "167 139 250", "196 181 253"),    # violet 600/700/400/300

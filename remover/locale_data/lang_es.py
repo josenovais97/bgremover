@@ -1127,6 +1127,8 @@ UI = {
         'Hacer el trabajo en tu propia máquina tiene contrapartidas, y conviene conocerlas antes de elegir una herramienta. Un lote muy grande está limitado por la memoria de tu dispositivo y no por un centro de datos, así que cien fotos a la vez serán más lentas aquí que en un servicio de pago en la nube. El primer recorte en un portátil modesto o en un móvil antiguo tarda bastante más que en una GPU alquilada.',
     "What you get in exchange is that there is no queue, no per-image charge, no account, no upload and no copy of your files on someone else's disk — and that once the page has loaded, it keeps working whether or not the connection does. For most jobs, on most devices, that is a good trade. For a thousand-image catalogue on a five-year-old phone, it is not, and it is better to say so.":
         'Lo que recibes a cambio es que no hay cola, ni cargo por imagen, ni cuenta, ni subida, ni copia de tus archivos en el disco de otra persona — y que, una vez cargada la página, sigue funcionando funcione o no la conexión. Para la mayoría de los trabajos, en la mayoría de los dispositivos, es un buen trato. Para un catálogo de mil imágenes en un móvil de cinco años, no lo es, y es mejor decirlo.',
+    'Drag to compare': 'Arrastra para comparar',
+    'alpha': 'alfa',
     "Private & free — runs in your browser": "Privado y gratis — funciona en tu navegador",
     # Header navigation (Remove BG · Tools · Use cases · Guides) + mobile sheet.
     "Main": "Principal",

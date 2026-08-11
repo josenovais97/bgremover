@@ -113,9 +113,15 @@
     <!-- Self-hosted Inter + Font Awesome subset (only the icons this site uses) —
          same-origin, so there is no render-blocking third-party stylesheet and no
          extra DNS/TLS handshake to fonts.googleapis.com / fonts.gstatic.com. -->
+    {% comment %}Bricolage is preloaded alongside Inter because it paints the h1 —
+    on most pages the largest text above the fold, and on the home page part of the
+    LCP candidate set. Plex Mono is NOT preloaded: it only ever sets small data
+    labels, so it can arrive late and swap without anyone noticing.{% endcomment %}
     <link rel="preload" href="{% static 'webfonts/inter/inter-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'webfonts/bricolage/bricolage-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{% static 'webfonts/fa-solid-900.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'css/inter.css' %}">
+    <link rel="stylesheet" href="{% static 'css/display.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 
@@ -125,12 +131,6 @@
 <body data-tool-label="{{ current_tool_label }}" style="--color-primary: {{ accent_rgb }}; --color-primary-hover: {{ accent_rgb_hover }}; --accent-text-dark: {{ accent_rgb_text_dark }}; --accent-text-dark-alt: {{ accent_rgb_text_dark_alt }}" class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col font-sans">
 
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white">{% t "Skip to content" %}</a>
-
-    <!-- Decorative background glow -->
-    <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div class="absolute -top-32 left-1/2 -translate-x-1/2 h-80 w-[42rem] rounded-full bg-primary/20 blur-3xl dark:bg-primary/10"></div>
-        <div class="absolute top-1/3 -right-24 h-72 w-72 rounded-full bg-primaryHover/10 blur-3xl"></div>
-    </div>
 
     {% comment %}
       Header information architecture: brand · Remove BG · Tools ▾ · Use cases ▾ · Guides.
@@ -254,7 +254,7 @@
             <div id="menu-mobile" data-menu-panel class="hidden lg:hidden pb-4">
                 <div class="menu-surface p-3 space-y-3 max-h-[calc(100vh-6rem)] overflow-y-auto">
                     <a href="{% url 'remover:index' %}" {% if active == "index" %}aria-current="page"{% endif %}
-                       class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                       class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-primaryHover shadow-lg shadow-primary/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                         <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>{% t "Remove BG" %}
                     </a>
                     <div class="grid grid-cols-2 gap-2">
@@ -516,6 +516,8 @@
     <script src="{% static 'js/colorpicker.js' %}" defer></script>
     <!-- Header dropdowns (Tools / Use cases) and the mobile menu sheet. -->
     <script src="{% static 'js/nav.js' %}" defer></script>
+    <!-- Scroll-triggered reveals for [data-rise] elements. -->
+    <script src="{% static 'js/reveal.js' %}" defer></script>
     <!-- Ctrl+K command palette (filter + keyboard nav over the list above). -->
     <script src="{% static 'js/command.js' %}" defer></script>
     <!-- Usage reporting (defines __clearbgReport). Nothing is displayed. -->

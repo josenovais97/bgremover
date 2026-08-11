@@ -28,10 +28,13 @@
      from it HERE rather than inline because an inline style can't be overridden by
      a stylesheet rule, which is exactly what the `.dark` flip below needs to do. */
   :root {
-    --color-primary: 79 70 229;          /* indigo 600 — brand default */
-    --color-primary-hover: 67 56 202;    /* indigo 700 */
-    --accent-text-dark: 129 140 248;     /* indigo 400 */
-    --accent-text-dark-alt: 165 180 252; /* indigo 300 */
+    /* Keep in step with TOOL_ACCENTS["index"] in context_processors.py — this is
+       only the pre-hydration fallback, but a stale value here flashes the old
+       brand colour before <body>'s inline style lands. */
+    --color-primary: 79 43 255;          /* violet #4F2BFF — brand */
+    --color-primary-hover: 63 31 214;    /* #3F1FD6 */
+    --accent-text-dark: 167 139 255;     /* #A78BFF */
+    --accent-text-dark-alt: 196 181 255; /* #C4B5FF */
   }
   body {
     --color-primary-text: var(--color-primary);
@@ -69,24 +72,28 @@
     --color-primary-text: var(--accent-text-dark);
     --color-primary-text-alt: var(--accent-text-dark-alt);
   }
-  /* Display face for the big headlines; body stays Inter (loaded in base.html).
-     Applying to h1 site-wide gives every tool a distinctive, non-templated hero
-     without touching each template. */
+  /* Display face for the big headlines; body stays Inter. Applying to h1
+     site-wide gives every tool a distinctive, non-templated hero without
+     touching each template.
+
+     This rule predates the font actually existing: it named Bricolage Grotesque
+     with no @font-face anywhere, so for months every h1 rendered in Inter while
+     the stylesheet claimed otherwise. The face is now real (static/css/display.css)
+     and self-hosted, and this is what finally makes the rule do something. */
   h1 {
-    font-family: 'Bricolage Grotesque', 'Inter', ui-sans-serif, system-ui, sans-serif;
-    letter-spacing: -0.025em;
+    font-family: theme('fontFamily.display');
+    font-weight: 800;
+    letter-spacing: -0.03em;
   }
   body {
     /* Inter's stylistic sets: single-storey a, straighter glyphs — subtly nicer. */
     font-feature-settings: 'cv11', 'ss01';
-    /* Ambient accent glow at the top of every page — depth instead of flat grey.
-       Uses the per-tool accent so the whole page is subtly tinted to its colour. */
-    background-image: radial-gradient(1100px 560px at 50% -8%, rgb(var(--color-primary) / 0.07), transparent 62%);
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-  }
-  .dark body {
-    background-image: radial-gradient(1100px 560px at 50% -8%, rgb(var(--color-primary) / 0.16), transparent 62%);
+    /* No ambient accent wash. It was here to give the page depth instead of
+       flat grey, and it is the single clearest "generic AI SaaS" signal the
+       site had: a purple radial glow behind a white card is the house style of
+       roughly every tool in this category. The identity now carries the page —
+       the display face, the knockout, and one flat accent used sparingly — so
+       the ground can be a chosen neutral and nothing else. */
   }
   /* Accent-tinted text selection — a small detail that reads considered. */
   ::selection { background: rgb(var(--color-primary) / 0.22); }
@@ -201,6 +208,99 @@
 }
 
 @layer components {
+  /* ════════════════════════════════════════════════════════════════════════
+     THE KNOCKOUT — the brand's signature device.
+
+     A word inside a headline rendered as an outline filled with the
+     transparency checkerboard: the type performs what the product does. It
+     lands on the NOUN inside the existing translated h1 ("Free /Background/
+     Remover", "Removedor de /Fundo/ Grátis", "Eliminador de /Fondos/ Gratis"),
+     so it costs no new translatable strings and does not disturb the h1's text
+     content for a crawler or a screen reader.
+
+     Two things are load-bearing here:
+
+     1. Every measurement is in `em`, so the checker and the outline track the
+        type instead of drifting apart the moment a headline gets smaller.
+     2. There is an optical step at `sm`. Small type needs a proportionally
+        HEAVIER outline and a COARSER checker — at a phone's 38px the first
+        pass (.20em/.036em) silted up the counters and the knocked-out word
+        came out lighter than the solid words beside it, which is backwards for
+        the word that is supposed to be the hero. Measured, not guessed.
+
+     Deliberately sentence case, not caps: caps cost the ascenders and
+     descenders that make a word recognisable at a glance, and lowercase
+     counters are rounder, which gives the checker room to read.
+     ════════════════════════════════════════════════════════════════════════ */
+  .knockout {
+    --knock-checker: 0.26em;   /* phones */
+    --knock-stroke: 0.05em;
+    color: transparent;
+    -webkit-text-stroke: var(--knock-stroke) theme('colors.gray.900');
+    paint-order: stroke fill;
+    background-color: #fff;
+    background-image:
+      linear-gradient(45deg, #B4B4C4 25%, transparent 25%),
+      linear-gradient(-45deg, #B4B4C4 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #B4B4C4 75%),
+      linear-gradient(-45deg, transparent 75%, #B4B4C4 75%);
+    background-size: var(--knock-checker) var(--knock-checker);
+    background-position:
+      0 0,
+      0 calc(var(--knock-checker) / 2),
+      calc(var(--knock-checker) / 2) calc(var(--knock-checker) / -2),
+      calc(var(--knock-checker) / -2) 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  @media (min-width: 640px) {
+    .knockout { --knock-checker: 0.21em; --knock-stroke: 0.038em; }
+  }
+  /* Dark theme: the checkerboard inverts like every other one on the site, and
+     the outline has to become light or the word disappears into the ground. */
+  .dark .knockout {
+    -webkit-text-stroke-color: theme('colors.gray.100');
+    background-color: #17171D;
+    background-image:
+      linear-gradient(45deg, #35353F 25%, transparent 25%),
+      linear-gradient(-45deg, #35353F 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #35353F 75%),
+      linear-gradient(-45deg, transparent 75%, #35353F 75%);
+  }
+  /* Transparent text over a clipped background renders as NOTHING where
+     background-clip:text is unsupported — an invisible h1. Fall back to solid
+     ink so the worst case is a plain headline rather than a blank one. */
+  @supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+    .knockout {
+      color: inherit;
+      -webkit-text-stroke: 0;
+      background: none;
+    }
+  }
+
+  /* Scroll-triggered reveal ------------------------------------------------
+     Opt-in per element via `data-rise`; reveal.js adds `.is-revealed` when the
+     element first enters the viewport. The initial state lives here rather than
+     in JS so there is no flash of the un-transformed element before the script
+     runs, and the whole thing is inert without JS (see the no-js guard below).
+
+     Transform + opacity only: compositor-only properties, so a long list of
+     these cannot cause layout or paint work on the main thread. */
+  [data-rise] {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.42s cubic-bezier(.22,.68,.3,1),
+                transform 0.42s cubic-bezier(.22,.68,.3,1);
+    transition-delay: var(--rise-delay, 0ms);
+  }
+  [data-rise].is-revealed { opacity: 1; transform: none; }
+  /* If the script never runs, nothing should stay invisible. reveal.js sets
+     `js-rise` on <html> as its first act, so this is the honest default. */
+  html:not(.js-rise) [data-rise] { opacity: 1; transform: none; transition: none; }
+  @media (prefers-reduced-motion: reduce) {
+    [data-rise] { opacity: 1; transform: none; transition: none; }
+  }
+
   /* Header navigation ------------------------------------------------------
      Four entries at every width (Remove BG · Tools · Use cases · Guides), so
      the styles only have to distinguish two things: the flagship, and
@@ -343,10 +443,12 @@
      (raw `bg-primary text-white` utilities) always wins the cascade.        */
 
   /* Primary call-to-action (Download). */
+  /* Flat, not a gradient. The accent is one colour used sparingly; a two-stop
+     ramp on every button is the thing that made forty tools look alike. */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-           text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25
-           transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/40
+           text-white bg-primary shadow-lg shadow-primary/25
+           transition-all duration-200 hover:bg-primaryHover hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/40
            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
            dark:focus-visible:ring-offset-gray-950;
   }

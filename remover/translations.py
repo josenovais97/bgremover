@@ -99,6 +99,38 @@ def t(text, lang=None):
     return cat.UI.get(text, text) if cat else text
 
 
+# --- The knockout noun -------------------------------------------------------
+# The home page's h1 renders one word as an outline filled with the transparency
+# checkerboard (see `.knockout` in input.css) — the brand's signature device.
+#
+# It has to be a word that REALLY OCCURS in that language's translation of the
+# headline, and the languages do not agree on word order:
+#
+#   en  Free /Background/ Remover
+#   pt  Removedor de /Fundo/ Grátis
+#   es  Eliminador de /Fondos/ Gratis
+#
+# So the headline cannot be assembled from three separate {% t %} calls — in
+# Portuguese that renders "Grátis Fundo Removedor". Instead the translated string
+# stays whole and the noun is wrapped inside it, which also means translators
+# never see markup and the h1's text content is unchanged for crawlers and
+# screen readers.
+#
+# `None` is the English key, matching `_code()`'s convention. KnockoutTests
+# asserts every entry actually appears in its language's headline, so a
+# retranslation cannot silently drop the device.
+KNOCKOUT_NOUN = {None: "Background", "pt": "Fundo", "es": "Fondos"}
+
+# The headline the noun is looked for in — named once so the test and the
+# template cannot disagree about which string carries the device.
+KNOCKOUT_HEADLINE = "Free Background Remover"
+
+
+def knockout_noun(lang=None):
+    """The word the h1 knocks out in `lang` (English if it has no entry)."""
+    return KNOCKOUT_NOUN.get(_code(lang), KNOCKOUT_NOUN[None])
+
+
 def js_catalogue(lang=None):
     """The runtime string catalogue for the browser, or {} on English pages.
 

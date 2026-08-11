@@ -1,0 +1,53 @@
+/*
+ * Self-hosted display + utility faces, alongside Inter (see inter.css).
+ *
+ * Same reasoning as inter.css and the Font Awesome subset: same-origin, so no
+ * render-blocking third-party stylesheet and no extra DNS/TLS handshake.
+ *
+ * Bricolage Grotesque is the headline face. Note that `input.css` has named it
+ * in the `h1` rule since long before this file existed — with no @font-face and
+ * no file behind it, so every headline on the site silently rendered in Inter.
+ * This is the file that makes that rule true.
+ *
+ * IBM Plex Mono carries DATA, not decoration: dimensions, file formats, model
+ * names, byte counts. Anything the page is stating as a fact about a file gets
+ * the mono treatment, which is the one typographic signal that reads as
+ * "measured" rather than "marketed". Do not reach for it for body copy.
+ *
+ * Both are VARIABLE-axis subsets built from the Google Fonts originals, cut to
+ * latin + latin-1 + the punctuation the copy actually uses (the em dash, curly
+ * quotes, ·, ×, …) — which covers English, Portuguese and Spanish. Regenerate:
+ *
+ *   fonttools varLib.instancer <src>.woff2 opsz=48 wght=400:800 -o inst.ttf
+ *   fonttools subset inst.ttf --unicodes=U+0020-007E,U+00A0-00FF,… \
+ *       --flavor=woff2 --layout-features=kern,liga,calt
+ *
+ * Bricolage keeps its weight axis (400-800) in one file so the whole range
+ * costs what one static weight would; its optical-size axis is pinned at 48,
+ * since the site only ever uses it at display sizes.
+ */
+
+/* Bricolage Grotesque — headlines. 32 KB for the full 400-800 range. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("../webfonts/bricolage/bricolage-latin.woff2") format('woff2');
+  /* Trim the fallback's mismatch so a swap from Inter doesn't shift layout.
+     Inter is wider and shorter than Bricolage at the same size; these pull the
+     fallback's metrics toward the real face so the reflow is imperceptible. */
+  size-adjust: 100%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+/* IBM Plex Mono — data labels only. 12 KB. */
+@font-face {
+  font-family: 'Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../webfonts/plex/plex-mono-latin.woff2") format('woff2');
+}

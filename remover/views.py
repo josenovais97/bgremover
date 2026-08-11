@@ -1182,14 +1182,20 @@ SHELL_ASSETS = (
         for p in sorted(_JS_DIR.glob("*.js"))
         if f"js/{p.name}" not in SHELL_RUNTIME_ASSETS
     ]
+    # CSS and fonts are hand-listed (unlike the JS above, which is globbed), so a
+    # new stylesheet or face has to be added HERE too or the offline shell renders
+    # without it — a headline in the fallback face is the visible symptom.
     + [
         "css/tailwind.css",
         "css/fontawesome.css",
         "css/inter.css",
+        "css/display.css",
         "webfonts/fa-solid-900.woff2",
         "webfonts/fa-regular-400.woff2",
         "webfonts/fa-brands-400.woff2",
         "webfonts/inter/inter-latin.woff2",
+        "webfonts/bricolage/bricolage-latin.woff2",
+        "webfonts/plex/plex-mono-latin.woff2",
         "img/favicon.svg",
         "img/icon-192.png",
         "img/icon-512.png",

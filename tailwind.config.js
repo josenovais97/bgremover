@@ -13,11 +13,21 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // Inter is self-hosted (static/css/inter.css). There is deliberately no
-      // second `display` family: one was configured and loaded from Google Fonts
-      // for months without a single template ever using it.
+      // All three faces are self-hosted (static/css/inter.css + display.css).
+      //
+      // The old note here said there was "deliberately no second display family"
+      // because one had been configured and never used. The opposite had quietly
+      // become true: input.css named Bricolage Grotesque in its `h1` rule with no
+      // @font-face behind it, so every headline on the site rendered in Inter
+      // while claiming otherwise. Both faces are now real files.
+      //
+      //   sans     Inter — body, UI, everything unmarked
+      //   display  Bricolage Grotesque — headlines and the knockout
+      //   mono     IBM Plex Mono — DATA only (dimensions, formats, model names)
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Bricolage Grotesque', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
         // Resolve to CSS variables so each page can set its own accent (the
@@ -41,10 +51,19 @@ module.exports = {
           '0%,100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-8px)' },
         },
+        // Scroll-triggered reveal. Deliberately small: 10px and a fifth of a
+        // second reads as "the page is alive", 40px and half a second reads as
+        // "the page is slow". Only transform + opacity, so it stays on the
+        // compositor and cannot cause layout.
+        'rise': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'none' },
+        },
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.5s ease-out both',
         'float': 'float 6s ease-in-out infinite',
+        'rise': 'rise 0.42s cubic-bezier(.22,.68,.3,1) both',
       },
     },
   },

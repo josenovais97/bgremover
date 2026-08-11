@@ -2700,6 +2700,7 @@ const App = {
  * pages without the demo markup.
  */
 function initDemoCompare() {
+  const demo = document.getElementById('demo');
   const range = document.getElementById('demo-range');
   const before = document.getElementById('demo-before');
   const line = document.getElementById('demo-line');
@@ -2709,7 +2710,38 @@ function initDemoCompare() {
     line.style.left = `${v}%`;
   };
   range.addEventListener('input', () => set(+range.value));
-  set(+range.value);
+
+  // Entrance sweep. This lives HERE, with the slider, rather than in landing.js
+  // where it started: two files writing the same clip-path raced, and whichever
+  // ran second (usually this one's initial `set`) snapped the seam to 50% and ate
+  // the animation. One owner for the demo's clip state.
+  //
+  // WHY THE CLIP AND NOT THE OPACITY — the hero demo is this page's LCP element
+  // (measured; see the fetchpriority note in index.html). Fading or sliding the
+  // image in makes the browser record the largest paint at the END of the
+  // animation, pushing LCP out by the animation's whole duration. Animating the
+  // mask leaves both images painted at full strength on the first frame, so LCP
+  // is unaffected and only the seam moves.
+  const settle = +range.value;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced || !demo) { set(settle); return; }
+
+  let interrupted = false;
+  const stop = () => { interrupted = true; };
+  ['pointerdown', 'keydown', 'touchstart'].forEach((evt) =>
+    demo.addEventListener(evt, stop, { once: true, passive: true }));
+
+  const DURATION = 900;
+  let start = null;
+  set(0);
+  requestAnimationFrame(function step(now) {
+    // An interaction wins immediately — the sweep must never fight a drag.
+    if (interrupted) { set(+range.value); return; }
+    if (start === null) start = now;
+    const p = Math.min(1, (now - start) / DURATION);
+    set((1 - (1 - p) ** 3) * settle);   // ease-out cubic
+    if (p < 1) requestAnimationFrame(step);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => App.init());

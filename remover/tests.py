@@ -52,7 +52,7 @@ class PageTests(SimpleTestCase):
         response = self.client.get(reverse("remover:index"))
         self.assertContains(response, "How it works")
         self.assertContains(response, "Drop your images here")
-        self.assertContains(response, "real results, nothing uploaded")
+        self.assertContains(response, "Drag to compare")
 
     def test_index_sets_security_headers(self):
         response = self.client.get(reverse("remover:index"))
@@ -1041,6 +1041,58 @@ class PWATests(SimpleTestCase):
         listed = list(SHELL_ASSETS) + list(SHELL_RUNTIME_ASSETS)
         self.assertEqual(len(listed), len(set(listed)), "an asset is precached twice")
         self.assertEqual(on_disk - set(listed), set(), "a JS module is missing from the shell")
+
+
+class KnockoutTests(SimpleTestCase):
+    """The h1's signature device must survive translation.
+
+    One word in the home page's h1 is rendered as an outline filled with the
+    transparency checkerboard — the brand's whole visual signature. It works by
+    finding a noun INSIDE the translated headline, which means it breaks
+    silently in exactly one way: someone retranslates the headline, the noun is
+    no longer in the string, the regex matches nothing, and the page ships a
+    perfectly ordinary h1 in that language while looking fine in English.
+
+    Nothing else would catch that, so it is checked in both directions — the
+    declared noun really is in the string, and the rendered page really does
+    carry the span.
+    """
+
+    def setUp(self):
+        translation.activate("en")
+        self.addCleanup(translation.activate, "en")
+
+    def test_the_declared_noun_appears_in_every_headline(self):
+        from remover.translations import KNOCKOUT_HEADLINE, KNOCKOUT_NOUN
+        from remover.translations import t as translate
+
+        for code, noun in KNOCKOUT_NOUN.items():
+            with self.subTest(lang=code or "en"):
+                headline = translate(KNOCKOUT_HEADLINE, code)
+                self.assertIn(
+                    noun, headline,
+                    f"KNOCKOUT_NOUN[{code!r}] is {noun!r} but the {code or 'en'} headline is "
+                    f"{headline!r} — the h1 would render with no knockout at all.",
+                )
+
+    def test_every_language_renders_exactly_one_knockout(self):
+        for path in ("/", "/pt/", "/es/"):
+            with self.subTest(path=path):
+                body = self.client.get(path).content.decode()
+                self.assertEqual(
+                    body.count('<span class="knockout">'), 1,
+                    f"{path} should carry exactly one knockout span in its h1",
+                )
+
+    def test_the_headline_text_is_unchanged_for_a_crawler(self):
+        # The span must not disturb what the h1 READS as — the page competes for
+        # this exact phrase, and a screen reader should hear one sentence.
+        import re
+
+        body = self.client.get(reverse("remover:index")).content.decode()
+        h1 = re.search(r"<h1[^>]*>(.*?)</h1>", body, re.S).group(1)
+        text = " ".join(re.sub(r"(?s)<[^>]+>", " ", h1).split())
+        self.assertIn("Free Background Remover", text)
 
 
 class TrustCopyTests(SimpleTestCase):
