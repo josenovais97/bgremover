@@ -4,10 +4,10 @@
  * Same reasoning as inter.css and the Font Awesome subset: same-origin, so no
  * render-blocking third-party stylesheet and no extra DNS/TLS handshake.
  *
- * Bricolage Grotesque is the headline face. Note that `input.css` has named it
- * in the `h1` rule since long before this file existed — with no @font-face and
- * no file behind it, so every headline on the site silently rendered in Inter.
- * This is the file that makes that rule true.
+ * Instrument Serif is the headline face — the Passe-partout direction's single
+ * loudest decision, and the one thing on the page that could not be mistaken for
+ * another tool in this category. It is a display face: it wants size and tight
+ * leading, and it is never used below ~24px.
  *
  * IBM Plex Mono carries DATA, not decoration: dimensions, file formats, model
  * names, byte counts. Anything the page is stating as a fact about a file gets
@@ -22,25 +22,27 @@
  *   fonttools subset inst.ttf --unicodes=U+0020-007E,U+00A0-00FF,… \
  *       --flavor=woff2 --layout-features=kern,liga,calt
  *
- * Bricolage keeps its weight axis (400-800) in one file so the whole range
- * costs what one static weight would; its optical-size axis is pinned at 48,
- * since the site only ever uses it at display sizes.
+ * Instrument Serif ships one weight, which is all it has and all this needs.
  */
 
-/* Bricolage Grotesque — headlines. 32 KB for the full 400-800 range. */
+/* Instrument Serif — headlines. 19 KB roman + 20 KB italic.
+   Two files rather than one because the italic is a real cut, not a slant, and
+   the gallery label under every mount is set in it. Verified to carry the full
+   Portuguese and Spanish accent set (ã ç õ é í ó ú ñ ü and capitals) with real
+   contours, not cmap entries pointing at blanks. */
 @font-face {
-  font-family: 'Bricolage Grotesque';
+  font-family: 'Instrument Serif';
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 400;
   font-display: swap;
-  src: url("../webfonts/bricolage/bricolage-latin.woff2") format('woff2');
-  /* Trim the fallback's mismatch so a swap from Inter doesn't shift layout.
-     Inter is wider and shorter than Bricolage at the same size; these pull the
-     fallback's metrics toward the real face so the reflow is imperceptible. */
-  size-adjust: 100%;
-  ascent-override: 92%;
-  descent-override: 24%;
-  line-gap-override: 0%;
+  src: url("../webfonts/instrument/instrument-serif-latin.woff2") format('woff2');
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../webfonts/instrument/instrument-serif-italic-latin.woff2") format('woff2');
 }
 
 /* IBM Plex Mono — data labels only. 12 KB. */

@@ -26,10 +26,37 @@ module.exports = {
       //   mono     IBM Plex Mono — DATA only (dimensions, formats, model names)
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Bricolage Grotesque', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Instrument Serif', 'Georgia', 'Times New Roman', 'serif'],
         mono: ['Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
+        // THE NEUTRAL RAMP IS THE DIRECTION.
+        //
+        // Passe-partout is built on mat board and paper, not on white and blue-
+        // grey — and the whole site is written in Tailwind's `gray-*` utilities.
+        // Redefining the ramp here re-grounds every existing border, caption and
+        // muted label at once, with no template churn: `bg-white` still means
+        // paper (the mount), `gray-200` still means a hairline, they are simply
+        // the right colours now. Doing this by hand would have meant editing
+        // ~47 templates and would have drifted the first time one was missed.
+        //
+        // Green-grey rather than blue-grey, keyed to the mat board (#E7E8E3).
+        // Every step from 500 down clears AA as text on the mat board, which the
+        // old blue-grey 400/500 did not — see AccentContrastTests, which now
+        // measures against the real ground instead of against white.
+        gray: {
+          50:  '#F7F7F5',  // paper, one step off white
+          100: '#EFEFEC',
+          200: '#E1E2DC',  // hairlines
+          300: '#C7C9C1',
+          400: '#63685F',  // small uppercase labels — 4.64:1 on mat board
+          500: '#54594F',  // secondary text
+          600: '#4B4F47',  // body copy — 6.80:1
+          700: '#383B35',
+          800: '#282A25',
+          900: '#1B1D1A',  // ink
+          950: '#131511',
+        },
         // Resolve to CSS variables so each page can set its own accent (the
         // per-tool signature colour) — see input.css :root and base.html.
         // primary/primaryHover are SURFACES (white text sits on them, so they

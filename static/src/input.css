@@ -43,6 +43,8 @@
   .dark body {
     --color-primary-text: var(--accent-text-dark);
     --color-primary-text-alt: var(--accent-text-dark-alt);
+    background-color: #161714;
+    color: theme('colors.gray.100');
   }
 
   /* Escape hatches for surfaces that DON'T follow the theme: the editor/crop
@@ -80,19 +82,34 @@
      with no @font-face anywhere, so for months every h1 rendered in Inter while
      the stylesheet claimed otherwise. The face is now real (static/css/display.css)
      and self-hosted, and this is what finally makes the rule do something. */
+  /* Instrument Serif is a high-contrast display face. It wants size, tight
+     leading and NO negative tracking — the letter-spacing that made Bricolage
+     look engineered closes a serif's apertures and turns its thins to mush.
+     Weight 400 because that is the only weight it has, and the only one it
+     needs at this size. */
+  /* h1 ONLY. The face is a display cut and it is never used below ~24px — an
+     earlier version put it on every h2, which caught UI-level headings like the
+     dropzone's "Drop your images here" and set a 20px interface label in a
+     high-contrast serif. Section headings opt in with `font-display` where they
+     are genuinely display-sized; everything else stays Inter. */
   h1 {
     font-family: theme('fontFamily.display');
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.02;
   }
   body {
     /* Inter's stylistic sets: single-storey a, straighter glyphs — subtly nicer. */
     font-feature-settings: 'cv11', 'ss01';
+    /* The mat board. Set here rather than as a utility on <body> so the one
+       colour that defines the direction lives with the rest of the tokens. */
+    background-color: #E7E8E3;
+    color: theme('colors.gray.900');
     /* No ambient accent wash. It was here to give the page depth instead of
        flat grey, and it is the single clearest "generic AI SaaS" signal the
        site had: a purple radial glow behind a white card is the house style of
        roughly every tool in this category. The identity now carries the page —
-       the display face, the knockout, and one flat accent used sparingly — so
+       the display face, the mount, and one quiet accent used sparingly — so
        the ground can be a chosen neutral and nothing else. */
   }
   /* Accent-tinted text selection — a small detail that reads considered. */
@@ -209,74 +226,60 @@
 
 @layer components {
   /* ════════════════════════════════════════════════════════════════════════
-     THE KNOCKOUT — the brand's signature device.
+     THE MOUNT — the brand's signature device.
 
-     A word inside a headline rendered as an outline filled with the
-     transparency checkerboard: the type performs what the product does. It
-     lands on the NOUN inside the existing translated h1 ("Free /Background/
-     Remover", "Removedor de /Fundo/ Grátis", "Eliminador de /Fondos/ Gratis"),
-     so it costs no new translatable strings and does not disturb the h1's text
-     content for a crawler or a screen reader.
+     Passe-partout: every image on the site sits in a generous paper mount with
+     a fine bevel, the way a print is mounted before it is framed. The mat board
+     is the page ground; the mount is the paper; the bevel is the hairline where
+     one meets the other. The before/after seam IS that bevel, which is what ties
+     the device to what the product does — the cut line and the mount edge are
+     the same line.
 
-     Two things are load-bearing here:
-
-     1. Every measurement is in `em`, so the checker and the outline track the
-        type instead of drifting apart the moment a headline gets smaller.
-     2. There is an optical step at `sm`. Small type needs a proportionally
-        HEAVIER outline and a COARSER checker — at a phone's 38px the first
-        pass (.20em/.036em) silted up the counters and the knocked-out word
-        came out lighter than the solid words beside it, which is backwards for
-        the word that is supposed to be the hero. Measured, not guessed.
-
-     Deliberately sentence case, not caps: caps cost the ascenders and
-     descenders that make a word recognisable at a glance, and lowercase
-     counters are rounder, which gives the checker room to read.
+     Replaces the knockout (an outlined word filled with the transparency
+     checkerboard) from the previous direction. That device wanted a heavy
+     grotesque and maximum contrast; this one wants a serif and restraint, and
+     the two cannot share a page.
      ════════════════════════════════════════════════════════════════════════ */
-  .knockout {
-    --knock-checker: 0.26em;   /* phones */
-    --knock-stroke: 0.05em;
-    color: transparent;
-    -webkit-text-stroke: var(--knock-stroke) theme('colors.gray.900');
-    paint-order: stroke fill;
-    background-color: #fff;
-    background-image:
-      linear-gradient(45deg, #B4B4C4 25%, transparent 25%),
-      linear-gradient(-45deg, #B4B4C4 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #B4B4C4 75%),
-      linear-gradient(-45deg, transparent 75%, #B4B4C4 75%);
-    background-size: var(--knock-checker) var(--knock-checker);
-    background-position:
-      0 0,
-      0 calc(var(--knock-checker) / 2),
-      calc(var(--knock-checker) / 2) calc(var(--knock-checker) / -2),
-      calc(var(--knock-checker) / -2) 0;
-    -webkit-background-clip: text;
-    background-clip: text;
+  .mount {
+    background: theme('colors.white');
+    padding: 1.125rem 1.125rem 0.875rem;
+    box-shadow:
+      0 0 0 1px rgb(27 29 26 / 0.07),
+      0 1px 2px rgb(27 29 26 / 0.06),
+      0 22px 48px -26px rgb(27 29 26 / 0.40);
   }
-  @media (min-width: 640px) {
-    .knockout { --knock-checker: 0.21em; --knock-stroke: 0.038em; }
+  .dark .mount {
+    background: #1D1F1B;
+    box-shadow:
+      0 0 0 1px rgb(230 231 225 / 0.08),
+      0 22px 48px -26px rgb(0 0 0 / 0.60);
   }
-  /* Dark theme: the checkerboard inverts like every other one on the site, and
-     the outline has to become light or the word disappears into the ground. */
-  .dark .knockout {
-    -webkit-text-stroke-color: theme('colors.gray.100');
-    background-color: #17171D;
-    background-image:
-      linear-gradient(45deg, #35353F 25%, transparent 25%),
-      linear-gradient(-45deg, #35353F 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, #35353F 75%),
-      linear-gradient(-45deg, transparent 75%, #35353F 75%);
+  /* What sits inside a mount is square and carries only the bevel — a radius
+     here would read as a rounded photo floating on paper rather than as a print
+     seated in a mat. */
+  .mount > .mounted {
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px rgb(27 29 26 / 0.14);
   }
-  /* Transparent text over a clipped background renders as NOTHING where
-     background-clip:text is unsupported — an invisible h1. Fall back to solid
-     ink so the worst case is a plain headline rather than a blank one. */
-  @supports not ((background-clip: text) or (-webkit-background-clip: text)) {
-    .knockout {
-      color: inherit;
-      -webkit-text-stroke: 0;
-      background: none;
-    }
+  .dark .mount > .mounted { box-shadow: inset 0 0 0 1px rgb(230 231 225 / 0.14); }
+
+  /* The gallery label: what a mounted print has instead of a caption. */
+  .mount-label {
+    font-family: theme('fontFamily.display');
+    font-style: italic;
+    font-size: 0.9375rem;
+    color: theme('colors.gray.500');
+    text-align: center;
   }
+  .dark .mount-label { color: theme('colors.gray.400'); }
+
+  /* The bevel, used as the compare seam. A hairline of the mount's own paper
+     with a hair of shadow on it, not a white rule with a glow. */
+  .bevel-seam {
+    background: theme('colors.white');
+    box-shadow: 0 0 0 0.5px rgb(27 29 26 / 0.28);
+  }
+  .dark .bevel-seam { background: #1D1F1B; box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.5); }
 
   /* Scroll-triggered reveal ------------------------------------------------
      Opt-in per element via `data-rise`; reveal.js adds `.is-revealed` when the
@@ -337,11 +340,17 @@
      border and elevation on top), and note that app.js toggles `border-primary`
      and `bg-primary/5` during a drag — both are utilities, so they win over
      these component-layer rules without !important. */
+  /* The dropzone is a mount too, not a dashed browser affordance: in this
+     direction the panel that receives your photograph should look like the paper
+     it will be mounted on. The hairline firms up to the accent on hover/drag,
+     which is the only movement it needs. app.js still toggles `border-primary`
+     and `bg-primary/5` during a drag — both utilities, so they win over this. */
   .dropzone-hero {
-    @apply border-2 border-dashed border-gray-300/90 shadow-xl shadow-gray-900/5
-           transition-[border-color,box-shadow,transform] duration-300
-           hover:border-primary/60 hover:shadow-2xl hover:shadow-primary/10
-           dark:border-gray-700 dark:shadow-black/30 dark:hover:border-primary/70;
+    @apply border border-gray-900/[0.12] bg-white
+           transition-[border-color,box-shadow] duration-200
+           hover:border-primary/50
+           dark:border-white/10 dark:bg-[#1D1F1B] dark:hover:border-primary/60;
+    box-shadow: 0 0 0 1px rgb(27 29 26 / 0.02), 0 18px 40px -28px rgb(27 29 26 / 0.35);
   }
 
   /* Footer tool directory: an accordion on small screens, four open columns on
@@ -443,13 +452,15 @@
      (raw `bg-primary text-white` utilities) always wins the cascade.        */
 
   /* Primary call-to-action (Download). */
-  /* Flat, not a gradient. The accent is one colour used sparingly; a two-stop
-     ramp on every button is the thing that made forty tools look alike. */
+  /* An ink pill, not an accent fill. In Passe-partout the accent is reserved for
+     marks and hairlines — spending it on every button is what made the previous
+     direction feel like the colour was stuck on. Ink is also the one value that
+     never fights whichever per-tool accent the page is wearing. */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-           text-white bg-primary shadow-lg shadow-primary/25
-           transition-all duration-200 hover:bg-primaryHover hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/40
+    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold
+           text-white bg-gray-900 transition-colors duration-200 hover:bg-gray-800
            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+           dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white
            dark:focus-visible:ring-offset-gray-950;
   }
   /* Accent action for the editing tools (Refine, Crop). */

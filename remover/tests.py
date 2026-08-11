@@ -1043,58 +1043,6 @@ class PWATests(SimpleTestCase):
         self.assertEqual(on_disk - set(listed), set(), "a JS module is missing from the shell")
 
 
-class KnockoutTests(SimpleTestCase):
-    """The h1's signature device must survive translation.
-
-    One word in the home page's h1 is rendered as an outline filled with the
-    transparency checkerboard — the brand's whole visual signature. It works by
-    finding a noun INSIDE the translated headline, which means it breaks
-    silently in exactly one way: someone retranslates the headline, the noun is
-    no longer in the string, the regex matches nothing, and the page ships a
-    perfectly ordinary h1 in that language while looking fine in English.
-
-    Nothing else would catch that, so it is checked in both directions — the
-    declared noun really is in the string, and the rendered page really does
-    carry the span.
-    """
-
-    def setUp(self):
-        translation.activate("en")
-        self.addCleanup(translation.activate, "en")
-
-    def test_the_declared_noun_appears_in_every_headline(self):
-        from remover.translations import KNOCKOUT_HEADLINE, KNOCKOUT_NOUN
-        from remover.translations import t as translate
-
-        for code, noun in KNOCKOUT_NOUN.items():
-            with self.subTest(lang=code or "en"):
-                headline = translate(KNOCKOUT_HEADLINE, code)
-                self.assertIn(
-                    noun, headline,
-                    f"KNOCKOUT_NOUN[{code!r}] is {noun!r} but the {code or 'en'} headline is "
-                    f"{headline!r} — the h1 would render with no knockout at all.",
-                )
-
-    def test_every_language_renders_exactly_one_knockout(self):
-        for path in ("/", "/pt/", "/es/"):
-            with self.subTest(path=path):
-                body = self.client.get(path).content.decode()
-                self.assertEqual(
-                    body.count('<span class="knockout">'), 1,
-                    f"{path} should carry exactly one knockout span in its h1",
-                )
-
-    def test_the_headline_text_is_unchanged_for_a_crawler(self):
-        # The span must not disturb what the h1 READS as — the page competes for
-        # this exact phrase, and a screen reader should hear one sentence.
-        import re
-
-        body = self.client.get(reverse("remover:index")).content.decode()
-        h1 = re.search(r"<h1[^>]*>(.*?)</h1>", body, re.S).group(1)
-        text = " ".join(re.sub(r"(?s)<[^>]+>", " ", h1).split())
-        self.assertIn("Free Background Remover", text)
-
-
 class TrustCopyTests(SimpleTestCase):
     """The homepage has to answer "why should I believe this?" on the page.
 
@@ -2098,9 +2046,13 @@ class AccentContrastTests(SimpleTestCase):
 
     AA = 4.5
     WHITE = (255, 255, 255)
-    # The dark glass surface (rgba(22,22,34,.74) over gray-950) that dark-mode
-    # accent text actually sits on — stricter than gray-950 itself.
-    DARK = (18, 18, 28)
+    # The Passe-partout mat board — the light-theme PAGE ground. The accent used
+    # as text sits on this, not on white, and that distinction is the whole point
+    # of measuring here: these values were originally chosen against white, and
+    # 22 of 37 dipped under AA the moment the ground gained any tint.
+    MAT = (231, 232, 227)
+    # The dark ground that dark-mode accent text sits on.
+    DARK = (22, 23, 20)
 
     @staticmethod
     def _luminance(rgb):
@@ -2133,6 +2085,17 @@ class AccentContrastTests(SimpleTestCase):
                         f"{tool} {role} ({value}) is {ratio:.2f}:1 against white text; "
                         f"needs {self.AA}:1 — use a darker shade.",
                     )
+                # In LIGHT theme the surface value doubles as the accent AS TEXT
+                # (`text-primaryText` resolves to it), sitting on the page ground
+                # — which is the mat board, not white. This is the check that was
+                # missing: the table was tuned against white, so every marginal
+                # entry failed silently the moment the ground gained a tint.
+                ratio = self._ratio(self._rgb(surface), self.MAT)
+                self.assertGreaterEqual(
+                    ratio, self.AA,
+                    f"{tool} surface ({surface}) is {ratio:.2f}:1 as TEXT on the "
+                    f"mat-board ground; needs {self.AA}:1 — use a darker shade.",
+                )
                 # The text pair is the accent as text on the dark surface. Both
                 # stops matter: the hero gradient headline paints text_dark ->
                 # text_dark_alt, so checking only the first would miss a headline
@@ -2190,9 +2153,20 @@ class AccentWiringTests(SimpleTestCase):
         )
 
     def test_theme_color_follows_the_tool_accent(self):
+        """<meta theme-color> is the page's OWN accent, not the brand's.
+
+        Derived from TOOL_ACCENTS rather than hard-coded: the literal hex that
+        used to be asserted here went stale the moment the table was re-tuned for
+        a new page ground, which is a failure about the test rather than about
+        the site. What actually matters is that the tag tracks the table and is
+        not the brand colour.
+        """
+        surface = TOOL_ACCENTS["resize"][0]
+        expected = "#" + "".join(f"{int(c):02x}" for c in surface.split())
         response = self.client.get(reverse("remover:resize"))
-        # resize = orange 700 (194 65 12) -> #c2410c, not the brand indigo.
-        self.assertContains(response, '<meta name="theme-color" content="#c2410c">', html=False)
+        self.assertContains(response, f'<meta name="theme-color" content="{expected}">', html=False)
+        brand = "#" + "".join(f"{int(c):02x}" for c in TOOL_ACCENTS["index"][0].split())
+        self.assertNotEqual(expected, brand, "resize should not wear the brand accent")
 
 
 class IconSubsetTests(SimpleTestCase):

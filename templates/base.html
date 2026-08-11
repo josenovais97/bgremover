@@ -1,9 +1,9 @@
 {% load static i18n_extras %}<!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="antialiased scroll-smooth {{ look_class }}"{% if look %} data-look="{{ look }}"{% endif %}>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="antialiased scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="{{ accent_hex|default:'#4F46E5' }}">
+    <meta name="theme-color" content="{{ accent_hex|default:'#5A3550' }}">
     <meta name="color-scheme" content="light dark">
     {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
     {% if bing_site_verification %}<meta name="msvalidate.01" content="{{ bing_site_verification }}">{% endif %}
@@ -113,27 +113,22 @@
     <!-- Self-hosted Inter + Font Awesome subset (only the icons this site uses) —
          same-origin, so there is no render-blocking third-party stylesheet and no
          extra DNS/TLS handshake to fonts.googleapis.com / fonts.gstatic.com. -->
-    {% comment %}Bricolage is preloaded alongside Inter because it paints the h1 —
-    on most pages the largest text above the fold, and on the home page part of the
-    LCP candidate set. Plex Mono is NOT preloaded: it only ever sets small data
-    labels, so it can arrive late and swap without anyone noticing.{% endcomment %}
+    {% comment %}Instrument Serif is preloaded alongside Inter because it paints the
+    h1 — on most pages the largest text above the fold. Its ITALIC is not: that only
+    sets the gallery label under a mount, which can swap unnoticed. Plex Mono is not
+    preloaded either, for the same reason.{% endcomment %}
     <link rel="preload" href="{% static 'webfonts/inter/inter-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="{% static 'webfonts/bricolage/bricolage-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'webfonts/instrument/instrument-serif-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{% static 'webfonts/fa-solid-900.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'css/inter.css' %}">
     <link rel="stylesheet" href="{% static 'css/display.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
-    {% if look %}{% comment %}TEMPORARY — visual-direction comparison (?look=…).
-    Loaded last so it can override the token layer, and only for a look request.
-    Delete with LOOKS in context_processors.py once a direction is picked.{% endcomment %}
-    <link rel="stylesheet" href="{% static 'css/looks.css' %}">
-    {% endif %}
 
     <!-- Set theme before paint (external so no inline script is needed). -->
     <script src="{% static 'js/theme.js' %}"></script>
 </head>
-<body data-tool-label="{{ current_tool_label }}" style="--color-primary: {{ accent_rgb }}; --color-primary-hover: {{ accent_rgb_hover }}; --accent-text-dark: {{ accent_rgb_text_dark }}; --accent-text-dark-alt: {{ accent_rgb_text_dark_alt }}" class="bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col font-sans">
+<body data-tool-label="{{ current_tool_label }}" style="--color-primary: {{ accent_rgb }}; --color-primary-hover: {{ accent_rgb_hover }}; --accent-text-dark: {{ accent_rgb_text_dark }}; --accent-text-dark-alt: {{ accent_rgb_text_dark_alt }}" class="transition-colors duration-300 min-h-screen flex flex-col font-sans">
 
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white">{% t "Skip to content" %}</a>
 
@@ -493,19 +488,6 @@
             </div>
         </div>
     </div>
-
-    {% if look %}
-    {% comment %}TEMPORARY — visual-direction switcher. Renders only for a ?look=
-    request, so it cannot appear for a real visitor. Delete with LOOKS in
-    context_processors.py once a direction is chosen.{% endcomment %}
-    <nav aria-label="Visual direction" class="look-switch">
-        <span>Direction</span>
-        <a href="?look=b"      {% if look == 'b' %}data-on{% endif %}>B · violet</a>
-        <a href="?look=b-warm" {% if look == 'b-warm' %}data-on{% endif %}>B · warm</a>
-        <a href="?look=b-soft" {% if look == 'b-soft' %}data-on{% endif %}>B · soft</a>
-        <a href="?look=c"      {% if look == 'c' %}data-on{% endif %}>C · mount</a>
-    </nav>
-    {% endif %}
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none" role="status" aria-live="polite"></div>
 

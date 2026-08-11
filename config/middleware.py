@@ -130,15 +130,6 @@ class EdgeCacheMiddleware:
         ):
             return response
 
-        # TEMPORARY, with the ?look= comparison scaffolding: a look render is the
-        # same URL with a different palette, and this middleware deliberately
-        # strips the query string from the cache key's point of view (a CDN keys
-        # on the full URL, but an intermediary that normalises would not). Marking
-        # it no-store keeps a variant from ever being served to a real visitor.
-        # Remove alongside LOOKS in context_processors.py.
-        if request.GET.get("look"):
-            response["Cache-Control"] = "no-store"
-            return response
 
         response["Cache-Control"] = PAGE_CACHE_CONTROL
 

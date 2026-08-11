@@ -291,60 +291,65 @@ WORKFLOW_STEPS = ["index", "crop", "resize", "compress"]
 # the most vivid shade that still passes, so the signature colour survives.
 # AccentContrastTests recomputes those ratios, so an edit below that dips under AA
 # fails the suite rather than shipping.
+#
+# The surface values were re-tuned when the page ground moved from white to the
+# Passe-partout mat board (#E7E8E3). They had been picked as the most vivid shade
+# that still cleared AA AGAINST WHITE, which is a knife-edge: 22 of them dipped
+# under 4.5 the moment the ground gained any tint at all (pink fell to 3.73). Each
+# was scaled toward black — hue and saturation intact — until it cleared 4.6 on the
+# real ground. The shifts are a few percent and the signature colours survive.
 TOOL_ACCENTS = {
-    # The brand. Electric violet rather than the old indigo 600: indigo is the
-    # default accent of roughly every tool in this category, and the identity
-    # work needs the brand colour to be one nobody else is already using. Same
-    # four-role structure and the same AA floor as every other row here —
-    # AccentContrastTests recomputes all of it (surface 6.73:1 on white,
-    # dark-theme text 6.89:1 on the dark glass).
-    "index": ("79 43 255", "63 31 214", "167 139 255", "196 181 255"),        # violet 4F2BFF/3F1FD6/A78BFF/C4B5FF (brand)
-    "blur": ("3 105 161", "7 89 133", "2 132 199", "14 165 233"),            # sky 700/800/600/500
-    "ecommerce": ("4 120 87", "6 95 70", "5 150 105", "16 185 129"),         # emerald 700/800/600/500
+    # The brand. Deep plum: in Passe-partout the accent is used almost nowhere,
+    # so it is chosen to be quiet and dark rather than vivid — it has to hold up
+    # as a hairline and a small mark, not as a fill. 8.94:1 as text on the mat
+    # board, 10.20:1 as a surface under white text.
+    "index": ("90 53 80", "74 43 66", "201 163 192", "220 192 214"),          # plum #5A3550/#4A2B42/#C9A3C0/#DCC0D6 (brand)
+    "blur": ("3 105 161", "7 89 133", "14 165 233", "56 189 248"),            # sky 700/800/600/500
+    "ecommerce": ("4 116 84", "3 94 68", "5 150 105", "16 185 129"),         # emerald 700/800/600/500
     "convert": ("124 58 237", "109 40 217", "167 139 250", "196 181 253"),    # violet 600/700/400/300
-    "compress": ("14 116 144", "21 94 117", "8 145 178", "6 182 212"),      # cyan 700/800/600/500
-    "crop": ("37 99 235", "29 78 216", "59 130 246", "96 165 250"),          # blue 600/700/500/400
-    "meme": ("192 38 211", "162 28 175", "217 70 239", "232 121 249"),        # fuchsia 600/700/500/400
-    "instagram": ("219 39 119", "190 24 93", "236 72 153", "244 114 182"),    # pink 600/700/500/400
-    "sticker": ("180 83 9", "146 64 14", "217 119 6", "245 158 11"),         # amber 700/800/600/500
-    "text_behind": ("15 118 110", "17 94 89", "13 148 136", "20 184 166"),   # teal 700/800/600/500
-    "passport": ("220 38 38", "185 28 28", "239 68 68", "248 113 113"),       # red 600/700/500/400
-    "passport_country": ("220 38 38", "185 28 28", "239 68 68", "248 113 113"),
-    "favicon": ("161 98 7", "133 77 14", "202 138 4", "234 179 8"),         # yellow 700/800/600/500
+    "compress": ("13 111 138", "11 94 117", "8 145 178", "6 182 212"),      # cyan 700/800/600/500
+    "crop": ("35 93 221", "30 81 192", "59 130 246", "96 165 250"),          # blue 600/700/500/400
+    "meme": ("171 34 188", "142 28 156", "217 70 239", "232 121 249"),        # fuchsia 600/700/500/400
+    "instagram": ("193 34 105", "157 28 86", "236 72 153", "244 114 182"),    # pink 600/700/500/400
+    "sticker": ("166 76 8", "137 63 7", "217 119 6", "245 158 11"),         # amber 700/800/600/500
+    "text_behind": ("15 114 107", "12 94 88", "13 148 136", "20 184 166"),   # teal 700/800/600/500
+    "passport": ("198 34 34", "161 28 28", "239 68 68", "248 113 113"),       # red 600/700/500/400
+    "passport_country": ("198 34 34", "161 28 28", "239 68 68", "248 113 113"),
+    "favicon": ("147 89 6", "124 75 5", "202 138 4", "234 179 8"),         # yellow 700/800/600/500
     # Slate is deliberate here (a QR code is ink on paper), but at 500/600 it was
     # the only surface in this table lighter than 600 — the gradient headline read
     # as greyed-out/disabled rather than as a signature colour. 600/700 keeps the
     # neutral intent and matches the shade convention every other tool follows.
     "qr": ("71 85 105", "51 65 85", "148 163 184", "203 213 225"),           # slate 600/700/400/300
-    "redact": ("225 29 72", "190 18 60", "244 63 94", "251 113 133"),         # rose 600/700/500/400
-    "exif": ("21 128 61", "22 101 52", "22 163 74", "34 197 94"),           # green 700/800/600/500
-    "resize": ("194 65 12", "154 52 18", "234 88 12", "249 115 22"),         # orange 700/800/600/500
-    "watermark": ("77 124 15", "63 98 18", "101 163 13", "132 204 22"),      # lime 700/800/600/500
-    "gif": ("147 51 234", "126 34 206", "168 85 247", "192 132 252"),         # purple 600/700/500/400
-    "video_gif": ("147 51 234", "126 34 206", "168 85 247", "192 132 252"),   # purple 600/700/500/400 (GIF family)
+    "redact": ("200 26 64", "165 21 53", "244 63 94", "251 113 133"),         # rose 600/700/500/400
+    "exif": ("19 118 56", "16 98 47", "22 163 74", "34 197 94"),           # green 700/800/600/500
+    "resize": ("182 61 11", "151 50 9", "234 88 12", "249 115 22"),         # orange 700/800/600/500
+    "watermark": ("71 114 14", "59 95 12", "101 163 13", "132 204 22"),      # lime 700/800/600/500
+    "gif": ("141 49 225", "120 42 191", "168 85 247", "192 132 252"),         # purple 600/700/500/400
+    "video_gif": ("141 49 225", "120 42 191", "168 85 247", "192 132 252"),   # purple 600/700/500/400 (GIF family)
     "video_converter": ("124 58 237", "109 40 217", "167 139 250", "196 181 253"),  # violet 600/700/400/300 (converter)
     # Warm neutral for the same reason QR is cool neutral: a PDF is ink on paper,
     # not a colour. Kept a shade apart from QR's slate so the two read as
     # different tools rather than the same grey.
     "pdf": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),           # stone 600/700/400/300
-    "collage": ("126 34 206", "107 33 168", "168 85 247", "192 132 252"),    # purple 700/800/500/400
+    "collage": ("126 34 206", "107 33 168", "192 132 252", "216 180 254"),    # purple 700/800/500/400
     "border": ("190 18 60", "159 18 57", "244 63 94", "251 113 133"),        # rose 700/800/500/400
     "palette": ("162 28 175", "134 25 143", "217 70 239", "232 121 249"),    # fuchsia 700/800/500/400
     "base64": ("82 82 91", "63 63 70", "161 161 170", "212 212 216"),        # zinc 600/700/400/300
     # A shade apart from crop's blue 600/700 (like collage vs gif in purple), so
     # the two blue tools still read as different tools.
     "screenshot": ("29 78 216", "30 64 175", "59 130 246", "96 165 250"),    # blue 700/800/500/400
-    "remove_object": ("225 29 72", "190 18 60", "244 63 94", "251 113 133"),  # rose 600/700/500/400 (redact family)
-    "photo_filters": ("219 39 119", "190 24 93", "236 72 153", "244 114 182"),  # pink 600/700/500/400 (instagram family)
-    "upscale": ("4 120 87", "6 95 70", "5 150 105", "16 185 129"),           # emerald 700/800/600/500
+    "remove_object": ("200 26 64", "165 21 53", "244 63 94", "251 113 133"),  # rose 600/700/500/400 (redact family)
+    "photo_filters": ("193 34 105", "157 28 86", "236 72 153", "244 114 182"),  # pink 600/700/500/400 (instagram family)
+    "upscale": ("4 116 84", "3 94 68", "5 150 105", "16 185 129"),           # emerald 700/800/600/500
     "heic": ("124 58 237", "109 40 217", "167 139 250", "196 181 253"),      # violet 600/700/400/300 (converter family)
     "pdf_to_image": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),  # stone 600/700/400/300 (PDF family)
     "word_to_pdf": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),   # stone 600/700/400/300 (PDF family)
     "pdf_to_word": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),   # stone 600/700/400/300 (PDF family)
     "pdf_tools": ("87 83 78", "68 64 60", "168 162 158", "214 211 209"),     # stone 600/700/400/300 (PDF family)
-    "csv_excel": ("21 128 61", "22 101 52", "22 163 74", "34 197 94"),       # green 700/800/600/500 (spreadsheet)
-    "ocr": ("14 116 144", "21 94 117", "8 145 178", "6 182 212"),            # cyan 700/800/600/500
-    "svg_to_png": ("77 124 15", "63 98 18", "101 163 13", "132 204 22"),     # lime 700/800/600/500
+    "csv_excel": ("19 118 56", "16 98 47", "22 163 74", "34 197 94"),       # green 700/800/600/500 (spreadsheet)
+    "ocr": ("13 111 138", "11 94 117", "8 145 178", "6 182 212"),            # cyan 700/800/600/500
+    "svg_to_png": ("71 114 14", "59 95 12", "101 163 13", "132 204 22"),     # lime 700/800/600/500
 }
 _DEFAULT_ACCENT = TOOL_ACCENTS["index"]
 
@@ -499,12 +504,6 @@ def _robots_meta(request):
     been worse on both counts: it blocks the fetch, so the crawler never sees the
     canonical OR the noindex, and the URL can still surface in results.
     """
-    # A `?look=` render is comparison scaffolding, not a page — it must never be
-    # indexed. `nofollow` too, unlike the prefixed-URL case below: those pages
-    # carry real content we still want crawled outwards from, this is the same
-    # page wearing a different palette.
-    if _look(request):
-        return "noindex, nofollow"
     path = request.path
     if path_language(path) and not is_translated_path(path):
         return "noindex, follow"
@@ -567,38 +566,6 @@ def _switcher_urls(request, alternates):
             except Exception:
                 out[code] = url
     return out
-
-
-# ── Visual-direction comparison scaffolding ──────────────────────────────────
-# TEMPORARY. `?look=<key>` renders the real site in an alternative visual
-# direction so finished executions can be compared against each other rather
-# than against a screenshot. Everything it needs lives in one hand-written
-# stylesheet (static/css/looks.css) that is only linked when a look is active,
-# so a normal visitor downloads and runs exactly what they did before.
-#
-# Delete in one commit once a direction is chosen: this dict, the `look` key
-# below, the two conditional blocks in base.html, and looks.css.
-#
-# Not indexable and not cacheable by a shared cache — see views.seo_headers and
-# _canonical_url, which is built from request.path and so already ignores the
-# query string.
-LOOKS = {
-    "b": "",                 # shipped: Swiss-poster violet on white
-    "b-warm": "look-b-warm",  # warmer ground, ochre accent, softer contrast
-    "b-soft": "look-b-soft",  # lighter headline weight, muted indigo, more air
-    "c": "look-c",           # Passe-partout: mat board, serif, plum
-}
-
-
-def _look(request):
-    """The requested visual direction, or "" when none was asked for.
-
-    Note "b" IS a look even though it applies no class: asking for the shipped
-    direction explicitly is how the comparison switcher stays on screen while
-    you cycle through all four.
-    """
-    key = (request.GET.get("look") or "").lower()
-    return key if key in LOOKS else ""
 
 
 def seo(request):
@@ -734,9 +701,6 @@ def seo(request):
         # other. Same opt-in shape as deep_content: a template gains the block by
         # including partials/related_landings.html.
         "landing_links": LANDINGS_BY_PARENT.get(url_name, []),
-        # Visual-direction comparison scaffolding (temporary — see LOOKS above).
-        "look": _look(request),
-        "look_class": LOOKS.get(_look(request), ""),
         "site_url": settings.SITE_URL.rstrip("/"),
         # Contextual internal linking: a few related tools for the current page.
         "related_tools": _related_tools(tool_nav, url_name),
