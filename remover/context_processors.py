@@ -499,6 +499,12 @@ def _robots_meta(request):
     been worse on both counts: it blocks the fetch, so the crawler never sees the
     canonical OR the noindex, and the URL can still surface in results.
     """
+    # A `?look=` render is comparison scaffolding, not a page — it must never be
+    # indexed. `nofollow` too, unlike the prefixed-URL case below: those pages
+    # carry real content we still want crawled outwards from, this is the same
+    # page wearing a different palette.
+    if _look(request):
+        return "noindex, nofollow"
     path = request.path
     if path_language(path) and not is_translated_path(path):
         return "noindex, follow"
@@ -561,6 +567,38 @@ def _switcher_urls(request, alternates):
             except Exception:
                 out[code] = url
     return out
+
+
+# ── Visual-direction comparison scaffolding ──────────────────────────────────
+# TEMPORARY. `?look=<key>` renders the real site in an alternative visual
+# direction so finished executions can be compared against each other rather
+# than against a screenshot. Everything it needs lives in one hand-written
+# stylesheet (static/css/looks.css) that is only linked when a look is active,
+# so a normal visitor downloads and runs exactly what they did before.
+#
+# Delete in one commit once a direction is chosen: this dict, the `look` key
+# below, the two conditional blocks in base.html, and looks.css.
+#
+# Not indexable and not cacheable by a shared cache — see views.seo_headers and
+# _canonical_url, which is built from request.path and so already ignores the
+# query string.
+LOOKS = {
+    "b": "",                 # shipped: Swiss-poster violet on white
+    "b-warm": "look-b-warm",  # warmer ground, ochre accent, softer contrast
+    "b-soft": "look-b-soft",  # lighter headline weight, muted indigo, more air
+    "c": "look-c",           # Passe-partout: mat board, serif, plum
+}
+
+
+def _look(request):
+    """The requested visual direction, or "" when none was asked for.
+
+    Note "b" IS a look even though it applies no class: asking for the shipped
+    direction explicitly is how the comparison switcher stays on screen while
+    you cycle through all four.
+    """
+    key = (request.GET.get("look") or "").lower()
+    return key if key in LOOKS else ""
 
 
 def seo(request):
@@ -696,6 +734,9 @@ def seo(request):
         # other. Same opt-in shape as deep_content: a template gains the block by
         # including partials/related_landings.html.
         "landing_links": LANDINGS_BY_PARENT.get(url_name, []),
+        # Visual-direction comparison scaffolding (temporary — see LOOKS above).
+        "look": _look(request),
+        "look_class": LOOKS.get(_look(request), ""),
         "site_url": settings.SITE_URL.rstrip("/"),
         # Contextual internal linking: a few related tools for the current page.
         "related_tools": _related_tools(tool_nav, url_name),

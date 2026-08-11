@@ -1,5 +1,5 @@
 {% load static i18n_extras %}<!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="antialiased scroll-smooth">
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" class="antialiased scroll-smooth {{ look_class }}"{% if look %} data-look="{{ look }}"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,6 +124,11 @@
     <link rel="stylesheet" href="{% static 'css/display.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    {% if look %}{% comment %}TEMPORARY — visual-direction comparison (?look=…).
+    Loaded last so it can override the token layer, and only for a look request.
+    Delete with LOOKS in context_processors.py once a direction is picked.{% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/looks.css' %}">
+    {% endif %}
 
     <!-- Set theme before paint (external so no inline script is needed). -->
     <script src="{% static 'js/theme.js' %}"></script>
@@ -488,6 +493,19 @@
             </div>
         </div>
     </div>
+
+    {% if look %}
+    {% comment %}TEMPORARY — visual-direction switcher. Renders only for a ?look=
+    request, so it cannot appear for a real visitor. Delete with LOOKS in
+    context_processors.py once a direction is chosen.{% endcomment %}
+    <nav aria-label="Visual direction" class="look-switch">
+        <span>Direction</span>
+        <a href="?look=b"      {% if look == 'b' %}data-on{% endif %}>B · violet</a>
+        <a href="?look=b-warm" {% if look == 'b-warm' %}data-on{% endif %}>B · warm</a>
+        <a href="?look=b-soft" {% if look == 'b-soft' %}data-on{% endif %}>B · soft</a>
+        <a href="?look=c"      {% if look == 'c' %}data-on{% endif %}>C · mount</a>
+    </nav>
+    {% endif %}
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none" role="status" aria-live="polite"></div>
 
