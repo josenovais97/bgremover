@@ -13,7 +13,9 @@ from .translations import (
     LANGUAGE_NAMES, LANGUAGES, js_catalogue, localize_use_case, path_language, strip_language,
 )
 from .translations import t as tr
-from .views import LANDINGS_BY_PARENT, USE_CASES, is_translated_path, translated_languages
+from .views import (
+    LANDINGS_BY_PARENT, USE_CASE_CARDS, USE_CASES, is_translated_path, translated_languages,
+)
 
 # Tools that cannot accept an arbitrary image handed over from another tool, so
 # they never appear as a destination in the "keep editing" bar. The QR generator
@@ -218,12 +220,52 @@ FOOTER_LABELS = {
 
 # Categories for the "All tools" mega-menu, in display order. Each groups the
 # TOOL_NAV items whose `group` matches its key. Labels are translated at render.
+# `blurb` is shown on the catalogue page (/tools/) under each category heading.
+# The header menu and mobile sheet ignore it — they have room for a label and
+# nothing else — but a directory of 36 items needs to say what its sections are
+# for, and saying it here keeps the answer in one place.
 TOOL_GROUPS = [
-    {"key": "edit", "label": "Remove & Edit"},
-    {"key": "optimize", "label": "Convert & Optimize"},
-    {"key": "create", "label": "Create & Share"},
-    {"key": "photos", "label": "Photos"},
+    {"key": "edit", "label": "Remove & Edit",
+     "blurb": "Change what is in the picture: take the background out, cut to a shape, "
+              "erase something you don't want, or blur what should stay private."},
+    {"key": "optimize", "label": "Convert & Optimize",
+     "blurb": "Change the file rather than the picture — swap formats, make it smaller, "
+              "scale it, strip metadata, or move between images, PDFs and documents."},
+    {"key": "create", "label": "Create & Share",
+     "blurb": "Turn a finished image into the thing you are actually posting: a sticker, "
+              "a caption, a thumbnail, an animation, a collage or a framed screenshot."},
+    {"key": "photos", "label": "Photos",
+     "blurb": "Photographs with rules attached — official document sizes and the clean, "
+              "consistent product shots marketplaces ask for."},
 ]
+
+# The home page's toolkit preview, by url_name and in display order.
+#
+# The home page used to render all 36 tools. As a directory that is genuinely
+# useful; as a landing-page section it asked a first-time visitor to evaluate a
+# catalogue before they had used the product once, and it was most of the page's
+# height. The full grid now lives at /tools/ (views.tools_index) and this is the
+# dozen the home page shows instead — picked to prove breadth rather than to be
+# complete: two from each category, leading with the neighbours of background
+# removal that people reach for straight afterwards.
+#
+# Names only. Everything the card renders — label, blurb, icon, URL, accent —
+# is still resolved from TOOL_NAV, so a tool cannot be described differently in
+# two places and a renamed tool cannot go stale here.
+FEATURED_TOOLS = [
+    "index", "crop", "remove_object", "blur",
+    "convert", "compress", "resize", "upscale",
+    "instagram", "sticker", "pdf", "ocr",
+]
+
+# The "Finish one job. Keep going." chain on the home page.
+#
+# Cross-tool hand-off (CBG.Chain in kit.js) is the toolkit's real advantage over
+# using four separate sites, and it was previously stated in a single line of
+# text inside the tool grid's header — where it read as a caption rather than as
+# a feature. These are the steps of one plausible job, again by url_name so the
+# labels and links come from TOOL_NAV.
+WORKFLOW_STEPS = ["index", "crop", "resize", "compress"]
 
 
 # Per-tool signature accent colours as "R G B", each a
@@ -558,10 +600,15 @@ def seo(request):
         }
         for item in TOOL_NAV
     ]
+    # `key` rides along so a template can build a stable anchor for the group
+    # (the catalogue's `#tools-<key>` sections, which the home page links into)
+    # without hard-coding the category list a second time.
     tool_groups = [
-        {"label": tr(g["label"]), "items": [it for it in tool_nav if it["group"] == g["key"]]}
+        {"key": g["key"], "label": tr(g["label"]), "blurb": tr(g["blurb"]),
+         "items": [it for it in tool_nav if it["group"] == g["key"]]}
         for g in TOOL_GROUPS
     ]
+    by_name = {t["name"]: t for t in tool_nav}
     return {
         "accent_rgb": accent,
         "accent_rgb_hover": accent_hover,
@@ -578,8 +625,13 @@ def seo(request):
         # localize_use_case, not tr(): these labels live in the per-slug USE_CASES
         # catalogue rather than in UI, so tr() missed every one of them and the
         # footer listed eleven English labels on every /pt/ and /es/ page.
+        # `card` is the one-line description the home page's use-case cards show
+        # (views.USE_CASE_CARDS). It is not part of the localised catalogue, so
+        # it degrades to English on /pt/ and /es/ like any other missing string.
         "use_cases": [
-            {"slug": c["slug"], "nav": localize_use_case(c)["nav"]} for c in USE_CASES
+            {"slug": c["slug"], "nav": localize_use_case(c)["nav"],
+             "card": tr(USE_CASE_CARDS.get(c["slug"], ""))}
+            for c in USE_CASES
         ],
         # The guides get a footer column of their own. A new section needs internal
         # links from established pages before it will be crawled at any speed, and
@@ -592,6 +644,11 @@ def seo(request):
         "tool_groups": tool_groups,
         # Pre-balanced two-column split of the groups for the "All tools" menu.
         "tool_columns": _tool_columns(tool_groups),
+        # The home page's curated dozen and its workflow chain. Both are
+        # resolved out of `tool_nav` by name (see FEATURED_TOOLS /
+        # WORKFLOW_STEPS), so neither can drift from the tool it names.
+        "featured_tools": [by_name[n] for n in FEATURED_TOOLS if n in by_name],
+        "workflow_steps": [by_name[n] for n in WORKFLOW_STEPS if n in by_name],
         # Monetization: expose the AdSense config only where ads are allowed.
         "adsense_client": settings.ADSENSE_CLIENT if ads_allowed else "",
         "adsense_slot_landing": settings.ADSENSE_SLOT_LANDING,

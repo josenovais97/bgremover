@@ -30,19 +30,30 @@ def faq_jsonld(faqs):
     return mark_safe(json.dumps(data))
 
 
+# Ordered objection-first: the four questions that decide whether someone tries
+# the tool at all come before the four about using it, and the two that are
+# really implementation notes come last. The FAQ is the last thing between a
+# hesitant visitor and the dropzone, so it is sequenced by what stops people
+# rather than by topic.
+#
+# The question text is the catalogue key `localize_faqs` looks up (see
+# translations.localize_faqs), so these strings can be REORDERED freely but not
+# reworded without adding the new wording to lang_pt.FAQS and lang_es.FAQS.
 INDEX_FAQS = [
     {"q": "Is this background remover really free?",
      "a": "Yes — completely free and unlimited, with no sign-up, no watermark and no per-image cost. The AI runs in your browser, so there's nothing to pay for."},
     {"q": "Are my images uploaded to a server?",
      "a": "No. Background removal runs entirely on your device, so your images never leave your browser. Nothing is uploaded, stored or seen by anyone."},
-    {"q": "What image formats can I use?",
-     "a": "You can upload JPG, PNG or WEBP and export a transparent PNG, or a JPG or WEBP. Full resolution is preserved — there's no downscaling."},
-    {"q": "Does it work on my phone?",
-     "a": "Yes. It works in any modern mobile or desktop browser. On desktop you can also paste an image with Ctrl+V and process several at once."},
-    {"q": "Can I remove the background from many images at once?",
-     "a": "Yes. Drop in a batch of photos and download them together as a ZIP. You can also apply one image's background and export settings to the whole batch."},
+    {"q": "Do I need an account?",
+     "a": "No. There is no sign-up, no login and no profile — open the page, add an image and download the result. Nothing about your session is kept after you close the tab."},
     {"q": "Will I lose quality or get a watermark?",
      "a": "Neither. Exports are full-resolution and never watermarked. PNG output is lossless and keeps clean transparency around hair and soft edges."},
+    {"q": "Does it work on my phone?",
+     "a": "Yes. It works in any modern mobile or desktop browser. On desktop you can also paste an image with Ctrl+V and process several at once."},
+    {"q": "What image formats can I use?",
+     "a": "You can upload JPG, PNG or WEBP and export a transparent PNG, or a JPG or WEBP. Full resolution is preserved — there's no downscaling."},
+    {"q": "Can I remove the background from many images at once?",
+     "a": "Yes. Drop in a batch of photos and download them together as a ZIP. You can also apply one image's background and export settings to the whole batch."},
     {"q": "What's the catch — how can it be free and unlimited?",
      "a": "Your device does the expensive part. Cloud tools rent GPUs by the second and bill per image, so they have to meter you; here the model runs in your browser, so an extra image costs nobody anything. The whole bill is a domain and some cheap hosting, covered by ads on the written guides (the tool pages stay ad-free) and the occasional coffee. There is no account, no trial and no upsell, because there is nothing to upsell."},
     {"q": "Which AI model does it use, and where does it run?",

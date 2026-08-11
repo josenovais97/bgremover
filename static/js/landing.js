@@ -52,9 +52,22 @@
     }, { threshold: 0 }).observe(footer);
   }
 
-  cta.addEventListener('click', function () {
+  function jumpToUpload() {
     dz.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
     if (fileInput) window.setTimeout(function () { fileInput.click(); }, reduce ? 0 : 450);
+  }
+
+  cta.addEventListener('click', jumpToUpload);
+
+  // The closing "Ready to remove a background?" call to action does the same
+  // thing. It is an <a href="#main"> in the markup, so with JS off it still
+  // lands the reader at the top of the page next to the dropzone; this upgrades
+  // that to the scroll-and-open the sticky button already performs.
+  document.querySelectorAll('[data-jump-upload]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      jumpToUpload();
+    });
   });
 })();
 

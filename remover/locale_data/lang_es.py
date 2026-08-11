@@ -1046,6 +1046,87 @@ UI = {
         "El sticker exportado es un WebP transparente de 512×512 con un pequeño margen — exactamente lo que esperan WhatsApp y Telegram. Todo funciona en tu navegador, así que tu foto nunca sale de tu dispositivo.",
     "Add a caption (optional)…": "Añade un texto (opcional)…",
     # Home page
+    # Home page redesign: toolkit preview, workflow, privacy, use cases, guides and final CTA.
+    'Browse the full toolkit': 'Ver todas las herramientas',
+    'All Tools — Free Image Tools That Run in Your Browser':
+        'Todas las Herramientas — Herramientas de Imagen Gratis en Tu Navegador',
+    'All Tools — Free, Private Image Tools': 'Todas las Herramientas — Gratis y Privadas',
+    'Every ClearBG tool in one place — background removal, cropping, conversion, compression, PDF and more. All free, all running on your device with nothing uploaded.':
+        'Todas las herramientas de ClearBG en un solo lugar — quitar fondos, recortar, convertir, comprimir, PDF y más. Todo gratis, todo en tu dispositivo, sin subir nada.',
+    'Every tool, in your browser': 'Todas las herramientas, en tu navegador',
+    'One toolkit for editing, converting, optimising and creating — free and unlimited, with nothing uploaded to a server.':
+        'Un kit para editar, convertir, optimizar y crear — gratis e ilimitado, sin enviar nada a un servidor.',
+    'Edit, convert, optimise and create — every tool runs the same way the background remover does, on your device.':
+        'Edita, convierte, optimiza y crea — todas las herramientas funcionan igual que el eliminador de fondos, en tu dispositivo.',
+    'Explore all tools': 'Ver todas las herramientas',
+    'Finish one job. Keep going.': 'Termina un trabajo. Sigue adelante.',
+    'Move from one tool to the next without starting over or picking your file again.':
+        'Pasa de una herramienta a la siguiente sin empezar de cero ni volver a elegir tu archivo.',
+    'Your image is handed straight to the next tool — it is never re-uploaded, because it was never uploaded.':
+        'Tu imagen pasa directamente a la siguiente herramienta — nunca se vuelve a subir, porque nunca se subió.',
+    'Drop, browse or paste an image.': 'Suelta, busca o pega una imagen.',
+    'Process': 'Procesar',
+    'The background is removed directly on your device.':
+        'El fondo se elimina directamente en tu dispositivo.',
+    'Get your full-resolution result — no watermark.':
+        'Obtén tu resultado en resolución completa — sin marca de agua.',
+    'Your images stay on your device.': 'Tus imágenes se quedan en tu dispositivo.',
+    'Background removal runs inside this browser tab. Your photo is not uploaded to a server to be processed, and there is no copy of it anywhere but on your own machine.':
+        'La eliminación del fondo ocurre dentro de esta pestaña. Tu foto no se sube a un servidor para procesarla, y no hay copia de ella en ningún sitio salvo en tu propio equipo.',
+    'Private by default': 'Privado por defecto',
+    'Your image stays in your browser. Nothing is sent anywhere for it to be processed.':
+        'Tu imagen se queda en tu navegador. No se envía nada a ningún sitio para procesarla.',
+    'No account': 'Sin cuenta',
+    'There is no sign-up, no profile and no image library to create.':
+        'No hay registro, ni perfil, ni biblioteca de imágenes que crear.',
+    'Works offline': 'Funciona sin conexión',
+    'Once the model has been cached, supported tools keep working without a connection.':
+        'Una vez el modelo está en caché, las herramientas compatibles siguen funcionando sin conexión.',
+    'Technical details': 'Detalles técnicos',
+    'Because the processing happens on your device, there is no queue to wait in and no per-image limit to hit. After the required files have been cached, the page and its tools continue to work without a connection.':
+        'Como el procesamiento ocurre en tu dispositivo, no hay cola de espera ni límite por imagen. Una vez los archivos necesarios están en caché, la página y sus herramientas siguen funcionando sin conexión.',
+    'What are you making?': '¿Qué estás creando?',
+    'Each of these has its own page, with the sizes and rules that apply to it.':
+        'Cada uno tiene su propia página, con los tamaños y las reglas que le aplican.',
+    'Why is ClearBG free?': '¿Por qué ClearBG es gratis?',
+    'The short answer: the processing happens on your device, so there is no GPU bill every time you remove a background.':
+        'La respuesta corta: el procesamiento ocurre en tu dispositivo, así que no hay factura de GPU cada vez que quitas un fondo.',
+    'There is no cloud GPU cost per image, so there is nothing to meter and no reason to cap you.':
+        'No hay coste de GPU en la nube por imagen, así que no hay nada que medir ni razón para limitarte.',
+    'No account to monetise': 'Sin cuenta que monetizar',
+    'There is no sign-up, no profile and no image library — so there is nothing to build a business on selling.':
+        'No hay registro, ni perfil, ni biblioteca de imágenes — así que no hay nada cuya venta pudiera sostener un negocio.',
+    'A domain and cheap hosting. The written guides carry ads, the tool pages stay ad-free, and support is optional.':
+        'Un dominio y alojamiento barato. Las guías escritas llevan anuncios, las páginas de herramientas siguen sin anuncios, y el apoyo es opcional.',
+    'If ClearBG saved you time, you can help keep it free.':
+        'Si ClearBG te ahorró tiempo, puedes ayudar a mantenerlo gratis.',
+    'Learn more about images': 'Aprende más sobre imágenes',
+    'How formats, transparency and on-device processing actually work — written to be useful even if you never open a tool.':
+        'Cómo funcionan realmente los formatos, la transparencia y el procesamiento en el dispositivo — escrito para ser útil aunque nunca abras una herramienta.',
+    'View all guides': 'Ver todas las guías',
+    'Ready to remove a background?': '¿Listo para quitar un fondo?',
+    'Free, private, and right in your browser.': 'Gratis, privado y en tu propio navegador.',
+    # The tool catalogue (/tools/): how the toolkit fits together.
+    'How the toolkit fits together':
+        'Cómo encaja el kit de herramientas',
+    'One image, several tools, no round trips':
+        'Una imagen, varias herramientas, sin idas y vueltas',
+    'Most image jobs are more than one step. A product shot usually needs the background taken out, then a square crop, then a resize to whatever the marketplace asks for, then compression so the listing loads quickly. On separate sites that is four uploads, four waits and four downloads, and the file loses a little quality at each hop through a lossy format.':
+        'La mayoría de los trabajos con imágenes tiene más de un paso. Una foto de producto suele necesitar que se le quite el fondo, luego un recorte cuadrado, luego un cambio de tamaño al que pida el marketplace, y luego compresión para que el anuncio cargue rápido. En sitios distintos eso son cuatro subidas, cuatro esperas y cuatro descargas, y el archivo pierde algo de calidad en cada paso por un formato con pérdidas.',
+    'Here the result of one tool is handed to the next inside the browser. When a tool finishes, it offers the tools that make sense next, and the image travels there as it is — already decoded, at full resolution, with no re-encoding in between. Nothing is uploaded at any point in the chain, because nothing was uploaded to begin with.':
+        'Aquí el resultado de una herramienta pasa a la siguiente dentro del navegador. Cuando una herramienta termina, ofrece las que tienen sentido a continuación, y la imagen viaja tal cual — ya descodificada, a resolución completa, sin recodificar por el camino. No se sube nada en ningún punto de la cadena, porque nunca se subió nada.',
+    'Which tools need the AI model':
+        'Qué herramientas necesitan el modelo de IA',
+    'Only some of them do. Cutting a subject out of a photo — background removal, stickers, text-behind, portrait blur, product shots — needs a segmentation model, and that model is a real download the first time you use one of those tools. It is fetched once, cached by your browser, and then shared by all of them: paying that cost on the background remover means the sticker maker is instant.':
+        'Solo algunas. Recortar un sujeto de una foto — quitar el fondo, pegatinas, texto detrás, desenfoque de retrato, fotos de producto — necesita un modelo de segmentación, y ese modelo es una descarga real la primera vez que usas una de esas herramientas. Se obtiene una vez, tu navegador lo guarda en caché y luego lo comparten todas: pagar ese coste en el eliminador de fondos hace que el creador de pegatinas sea instantáneo.',
+    "Everything else is ordinary image work and needs no model at all. Cropping, resizing, converting, compressing, rotating, adding borders, building PDFs, reading metadata and generating QR codes are all done with the browser's own canvas and codecs. Those tools start instantly on any device, including an old phone, and they never wait on a download.":
+        'Todo lo demás es trabajo de imagen corriente y no necesita ningún modelo. Recortar, redimensionar, convertir, comprimir, rotar, añadir bordes, crear PDF, leer metadatos y generar códigos QR se hace con el canvas y los códecs del propio navegador. Esas herramientas arrancan al instante en cualquier dispositivo, incluido un móvil viejo, y nunca esperan a una descarga.',
+    'What running locally costs, honestly':
+        'Lo que cuesta ejecutarlo en local, con honestidad',
+    "Doing the work on your own machine has trade-offs, and they are worth knowing before you pick a tool. A very large batch is limited by your device's memory rather than by a server farm, so a hundred photos at once will be slower here than on a paid cloud service. The first cut-out on a modest laptop or an older phone takes noticeably longer than it would on a rented GPU.":
+        'Hacer el trabajo en tu propia máquina tiene contrapartidas, y conviene conocerlas antes de elegir una herramienta. Un lote muy grande está limitado por la memoria de tu dispositivo y no por un centro de datos, así que cien fotos a la vez serán más lentas aquí que en un servicio de pago en la nube. El primer recorte en un portátil modesto o en un móvil antiguo tarda bastante más que en una GPU alquilada.',
+    "What you get in exchange is that there is no queue, no per-image charge, no account, no upload and no copy of your files on someone else's disk — and that once the page has loaded, it keeps working whether or not the connection does. For most jobs, on most devices, that is a good trade. For a thousand-image catalogue on a five-year-old phone, it is not, and it is better to say so.":
+        'Lo que recibes a cambio es que no hay cola, ni cargo por imagen, ni cuenta, ni subida, ni copia de tus archivos en el disco de otra persona — y que, una vez cargada la página, sigue funcionando funcione o no la conexión. Para la mayoría de los trabajos, en la mayoría de los dispositivos, es un buen trato. Para un catálogo de mil imágenes en un móvil de cinco años, no lo es, y es mejor decirlo.',
     "Private & free — runs in your browser": "Privado y gratis — funciona en tu navegador",
     # Header navigation (Remove BG · Tools · Use cases · Guides) + mobile sheet.
     "Main": "Principal",

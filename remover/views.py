@@ -139,6 +139,32 @@ IG_FORMATS = [
 # a specific audience tailored copy — this widens the number of search entry
 # points without duplicating the app. Copy lives here so it is easy to edit and
 # so the sitemap can be generated from the same source (see SITEMAP_PATHS).
+# One short line per use case, for the home page's "What are you making?" cards.
+#
+# Kept beside USE_CASES rather than inside each entry so the eleven read as one
+# set and can be scanned for overlap — the same reason guides._NAV_LABELS is a
+# table rather than a field. Each entry's own `tagline` is written for the
+# landing page's hero and runs to a full sentence with the free/private claim
+# attached; repeated eleven times in a card grid that is noise, and the claim is
+# already made twice above.
+#
+# Why cards at all: these eleven were a row of bare pills, which is what an SEO
+# keyword list looks like. They are real pages answering real jobs, and saying
+# what each one is for is the difference between a link farm and a way in.
+USE_CASE_CARDS = {
+    "product-photos": "Clean, consistent shots for your store listings.",
+    "profile-picture": "A sharp headshot for LinkedIn, a CV or socials.",
+    "logo": "Turn a flat logo into a transparent PNG.",
+    "signature": "Lift a signature off paper for documents.",
+    "car-photos": "Cut a vehicle out for listings and dealer pages.",
+    "clothing": "Flat-lays and model shots on a clean background.",
+    "pet-photos": "Cut out your pet for stickers, posts and prints.",
+    "youtube-thumbnail": "Isolate the subject so a thumbnail reads small.",
+    "ebay": "Meet eBay's clean-background listing rules.",
+    "discord-pfp": "An avatar that still reads at 128 pixels.",
+    "twitch": "Overlays, panels and alerts with real transparency.",
+}
+
 USE_CASES = [
     {
         "slug": "product-photos",
@@ -979,7 +1005,7 @@ COMPARISONS_BY_SLUG = {p["slug"]: p for p in COMPARISONS}
 # Static routes exposed in the sitemap, generated from the same source that
 # defines the pages so a new landing page is indexed automatically.
 TOOL_PATHS = ["/convert/", "/compress/", "/instagram/", "/crop/", "/favicon-generator/", "/sticker-maker/", "/meme-maker/", "/passport-photo/", "/ecommerce/", "/blur-background/", "/text-behind-image/", "/qr-code-generator/", "/redact-image/", "/exif-remover/", "/resize-image/", "/watermark-image/", "/gif-maker/", "/video-to-gif/", "/video-converter/", "/image-to-pdf/", "/color-palette/", "/collage/", "/add-border/", "/base64-image/", "/screenshot-beautifier/", "/remove-object/", "/photo-filters/", "/upscale/", "/heic-to-jpg/", "/pdf-to-image/", "/word-to-pdf/", "/pdf-to-word/", "/merge-pdf/", "/csv-to-excel/", "/image-to-text/", "/svg-to-png/"]
-INFO_PATHS = ["/about/", "/privacy/", "/terms/"]
+INFO_PATHS = ["/tools/", "/about/", "/privacy/", "/terms/"]
 PRIVACY_PATHS = [f"/{p['slug']}/" for p in PRIVACY_PAGES]
 COMPRESS_LANDING_PATHS = [f"/{p['slug']}/" for p in COMPRESS_PAGES]
 COMPARISON_PATHS = [f"/{p['slug']}/" for p in COMPARISONS]
@@ -1093,6 +1119,13 @@ _CORE_TRANSLATED = frozenset(
     # which has no impressions in English either. Translating those would buy two
     # indexable URLs apiece for queries nobody is running.
     + ["/favicon-generator/", "/instagram/"]
+    # The tool catalogue. Not a queue decision like the ones above — it was
+    # written translated. Every string in its template goes through {% t %}, and
+    # its category descriptions and the "how the toolkit fits together" copy are
+    # in both catalogues, so declaring it here is a statement of fact rather than
+    # a plan. TranslationCoverageTests measures the page and would have failed if
+    # it were not.
+    + ["/tools/"]
 )
 
 TRANSLATED_PATHS = {lang: _CORE_TRANSLATED for lang in LANGUAGES}
@@ -1230,9 +1263,29 @@ def _sitemap_priority(path):
         return "0.9"
     if path == "/guides/":
         return "0.8"  # the editorial hub, second only to the tools themselves
+    if path == "/tools/":
+        # The tool hub. It lives in INFO_PATHS for sitemap membership, but it is
+        # not an /about/-class page: it carries the site's only complete tool
+        # index and is linked from the header, the mobile sheet and the footer of
+        # every page, so it ranks with the editorial hub rather than with the
+        # legal pages below.
+        return "0.8"
     if path in INFO_PATHS:
         return "0.4"
     return "0.7"  # keyword landing + country + guide pages
+
+
+# The three articles the home page cites. Chosen rather than sliced off the top
+# of GUIDES: these are the ones that answer a question the home page itself
+# raises (what transparency is, why on-device differs from cloud, which format to
+# export), so the section reads as a continuation of the page rather than as a
+# feed. A slug that no longer exists is skipped rather than raising — the guides
+# are edited far more often than this list.
+HOME_GUIDE_SLUGS = (
+    "transparent-backgrounds-explained",
+    "on-device-vs-cloud-image-tools",
+    "image-formats-explained",
+)
 
 
 @require_safe
@@ -1242,6 +1295,9 @@ def index(request):
         "faqs": INDEX_FAQS,
         "faq_jsonld": faq_jsonld(INDEX_FAQS),
         "background_groups": BACKGROUND_GROUPS,
+        "home_guides": [
+            GUIDES_BY_SLUG[s] for s in HOME_GUIDE_SLUGS if s in GUIDES_BY_SLUG
+        ],
     })
 
 
@@ -1806,6 +1862,23 @@ def comparison(request, slug):
         "faqs": page["faqs"],
         "faq_jsonld": faq_jsonld(page["faqs"]),
     })
+
+
+@require_safe
+def tools_index(request):
+    """Render the full tool catalogue.
+
+    This page exists because the home page used to *be* the catalogue: all 36
+    tools were rendered on it as a wall of cards, which made the landing page
+    both the product pitch and the directory and served neither well. Moving the
+    exhaustive list here lets the home page show a curated dozen and link on,
+    without a single tool losing its inbound link — the grid rendered here is
+    the same `tool_grid.html` partial, driven by the same TOOL_NAV.
+
+    It is linked from the header menu, the mobile sheet and the footer of every
+    page, so it sits one hop from anywhere on the site.
+    """
+    return render(request, "remover/tools.html")
 
 
 @require_safe

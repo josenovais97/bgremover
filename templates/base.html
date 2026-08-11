@@ -222,6 +222,13 @@
                         </div>
                         {% endfor %}
                     </div>
+                    {% comment %}The menu lists everything, but /tools/ is the page that
+                    can describe them — and it is where the home page's "Explore all
+                    tools" lands, so the two doors agree.{% endcomment %}
+                    <a href="{% url 'remover:tools' %}" role="menuitem"
+                       class="mt-2 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-primaryText bg-primary/[0.07] hover:bg-primary/[0.12] dark:bg-primary/15 dark:hover:bg-primary/25 transition-colors">
+                        {% t "Browse the full toolkit" %}<i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                    </a>
                 </div>
 
                 <!-- ===================== Use cases menu (desktop) ====================== -->
@@ -254,7 +261,7 @@
                         <a href="{% url 'remover:guides' %}" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-white/5 hover:bg-gray-200/70 dark:hover:bg-white/10 transition-colors">
                             <i class="fa-solid fa-bookmark text-xs text-gray-400" aria-hidden="true"></i>{% t "Guides" %}
                         </a>
-                        <button type="button" id="mobile-search" class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-white/5 hover:bg-gray-200/70 dark:hover:bg-white/10 transition-colors">
+                        <button type="button" data-open-cmd class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-white/5 hover:bg-gray-200/70 dark:hover:bg-white/10 transition-colors">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="w-3.5 h-3.5 text-gray-400" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>{% t "Search" %}
                         </button>
                     </div>
@@ -269,6 +276,9 @@
                     </div>
 
                     <nav aria-label="{% t 'All tools' %}" class="space-y-3">
+                        <a href="{% url 'remover:tools' %}" class="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-primaryText bg-primary/[0.07] dark:bg-primary/15">
+                            {% t "Browse the full toolkit" %}<i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                        </a>
                         {% for group in tool_groups %}
                         <div>
                             <p class="px-1 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{{ group.label }}</p>
@@ -299,15 +309,17 @@
         {% block related_tools %}{% include 'remover/partials/related_tools.html' %}{% endblock %}
         {% comment %}The return path to the guides. Rendered outside the related_tools
         block on purpose: the home hub overrides that block to suppress a second tool
-        grid, and doing so used to take the only editorial link with it.{% endcomment %}
-        {% include 'remover/partials/related_reading.html' %}
+        grid, and doing so used to take the only editorial link with it. It is its own
+        block so the home page — which now has a proper three-card guides section of
+        its own — can suppress the duplicate without touching related_tools.{% endcomment %}
+        {% block related_reading %}{% include 'remover/partials/related_reading.html' %}{% endblock %}
     </main>
 
     <footer class="mt-auto border-t border-gray-200/60 dark:border-gray-800/60">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid gap-8 sm:gap-10 grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
+            <div class="grid gap-x-6 gap-y-2 sm:gap-y-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1fr_0.9fr]">
                 <!-- Brand -->
-                <div class="col-span-2 lg:col-span-1 space-y-4">
+                <div class="sm:col-span-2 lg:col-span-1 space-y-4 mb-4 lg:mb-0">
                     <a href="{% url 'remover:index' %}" class="inline-flex items-center gap-2">
                         <img src="{% static 'img/favicon.svg' %}" alt="" width="32" height="32" class="w-8 h-8 rounded-lg shadow-sm shadow-primary/30">
                         <span class="font-bold text-lg tracking-tight text-gray-900 dark:text-gray-100">ClearBG</span>
@@ -337,52 +349,86 @@
                         </a>
                     </div>
                 </div>
-                <!-- Tools -->
-                <div class="space-y-3">
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "Tools" %}</h3>
-                    {% comment %}Rendered from tool_nav (FOOTER_LABELS), the same source as the
-                    header nav and mega-menu — so a new tool joins the footer by existing rather
-                    than by being added to a hand-kept list that had drifted seven tools behind.{% endcomment %}
-                    <nav class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400" aria-label="Tools">
-                        {% for item in tool_nav %}
-                        <a href="{{ item.url }}" class="hover:text-primaryText transition-colors">{{ item.footer }}</a>
-                        {% endfor %}
-                    </nav>
-                </div>
                 <!-- Use cases -->
-                <div class="space-y-3">
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "Use cases" %}</h3>
-                    <nav class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400" aria-label="Use cases">
+                {% comment %}
+                Every link group below is a `.footer-group` <details>: four open
+                columns on desktop, collapsed headings on a phone. See the
+                comment on the tool directory for why they ship `open` and are
+                closed by JS rather than the other way round.
+                {% endcomment %}
+                <details open class="footer-group group">
+                    <summary class="footer-summary">{% t "Use cases" %}<i class="fa-solid fa-chevron-down footer-chevron" aria-hidden="true"></i></summary>
+                    <nav class="footer-links" aria-label="Use cases">
                         {% for c in use_cases %}
                         <a href="{% url 'remover:use_case' c.slug %}" class="hover:text-primaryText transition-colors">{{ c.nav }}</a>
                         {% endfor %}
                     </nav>
-                </div>
+                </details>
                 <!-- Guides -->
                 {% comment %}The only editorial section on the site. Linked from every page
                 because a new section is crawled at the speed its internal links allow, and
                 the footer is the one block that appears everywhere. Labels come from
-                guides._NAV_LABELS via the context processor.{% endcomment %}
-                <div class="space-y-3">
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "Guides" %}</h3>
-                    <nav class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400" aria-label="Guides">
+                guides._NAV_LABELS via the context processor. Two sub-columns because
+                eighteen articles in one made this the tallest thing in the footer.{% endcomment %}
+                <details open class="footer-group group sm:col-span-2 lg:col-span-2">
+                    <summary class="footer-summary">{% t "Guides" %}<i class="fa-solid fa-chevron-down footer-chevron" aria-hidden="true"></i></summary>
+                    <nav class="footer-links sm:columns-2 sm:gap-x-6" aria-label="Guides">
                         {% for g in footer_guides %}
                         <a href="{% url 'remover:guide' g.slug %}" class="hover:text-primaryText transition-colors">{{ g.nav }}</a>
                         {% endfor %}
-                        <a href="{% url 'remover:guides' %}" class="font-medium text-primaryText hover:underline">{% t "All guides" %} →</a>
+                        <a href="{% url 'remover:guides' %}" class="font-medium text-primaryText hover:underline">{% t "All guides" %} &rarr;</a>
                     </nav>
-                </div>
+                </details>
                 <!-- Company -->
-                <div class="space-y-3">
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "Company" %}</h3>
-                    <nav class="flex flex-col gap-2 text-sm text-gray-500 dark:text-gray-400" aria-label="Company">
+                <details open class="footer-group group">
+                    <summary class="footer-summary">{% t "Company" %}<i class="fa-solid fa-chevron-down footer-chevron" aria-hidden="true"></i></summary>
+                    <nav class="footer-links" aria-label="Company">
                         <a href="{% url 'remover:about' %}" class="hover:text-primaryText transition-colors">{% t "About" %}</a>
                         <a href="{% url 'remover:privacy' %}" class="hover:text-primaryText transition-colors">{% t "Privacy Policy" %}</a>
                         <a href="{% url 'remover:terms' %}" class="hover:text-primaryText transition-colors">{% t "Terms of Use" %}</a>
                         <a href="mailto:josenovais97@gmail.com" class="hover:text-primaryText transition-colors">{% t "Contact" %}</a>
                     </nav>
-                </div>
+                </details>
             </div>
+
+            {% comment %}
+            ── TOOL DIRECTORY ────────────────────────────────────────────────
+            Every tool, still linked from every page — but spread across columns
+            instead of one column of 36, which is what made the footer taller
+            than most of the pages above it. Nothing was dropped in the change:
+            this is the same walk over `tool_nav` (FOOTER_LABELS), so a new tool
+            appears here by existing, and the anchor text is still the fuller,
+            more descriptive label rather than the nav pill's abbreviation.
+
+            Kept as ONE <nav aria-label="Tools"> around all four groups: the
+            grouping is presentational, and a screen-reader user looking for
+            "the tools" wants one landmark, not four.
+
+            "Convert & Optimize" holds 19 of the 36 and gets two sub-columns and
+            twice the width, so the row is about ten deep instead of nineteen.
+            The threshold is a layout judgement, so it lives here rather than in
+            the context processor — but it is read off `items|length`, so a tool
+            moving between categories re-balances the footer by itself.
+            {% endcomment %}
+            <div class="mt-8 pt-8 border-t border-gray-200/60 dark:border-gray-800/60">
+                <div class="flex items-baseline justify-between gap-4 mb-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{% t "All tools" %}</h3>
+                    <a href="{% url 'remover:tools' %}" class="text-xs font-medium text-primaryText hover:underline">{% t "Browse the full toolkit" %} &rarr;</a>
+                </div>
+                <nav class="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-5" aria-label="Tools">
+                    {% for group in tool_groups %}
+                    <details open class="footer-group group {% if group.items|length > 12 %}lg:col-span-2{% endif %}">
+                        <summary class="footer-summary">{{ group.label }}<i class="fa-solid fa-chevron-down footer-chevron" aria-hidden="true"></i></summary>
+                        <div class="footer-links {% if group.items|length > 12 %}lg:columns-2 lg:gap-x-6{% endif %}">
+                            {% for item in group.items %}
+                            <a href="{{ item.url }}" class="hover:text-primaryText transition-colors">{{ item.footer }}</a>
+                            {% endfor %}
+                        </div>
+                    </details>
+                    {% endfor %}
+                </nav>
+            </div>
+
             <!-- Bottom bar -->
             <div class="mt-10 pt-6 border-t border-gray-200/60 dark:border-gray-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-gray-400">
                 <p>&copy; {% now "Y" %} ClearBG. {% t "Free, private, and unlimited." %}</p>

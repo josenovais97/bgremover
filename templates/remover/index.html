@@ -151,7 +151,13 @@ which every rival in the category also claims.{% endcomment %}
                         cap and the wall/floor junction visible to its left, which
                         is the part you watch disappear.
                         {% endcomment %}
-                        <div id="demo" class="demo group relative w-full flex-1 min-h-[15rem] aspect-[4/3] rounded-3xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 shadow-xl shadow-gray-900/5 dark:shadow-black/30 select-none checkerboard checkerboard-soft"
+                        {% comment %}`min-h` is deliberately sm-and-up only. Paired with
+                        `aspect-[4/3]` it also sets a MINIMUM WIDTH — 15rem of height implies
+                        20rem of width — which is wider than the content box at a 320px
+                        viewport, and the whole document picked up a horizontal scrollbar.
+                        Below sm the aspect ratio alone governs, which is what the min-height
+                        was there to guarantee anyway.{% endcomment %}
+                        <div id="demo" class="demo group relative w-full flex-1 sm:min-h-[15rem] aspect-[4/3] rounded-3xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 shadow-xl shadow-gray-900/5 dark:shadow-black/30 select-none checkerboard checkerboard-soft"
                              data-subjects='[
                                ["{% static 'img/demo1-after.webp' %}", "{% static 'img/demo1-before.webp' %}"],
                                ["{% static 'img/demo2-after.webp' %}", "{% static 'img/demo2-before.webp' %}"],
@@ -187,140 +193,312 @@ which every rival in the category also claims.{% endcomment %}
             </div>
         </section>
 
-        {% comment %}The tool grid sits directly under the hero: this page is the entry point
-        to an 18-tool kit, and burying the grid below the explainer made the kit invisible to
-        anyone who didn't scroll past it.{% endcomment %}
-        {% include 'remover/partials/tool_grid.html' with exclude='index' %}
-
-        <!-- How it works -->
         {% comment %}
-        This used to be three generic steps (Add → AI removes → Download) and a
-        screen-reader-only heading. The steps are still the fastest way to explain
-        the flow, but on their own they ask a visitor to take "the AI runs on your
-        device" purely on faith — which is the site's entire claim. The panel below
-        them names the model, the runtime and the fallback path, so the claim is
-        checkable rather than just asserted, and gives the page real text on the
-        subject people actually search for.
+        ── TOOLKIT PREVIEW ───────────────────────────────────────────────────
+        This used to be the complete grid: all 36 tools, grouped, directly under
+        the hero. As a directory it worked; as the first thing after the upload
+        box it asked a visitor who had not yet used the product to evaluate a
+        catalogue, and it was the single biggest contributor to the page's
+        height. The full grid now lives at /tools/ — nothing was deleted and no
+        tool lost a link — and this shows a curated dozen whose job is to answer
+        one question: "is this only a background remover?"
+
+        `featured_tools` is a list of url_names resolved against TOOL_NAV
+        (context_processors.FEATURED_TOOLS), so these cards carry the same
+        label, blurb, icon and accent as everywhere else on the site.
+        {% endcomment %}
+        <section aria-labelledby="tools-title" class="max-w-5xl mx-auto space-y-7">
+            <div class="max-w-2xl mx-auto text-center space-y-3">
+                <h2 id="tools-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "One toolkit for every image job" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "Edit, convert, optimise and create — every tool runs the same way the background remover does, on your device." %}</p>
+                {% comment %}Category chips are links into the catalogue's own sections, not a
+                filter: a tab bar here would make the visitor operate a control before they
+                had seen anything, for twelve cards that already fit on one screen.{% endcomment %}
+                <div class="flex flex-wrap justify-center gap-2 pt-1">
+                    {% for g in tool_groups %}
+                    <a href="{% url 'remover:tools' %}#tools-{{ g.key }}"
+                       class="px-3.5 py-1.5 rounded-full text-[13px] font-medium text-gray-600 dark:text-gray-300 bg-gray-100/80 dark:bg-white/[0.06] hover:text-primaryText hover:bg-primary/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">{{ g.label }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <ul role="list" class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                {% for item in featured_tools %}
+                <li>{% include 'remover/partials/tool_card.html' %}</li>
+                {% endfor %}
+            </ul>
+
+            <div class="text-center">
+                <a href="{% url 'remover:tools' %}"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-primaryText border border-primary/20 bg-primary/[0.07] hover:bg-primary/[0.12] dark:bg-primary/15 dark:border-primary/25 dark:hover:bg-primary/25 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    {% t "Explore all tools" %}<i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                </a>
+            </div>
+        </section>
+
+        {% comment %}
+        ── WORKFLOW ──────────────────────────────────────────────────────────
+        Cross-tool hand-off (CBG.Chain) is what makes this a toolkit rather than
+        a folder of separate single-purpose sites, and it used to be one line of
+        caption text above the grid. Drawn as the chain it actually is, it says
+        in one glance what a paragraph could not.
+
+        Steps come from WORKFLOW_STEPS by url_name, so each node links to the
+        real tool and is labelled from TOOL_NAV.
+        {% endcomment %}
+        <section aria-labelledby="flow-title" class="max-w-4xl mx-auto">
+            <div class="rounded-3xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-6 sm:p-8 space-y-6">
+                <div class="max-w-xl mx-auto text-center space-y-2">
+                    <h2 id="flow-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Finish one job. Keep going." %}</h2>
+                    <p class="text-gray-600 dark:text-gray-300">{% t "Move from one tool to the next without starting over or picking your file again." %}</p>
+                </div>
+                <ol class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-1">
+                    {% for step in workflow_steps %}
+                    <li class="contents">
+                        <a href="{{ step.url }}" style="{{ step.accent_vars }}"
+                           class="tool-card group flex sm:flex-col items-center gap-3 sm:gap-2 sm:flex-1 px-4 py-3 sm:px-2 sm:py-4 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/70 dark:bg-gray-900/40 hover:border-primary/50 hover:bg-primary/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                            <span class="w-9 h-9 shrink-0 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="{{ step.icon }} text-sm" aria-hidden="true"></i></span>
+                            <span class="text-sm font-semibold sm:text-center leading-snug">{{ step.label }}</span>
+                        </a>
+                        {% comment %}The connector rotates rather than being two glyphs: at the
+                        sm breakpoint the chain turns from a column into a row.{% endcomment %}
+                        <i class="fa-solid fa-chevron-down sm:-rotate-90 text-[10px] text-gray-300 dark:text-gray-600 self-center shrink-0 sm:mx-0.5" aria-hidden="true"></i>
+                    </li>
+                    {% endfor %}
+                    <li class="flex sm:flex-col items-center gap-3 sm:gap-2 sm:flex-1 px-4 py-3 sm:px-2 sm:py-4 rounded-2xl border border-dashed border-gray-300/80 dark:border-gray-700">
+                        <span class="w-9 h-9 shrink-0 grid place-items-center rounded-xl bg-green-500/10 text-green-600 dark:text-green-400"><i class="fa-solid fa-download text-sm" aria-hidden="true"></i></span>
+                        <span class="text-sm font-semibold sm:text-center leading-snug text-gray-600 dark:text-gray-300">{% t "Download" %}</span>
+                    </li>
+                </ol>
+                <p class="text-center text-sm text-gray-500 dark:text-gray-400">{% t "Your image is handed straight to the next tool — it is never re-uploaded, because it was never uploaded." %}</p>
+            </div>
+        </section>
+
+        {% comment %}
+        ── HOW IT WORKS ──────────────────────────────────────────────────────
+        Three steps, and nothing else. This section's only job is to say that
+        there is no step four — no account, no queue, no export credit. The
+        technical account of what "on your device" means used to be bolted onto
+        the bottom of it, which turned the simplest section on the page into the
+        longest; it now lives in the privacy section below, behind a disclosure.
         {% endcomment %}
         <section aria-labelledby="how-title" class="max-w-4xl mx-auto space-y-6">
-            <div class="text-center space-y-2">
-                <h2 id="how-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "How it works" %}</h2>
-                <p class="text-gray-600 dark:text-gray-300">{% t "Three steps — with no server anywhere in them." %}</p>
-            </div>
-            <ol class="grid gap-3 sm:grid-cols-3 text-sm">
-                <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
-                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-upload" aria-hidden="true"></i></span>
-                    <span><b class="font-semibold">{% t "Add" %}</b> {% t "an image — drag, browse or paste" %}</span>
+            <h2 id="how-title" class="text-2xl md:text-3xl font-bold tracking-tight text-center">{% t "How it works" %}</h2>
+            <ol class="grid gap-3 sm:grid-cols-3">
+                <li class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="block text-[11px] font-bold tracking-[0.14em] text-primaryText">01</span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Add" %}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-snug">{% t "Drop, browse or paste an image." %}</p>
                 </li>
-                <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
-                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></span>
-                    <span><b class="font-semibold">{% t "AI removes" %}</b> {% t "the background on your device" %}</span>
+                <li class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="block text-[11px] font-bold tracking-[0.14em] text-primaryText">02</span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Process" %}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-snug">{% t "The background is removed directly on your device." %}</p>
                 </li>
-                <li class="flex items-center gap-3 glass rounded-xl p-4 border border-gray-200/70 dark:border-gray-800/70">
-                    <span class="shrink-0 w-8 h-8 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-download" aria-hidden="true"></i></span>
-                    <span><b class="font-semibold">{% t "Download" %}</b> {% t "a transparent PNG, full quality" %}</span>
+                <li class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="block text-[11px] font-bold tracking-[0.14em] text-primaryText">03</span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Download" %}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-snug">{% t "Get your full-resolution result — no watermark." %}</p>
                 </li>
             </ol>
-            <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 sm:p-6 space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                <h3 class="flex items-center gap-2.5 text-base font-semibold text-gray-900 dark:text-gray-100">
-                    <span class="w-8 h-8 shrink-0 grid place-items-center rounded-lg bg-primary/10 text-primaryText"><i class="fa-solid fa-code" aria-hidden="true"></i></span>
-                    {% t "What actually runs on your device" %}
-                </h3>
-                <p>{% t "The cut-out comes from IS-Net, a segmentation model that runs through ONNX Runtime Web inside this browser tab. Your browser downloads the model once, then keeps it — so the second image is instant, and the tool keeps working with no connection at all." %}</p>
-                <p>{% t "Where your browser exposes WebGPU, the model runs on your graphics card and off the main thread, which is why the page stays responsive while it works. Everywhere else it falls back to WebAssembly with SIMD and multiple threads on the CPU. Browsers that allow cross-origin isolation get the full-precision weights; the rest get a smaller quantised build of the same model." %}</p>
-                <p class="flex items-start gap-2.5">
-                    <i class="fa-solid fa-mobile-screen mt-0.5 text-primaryText" aria-hidden="true"></i>
-                    <span>{% t "What that means for your device: the first run is a real download and needs some memory, so it takes a few seconds on a recent laptop or phone and can take up to a minute on an older one. Every run after that is fast. If your browser can't run the model at all, the page says so plainly instead of hanging — and the editing tools that don't need AI (crop, convert, compress, resize) keep working regardless." %}</span>
-                </p>
-                <p class="text-gray-500 dark:text-gray-400">{% t "None of this involves an upload: there is no queue to wait in, no per-image limit to hit, and no copy of your photo on a server to trust anyone with." %}</p>
-                {% comment %}
-                The claim above is the whole product, and every competitor asserts
-                something similar while uploading anyway — so asserting it harder is
-                worthless. This is the one form of it a visitor can falsify in ten
-                seconds, and it only passes because the processing genuinely is local:
-                a cloud tool cannot survive the test at all. Deliberately scoped to
-                "after your first cut-out", since the model download is real and a
-                visitor who tries this on a cold cache would rightly call it a lie.
-                {% endcomment %}
-                <p class="flex items-start gap-2.5 border-t border-gray-200/70 dark:border-gray-800/70 mt-4 pt-4">
-                    <i class="fa-solid fa-circle-check mt-0.5 text-primaryText" aria-hidden="true"></i>
-                    <span><b class="font-semibold text-gray-900 dark:text-gray-100">{% t "Check it yourself:" %}</b> {% t "once you have made a single cut-out, turn off your Wi-Fi and reload this page. Every tool keeps working — the background remover included — because the page, the tools and the model are already on your device. Nothing else you have tried this in will survive that test." %}</span>
-                </p>
-            </div>
-            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
-                {% t "Coming from another tool?" %}
-                <a href="{% url 'remover:alternative' %}" class="text-primaryText font-medium hover:underline">{% t "See how we compare to remove.bg" %} →</a>
-            </p>
         </section>
 
-        <!-- What people remove backgrounds from -->
         {% comment %}
-        The eleven use-case landings had no editorial inbound link anywhere on the
-        site — they sat in the footer and nowhere else, which for a crawler makes
-        the highest-intent pages on the domain look like the least important. They
-        are also genuinely useful here: someone arriving with a specific job ("my
-        product photos", "my passport photo") gets a page written for that job
-        instead of the generic tool.
-        {% endcomment %}
-        <section aria-labelledby="cases-title" class="max-w-4xl mx-auto space-y-6">
-            <div class="text-center space-y-2">
-                <h2 id="cases-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "What are you removing the background from?" %}</h2>
-                <p class="text-gray-600 dark:text-gray-300">{% t "Each of these has its own guide, with the sizes and rules that apply to it." %}</p>
-            </div>
-            <div class="flex flex-wrap justify-center gap-2">
-                {% for c in use_cases %}
-                <a href="{% url 'remover:use_case' c.slug %}"
-                   class="px-3.5 py-2 rounded-full text-sm border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-gray-900/40 hover:border-primary hover:text-primaryText transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                    {{ c.nav }}
-                </a>
-                {% endfor %}
-            </div>
-            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
-                {% t "Or read the" %}
-                <a href="{% url 'remover:guides' %}" class="font-medium text-primaryText hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">{% t "guides" %}</a>
-                {% t "— explanations of how image formats, compression, metadata and cut-outs actually work." %}
-            </p>
-        </section>
+        ── PRIVACY / LOCAL PROCESSING ────────────────────────────────────────
+        The differentiator, restructured as benefit → plain explanation →
+        optional detail.
 
-        <!-- Why it's free -->
-        {% comment %}
-        "Free and unlimited" reads as bait unless the economics are stated. The
-        honest answer here is unusually good — the visitor's own device does the
-        expensive part — so saying it plainly turns the most suspicious thing about
-        the site into the most reassuring one. It also gives the "what's the catch"
-        search its answer on the page rather than in a review of us somewhere else.
+        Every word of the old technical account is still on this page; it is
+        inside the <details> below. That matters twice over: a power user can
+        check the claim rather than be asked to believe it, and the text stays in
+        the DOM, so the page keeps the substance it ranks for on "does background
+        removal work offline", "browser AI background removal" and similar. A
+        <details> element's contents are crawled and indexed — collapsing is a
+        presentation choice, not a robots directive.
+
+        The "turn off your Wi-Fi" dare that used to close this section has gone.
+        The test was real and the claim is true, but "nothing else you have tried
+        this in will survive that test" is a swipe at products the reader may
+        like, and a visitor who has to be dared is not being persuaded.
         {% endcomment %}
-        <section aria-labelledby="free-title" class="max-w-4xl mx-auto space-y-6">
-            <div class="text-center space-y-2">
-                <h2 id="free-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Why is it free?" %}</h2>
-                <p class="text-gray-600 dark:text-gray-300">{% t "The usual catch is that you are the product. Here is the actual arrangement." %}</p>
+        <section aria-labelledby="privacy-title" class="max-w-4xl mx-auto space-y-6">
+            <div class="max-w-2xl mx-auto text-center space-y-2">
+                <h2 id="privacy-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Your images stay on your device." %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "Background removal runs inside this browser tab. Your photo is not uploaded to a server to be processed, and there is no copy of it anywhere but on your own machine." %}</p>
             </div>
             <div class="grid gap-3 sm:grid-cols-3 text-sm">
-                <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-2">
-                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i></span>
-                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Your device does the work" %}</h3>
-                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "Cloud removers rent GPUs by the second and bill you per image. Nothing here runs on a server, so there is no per-image cost to pass on — and no reason to cap you at five free photos." %}</p>
+                <div class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-green-500/10 text-green-600 dark:text-green-400"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Private by default" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "Your image stays in your browser. Nothing is sent anywhere for it to be processed." %}</p>
                 </div>
-                <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-2">
-                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>
-                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "There is nothing to sell" %}</h3>
-                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "Your images never leave the browser, so we could not train on them, sell them or leak them even if we wanted to. There is no account, so there is no profile to build either." %}</p>
+                <div class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-user" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "No account" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "There is no sign-up, no profile and no image library to create." %}</p>
                 </div>
-                <div class="glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-2">
-                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></span>
-                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "What keeps it running" %}</h3>
-                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "A domain and some cheap hosting — that is the whole bill. Ads on the written guides help cover it, the tool pages stay ad-free, and a coffee from anyone who finds this useful covers the rest." %}</p>
+                <div class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-compass" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Works offline" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "Once the model has been cached, supported tools keep working without a connection." %}</p>
                 </div>
             </div>
-            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
-                {% t "No trial, no credit card, no watermark, no “pro” tier holding the good export hostage." %}
-                <a href="https://buymeacoffee.com/josenovais" target="_blank" rel="noopener noreferrer" class="text-primaryText font-medium hover:underline">{% t "Buy me a coffee" %} →</a>
-            </p>
+
+            <details class="group rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/50 dark:bg-white/[0.02] overflow-hidden">
+                <summary class="flex items-center justify-between gap-3 cursor-pointer list-none px-5 py-4 text-sm font-semibold text-gray-700 dark:text-gray-200 select-none">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-code text-primaryText text-xs" aria-hidden="true"></i>{% t "Technical details" %}</span>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                </summary>
+                <div class="px-5 pb-5 space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed border-t border-gray-200/70 dark:border-gray-800/70 pt-4">
+                    <p>{% t "The cut-out comes from IS-Net, a segmentation model that runs through ONNX Runtime Web inside this browser tab. Your browser downloads the model once, then keeps it — so the second image is instant, and the tool keeps working with no connection at all." %}</p>
+                    <p>{% t "Where your browser exposes WebGPU, the model runs on your graphics card and off the main thread, which is why the page stays responsive while it works. Everywhere else it falls back to WebAssembly with SIMD and multiple threads on the CPU. Browsers that allow cross-origin isolation get the full-precision weights; the rest get a smaller quantised build of the same model." %}</p>
+                    <p>{% t "What that means for your device: the first run is a real download and needs some memory, so it takes a few seconds on a recent laptop or phone and can take up to a minute on an older one. Every run after that is fast. If your browser can't run the model at all, the page says so plainly instead of hanging — and the editing tools that don't need AI (crop, convert, compress, resize) keep working regardless." %}</p>
+                    <p>{% t "Because the processing happens on your device, there is no queue to wait in and no per-image limit to hit. After the required files have been cached, the page and its tools continue to work without a connection." %}</p>
+                    <p class="text-gray-500 dark:text-gray-400">
+                        {% t "Coming from another tool?" %}
+                        <a href="{% url 'remover:alternative' %}" class="text-primaryText font-medium hover:underline">{% t "See how we compare to remove.bg" %} →</a>
+                    </p>
+                </div>
+            </details>
         </section>
 
-        {% include 'remover/partials/related_landings.html' %}
+        {% comment %}
+        ── USE CASES ─────────────────────────────────────────────────────────
+        The eleven use-case landings answer the job someone actually arrived
+        with, and they are the pages Search Console puts closest to page one. As
+        a row of bare pills they looked like a keyword list, which is both a
+        worse experience and a worse signal; each now says what it is for.
+
+        Copy comes from views.USE_CASE_CARDS via the context processor, so the
+        cards, the footer column and the pages themselves stay one source.
+        {% endcomment %}
+        <section aria-labelledby="cases-title" class="max-w-5xl mx-auto space-y-6">
+            <div class="max-w-2xl mx-auto text-center space-y-2">
+                <h2 id="cases-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "What are you making?" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "Each of these has its own page, with the sizes and rules that apply to it." %}</p>
+            </div>
+            <ul role="list" class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                {% for c in use_cases %}
+                <li>
+                    <a href="{% url 'remover:use_case' c.slug %}"
+                       class="group h-full flex items-start justify-between gap-3 p-4 rounded-xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-gray-900/40 hover:border-primary/60 hover:bg-primary/5 hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <span class="min-w-0">
+                            <span class="block font-semibold text-sm">{{ c.nav }}</span>
+                            <span class="block text-xs text-gray-500 dark:text-gray-400 leading-snug mt-0.5">{{ c.card }}</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-right text-[10px] mt-1 text-gray-300 dark:text-gray-600 group-hover:text-primaryText transition-colors" aria-hidden="true"></i>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        {% comment %}
+        ── WHY IT'S FREE ─────────────────────────────────────────────────────
+        "Free and unlimited" reads as bait unless the economics are stated, and
+        the honest answer here is unusually good — so saying it plainly turns the
+        most suspicious thing about the site into the most reassuring one.
+
+        Two claims were softened. "We could not leak them even if we wanted to"
+        was an absolute about a system that still serves pages over a network;
+        the defensible version is the narrower one — the image is not sent for
+        processing, so there is no copy to lose. And the swipe at cloud removers
+        capping you "at five free photos" is gone: the cost structure is the
+        interesting part and it makes the point without naming a rival's
+        pricing.
+        {% endcomment %}
+        <section aria-labelledby="free-title" class="max-w-4xl mx-auto space-y-6">
+            <div class="max-w-2xl mx-auto text-center space-y-2">
+                <h2 id="free-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Why is ClearBG free?" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "The short answer: the processing happens on your device, so there is no GPU bill every time you remove a background." %}</p>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-3 text-sm">
+                <div class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "Your device does the work" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "There is no cloud GPU cost per image, so there is nothing to meter and no reason to cap you." %}</p>
+                </div>
+                <div class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "No account to monetise" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "There is no sign-up, no profile and no image library — so there is nothing to build a business on selling." %}</p>
+                </div>
+                <div class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
+                    <span class="w-9 h-9 grid place-items-center rounded-xl bg-primary/10 text-primaryText"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></span>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100">{% t "What keeps it running" %}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 leading-snug">{% t "A domain and cheap hosting. The written guides carry ads, the tool pages stay ad-free, and support is optional." %}</p>
+                </div>
+            </div>
+            {% comment %}The support ask sits here rather than inside the third card,
+            where it was a sentence in a paragraph nobody was reading. Stated once,
+            conditionally, and never repeated — no banner, no tier, no urgency.{% endcomment %}
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-x-5 gap-y-3 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] px-5 py-4">
+                <p class="text-sm text-gray-600 dark:text-gray-300 text-center sm:text-left">{% t "If ClearBG saved you time, you can help keep it free." %}</p>
+                <a href="https://buymeacoffee.com/josenovais" target="_blank" rel="noopener noreferrer"
+                   class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#0d0c0c] bg-[#FFDD00] hover:bg-[#ffd400] shadow-sm hover:shadow transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                   aria-label="Buy me a coffee (opens in a new tab)">
+                    <i class="fa-solid fa-mug-hot" aria-hidden="true"></i>{% t "Buy me a coffee" %}
+                </a>
+            </div>
+        </section>
 
         {% include 'remover/partials/faq.html' %}
+
+        {% comment %}
+        ── FROM THE GUIDES ───────────────────────────────────────────────────
+        Three articles, as an editorial trust signal and the one place on the
+        home page that admits the site is more than a toolbox. `home_guides` is
+        picked in views.index; the shared `related_reading` block that normally
+        auto-renders at the foot of every page is suppressed below, so the guides
+        are cited once rather than twice.
+        {% endcomment %}
+        {% if home_guides %}
+        <section aria-labelledby="guides-title" class="max-w-5xl mx-auto space-y-6">
+            <div class="max-w-2xl mx-auto text-center space-y-2">
+                <h2 id="guides-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Learn more about images" %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">{% t "How formats, transparency and on-device processing actually work — written to be useful even if you never open a tool." %}</p>
+            </div>
+            <ul role="list" class="grid gap-3 sm:grid-cols-3">
+                {% for g in home_guides %}
+                <li class="h-full">
+                    <a href="{% url 'remover:guide' g.slug %}"
+                       class="group h-full flex flex-col gap-2 p-5 rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] hover:border-primary/50 hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{{ g.category }}</span>
+                        <h3 class="font-semibold leading-snug group-hover:text-primaryText transition-colors">{{ g.h1 }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 leading-snug">{{ g.description }}</p>
+                        <span class="mt-auto pt-2 text-xs text-gray-400 dark:text-gray-500">{{ g.minutes }} {% t "min read" %}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="text-center">
+                <a href="{% url 'remover:guides' %}" class="inline-flex items-center gap-2 text-sm font-semibold text-primaryText hover:underline underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+                    {% t "View all guides" %}<i class="fa-solid fa-chevron-right text-[10px]" aria-hidden="true"></i>
+                </a>
+            </div>
+        </section>
+        {% endif %}
+
+        {% comment %}Compact internal-link block for the privacy / comparison landings.
+        Deliberately near the bottom and visually quiet: these pages matter for search
+        and for a visitor who arrived comparing tools, but a competitor-comparison row
+        is not part of understanding what ClearBG is.{% endcomment %}
+        {% include 'remover/partials/related_landings.html' %}
+
+        {% comment %}
+        ── FINAL CTA ─────────────────────────────────────────────────────────
+        The page used to end on an FAQ accordion, which leaves a reader who has
+        just resolved their last objection with nowhere to put it. One line, one
+        button, back to the top of the page where the dropzone is.
+        {% endcomment %}
+        <section aria-labelledby="cta-title" class="max-w-2xl mx-auto text-center space-y-4 py-2">
+            <h2 id="cta-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Ready to remove a background?" %}</h2>
+            <p class="text-gray-600 dark:text-gray-300">{% t "Free, private, and right in your browser." %}</p>
+            <a href="#main" data-jump-upload
+               class="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>{% t "Remove a background" %}
+            </a>
+        </section>
     </div>
 
     <!-- ========================= WORKSPACE ========================= -->
@@ -824,8 +1002,10 @@ which every rival in the category also claims.{% endcomment %}
 </button>
 {% endblock %}
 
-{# The home page already renders the full tool grid, so suppress the auto related-tools block. #}
+{# The home page curates its own tool selection and cites its own guides, so both
+   auto-appended blocks would be duplicates here. #}
 {% block related_tools %}{% endblock %}
+{% block related_reading %}{% endblock %}
 
 {% block extra_js %}
 <script type="module" src="{% static 'js/app.js' %}"></script>

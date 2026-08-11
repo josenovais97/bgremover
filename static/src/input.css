@@ -244,6 +244,40 @@
            dark:border-gray-700 dark:shadow-black/30 dark:hover:border-primary/70;
   }
 
+  /* Footer tool directory: an accordion on small screens, four open columns on
+     large ones.
+     `open` is a DOM property, not a style, and a closed <details> hides its
+     content through the shadow slot — so a `display` override on the child does
+     NOT bring it back (tried; the headings rendered above four empty columns).
+     The elements therefore ship WITH `open` in the markup, which is the correct
+     state for desktop, for a crawler and for JS-off; nav.js only ever closes
+     them, and only below the lg breakpoint.
+     The marker is suppressed in both directions — Chromium's
+     ::-webkit-details-marker and the standard ::marker. */
+  .footer-group > summary::-webkit-details-marker { display: none; }
+  .footer-group > summary::marker { content: ""; }
+  @media (min-width: 1024px) {
+    .footer-group > summary { pointer-events: none; }
+  }
+  .footer-summary {
+    @apply flex items-center justify-between gap-2 cursor-pointer list-none select-none
+           py-3 lg:py-0 lg:mb-3 lg:cursor-default
+           border-b border-gray-200/60 dark:border-gray-800/60 lg:border-0
+           text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400;
+  }
+  .footer-chevron {
+    @apply text-[10px] text-gray-400 transition-transform group-open:rotate-180 lg:hidden;
+  }
+  /* `block` rather than `flex`, so the multi-column variants the wide groups add
+     (`columns-2`) have a block container to flow inside — a flex column would
+     ignore them. The links are block-level, so they still stack. */
+  .footer-links {
+    @apply block pb-4 lg:pb-0 text-sm text-gray-500 dark:text-gray-400;
+  }
+  .footer-links > a {
+    @apply block py-1;
+  }
+
   /* Dropdown / sheet surface for the header menus.
      Deliberately NOT `.glass`: a translucent panel over the hero let a headline
      and a photo read straight through a list of thirty links, which is the one

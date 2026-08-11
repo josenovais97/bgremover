@@ -77,6 +77,9 @@ urlpatterns = [
         for p in TOOL_LANDINGS
     ],
     path("remove-background/<slug:slug>/", views.use_case, name="use_case"),
+    # The full tool catalogue. The home page shows a curated selection and links
+    # here; this is where every tool is listed. See views.tools_index.
+    path("tools/", views.tools_index, name="tools"),
     # Editorial guides (see remover/guides.py). Unlike every other route here,
     # these do not front a tool — they are the site's only standalone content.
     path("guides/", views.guides_index, name="guides"),

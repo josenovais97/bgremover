@@ -80,19 +80,37 @@
   // open through the change strands it (the mobile sheet is `lg:hidden`, so it
   // would simply vanish with its button still reading "expanded").
   const wide = window.matchMedia('(min-width: 1024px)');
-  const onChange = () => closeAll();
+
+  // The footer's tool directory is four open columns on desktop and an
+  // accordion on a phone, where 36 links in a column is most of a screen.
+  //
+  // It ships `open` and this only ever CLOSES it, deliberately: `open` is the
+  // right state for desktop, for a crawler and for anyone with JS off, so the
+  // no-JS failure mode is "everything visible" rather than four empty columns.
+  // A closed <details> hides its content through the shadow slot, which no
+  // `display` rule can override — hence a property toggle rather than CSS.
+  const footerGroups = [...document.querySelectorAll('.footer-group')];
+  function syncFooter() {
+    const collapse = !wide.matches;
+    footerGroups.forEach((d) => { d.open = !collapse; });
+  }
+
+  const onChange = () => { closeAll(); syncFooter(); };
   if (wide.addEventListener) wide.addEventListener('change', onChange);
   else if (wide.addListener) wide.addListener(onChange);
+  syncFooter();
 
-  // The mobile sheet's Search row hands off to the Ctrl+K palette rather than
-  // duplicating it.
-  const mobileSearch = document.getElementById('mobile-search');
+  // Anything marked [data-open-cmd] — the mobile sheet's Search row, the tool
+  // catalogue's search button — hands off to the Ctrl+K palette rather than
+  // shipping a second search of its own.
   const cmdBtn = document.getElementById('cmd-btn');
-  if (mobileSearch && cmdBtn) {
-    mobileSearch.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeAll();
-      cmdBtn.click();
+  if (cmdBtn) {
+    document.querySelectorAll('[data-open-cmd]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAll();
+        cmdBtn.click();
+      });
     });
   }
 })();

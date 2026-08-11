@@ -1068,10 +1068,26 @@ class TrustCopyTests(SimpleTestCase):
         self.assertIn("up to a minute on an older one", self.body)
 
     def test_the_page_explains_why_it_is_free(self):
-        self.assertIn("Why is it free?", self.body)
-        for claim in ("Your device does the work", "There is nothing to sell", "What keeps it running"):
+        self.assertIn("Why is ClearBG free?", self.body)
+        for claim in ("Your device does the work", "No account to monetise",
+                      "What keeps it running"):
             with self.subTest(claim=claim):
                 self.assertIn(claim, self.body)
+
+    def test_the_page_does_not_dare_the_visitor_or_overclaim(self):
+        """Two lines of copy that were confident in the wrong direction.
+
+        The Wi-Fi dare closed the privacy section by telling the reader that
+        nothing else they had tried would survive the test — a swipe at products
+        they may well like, and an argument that only works on someone willing to
+        be challenged. "We could not leak them even if we wanted to" is an
+        absolute about a system that still serves pages over a network; the
+        narrower claim (the image is not sent for processing, so there is no
+        copy to lose) is the one that is actually defensible.
+        """
+        for line in ("will survive that test", "even if we wanted to"):
+            with self.subTest(line=line):
+                self.assertNotIn(line, self.body)
 
     def test_the_trust_answers_are_also_in_the_faq_structured_data(self):
         # The FAQ block feeds FAQPage JSON-LD, so these answers can surface in
@@ -1087,8 +1103,12 @@ class TrustCopyTests(SimpleTestCase):
 
     def test_portuguese_gets_the_same_answers(self):
         pt = self.client.get("/pt/").content.decode()
-        self.assertIn("Porque é gratuito?", pt)
-        self.assertIn("O que corre mesmo no seu dispositivo", pt)
+        self.assertIn("Porque é que o ClearBG é gratuito?", pt)
+        # The technical account moved behind a "Technical details" disclosure;
+        # what the section leads with now is the benefit, so that is what has to
+        # be translated for a Portuguese visitor to get the same page.
+        self.assertIn("As suas imagens ficam no seu dispositivo.", pt)
+        self.assertIn("Detalhes técnicos", pt)
 
 
 class CacheHeaderTests(SimpleTestCase):

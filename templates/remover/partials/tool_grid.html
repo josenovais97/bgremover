@@ -8,22 +8,8 @@ the headings and the layout. Adding a tool to TOOL_NAV is enough to land it here
 Params:
   exclude - a url_name to leave out (the page you're already on).
 {% endcomment %}
-<section aria-labelledby="tools-title" class="space-y-8">
-    <div class="max-w-2xl mx-auto text-center space-y-3">
-        <h2 id="tools-title" class="text-3xl md:text-4xl font-extrabold tracking-tight">
-            {% t "One toolkit for every image job" %}
-        </h2>
-        <p class="text-gray-600 dark:text-gray-300">
-            {% t "Every tool runs the same way the background remover does — on your device, free, with nothing uploaded." %}
-        </p>
-        {% comment %}Chaining is the toolkit's best feature and it was invisible: the bar that
-        offers the next tool only appears once you export, which is the moment you were
-        already leaving. Saying it here is what turns nineteen pages into one editor.{% endcomment %}
-        <p class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm bg-primary/10 text-primaryText font-medium">
-            <i class="fa-solid fa-arrow-right-arrow-left text-xs" aria-hidden="true"></i>
-            {% t "Finish in one, carry straight on to the next — no re-uploading." %}
-        </p>
-    </div>
+<section aria-labelledby="tools-title" class="space-y-10">
+    <h2 id="tools-title" class="sr-only">{% t "One toolkit for every image job" %}</h2>
 
     {% comment %}
     Grouped under the same four category headers the mega-menu uses — with 30+
@@ -36,9 +22,15 @@ Params:
     beside an icon, and at four across the blurb wrapped to three ragged lines
     and cost back the height the compact card had just saved.
     {% endcomment %}
+    {% comment %}`id` per group so the home page's category chips can link straight to
+    the right block of the catalogue — scroll-mt keeps the heading clear of the header
+    when a fragment lands on it.{% endcomment %}
     {% for group in tool_groups %}
-    <div class="space-y-3">
-        <h3 class="text-center text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{{ group.label }}</h3>
+    <div id="tools-{{ group.key }}" class="space-y-4 scroll-mt-24">
+        <div class="max-w-2xl mx-auto text-center space-y-1.5">
+            <h3 class="text-lg font-bold tracking-tight">{{ group.label }}</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 leading-snug">{{ group.blurb }}</p>
+        </div>
         <ul role="list" class="flex flex-wrap justify-center gap-2.5">
             {% for item in group.items %}{% if item.name != exclude %}
             <li class="basis-full sm:basis-[calc(50%-0.625rem)] lg:basis-[calc(33.333%-0.834rem)]">
