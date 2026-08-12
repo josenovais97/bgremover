@@ -8,6 +8,10 @@
       <stop offset="0" stop-color="#6366F1"/>
       <stop offset="1" stop-color="#D946EF"/>
     </linearGradient>
+    <mask id="cut">
+      <rect x="0" y="0" width="64" height="64" fill="#fff"/>
+      <path d="M14 49 L30 23 L46 49 Z" fill="#000" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+    </mask>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   <circle cx="980" cy="120" r="260" fill="#4F46E5" opacity="0.18"/>
@@ -15,10 +19,12 @@
   <!-- Brand lockup: ClearBG logo mark + wordmark + domain -->
   <g transform="translate(90,70)">
     <rect width="96" height="96" rx="24" fill="url(#accent)"/>
-    <g transform="scale(1.5) translate(32,32) scale(0.72) translate(-33,-35)">
-      <circle cx="23" cy="23" r="6.5" fill="#ffffff"/>
-      <path d="M8 54 L26 31 L44 54 Z" fill="#ffffff"/>
-      <path d="M28 54 L42 35 L58 54 Z" fill="#ffffff" opacity="0.85"/>
+    <g transform="scale(1.5)">
+      <circle cx="13" cy="19" r="5.8" fill="#ffffff"/>
+      <path d="M36 49 L46 30 L57 49 Z" fill="#ffffff" mask="url(#cut)"
+            stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M14 49 L30 23 L46 49 Z" fill="#ffffff"
+            stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
     </g>
     <text x="120" y="52" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="800" fill="#ffffff">ClearBG</text>
     <text x="122" y="88" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="600" fill="#a5b4fc">clearbg.pt</text>
