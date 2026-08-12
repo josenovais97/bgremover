@@ -99,7 +99,6 @@ def t(text, lang=None):
     return cat.UI.get(text, text) if cat else text
 
 
-
 def js_catalogue(lang=None):
     """The runtime string catalogue for the browser, or {} on English pages.
 

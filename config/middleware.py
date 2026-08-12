@@ -130,7 +130,6 @@ class EdgeCacheMiddleware:
         ):
             return response
 
-
         response["Cache-Control"] = PAGE_CACHE_CONTROL
 
         # LocaleMiddleware stamps `Vary: Accept-Language` on every response, but

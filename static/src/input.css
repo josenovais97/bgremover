@@ -31,10 +31,10 @@
     /* Keep in step with TOOL_ACCENTS["index"] in context_processors.py — this is
        only the pre-hydration fallback, but a stale value here flashes the old
        brand colour before <body>'s inline style lands. */
-    --color-primary: 79 43 255;          /* violet #4F2BFF — brand */
-    --color-primary-hover: 63 31 214;    /* #3F1FD6 */
-    --accent-text-dark: 167 139 255;     /* #A78BFF */
-    --accent-text-dark-alt: 196 181 255; /* #C4B5FF */
+    --color-primary: 79 70 229;          /* indigo 600 — brand default */
+    --color-primary-hover: 67 56 202;    /* indigo 700 */
+    --accent-text-dark: 129 140 248;     /* indigo 400 */
+    --accent-text-dark-alt: 165 180 252; /* indigo 300 */
   }
   body {
     --color-primary-text: var(--color-primary);
@@ -43,8 +43,6 @@
   .dark body {
     --color-primary-text: var(--accent-text-dark);
     --color-primary-text-alt: var(--accent-text-dark-alt);
-    background-color: #161714;
-    color: theme('colors.gray.100');
   }
 
   /* Escape hatches for surfaces that DON'T follow the theme: the editor/crop
@@ -74,43 +72,26 @@
     --color-primary-text: var(--accent-text-dark);
     --color-primary-text-alt: var(--accent-text-dark-alt);
   }
-  /* Display face for the big headlines; body stays Inter. Applying to h1
-     site-wide gives every tool a distinctive, non-templated hero without
-     touching each template.
-
-     This rule predates the font actually existing: it named Bricolage Grotesque
-     with no @font-face anywhere, so for months every h1 rendered in Inter while
-     the stylesheet claimed otherwise. The face is now real (static/css/display.css)
-     and self-hosted, and this is what finally makes the rule do something. */
-  /* Instrument Serif is a high-contrast display face. It wants size, tight
-     leading and NO negative tracking — the letter-spacing that made Bricolage
-     look engineered closes a serif's apertures and turns its thins to mush.
-     Weight 400 because that is the only weight it has, and the only one it
-     needs at this size. */
-  /* h1 ONLY. The face is a display cut and it is never used below ~24px — an
-     earlier version put it on every h2, which caught UI-level headings like the
-     dropzone's "Drop your images here" and set a 20px interface label in a
-     high-contrast serif. Section headings opt in with `font-display` where they
-     are genuinely display-sized; everything else stays Inter. */
+  /* Headlines are Inter, tightened. A separate display face was tried here
+     (Instrument Serif, on `h1` and on every section `h2` that opted in) and
+     removed: a high-contrast serif wants a page built around it, and next to
+     an interface of small sans labels, chips and buttons it read as decoration
+     bolted onto a tool rather than as the tool's own voice. One family, worked
+     properly across weights, is the direction. */
   h1 {
-    font-family: theme('fontFamily.display');
-    font-weight: 400;
-    letter-spacing: 0;
-    line-height: 1.02;
+    letter-spacing: -0.025em;
   }
   body {
     /* Inter's stylistic sets: single-storey a, straighter glyphs — subtly nicer. */
     font-feature-settings: 'cv11', 'ss01';
-    /* The mat board. Set here rather than as a utility on <body> so the one
-       colour that defines the direction lives with the rest of the tokens. */
-    background-color: #E7E8E3;
-    color: theme('colors.gray.900');
-    /* No ambient accent wash. It was here to give the page depth instead of
-       flat grey, and it is the single clearest "generic AI SaaS" signal the
-       site had: a purple radial glow behind a white card is the house style of
-       roughly every tool in this category. The identity now carries the page —
-       the display face, the mount, and one quiet accent used sparingly — so
-       the ground can be a chosen neutral and nothing else. */
+    /* Ambient accent glow at the top of every page — depth instead of flat grey.
+       Uses the per-tool accent so the whole page is subtly tinted to its colour. */
+    background-image: radial-gradient(1100px 560px at 50% -8%, rgb(var(--color-primary) / 0.07), transparent 62%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  .dark body {
+    background-image: radial-gradient(1100px 560px at 50% -8%, rgb(var(--color-primary) / 0.16), transparent 62%);
   }
   /* Accent-tinted text selection — a small detail that reads considered. */
   ::selection { background: rgb(var(--color-primary) / 0.22); }
@@ -225,62 +206,6 @@
 }
 
 @layer components {
-  /* ════════════════════════════════════════════════════════════════════════
-     THE MOUNT — the brand's signature device.
-
-     Passe-partout: every image on the site sits in a generous paper mount with
-     a fine bevel, the way a print is mounted before it is framed. The mat board
-     is the page ground; the mount is the paper; the bevel is the hairline where
-     one meets the other. The before/after seam IS that bevel, which is what ties
-     the device to what the product does — the cut line and the mount edge are
-     the same line.
-
-     Replaces the knockout (an outlined word filled with the transparency
-     checkerboard) from the previous direction. That device wanted a heavy
-     grotesque and maximum contrast; this one wants a serif and restraint, and
-     the two cannot share a page.
-     ════════════════════════════════════════════════════════════════════════ */
-  .mount {
-    background: theme('colors.white');
-    padding: 1.125rem 1.125rem 0.875rem;
-    box-shadow:
-      0 0 0 1px rgb(27 29 26 / 0.07),
-      0 1px 2px rgb(27 29 26 / 0.06),
-      0 22px 48px -26px rgb(27 29 26 / 0.40);
-  }
-  .dark .mount {
-    background: #1D1F1B;
-    box-shadow:
-      0 0 0 1px rgb(230 231 225 / 0.08),
-      0 22px 48px -26px rgb(0 0 0 / 0.60);
-  }
-  /* What sits inside a mount is square and carries only the bevel — a radius
-     here would read as a rounded photo floating on paper rather than as a print
-     seated in a mat. */
-  .mount > .mounted {
-    border-radius: 0;
-    box-shadow: inset 0 0 0 1px rgb(27 29 26 / 0.14);
-  }
-  .dark .mount > .mounted { box-shadow: inset 0 0 0 1px rgb(230 231 225 / 0.14); }
-
-  /* The gallery label: what a mounted print has instead of a caption. */
-  .mount-label {
-    font-family: theme('fontFamily.display');
-    font-style: italic;
-    font-size: 0.9375rem;
-    color: theme('colors.gray.500');
-    text-align: center;
-  }
-  .dark .mount-label { color: theme('colors.gray.400'); }
-
-  /* The bevel, used as the compare seam. A hairline of the mount's own paper
-     with a hair of shadow on it, not a white rule with a glow. */
-  .bevel-seam {
-    background: theme('colors.white');
-    box-shadow: 0 0 0 0.5px rgb(27 29 26 / 0.28);
-  }
-  .dark .bevel-seam { background: #1D1F1B; box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.5); }
-
   /* Scroll-triggered reveal ------------------------------------------------
      Opt-in per element via `data-rise`; reveal.js adds `.is-revealed` when the
      element first enters the viewport. The initial state lives here rather than
@@ -340,17 +265,11 @@
      border and elevation on top), and note that app.js toggles `border-primary`
      and `bg-primary/5` during a drag — both are utilities, so they win over
      these component-layer rules without !important. */
-  /* The dropzone is a mount too, not a dashed browser affordance: in this
-     direction the panel that receives your photograph should look like the paper
-     it will be mounted on. The hairline firms up to the accent on hover/drag,
-     which is the only movement it needs. app.js still toggles `border-primary`
-     and `bg-primary/5` during a drag — both utilities, so they win over this. */
   .dropzone-hero {
-    @apply border border-gray-900/[0.12] bg-white
-           transition-[border-color,box-shadow] duration-200
-           hover:border-primary/50
-           dark:border-white/10 dark:bg-[#1D1F1B] dark:hover:border-primary/60;
-    box-shadow: 0 0 0 1px rgb(27 29 26 / 0.02), 0 18px 40px -28px rgb(27 29 26 / 0.35);
+    @apply border-2 border-dashed border-gray-300/90 shadow-xl shadow-gray-900/5
+           transition-[border-color,box-shadow,transform] duration-300
+           hover:border-primary/60 hover:shadow-2xl hover:shadow-primary/10
+           dark:border-gray-700 dark:shadow-black/30 dark:hover:border-primary/70;
   }
 
   /* Footer tool directory: an accordion on small screens, four open columns on
@@ -452,15 +371,11 @@
      (raw `bg-primary text-white` utilities) always wins the cascade.        */
 
   /* Primary call-to-action (Download). */
-  /* An ink pill, not an accent fill. In Passe-partout the accent is reserved for
-     marks and hairlines — spending it on every button is what made the previous
-     direction feel like the colour was stuck on. Ink is also the one value that
-     never fights whichever per-tool accent the page is wearing. */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold
-           text-white bg-gray-900 transition-colors duration-200 hover:bg-gray-800
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+           text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25
+           transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/40
            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-           dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white
            dark:focus-visible:ring-offset-gray-950;
   }
   /* Accent action for the editing tools (Refine, Crop). */

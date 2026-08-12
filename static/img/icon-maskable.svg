@@ -1,1 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><defs><clipPath id="img64"><rect x="17.20" y="18.80" width="29.60" height="26.40"/></clipPath></defs><rect x="6.40" y="6.40" width="51.20" height="51.20" rx="0.00" fill="#5A3550"/><rect x="13.20" y="14.80" width="37.60" height="34.40" rx="1.20" fill="#F7F7F5"/><g clip-path="url(#img64)"><rect x="17.20" y="18.80" width="29.60" height="26.40" fill="#F7F7F5"/><rect x="17.20" y="18.80" width="17.76" height="26.40" fill="#5A3550"/><rect x="34.96" y="18.80" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="42.80" y="18.80" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="38.88" y="22.72" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="46.72" y="22.72" width="0.08" height="3.92" fill="#BCA9B7"/><rect x="34.96" y="26.64" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="42.80" y="26.64" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="38.88" y="30.56" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="46.72" y="30.56" width="0.08" height="3.92" fill="#BCA9B7"/><rect x="34.96" y="34.48" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="42.80" y="34.48" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="38.88" y="38.40" width="3.92" height="3.92" fill="#BCA9B7"/><rect x="46.72" y="38.40" width="0.08" height="3.92" fill="#BCA9B7"/><rect x="34.96" y="42.32" width="3.92" height="2.88" fill="#BCA9B7"/><rect x="42.80" y="42.32" width="3.92" height="2.88" fill="#BCA9B7"/><circle cx="24.00" cy="26.00" r="2.72" fill="#F7F7F5"/><path d="M16.40,45.20 L26.00,32.40 L35.60,45.20 Z" fill="#F7F7F5"/><path d="M30.00,45.20 L37.20,35.60 L47.60,45.20 Z" fill="#432840" opacity="0.85"/></g><rect x="17.20" y="18.80" width="29.60" height="26.40" fill="none" stroke="#5A3550" stroke-opacity="0.18" stroke-width="0.64"/><path d="M46.0,13.360000000000003 C46.6144,16.048000000000002 47.152,16.585600000000003 49.84,17.200000000000003 C47.152,17.814400000000003 46.6144,18.352000000000004 46.0,21.040000000000003 C45.3856,18.352000000000004 44.848,17.814400000000003 42.16,17.200000000000003 C44.848,16.585600000000003 45.3856,16.048000000000002 46.0,13.360000000000003 Z" fill="#F7F7F5" opacity="1"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#D946EF"/>
+    </linearGradient>
+    <mask id="cut">
+      <rect width="64" height="64" fill="#fff"/>
+      <path d="M14 49 L30 23 L46 49 Z" fill="#000" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <!-- Maskable: the tile bleeds to the edge (the launcher supplies the shape) and
+       the glyph is scaled to 0.72 about the centre so it stays inside the 80%
+       safe circle whatever mask Android applies. Same artwork as favicon.svg. -->
+  <rect width="64" height="64" fill="url(#g)"/>
+  <g transform="translate(32,32) scale(0.72) translate(-32,-32)">
+    <circle cx="13" cy="19" r="5.8" fill="#ffffff"/>
+    <path d="M36 49 L46 30 L57 49 Z" fill="#ffffff" mask="url(#cut)"
+          stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M14 49 L30 23 L46 49 Z" fill="#ffffff"
+          stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+</svg>

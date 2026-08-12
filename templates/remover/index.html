@@ -25,12 +25,12 @@ which every rival in the category also claims.{% endcomment %}
                     <i class="fa-solid fa-lock text-xs" aria-hidden="true"></i> {% t "Private & free — runs in your browser" %}
                 </span>
                 {% comment %}"Free Background Remover" carries the term this page is
-                trying to rank for. In Passe-partout the headline needs no device on it:
-                Instrument Serif at display size IS the identity, and the sub-line is set
-                in the accent as the only colour in the block.{% endcomment %}
-                <h1 class="text-[2.6rem] sm:text-6xl md:text-7xl !leading-[1.0]">
+                trying to rank for; the gradient line carries the differentiator. The
+                old pairing ("Remove Image Backgrounds" / "Automatically & Free") spent
+                both lines on things every competitor also says.{% endcomment %}
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight !leading-[1.06]">
                     {% t "Free Background Remover" %}
-                    <span class="block mt-1 text-primaryText">{% t "No Upload Required" %}</span>
+                    <span class="block text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "No Upload Required" %}</span>
                 </h1>
                 {% comment %}The first sentence is the whole product in eight words, and it
                 is the one sentence no cloud remover can copy — so it carries the weight,
@@ -87,10 +87,10 @@ which every rival in the category also claims.{% endcomment %}
                             <div id="upload-icon" class="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] grid place-items-center rounded-2xl bg-primary/10 text-primaryText text-3xl shadow-sm shadow-primary/10 transition-transform duration-300 group-hover:scale-105 group-hover:-translate-y-0.5">
                                 <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
                             </div>
-                            <h2 class="font-display font-normal mt-4 text-xl sm:text-2xl font-bold tracking-tight">{% t "Drop your images here" %}</h2>
+                            <h2 class="mt-4 text-xl sm:text-2xl font-bold tracking-tight">{% t "Drop your images here" %}</h2>
                             <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">{% t "or choose files from your device" %}</p>
 
-                            <button id="browse-btn" type="button" class="mt-5 inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-primary hover:bg-primaryHover shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+                            <button id="browse-btn" type="button" class="mt-5 inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
                                 <i class="fa-solid fa-image" aria-hidden="true"></i>{% t "Upload images" %}
                             </button>
 
@@ -117,10 +117,7 @@ which every rival in the category also claims.{% endcomment %}
                             line. Splitting it also puts the privacy line on its own, which is
                             where the emphasis belongs.{% endcomment %}
                             <div class="mt-5 pt-4 w-full border-t border-gray-200/70 dark:border-white/10 flex flex-col items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
-                                {% comment %}Mono, because this is data about a file rather than marketing copy —
-                                the one typographic signal that reads as "measured". See the note on
-                                the mono role in static/css/display.css.{% endcomment %}
-                                <p class="font-mono text-[11px] tracking-wide uppercase"><span class="font-medium">JPG · PNG · WEBP</span> · {% t "Multiple files" %} · {% t "Full resolution" %}</p>
+                                <p class="tracking-wide"><span class="font-medium">JPG · PNG · WEBP</span> · {% t "Multiple files" %} · {% t "Full resolution" %}</p>
                                 <p class="inline-flex items-center gap-1.5 font-medium text-green-600 dark:text-green-400">
                                     <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>{% t "Your images never leave your device" %}
                                 </p>
@@ -130,11 +127,7 @@ which every rival in the category also claims.{% endcomment %}
                     </div>
 
                     <!-- Interactive before/after demo (sample photos — no upload) -->
-                    {% comment %}A mounted print: the paper mat is the `.mount`, the
-                    hairline where it meets the image is the bevel, and the compare seam
-                    is that same bevel moved. The label sits inside the mount, in the
-                    display face's italic, the way a gallery caption does.{% endcomment %}
-                    <figure class="mount flex flex-col gap-3">
+                    <figure class="flex flex-col gap-2.5">
                         {% comment %}
                         `data-subjects` carries the rotation set as resolved URLs.
                         landing.js used to derive them by string-swapping "demo1-"
@@ -164,7 +157,7 @@ which every rival in the category also claims.{% endcomment %}
                         viewport, and the whole document picked up a horizontal scrollbar.
                         Below sm the aspect ratio alone governs, which is what the min-height
                         was there to guarantee anyway.{% endcomment %}
-                        <div id="demo" class="demo group relative w-full flex-1 sm:min-h-[15rem] aspect-[4/3] overflow-hidden mounted select-none checkerboard checkerboard-soft"
+                        <div id="demo" class="demo group relative w-full flex-1 sm:min-h-[15rem] aspect-[4/3] rounded-3xl overflow-hidden border border-gray-200/70 dark:border-gray-800/70 shadow-xl shadow-gray-900/5 dark:shadow-black/30 select-none checkerboard checkerboard-soft"
                              data-subjects='[
                                ["{% static 'img/demo1-after.webp' %}", "{% static 'img/demo1-before.webp' %}"],
                                ["{% static 'img/demo2-after.webp' %}", "{% static 'img/demo2-before.webp' %}"],
@@ -183,7 +176,7 @@ which every rival in the category also claims.{% endcomment %}
                                 <img id="demo-before-img" src="{% static 'img/demo1-before.webp' %}" width="820" height="616" fetchpriority="high" class="w-full h-full object-cover transition-opacity duration-500" alt="The same photo on its original background" draggable="false">
                             </div>
                             <!-- Divider + handle -->
-                            <div id="demo-line" class="bevel-seam absolute top-0 bottom-0 w-px -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
+                            <div id="demo-line" class="absolute top-0 bottom-0 w-px bg-white/90 shadow-[0_0_10px_rgba(0,0,0,0.35)] -translate-x-1/2 pointer-events-none z-10" style="left: 50%;">
                                 <div class="on-light-surface absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white ring-1 ring-gray-900/5 shadow-[0_4px_16px_rgba(0,0,0,0.22)] grid place-items-center text-primaryText transition-transform duration-200 group-hover:scale-105">
                                     <i class="fa-solid fa-arrows-left-right text-sm" aria-hidden="true"></i>
                                 </div>
@@ -192,12 +185,8 @@ which every rival in the category also claims.{% endcomment %}
                             <span class="absolute top-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-gray-900/65 text-white backdrop-blur-sm pointer-events-none">{% t "Original" %}</span>
                             <span class="absolute top-3 right-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary text-white shadow-sm shadow-primary/30 pointer-events-none">{% t "Background removed" %}</span>
                         </div>
-                        <figcaption class="mount-label flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
-                            <span class="inline-flex items-center gap-1.5">
-                                <i class="fa-solid fa-hand-pointer text-[11px] not-italic" aria-hidden="true"></i>{% t "Drag to compare" %}
-                            </span>
-                            <span class="text-gray-400">·</span>
-                            <span>820 × 616 · PNG · {% t "alpha" %}</span>
+                        <figcaption class="text-center text-[13px] text-gray-500 dark:text-gray-400">
+                            <i class="fa-solid fa-hand-pointer mr-1.5 text-[11px]" aria-hidden="true"></i>{% t "Drag the handle — real results, nothing uploaded" %}
                         </figcaption>
                     </figure>
                 </div>
@@ -220,7 +209,7 @@ which every rival in the category also claims.{% endcomment %}
         {% endcomment %}
         <section aria-labelledby="tools-title" class="max-w-5xl mx-auto space-y-7">
             <div class="max-w-2xl mx-auto text-center space-y-3">
-                <h2 id="tools-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight">{% t "One toolkit for every image job" %}</h2>
+                <h2 id="tools-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "One toolkit for every image job" %}</h2>
                 <p class="text-gray-600 dark:text-gray-300">{% t "Edit, convert, optimise and create — every tool runs the same way the background remover does, on your device." %}</p>
                 {% comment %}Category chips are links into the catalogue's own sections, not a
                 filter: a tab bar here would make the visitor operate a control before they
@@ -263,7 +252,7 @@ which every rival in the category also claims.{% endcomment %}
         <section aria-labelledby="flow-title" class="max-w-4xl mx-auto">
             <div class="rounded-3xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-6 sm:p-8 space-y-6">
                 <div class="max-w-xl mx-auto text-center space-y-2">
-                    <h2 id="flow-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight">{% t "Finish one job. Keep going." %}</h2>
+                    <h2 id="flow-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Finish one job. Keep going." %}</h2>
                     <p class="text-gray-600 dark:text-gray-300">{% t "Move from one tool to the next without starting over or picking your file again." %}</p>
                 </div>
                 <ol class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-1">
@@ -297,7 +286,7 @@ which every rival in the category also claims.{% endcomment %}
         longest; it now lives in the privacy section below, behind a disclosure.
         {% endcomment %}
         <section aria-labelledby="how-title" class="max-w-4xl mx-auto space-y-6">
-            <h2 id="how-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight text-center">{% t "How it works" %}</h2>
+            <h2 id="how-title" class="text-2xl md:text-3xl font-bold tracking-tight text-center">{% t "How it works" %}</h2>
             <ol class="grid gap-3 sm:grid-cols-3">
                 <li class="rounded-2xl border border-gray-200/70 dark:border-gray-800/70 bg-white/60 dark:bg-white/[0.03] p-5 space-y-2">
                     <span class="block text-[11px] font-bold tracking-[0.14em] text-primaryText">01</span>
@@ -337,7 +326,7 @@ which every rival in the category also claims.{% endcomment %}
         {% endcomment %}
         <section aria-labelledby="privacy-title" class="max-w-4xl mx-auto space-y-6">
             <div class="max-w-2xl mx-auto text-center space-y-2">
-                <h2 id="privacy-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight">{% t "Your images stay on your device." %}</h2>
+                <h2 id="privacy-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Your images stay on your device." %}</h2>
                 <p class="text-gray-600 dark:text-gray-300">{% t "Background removal runs inside this browser tab. Your photo is not uploaded to a server to be processed, and there is no copy of it anywhere but on your own machine." %}</p>
             </div>
             <div class="grid gap-3 sm:grid-cols-3 text-sm">
@@ -388,7 +377,7 @@ which every rival in the category also claims.{% endcomment %}
         {% endcomment %}
         <section aria-labelledby="cases-title" class="max-w-5xl mx-auto space-y-6">
             <div class="max-w-2xl mx-auto text-center space-y-2">
-                <h2 id="cases-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight">{% t "What are you making?" %}</h2>
+                <h2 id="cases-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "What are you making?" %}</h2>
                 <p class="text-gray-600 dark:text-gray-300">{% t "Each of these has its own page, with the sizes and rules that apply to it." %}</p>
             </div>
             <ul role="list" class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -423,7 +412,7 @@ which every rival in the category also claims.{% endcomment %}
         {% endcomment %}
         <section aria-labelledby="free-title" class="max-w-4xl mx-auto space-y-6">
             <div class="max-w-2xl mx-auto text-center space-y-2">
-                <h2 id="free-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight">{% t "Why is ClearBG free?" %}</h2>
+                <h2 id="free-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Why is ClearBG free?" %}</h2>
                 <p class="text-gray-600 dark:text-gray-300">{% t "The short answer: the processing happens on your device, so there is no GPU bill every time you remove a background." %}</p>
             </div>
             <div class="grid gap-3 sm:grid-cols-3 text-sm">
@@ -469,7 +458,7 @@ which every rival in the category also claims.{% endcomment %}
         {% if home_guides %}
         <section aria-labelledby="guides-title" class="max-w-5xl mx-auto space-y-6">
             <div class="max-w-2xl mx-auto text-center space-y-2">
-                <h2 id="guides-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight">{% t "Learn more about images" %}</h2>
+                <h2 id="guides-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Learn more about images" %}</h2>
                 <p class="text-gray-600 dark:text-gray-300">{% t "How formats, transparency and on-device processing actually work — written to be useful even if you never open a tool." %}</p>
             </div>
             <ul role="list" class="grid gap-3 sm:grid-cols-3">
@@ -506,10 +495,10 @@ which every rival in the category also claims.{% endcomment %}
         button, back to the top of the page where the dropzone is.
         {% endcomment %}
         <section aria-labelledby="cta-title" class="max-w-2xl mx-auto text-center space-y-4 py-2">
-            <h2 id="cta-title" class="font-display font-normal text-2xl md:text-3xl font-bold tracking-tight">{% t "Ready to remove a background?" %}</h2>
+            <h2 id="cta-title" class="text-2xl md:text-3xl font-bold tracking-tight">{% t "Ready to remove a background?" %}</h2>
             <p class="text-gray-600 dark:text-gray-300">{% t "Free, private, and right in your browser." %}</p>
             <a href="#main" data-jump-upload
-               class="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-primary hover:bg-primaryHover shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+               class="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-primary to-primaryHover shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
                 <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>{% t "Remove a background" %}
             </a>
         </section>
@@ -524,7 +513,7 @@ which every rival in the category also claims.{% endcomment %}
                 <span><i class="fa-solid fa-database text-primaryText mr-1.5" aria-hidden="true"></i>{% t "saved" %} <b id="stat-saved">0</b> {% t "images total" %}</span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <button id="download-all-btn" type="button" class="hidden px-4 py-2.5 bg-primary hover:bg-primaryHover text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <button id="download-all-btn" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                     <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>{% t "Download all (ZIP)" %}
                 </button>
                 <button id="add-more-btn" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -847,7 +836,7 @@ which every rival in the category also claims.{% endcomment %}
         <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-brush text-primaryText" aria-hidden="true"></i> {% t "Refine edges" %}</div>
         <div class="flex items-center gap-2">
             <button id="editor-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{% t "Cancel" %}</button>
-            <button id="editor-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-primary hover:bg-primaryHover text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <button id="editor-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>{% t "Apply" %}
             </button>
         </div>
@@ -918,7 +907,7 @@ which every rival in the category also claims.{% endcomment %}
         <div class="flex items-center gap-2">
             <button id="crop-remove" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{% t "Remove crop" %}</button>
             <button id="crop-cancel" type="button" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">{% t "Cancel" %}</button>
-            <button id="crop-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-primary hover:bg-primaryHover text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            <button id="crop-apply" type="button" class="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 <i class="fa-solid fa-check mr-1.5" aria-hidden="true"></i>{% t "Apply" %}
             </button>
         </div>
@@ -1011,7 +1000,7 @@ which every rival in the category also claims.{% endcomment %}
 
 <!-- Sticky CTA — fades in once the dropzone scrolls out of view (landing only) -->
 <button id="sticky-cta" type="button" aria-label="Remove a background — jump to upload"
-        class="fixed bottom-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-40 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary hover:bg-primaryHover text-white font-semibold shadow-xl shadow-primary/40 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
+        class="fixed bottom-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-40 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-semibold shadow-xl shadow-primary/40 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950">
     <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> {% t "Remove a background" %}
 </button>
 {% endblock %}

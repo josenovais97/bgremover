@@ -52,7 +52,7 @@ class PageTests(SimpleTestCase):
         response = self.client.get(reverse("remover:index"))
         self.assertContains(response, "How it works")
         self.assertContains(response, "Drop your images here")
-        self.assertContains(response, "Drag to compare")
+        self.assertContains(response, "real results, nothing uploaded")
 
     def test_index_sets_security_headers(self):
         response = self.client.get(reverse("remover:index"))
@@ -2046,13 +2046,9 @@ class AccentContrastTests(SimpleTestCase):
 
     AA = 4.5
     WHITE = (255, 255, 255)
-    # The Passe-partout mat board — the light-theme PAGE ground. The accent used
-    # as text sits on this, not on white, and that distinction is the whole point
-    # of measuring here: these values were originally chosen against white, and
-    # 22 of 37 dipped under AA the moment the ground gained any tint.
-    MAT = (231, 232, 227)
-    # The dark ground that dark-mode accent text sits on.
-    DARK = (22, 23, 20)
+    # The dark glass surface (rgba(22,22,34,.74) over gray-950) that dark-mode
+    # accent text actually sits on — stricter than gray-950 itself.
+    DARK = (18, 18, 28)
 
     @staticmethod
     def _luminance(rgb):
@@ -2085,17 +2081,6 @@ class AccentContrastTests(SimpleTestCase):
                         f"{tool} {role} ({value}) is {ratio:.2f}:1 against white text; "
                         f"needs {self.AA}:1 — use a darker shade.",
                     )
-                # In LIGHT theme the surface value doubles as the accent AS TEXT
-                # (`text-primaryText` resolves to it), sitting on the page ground
-                # — which is the mat board, not white. This is the check that was
-                # missing: the table was tuned against white, so every marginal
-                # entry failed silently the moment the ground gained a tint.
-                ratio = self._ratio(self._rgb(surface), self.MAT)
-                self.assertGreaterEqual(
-                    ratio, self.AA,
-                    f"{tool} surface ({surface}) is {ratio:.2f}:1 as TEXT on the "
-                    f"mat-board ground; needs {self.AA}:1 — use a darker shade.",
-                )
                 # The text pair is the accent as text on the dark surface. Both
                 # stops matter: the hero gradient headline paints text_dark ->
                 # text_dark_alt, so checking only the first would miss a headline
