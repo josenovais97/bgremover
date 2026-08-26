@@ -1,12 +1,13 @@
 Django>=5.0,<5.2
 django-environ==0.11.2
+# Still used at BUILD time: `collectstatic` runs through
+# config.storage.LenientManifestStaticFilesStorage, which is a WhiteNoise class.
+# Nothing serves requests through WhiteNoise any more — the prerendered output is
+# served by Cloudflare — so this is a build dependency, not a runtime one.
 whitenoise==6.6.0
-# WhiteNoise writes a .br next to every .gz at collectstatic time ONLY if this is
-# importable — without it the "gzip/brotli" storage is gzip-only, and every
-# modern browser sends `Accept-Encoding: br`. Measured on this build: tailwind.css
-# 21.9K gzip → 15.3K brotli (-30%, and it is render-blocking), app.js 30.2K →
-# 25.7K (-15%). Build-time only; nothing imports it at runtime.
-brotli==1.1.0
+# Only for the Dockerfile's CMD, which still runs the Django app as a WSGI
+# service. The deployed site does not use it: `manage.py prerender` turns the app
+# into static files and no WSGI process runs in production.
 gunicorn==21.2.0
 
 # Optional: only needed if you enable the Django admin with PostgreSQL.

@@ -34,7 +34,6 @@ urlpatterns = [
     # /portrait-mode/ was merged into /blur-background/ (same tool). 301 so the
     # indexed URL keeps its link equity instead of 404-ing.
     path("portrait-mode/", RedirectView.as_view(pattern_name="remover:blur", permanent=True)),
-    path("api/stats/", views.stats, name="stats"),
     path("instagram/", views.instagram, name="instagram"),
     path("crop/", views.crop, name="crop"),
     path("favicon-generator/", views.favicon_generator, name="favicon"),

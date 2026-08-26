@@ -20,12 +20,11 @@
     "not_found_handling": "404-page"
   },
 
-  // workers.dev publishes the whole site a second time at
-  // bgremover.<account>.workers.dev. Useful now for testing before DNS moves;
-  // once clearbg.pt is live, set both of these to false so there is no public
-  // duplicate of the site for crawlers to find.
-  "workers_dev": true,
-  "preview_urls": true,
+  // clearbg.pt is live, so the workers.dev address is switched off: it was
+  // publishing the whole site a second time at bgremover.<account>.workers.dev,
+  // a crawlable duplicate of all 320 pages.
+  "workers_dev": false,
+  "preview_urls": false,
 
   "observability": { "enabled": true }
 }

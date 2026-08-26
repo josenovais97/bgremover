@@ -4,8 +4,7 @@ from .base import env
 
 DEBUG = False
 
-# Compress static assets (gzip + brotli, the latter needs `brotli` installed at
-# build time — see requirements.txt) AND content-hash their names, which is what
+# Content-hash static asset names, which is what
 # lets WhiteNoise serve them `immutable` instead of re-validating every file 60
 # seconds after the last visit. The non-manifest storage was used
 # here before because a strict manifest 500s the whole site if staticfiles.json
