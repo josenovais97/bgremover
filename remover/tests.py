@@ -1264,7 +1264,14 @@ class TranslationCoverageTests(SimpleTestCase):
     "Really translated" is measured by counting how many distinct translated
     phrases the prefixed page renders that its English twin does not. A page with
     a translated body sits far above one that merely inherits the translated
-    header and footer, so the two form separate bands. The test asserts the BANDS
+    header and footer, so the two form separate bands.
+
+    Pages that EMBED a tool are excluded from the untranslated band. The tool's UI
+    is fully translated, so embedding it lifts a page's phrase count the way the
+    header and footer do — shared furniture, not evidence that this page's own
+    copy was translated. Counting it would put an English landing page in the
+    translated band and make the bands overlap for a reason that says nothing
+    about the page. The test asserts the BANDS
     DO NOT OVERLAP rather than picking a threshold: no magic number to re-tune,
     and it fails from either direction — a listed page that isn't translated
     sinks into the low band, and a newly translated page that nobody listed rises
@@ -1286,6 +1293,15 @@ class TranslationCoverageTests(SimpleTestCase):
             if translated != en and translated in body and translated not in english
         )
 
+    def _embeds_a_tool(self, path):
+        """True if the page renders a tool, not just a description of one.
+
+        Detected from the markup rather than a list, so a page that starts or
+        stops embedding a tool needs no edit here. A file input is the tell: every
+        tool takes an image that way.
+        """
+        return 'type="file"' in self.client.get(path).content.decode()
+
     def test_every_language_has_a_path_set(self):
         self.assertEqual(set(TRANSLATED_PATHS), set(LANGUAGES))
 
@@ -1300,7 +1316,10 @@ class TranslationCoverageTests(SimpleTestCase):
             with self.subTest(lang=lang):
                 counts = {p: self._phrase_count(p, lang) for p in SITEMAP_PATHS}
                 declared = {p: n for p, n in counts.items() if p in TRANSLATED_PATHS[lang]}
-                rest = {p: n for p, n in counts.items() if p not in TRANSLATED_PATHS[lang]}
+                rest = {
+                    p: n for p, n in counts.items()
+                    if p not in TRANSLATED_PATHS[lang] and not self._embeds_a_tool(p)
+                }
                 if not declared or not rest:
                     self.skipTest("needs both a translated and an untranslated page")
 

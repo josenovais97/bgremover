@@ -139,16 +139,21 @@ const App = {
     $$('.pp-sheet').forEach((b) => b.addEventListener('click', () => this.exportSheet(b.dataset.sheet)));
     $('#pp-new').addEventListener('click', () => this.reset());
 
-    // Deep link from a country landing page: /passport-photo/?w=35&h=45&country=UK
-    // pre-selects that exact size as a custom preset.
+    // Pre-select an exact size, from either of two places:
+    //   * ?w=35&h=45&country=UK — the deep link a country page used to send you
+    //     here with, still honoured for existing links and bookmarks;
+    //   * data-w/data-h/data-country on #pp-tool — set when a country page embeds
+    //     this tool directly, where there is no query string to read.
+    // The query string wins, so a deep link still overrides the host page.
     const params = new URLSearchParams(location.search);
-    const uw = parseInt(params.get('w'), 10);
-    const uh = parseInt(params.get('h'), 10);
+    const embed = document.getElementById('pp-tool')?.dataset ?? {};
+    const uw = parseInt(params.get('w') ?? embed.w, 10);
+    const uh = parseInt(params.get('h') ?? embed.h, 10);
     if (uw >= 10 && uw <= 200 && uh >= 10 && uh <= 200) {
       this.custom = { w: uw, h: uh };
       $('#pp-cw').value = uw;
       $('#pp-ch').value = uh;
-      const country = params.get('country');
+      const country = params.get('country') ?? embed.country;
       if (country) {
         const label = $('#pp-preset-note');
         if (label) label.textContent = `${country} · ${uw}×${uh} mm`;

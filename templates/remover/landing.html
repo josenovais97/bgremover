@@ -62,6 +62,7 @@ the auto related-tools block is suppressed at the bottom.
     {% if embed_tool == 'compress' %}{% include 'remover/partials/tool_compress.html' with target_kb=target_kb %}
     {% elif embed_tool == 'heic' %}{% include 'remover/partials/tool_heic.html' %}
     {% elif embed_tool == 'ocr' %}{% include 'remover/partials/tool_ocr.html' %}
+    {% elif embed_tool == 'index' %}{% include 'remover/partials/tool_remover.html' %}
     {% endif %}
 
     <!-- Intro copy -->
@@ -145,4 +146,6 @@ the auto related-tools block is suppressed at the bottom.
 {% if embed_tool == 'compress' %}<script type="module" src="{% static 'js/compressor.js' %}"></script>{% endif %}
 {% if embed_tool == 'heic' %}<script type="module" src="{% static 'js/heic.js' %}"></script>{% endif %}
 {% if embed_tool == 'ocr' %}<script type="module" src="{% static 'js/ocr.js' %}"></script>{% endif %}
+{% if embed_tool == 'index' %}<script type="module" src="{% static 'js/app.js' %}"></script>
+<script src="{% static 'js/landing.js' %}" defer></script>{% endif %}
 {% endblock %}

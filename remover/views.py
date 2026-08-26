@@ -1344,10 +1344,15 @@ def privacy_page(request, slug):
         {"nav": p["nav"], "url": reverse(f"remover:{p['url_name']}")}
         for p in PRIVACY_PAGES if p["slug"] != slug
     ]
+    tool = page["cta"]["url_name"]
     return render(request, "remover/landing.html", {
         "page": {**page, "benefits_title": "Why it stays private", "siblings_title": "More on privacy"},
         "siblings": siblings,
-        "cta_url": reverse(f"remover:{page['cta']['url_name']}"),
+        "cta_url": reverse(f"remover:{tool}"),
+        # "Remove a background without uploading" should let you do exactly that,
+        # here. Sending the reader elsewhere made these doorway pages. See
+        # EMBEDDABLE_TOOLS.
+        "embed_tool": tool if tool in EMBEDDABLE_TOOLS else None,
         "faqs": page["faqs"],
         "faq_jsonld": faq_jsonld(page["faqs"]),
     })
@@ -1381,7 +1386,7 @@ def tool_landing(request, slug):
 # partials/tool_<name>.html) and can therefore be rendered on a landing page
 # rather than merely linked to. A tool absent here still gets a CTA button, so
 # adding one is: extract the partial, add a branch in landing.html, add the name.
-EMBEDDABLE_TOOLS = {"compress", "heic", "ocr"}
+EMBEDDABLE_TOOLS = {"compress", "heic", "ocr", "index"}
 
 _TARGET_IN_SLUG = re.compile(r"under-(\d+)(kb|mb)\b")
 

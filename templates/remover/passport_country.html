@@ -38,13 +38,11 @@
             Make a compliant {{ country.name }} passport or visa photo in seconds — free, private, and processed entirely
             in your browser. We remove the background, set a {{ country.bg }} backdrop, and export the exact size.
         </p>
-        <div class="pt-2">
-            <a href="{% url 'remover:passport' %}?w={{ country.w_mm }}&amp;h={{ country.h_mm }}&amp;country={{ country.name|urlencode }}"
-               class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <i class="fa-solid fa-id-card" aria-hidden="true"></i> Make a {{ country.name }} passport photo
-            </a>
-        </div>
     </section>
+
+    {# The maker itself, pre-set to this country's exact size. The page used to #}
+    {# state the spec and send you elsewhere to act on it — a doorway page. #}
+    {% include 'remover/partials/tool_passport.html' with preset_w=country.w_mm preset_h=country.h_mm preset_country=country.name %}
 
     <!-- Spec table -->
     <section aria-labelledby="spec-title" class="max-w-3xl mx-auto space-y-5">
@@ -176,4 +174,8 @@
         rules for your application before submitting. Your photo is processed entirely in your browser and is never uploaded.
     </p>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/passport.js' %}"></script>
 {% endblock %}
