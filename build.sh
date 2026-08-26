@@ -14,14 +14,25 @@ set -euo pipefail
 
 export DJANGO_SETTINGS_MODULE="config.settings.production"
 
-# SECRET_KEY is required for Django to start, but nothing signed at build time
-# outlives the build: there are no sessions, no cookies and no CSRF tokens in the
-# output. Set it in the Pages dashboard anyway so the value is not in the repo.
-: "${SECRET_KEY:?set SECRET_KEY in the Cloudflare Pages environment}"
-# SITE_URL is NOT optional in the same sense — it is baked into every canonical
-# tag, hreflang alternate and sitemap <loc> in the output. Getting it wrong ships
-# a site that tells Google it lives somewhere else.
-: "${SITE_URL:?set SITE_URL (e.g. https://clearbg.pt) in the Cloudflare Pages environment}"
+# Django refuses to start without a SECRET_KEY, but nothing it signs can reach
+# this build's output: `staticfiles` is the only contrib app (no sessions, no
+# auth, no messages) and no template renders {% csrf_token %}. So a throwaway key
+# per build is not a compromise, it is the honest description of what the key
+# does here — and it means one less variable to get wrong in the dashboard.
+export SECRET_KEY="${SECRET_KEY:-$(python -c 'import secrets; print(secrets.token_urlsafe(50))')}"
+
+# SITE_URL is genuinely required: it is baked into every canonical tag, hreflang
+# alternate and sitemap <loc>. Getting it wrong ships a site that tells Google it
+# lives somewhere else, which is why this fails loudly instead of defaulting.
+if [ -z "${SITE_URL:-}" ]; then
+  echo "ERROR: SITE_URL is not set (expected e.g. https://clearbg.pt)." >&2
+  echo "" >&2
+  echo "In Cloudflare Pages this must be a BUILD variable, not a runtime one." >&2
+  echo "  Settings -> Build -> Variables and secrets  (NOT 'Variables and Secrets'" >&2
+  echo "  under Runtime, which is only exposed to Functions at request time)." >&2
+  echo "  Add it to the Production environment, then Retry deployment." >&2
+  exit 1
+fi
 
 # --break-system-packages is needed on build images whose Python is externally
 # managed (PEP 668). Not every image is, and older pip does not know the flag, so
