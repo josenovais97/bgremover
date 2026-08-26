@@ -4,17 +4,15 @@ Views for the background remover.
 The heavy lifting (AI background removal) runs client-side, so these views only
 render the single-page app and the SEO helper endpoints (robots.txt, sitemap).
 """
-import ipaddress
-import json
 import logging
+import re
 import time
-import urllib.request
 from datetime import date as _date
 from datetime import datetime, timezone
 from pathlib import Path
 
 from django.conf import settings
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import Resolver404, resolve, reverse
 from django.views.decorators.cache import cache_control
@@ -1374,6 +1372,23 @@ def tool_landing(request, slug):
     })
 
 
+_TARGET_IN_SLUG = re.compile(r"under-(\d+)(kb|mb)\b")
+
+
+def compress_target_kb(slug):
+    """The size target a slug names, in KB — or None if it names none.
+
+    Read off the slug rather than stored per page: the number is already in the
+    URL (`compress-image-under-500kb`), so deriving it means a new size variant
+    is still a one-line data addition and the two can never disagree.
+    """
+    match = _TARGET_IN_SLUG.search(slug)
+    if match is None:
+        return None
+    value = int(match.group(1))
+    return value * 1024 if match.group(2) == "mb" else value
+
+
 @require_safe
 def compress_page(request, slug):
     """Render a compress intent-variant landing page (by format / size / use case)."""
@@ -1399,6 +1414,13 @@ def compress_page(request, slug):
         # Most entries funnel to the image compressor; an entry may name another
         # tool (compress-video → the video converter).
         "cta_url": reverse(f"remover:{page.get('cta_url_name', 'compress')}"),
+        # Embed the real compressor rather than describing it and linking away.
+        # Without this these pages are text plus a button — the shape of a doorway
+        # page, and what AdSense flagged as "Low value content". Excluded where the
+        # page fronts a different tool (compress-video → the video converter),
+        # since embedding the image compressor there would be a lie.
+        "embed_tool": None if page.get("cta_url_name") else "compress",
+        "target_kb": compress_target_kb(slug),
         "faqs": page["faqs"],
         "faq_jsonld": faq_jsonld(page["faqs"]),
     })

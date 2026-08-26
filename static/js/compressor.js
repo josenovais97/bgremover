@@ -253,6 +253,17 @@ const App = {
     $('#cmp-add').addEventListener('click', () => this.input.click());
     $('#cmp-clear').addEventListener('click', () => this.clear());
     $('#cmp-download-all').addEventListener('click', () => this.downloadAll());
+
+    // A landing page can preset the target size (see partials/tool_compress.html).
+    // /compress-image-under-500kb/ then opens in size mode with 500 already in the
+    // box, so the page does what its URL promises without the visitor configuring
+    // anything. Absent on /compress/ itself, which keeps the quality-mode default.
+    const preset = parseInt(document.getElementById('cmp-tool')?.dataset.targetKb ?? '', 10);
+    if (preset > 0) {
+      target.targetKB = preset;
+      tgt.value = preset;
+      this.setMode(document.querySelector('.cmp-mode-btn[data-mode="size"]'));
+    }
   },
 
   add(fileList) {
