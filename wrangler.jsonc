@@ -1,0 +1,31 @@
+// Cloudflare Workers deploy config.
+//
+// Cloudflare created this project as a Worker serving static assets (not a Pages
+// project), so `npx wrangler deploy` is the deploy step. Without this file
+// wrangler GENERATES one on every build and then warns that it "differs from the
+// remote configuration" — which means each deploy silently overwrites whatever
+// is set in the dashboard, and stamps a compatibility_date of whenever the build
+// happened. Committing it makes the deploy reproducible and the settings review-
+// able in git instead of drifting build to build.
+{
+  "name": "bgremover",
+  "compatibility_date": "2026-08-26",
+
+  // No `main`: there is no Worker script. Every request is served straight from
+  // the prerendered assets, which is the whole point of the migration.
+  "assets": {
+    "directory": "_site",
+    // Serve our own /404.html (rendered by `manage.py prerender`) rather than
+    // Cloudflare's bare 404 body.
+    "not_found_handling": "404-page"
+  },
+
+  // workers.dev publishes the whole site a second time at
+  // bgremover.<account>.workers.dev. Useful now for testing before DNS moves;
+  // once clearbg.pt is live, set both of these to false so there is no public
+  // duplicate of the site for crawlers to find.
+  "workers_dev": true,
+  "preview_urls": true,
+
+  "observability": { "enabled": true }
+}
