@@ -18,6 +18,11 @@ Headers are only applied on HTML responses to avoid overhead on static assets.
 MODEL_CDN = "https://staticimgly.com"
 JS_CDN = "https://cdn.jsdelivr.net"
 
+# Cloudflare Web Analytics beacon. Only loads when CLOUDFLARE_ANALYTICS_TOKEN is
+# set (see base.html); listing it here costs nothing when it is not. `connect-src`
+# already allows https:, so the beacon's own POST needs no extra entry.
+ANALYTICS_SCRIPT = "https://static.cloudflareinsights.com"
+
 # Google AdSense hosts. Ads only run on non-isolated marketing pages (the loader
 # is gated in the template), but the CSP is global, so these allowances are
 # listed once here; they load nothing on their own.
@@ -56,7 +61,8 @@ CSP = "; ".join(
         # 'unsafe-eval' + 'wasm-unsafe-eval': required by the onnxruntime-web WASM
         # backend that powers in-browser background removal. blob: lets it spin up
         # its worker. Tighten these if you later self-host a stricter runtime.
-        f"script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob: {JS_CDN} {MODEL_CDN} {ADS_SCRIPT}",
+        f"script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob: {JS_CDN} {MODEL_CDN} "
+        f"{ANALYTICS_SCRIPT} {ADS_SCRIPT}",
         f"worker-src 'self' blob: {JS_CDN} {MODEL_CDN}",
         f"frame-src 'self' blob: {ADS_FRAME}",
         "child-src 'self' blob:",

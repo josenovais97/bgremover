@@ -617,6 +617,7 @@ def seo(request):
         # Browser chrome (address bar / PWA) matches the tool's accent too.
         "accent_hex": _hex(accent),
         "google_site_verification": settings.GOOGLE_SITE_VERIFICATION,
+        "cloudflare_analytics_token": settings.CLOUDFLARE_ANALYTICS_TOKEN,
         "bing_site_verification": settings.BING_SITE_VERIFICATION,
         # Per-tool OG share card (falls back to the site-wide image).
         "og_image": OG_IMAGES.get(url_name, _DEFAULT_OG_IMAGE),

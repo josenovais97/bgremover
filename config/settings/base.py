@@ -47,6 +47,12 @@ if SITE_URL and "://" not in SITE_URL:
 GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", default="")
 BING_SITE_VERIFICATION = env("BING_SITE_VERIFICATION", default="")
 
+# Cloudflare Web Analytics token. Replaces Vercel Web Analytics, which was tied
+# to the old host (its script lived at the Vercel-injected /_vercel/insights/
+# path and 404s anywhere else). Cookie-less and free; paste the token from the
+# Cloudflare dashboard into the Pages environment. Unset renders nothing.
+CLOUDFLARE_ANALYTICS_TOKEN = env("CLOUDFLARE_ANALYTICS_TOKEN", default="")
+
 # IndexNow: ping Bing and Yandex the moment a URL changes instead of waiting for
 # them to come back on their own. The key is NOT a secret — the protocol works by
 # publishing it at https://<host>/<key>.txt so the receiving engine can verify the

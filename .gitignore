@@ -31,3 +31,6 @@ node_modules/
 
 # Chrome Web Store upload built by scripts/package-extension.py
 dist/
+
+# Static build output (manage.py prerender)
+/_site/
