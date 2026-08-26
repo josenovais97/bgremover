@@ -9,8 +9,21 @@
 # Cloudflare Pages settings that go with this script:
 #   Build command:        ./build.sh
 #   Build output dir:     _site
-#   Environment vars:     SECRET_KEY, SITE_URL, ALLOWED_HOSTS (see below)
+#   Environment vars:     none required — see PRODUCTION_SITE_URL below
 set -euo pipefail
+
+# The canonical production origin, committed rather than configured.
+#
+# This started life as a required environment variable, on the reasoning that
+# baking the wrong origin into 320 pages of canonical tags is a bad failure. That
+# reasoning was right about the stakes and wrong about the fix: the origin is not
+# a secret, it does not vary between builds, and it is already published in the
+# sitemap of every page we ship. Making it a dashboard variable bought no safety
+# and added a way for the build to fail on a value that was never in doubt.
+#
+# So: committed default, still overridable by the environment (a fork or a staging
+# origin just sets SITE_URL), and verified below rather than merely required.
+PRODUCTION_SITE_URL="https://clearbg.pt"
 
 export DJANGO_SETTINGS_MODULE="config.settings.production"
 
@@ -21,18 +34,25 @@ export DJANGO_SETTINGS_MODULE="config.settings.production"
 # does here — and it means one less variable to get wrong in the dashboard.
 export SECRET_KEY="${SECRET_KEY:-$(python -c 'import secrets; print(secrets.token_urlsafe(50))')}"
 
-# SITE_URL is genuinely required: it is baked into every canonical tag, hreflang
-# alternate and sitemap <loc>. Getting it wrong ships a site that tells Google it
-# lives somewhere else, which is why this fails loudly instead of defaulting.
-if [ -z "${SITE_URL:-}" ]; then
-  echo "ERROR: SITE_URL is not set (expected e.g. https://clearbg.pt)." >&2
-  echo "" >&2
-  echo "In Cloudflare Pages this must be a BUILD variable, not a runtime one." >&2
-  echo "  Settings -> Build -> Variables and secrets  (NOT 'Variables and Secrets'" >&2
-  echo "  under Runtime, which is only exposed to Functions at request time)." >&2
-  echo "  Add it to the Production environment, then Retry deployment." >&2
-  exit 1
-fi
+export SITE_URL="${SITE_URL:-$PRODUCTION_SITE_URL}"
+# ALLOWED_HOSTS only has to satisfy Django's host check while prerendering; the
+# prerender command adds SITE_URL's own host to it anyway. Deriving it from
+# SITE_URL keeps the two from disagreeing.
+_host="${SITE_URL#*://}"; _host="${_host%%/*}"
+export ALLOWED_HOSTS="${ALLOWED_HOSTS:-$_host,www.$_host}"
+
+# The failure this guards against is shipping a localhost origin to production —
+# canonical tags, hreflang and every sitemap <loc> would point at a machine that
+# is not the internet, and nothing about the pages would *look* wrong.
+case "$SITE_URL" in
+  https://*) ;;
+  *) echo "ERROR: SITE_URL must be an https:// origin, got '$SITE_URL'." >&2; exit 1 ;;
+esac
+
+echo "Building $SITE_URL  (hosts: $ALLOWED_HOSTS)"
+[ -n "${CLOUDFLARE_ANALYTICS_TOKEN:-}" ] \
+  && echo "Cloudflare Web Analytics: enabled" \
+  || echo "Cloudflare Web Analytics: off (set CLOUDFLARE_ANALYTICS_TOKEN to enable)"
 
 # --break-system-packages is needed on build images whose Python is externally
 # managed (PEP 668). Not every image is, and older pip does not know the flag, so
