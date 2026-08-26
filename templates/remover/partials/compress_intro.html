@@ -1,0 +1,21 @@
+{% load i18n_extras %}
+{% comment %}
+The /compress/ page's own headline. Lives here so tool_compress.html can render it
+INSIDE the section it hides on upload — compressor.js calls
+dropzone.closest('section'), so the headline has to share that section or it stays
+on screen and pushes the first result below the fold.
+
+Landing pages omit this (they have their own h1) by not passing intro_template.
+{% endcomment %}
+<div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
+    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
+        <i class="fa-solid fa-compress" aria-hidden="true"></i> Compressed locally — nothing is uploaded
+    </span>
+    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+        {% t "Compress Images to a" %}
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Smaller Size" %}</span>
+    </h1>
+    <p class="text-lg text-gray-600 dark:text-gray-300">
+        {% t "Drop an image and shrink its file size — set a quality level or a target size like" %} <strong>{% t "under 200 KB" %}</strong>{% t ". Batch supported, full control, 100% private." %}
+    </p>
+</div>

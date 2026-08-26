@@ -1,0 +1,92 @@
+{% load static i18n_extras %}
+{% comment %}
+The HEIC converter — dropzone, controls, results grid and its card template.
+
+Extracted so the HEIC landing pages can embed the working converter instead of
+describing it and linking away; a page that only says "go here to do this" is a
+doorway page, which is what AdSense flagged as "Low value content".
+
+Keeps #hc-hero on the section: heic.js hides that element once files are added,
+so whatever shares the section (the optional intro) clears with it.
+{% endcomment %}
+    <section id="hc-hero" class="max-w-5xl mx-auto space-y-8">
+        {% if intro_template %}{% include intro_template %}{% endif %}
+        <div class="grid lg:grid-cols-2 gap-6 items-stretch">
+            <div id="hc-dropzone" role="button" tabindex="0" aria-label="Upload HEIC photos. Drag and drop or click to browse."
+                 class="glass relative rounded-3xl shadow-xl p-8 sm:p-10 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 cursor-pointer group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <input type="file" id="hc-input" class="sr-only" accept=".heic,.heif,image/heic,image/heif" multiple aria-label="Choose a file">
+                <div class="flex flex-col items-center justify-center space-y-4 text-center">
+                    <div id="hc-icon" class="w-20 h-20 bg-primary/10 text-primaryText rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-brands fa-apple" aria-hidden="true"></i>
+                    </div>
+                    <h2 class="text-2xl font-semibold">{% t "Drop your HEIC photos" %}</h2>
+                    <p class="text-gray-500 dark:text-gray-400">{% t "or click to browse — .heic and .heif, single or batch" %}</p>
+                    <button id="hc-browse" type="button" class="mt-2 px-8 py-3 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white font-medium rounded-xl shadow-lg shadow-primary/30 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <i class="fa-solid fa-image mr-2" aria-hidden="true"></i>{% t "Select photos" %}
+                    </button>
+                    <p class="pt-2 text-sm text-gray-400 dark:text-gray-500">{% t "The decoder loads once (~1 MB) and is cached — photos never leave your device" %}</p>
+                </div>
+            </div>
+            <figure class="flex flex-col gap-3 w-full">
+                <div class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-gray-200/70 dark:border-gray-800/70">
+                    <img src="{% static 'img/demo-heic.webp' %}" width="820" height="616" alt="An iPhone photo with two file chips: IMG_0412.heic marked as won't open, converted to IMG_0412.jpg marked as opens everywhere" class="absolute inset-0 w-full h-full object-cover">
+                </div>
+                <figcaption class="text-center text-sm text-gray-500 dark:text-gray-400">
+                    <i class="fa-solid fa-circle-check text-green-500 mr-1" aria-hidden="true"></i>{% t "Same photo, a format everything opens — converted on your device" %}
+                </figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <!-- Controls + results -->
+    <section id="hc-controls" class="hidden max-w-5xl mx-auto glass rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-5 space-y-4">
+        <div class="flex flex-wrap items-center gap-5">
+            <div class="space-y-2">
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{% t "Output format" %}</span>
+                <div class="inline-flex rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden text-sm font-medium">
+                    <button type="button" data-fmt="image/jpeg" data-ext="jpg" class="hc-fmt px-4 py-2 bg-primary text-white">JPG</button>
+                    <button type="button" data-fmt="image/png" data-ext="png" class="hc-fmt px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">PNG</button>
+                    <button type="button" data-fmt="image/webp" data-ext="webp" class="hc-fmt px-4 py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">WEBP</button>
+                {% include 'remover/partials/dropzone_footer.html' %}
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 ml-auto">
+                <button id="hc-zip" type="button" class="hidden px-4 py-2.5 bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white text-sm font-medium rounded-xl shadow transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-file-zipper mr-1.5" aria-hidden="true"></i>{% t "Download all (ZIP)" %}
+                </button>
+                <button id="hc-add" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>{% t "Add more" %}
+                </button>
+                <button id="hc-clear" type="button" class="px-4 py-2.5 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <i class="fa-solid fa-trash-can mr-1.5" aria-hidden="true"></i>{% t "Clear" %}
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="hc-grid" class="results-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></section>
+
+
+<!-- Result card template -->
+<template id="hc-card-template">
+    <article class="card glass rounded-2xl shadow-lg border border-gray-200/70 dark:border-gray-800/70 overflow-hidden animate-fade-in-up">
+        <div class="preview relative aspect-video checkerboard grid place-items-center overflow-hidden">
+            <img class="thumb max-h-full max-w-full object-contain" alt="Converted photo preview" draggable="false">
+            <span class="spin absolute inset-0 grid place-items-center bg-white/50 dark:bg-gray-950/50"><i class="fa-solid fa-circle-notch fa-spin text-2xl" aria-hidden="true"></i></span>
+        </div>
+        <div class="p-4 space-y-3">
+            <div class="min-w-0">
+                <p class="filename text-sm font-medium truncate" title="">photo.heic</p>
+                <p class="meta text-xs text-gray-500 dark:text-gray-400">Converting…</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" class="remove-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove this photo">
+                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                </button>
+                <button type="button" disabled class="download-btn inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-primary to-primaryHover hover:brightness-110 text-white shadow ml-auto transition-colors disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Download converted photo">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i> Download
+                </button>
+            </div>
+        </div>
+    </article>
+</template>

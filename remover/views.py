@@ -1363,14 +1363,25 @@ def tool_landing(request, slug):
         {"nav": p["nav"], "url": reverse(f"remover:{p['url_name']}")}
         for p in TOOL_LANDINGS if p["slug"] != slug
     ]
+    tool = page["cta"]["url_name"]
     return render(request, "remover/landing.html", {
         "page": {**page, "benefits_title": "Why use it", "siblings_title": "Related guides"},
         "siblings": siblings,
-        "cta_url": reverse(f"remover:{page['cta']['url_name']}"),
+        "cta_url": reverse(f"remover:{tool}"),
+        # Embed the tool the page is about, so the page does the thing it ranks
+        # for. Text plus a button pointing elsewhere is a doorway page — the
+        # pattern AdSense rejected the site over ("Low value content").
+        "embed_tool": tool if tool in EMBEDDABLE_TOOLS else None,
         "faqs": page["faqs"],
         "faq_jsonld": faq_jsonld(page["faqs"]),
     })
 
+
+# Tools that have been factored into an embeddable partial (templates/remover/
+# partials/tool_<name>.html) and can therefore be rendered on a landing page
+# rather than merely linked to. A tool absent here still gets a CTA button, so
+# adding one is: extract the partial, add a branch in landing.html, add the name.
+EMBEDDABLE_TOOLS = {"compress", "heic", "ocr"}
 
 _TARGET_IN_SLUG = re.compile(r"under-(\d+)(kb|mb)\b")
 
@@ -1880,10 +1891,15 @@ def comparison(request, slug):
     ]
     # Link the remove.bg comparison in too, so all five cross-reference.
     siblings.append({"nav": "vs remove.bg", "url": reverse("remover:alternative")})
+    tool = page["cta_url_name"]
     return render(request, "remover/comparison.html", {
         "page": page,
         "siblings": siblings,
-        "cta_url": reverse(f"remover:{page['cta_url_name']}"),
+        "cta_url": reverse(f"remover:{tool}"),
+        # Let the visitor do the thing the comparison argues for, on the page that
+        # argues for it — rather than sending them elsewhere from a page that only
+        # makes a case. See EMBEDDABLE_TOOLS.
+        "embed_tool": tool if tool in EMBEDDABLE_TOOLS else None,
         "faqs": page["faqs"],
         "faq_jsonld": faq_jsonld(page["faqs"]),
     })

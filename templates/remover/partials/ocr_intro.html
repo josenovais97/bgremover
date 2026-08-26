@@ -1,0 +1,19 @@
+{% load i18n_extras %}
+{% comment %}
+The /image-to-text/ page's own headline. Rendered inside the section ocr.js
+hides once an image is loaded (#oc-hero), so it clears with the dropzone.
+Landing pages omit it — they supply their own h1.
+{% endcomment %}
+        <div data-tool-intro class="text-center space-y-5 animate-fade-in-up max-w-3xl mx-auto transition-all duration-300">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primaryText">
+                <i class="fa-solid fa-align-left" aria-hidden="true"></i> {% t "Recognised locally — nothing is uploaded" %}
+            </span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+                {% t "Copy Text out of" %}
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primaryText to-primaryTextAlt">{% t "Any Image" %}</span>
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+                {% t "Screenshots, photos of documents, whiteboards — the OCR engine reads them" %}
+                <strong>{% t "on your device" %}</strong> {% t "and hands you editable text. Free and private." %}
+            </p>
+        </div>
