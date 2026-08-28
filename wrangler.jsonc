@@ -11,14 +11,42 @@
   "name": "bgremover",
   "compatibility_date": "2026-08-26",
 
-  // No `main`: there is no Worker script. Every request is served straight from
-  // the prerendered assets, which is the whole point of the migration.
+  // Every page is served straight from the prerendered assets — that is the
+  // whole point of the migration. The Worker script exists for exactly one
+  // route, /api/stats/, which needs somewhere to keep a number. See
+  // worker/index.mjs.
+  "main": "worker/index.mjs",
+
   "assets": {
     "directory": "_site",
     // Serve our own /404.html (rendered by `manage.py prerender`) rather than
     // Cloudflare's bare 404 body.
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // Lets the Worker hand anything that is not /api/stats/ back to the asset
+    // router, so the 404 page above still answers it.
+    "binding": "ASSETS",
+    // Assets are matched BEFORE the Worker by default, and from a compatibility
+    // date of 2025-04-01 onwards a *navigation* request that matches no asset is
+    // answered with not_found_handling above without the Worker ever running.
+    // That is the right default for a prerendered site and exactly wrong for
+    // this one route: opening https://clearbg.pt/api/stats/ in a browser is a
+    // navigation, so without this list it would render the 404 page. Listing it
+    // here runs the Worker first for this prefix only; everything else keeps the
+    // asset-first behaviour.
+    "run_worker_first": ["/api/stats*"]
   },
+
+  // The counter's storage. A single Durable Object instance, so increments are
+  // serialised and the total is exact; SQLite-backed because that is the only
+  // kind the Workers Free plan supports (and the kind new namespaces must use).
+  // `wrangler deploy` creates it from the migration below — there is nothing to
+  // provision by hand and no secret to set.
+  "durable_objects": {
+    "bindings": [{ "name": "STATS", "class_name": "Stats" }]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Stats"] }
+  ],
 
   // clearbg.pt is live, so the workers.dev address is switched off: it was
   // publishing the whole site a second time at bgremover.<account>.workers.dev,

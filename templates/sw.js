@@ -123,6 +123,12 @@ self.addEventListener('fetch', (event) => {
 
   if (url.origin !== self.location.origin) return; // let the browser handle other CDNs
 
+  // /api/stats/ answers `Cache-Control: no-store` and its whole value is being
+  // current. Without this it would land in the offline snapshot below like any
+  // other same-origin GET, and an offline visit would be served a stale count
+  // with no hint that it is stale.
+  if (url.pathname.indexOf('/api/') === 0) return;
+
   // Same-origin navigations AND assets: network-first. Always fetch fresh when
   // online (so a redeploy is picked up on the very next load — no cache-name bump
   // needed), and fall back to the cache when offline. The cache is refreshed on

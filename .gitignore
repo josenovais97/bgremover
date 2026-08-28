@@ -29,6 +29,9 @@ node_modules/
 # Vercel
 .vercel/
 
+# Cloudflare: `wrangler dev --local` keeps the Durable Object's SQLite here.
+.wrangler/
+
 # Chrome Web Store upload built by scripts/package-extension.py
 dist/
 

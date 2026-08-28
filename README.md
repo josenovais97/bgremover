@@ -239,10 +239,13 @@ bgremover/
 │   ├── js/kit.js              # window.CBG — shared helpers, i18n, cross-tool chain
 │   ├── js/{theme,nav,stats,demo,range-value,colorpicker,landing,ads}.js  # shared chrome
 │   └── img/backgrounds/       # 17 preset backgrounds (full + thumb WEBP)
-├── tests/                     # Node geometry test + Playwright smoke tests
+├── worker/                    # the only server-side code: /api/stats/ (see Operations)
+│   ├── index.mjs              # Worker entry + the Durable Object holding the counters
+│   └── lib.mjs                # pure helpers (ISO week, whitelists), unit-tested
+├── tests/                     # Node unit tests + Playwright smoke tests
 ├── deploy/nginx.conf
 ├── Dockerfile / docker-compose.yml / .dockerignore
-├── vercel.json / build_files.sh
+├── wrangler.jsonc / build.sh
 ├── package.json / tailwind.config.js
 ├── requirements.txt
 ├── .env.example
@@ -304,9 +307,6 @@ python -c "import secrets; print(secrets.token_urlsafe(50))"
 | `BING_SITE_VERIFICATION` | – | Bing Webmaster Tools token. |
 | `ADSENSE_CLIENT` | – | AdSense publisher ID (`ca-pub-…`). Ads load on use-case landing pages only; clear to disable. |
 | `ADSENSE_SLOT_LANDING` | – | Optional explicit ad-unit slot; blank falls back to Auto ads. |
-| `UPSTASH_REDIS_REST_URL` | – | Upstash Redis REST URL for the "images processed" counter. `KV_REST_API_URL` is accepted as an alias (Vercel KV). |
-| `UPSTASH_REDIS_REST_TOKEN` | – | Matching token (alias: `KV_REST_API_TOKEN`). |
-| `STATS_KEY` | – | Counter key namespace (default `clearbg:processed`). |
 
 > `SITE_URL` must include the scheme (`https://…`); a bare domain is auto-corrected to
 > `https://` so the sitemap never emits invalid URLs.
@@ -323,8 +323,8 @@ Settings are selected via `DJANGO_SETTINGS_MODULE`: `config.settings.development
 ## 🧪 Testing
 
 ```bash
-python manage.py test           # 98 Django tests: pages, SEO, i18n, PWA, accents, icon subset
-npm test                        # crop-geometry unit tests (Node, no browser)
+python manage.py test           # 188 Django tests: pages, SEO, i18n, PWA, accents, icon subset
+npm test                        # crop geometry, SW cache, share, stats (Node, no browser)
 python manage.py check --deploy # production security audit (use prod settings)
 ```
 
@@ -562,8 +562,13 @@ model-agnostic. The same import appears in `blur.js`, `ecommerce.js`, `textbehin
 - **Search Console**: set `GOOGLE_SITE_VERIFICATION` (and/or `BING_SITE_VERIFICATION`),
   then submit `/sitemap.xml`. New `USE_CASES` / `COMPRESS_PAGES` / `COMPARISONS` entries
   extend it automatically.
-- **Social-proof counter**: `/api/stats/` returns `{"enabled": false}` until Upstash is
-  configured, and the hero badge stays hidden — **no fabricated numbers**.
+- **Usage counter**: `GET /api/stats/` → `{"enabled": true, "count": N, "week": M}`
+  (all-time and current ISO week, UTC); `?breakdown=1` adds the per-tool/per-event
+  counts. Nothing on the site displays them — the tools report to it via
+  `window.__clearbgReport()` (`static/js/stats.js`) and it is read by hand.
+  It is the only route on the site that is not a static file: `worker/index.mjs`
+  serves it, and the numbers live in a single SQLite-backed Durable Object that
+  `wrangler deploy` creates. No environment variables, no external service.
 
 ---
 
