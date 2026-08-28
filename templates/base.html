@@ -99,6 +99,14 @@
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "{{ cloudflare_analytics_token }}"}'></script>
     {% endif %}
 
+    {% if umami_website_id %}
+    <!-- Umami (cookie-less, no personal data). Runs on every page, tool pages
+         included: it is a plain cross-origin script, so COEP credentialless
+         fetches it without credentials rather than blocking it — unlike the
+         AdSense frames above. Unset UMAMI_WEBSITE_ID renders nothing. -->
+    <script defer src="{{ umami_script_url }}" data-website-id="{{ umami_website_id }}"></script>
+    {% endif %}
+
     {% if adsense_client %}
     <!-- Google AdSense (marketing / SEO pages only; never on the isolated tool
          pages, whose COEP would block ad frames). Enable Auto ads in the AdSense

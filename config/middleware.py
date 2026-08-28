@@ -23,6 +23,11 @@ JS_CDN = "https://cdn.jsdelivr.net"
 # already allows https:, so the beacon's own POST needs no extra entry.
 ANALYTICS_SCRIPT = "https://static.cloudflareinsights.com"
 
+# Umami cloud. Same deal: the loader is gated on UMAMI_WEBSITE_ID in base.html,
+# and its /api/send beacon is already covered by `connect-src https:`. A self-
+# hosted instance (UMAMI_SCRIPT_URL) needs its own host added here.
+UMAMI_SCRIPT = "https://cloud.umami.is"
+
 # Google AdSense hosts. Ads only run on non-isolated marketing pages (the loader
 # is gated in the template), but the CSP is global, so these allowances are
 # listed once here; they load nothing on their own.
@@ -62,7 +67,7 @@ CSP = "; ".join(
         # backend that powers in-browser background removal. blob: lets it spin up
         # its worker. Tighten these if you later self-host a stricter runtime.
         f"script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob: {JS_CDN} {MODEL_CDN} "
-        f"{ANALYTICS_SCRIPT} {ADS_SCRIPT}",
+        f"{ANALYTICS_SCRIPT} {UMAMI_SCRIPT} {ADS_SCRIPT}",
         f"worker-src 'self' blob: {JS_CDN} {MODEL_CDN}",
         f"frame-src 'self' blob: {ADS_FRAME}",
         "child-src 'self' blob:",

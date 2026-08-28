@@ -53,6 +53,21 @@ BING_SITE_VERIFICATION = env("BING_SITE_VERIFICATION", default="")
 # Cloudflare dashboard into the Pages environment. Unset renders nothing.
 CLOUDFLARE_ANALYTICS_TOKEN = env("CLOUDFLARE_ANALYTICS_TOKEN", default="")
 
+# Umami (cloud.umami.is). Runs alongside Cloudflare Web Analytics rather than
+# replacing it: Cloudflare samples and only reports what its edge sees, while
+# Umami gives per-page/per-referrer breakdowns and custom events. Also cookie-
+# less and GDPR-friendly, so no consent banner is owed for either.
+#
+# The website ID is not a secret — it ships in the <script> tag on every page —
+# so it is committed like ADSENSE_CLIENT and INDEXNOW_KEY rather than being one
+# more dashboard variable to forget. Clear it (UMAMI_WEBSITE_ID=) to disable.
+UMAMI_WEBSITE_ID = env(
+    "UMAMI_WEBSITE_ID", default="15904117-f307-45b2-8e89-d39a76ae180a"
+)
+# Self-hosters point this at their own instance; the CSP entry in
+# config/middleware.py has to be widened to match if you do.
+UMAMI_SCRIPT_URL = env("UMAMI_SCRIPT_URL", default="https://cloud.umami.is/script.js")
+
 # IndexNow: ping Bing and Yandex the moment a URL changes instead of waiting for
 # them to come back on their own. The key is NOT a secret — the protocol works by
 # publishing it at https://<host>/<key>.txt so the receiving engine can verify the

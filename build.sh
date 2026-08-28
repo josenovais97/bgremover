@@ -53,6 +53,9 @@ echo "Building $SITE_URL  (hosts: $ALLOWED_HOSTS)"
 [ -n "${CLOUDFLARE_ANALYTICS_TOKEN:-}" ] \
   && echo "Cloudflare Web Analytics: enabled" \
   || echo "Cloudflare Web Analytics: off (set CLOUDFLARE_ANALYTICS_TOKEN to enable)"
+[ -n "${UMAMI_WEBSITE_ID-15904117-f307-45b2-8e89-d39a76ae180a}" ] \
+  && echo "Umami: enabled" \
+  || echo "Umami: off (UMAMI_WEBSITE_ID cleared)"
 
 # --break-system-packages is needed on build images whose Python is externally
 # managed (PEP 668). Not every image is, and older pip does not know the flag, so

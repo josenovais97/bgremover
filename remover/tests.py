@@ -1814,6 +1814,37 @@ class SiteVerificationTests(SimpleTestCase):
         self.assertContains(response, 'name="google-site-verification" content="test-token-123"')
 
 
+class AnalyticsTests(SimpleTestCase):
+    """The Umami tag ships on every page, including the isolated tool pages.
+
+    Ads are gated to the guides (see MonetizationTests) because COEP blocks
+    their frames; a plain cross-origin script is not blocked, so analytics has
+    no such restriction — and a tool page that reported nothing would hide the
+    only pages that matter.
+    """
+
+    def test_tag_rendered_on_tool_and_marketing_pages(self):
+        for path in [reverse("remover:index"), reverse("remover:use_case", args=["logo"])]:
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertContains(response, "https://cloud.umami.is/script.js")
+                self.assertContains(
+                    response,
+                    'data-website-id="15904117-f307-45b2-8e89-d39a76ae180a"',
+                )
+
+    @override_settings(UMAMI_WEBSITE_ID="")
+    def test_nothing_rendered_when_id_cleared(self):
+        response = self.client.get(reverse("remover:index"))
+        self.assertNotContains(response, "umami")
+
+    def test_csp_allows_the_umami_host(self):
+        """A CSP that omits it blocks the script with no other visible symptom."""
+        from config.middleware import CSP
+
+        self.assertIn("https://cloud.umami.is", CSP)
+
+
 class SeoEndpointTests(SimpleTestCase):
     def test_robots_txt(self):
         response = self.client.get(reverse("remover:robots"))

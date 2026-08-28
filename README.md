@@ -570,9 +570,12 @@ model-agnostic. The same import appears in `blur.js`, `ecommerce.js`, `textbehin
   `robots.txt` / `sitemap.xml` are cached for 1h; the service worker is network-first for
   same-origin requests (a redeploy is picked up on the next online load) and cache-first
   for the model.
-- **Analytics**: Cloudflare Web Analytics, privacy-friendly and cookie-free. The beacon
-  only renders when `CLOUDFLARE_ANALYTICS_TOKEN` is set (see `config/middleware.py`);
-  unset, the page ships no analytics markup at all.
+- **Analytics**: Cloudflare Web Analytics and Umami, both privacy-friendly and
+  cookie-free (no consent banner is owed for either). The Cloudflare beacon only
+  renders when `CLOUDFLARE_ANALYTICS_TOKEN` is set; the Umami tag renders whenever
+  `UMAMI_WEBSITE_ID` is non-empty (it ships committed, since the ID is public in the
+  page source anyway — clear the variable to turn it off, or point `UMAMI_SCRIPT_URL`
+  at a self-hosted instance and widen the CSP in `config/middleware.py` to match).
 - **Search Console**: set `GOOGLE_SITE_VERIFICATION` (and/or `BING_SITE_VERIFICATION`),
   then submit `/sitemap.xml`. New `USE_CASES` / `COMPRESS_PAGES` / `COMPARISONS` entries
   extend it automatically.
