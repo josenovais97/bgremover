@@ -1,0 +1,83 @@
+# Build the static site and deploy it to Cloudflare on every push to main.
+#
+# Why this file exists: the repo had no CI at all, so a push did nothing and the
+# site only moved when someone ran `wrangler deploy` by hand — which is how a
+# commit ended up sitting in main while production served the build before it.
+#
+# Why a workflow rather than Cloudflare's own git integration (Workers Builds):
+# Workers Builds keeps its build command, output directory and deploy command in
+# the Cloudflare dashboard, which is the same invisible-drift problem that
+# wrangler.jsonc was committed to solve. This keeps the whole deploy in git,
+# where it can be reviewed and reverted with the code it ships.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Lets a failed deploy be retried from the Actions tab without an empty commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Deploys are not cancelled mid-flight (a half-uploaded asset manifest is worse
+# than a redundant deploy), but they are never run two at a time, so the last
+# push always wins rather than whichever build happens to finish last.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # build.sh installs these itself, but doing it up front means the tests
+      # below can run before the slow part (prerendering 320 pages), and the
+      # second install is a cache hit rather than real work.
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          npm ci
+
+      # The tests gate the deploy on purpose. Everything this repo ships is
+      # prerendered, so a broken template is not a 500 on one request — it is 320
+      # broken files on a CDN, served until someone notices. Both suites run
+      # without any environment: settings/base.py defaults SECRET_KEY and
+      # SITE_URL, and development.py defaults ALLOWED_HOSTS.
+      - name: Node unit tests
+        run: npm test
+
+      - name: Django tests
+        run: python manage.py test
+
+      # Renders the site into _site/. SITE_URL is committed in build.sh, so there
+      # is nothing to configure here — see the comments in that file.
+      - name: Build
+        run: ./build.sh
+
+      # Uploads _site/ and the /api/stats/ Worker, and applies the Durable Object
+      # migration on the first run. Needs two repository secrets:
+      #
+      #   CLOUDFLARE_API_TOKEN   an account API token — the "Edit Cloudflare
+      #                          Workers" template covers everything used here
+      #                          (Workers Scripts: Edit + Account Settings: Read)
+      #   CLOUDFLARE_ACCOUNT_ID  the account the Worker belongs to; wrangler
+      #                          cannot infer it, because wrangler.jsonc
+      #                          deliberately does not pin an account
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

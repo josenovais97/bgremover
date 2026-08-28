@@ -243,6 +243,7 @@ bgremover/
 │   ├── index.mjs              # Worker entry + the Durable Object holding the counters
 │   └── lib.mjs                # pure helpers (ISO week, whitelists), unit-tested
 ├── tests/                     # Node unit tests + Playwright smoke tests
+├── .github/workflows/deploy.yml   # test + build + wrangler deploy, on push to main
 ├── deploy/nginx.conf
 ├── Dockerfile / docker-compose.yml / .dockerignore
 ├── wrangler.jsonc / build.sh
@@ -458,20 +459,32 @@ a newly translated page was never added.
 
 ---
 
-## ▲ Deploy to Vercel
+## ☁️ Deploy to Cloudflare
 
-The app is stateless, so it fits Vercel's serverless Python runtime.
+**A push to `main` deploys.** `.github/workflows/deploy.yml` installs the deps, runs
+both test suites, runs `./build.sh`, and then `wrangler deploy` uploads `_site/` plus
+the `/api/stats/` Worker. The tests gate the deploy: nothing here is rendered per
+request, so a broken template means 320 broken files on a CDN rather than one bad
+response.
 
-1. Push to GitHub and **Import** the repo in Vercel.
-2. Set the environment variables in the dashboard:
-   `SECRET_KEY`, `DEBUG=False`, `ALLOWED_HOSTS=…`, `CSRF_TRUSTED_ORIGINS=https://…`,
-   `SITE_URL=https://…`, and `SECURE_SSL_REDIRECT=False` (Vercel terminates TLS; this
-   avoids redirect loops).
-3. Deploy. `vercel.json` runs `build_files.sh` (deps + `collectstatic`) and routes
-   `/static/*` to the collected files and everything else to `config/wsgi.py`.
+Two repository secrets are required (**Settings → Secrets and variables → Actions**):
 
-No database or persistent storage is needed. **Environment-variable changes require a
-redeploy** to take effect.
+| Secret | Where it comes from |
+|--------|---------------------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens → **Edit Cloudflare Workers** template |
+| `CLOUDFLARE_ACCOUNT_ID` | Workers & Pages → Overview, right-hand sidebar |
+
+Nothing else is configured: `SITE_URL` is committed in `build.sh`, the `SECRET_KEY` is
+generated per build and signs nothing, and the counter's store is created by the deploy
+itself. `wrangler.jsonc` holds every Worker setting, deliberately in git rather than in
+the dashboard — see the comments in that file.
+
+To deploy by hand (or to see a failing deploy's error up close):
+
+```bash
+npx wrangler login
+./build.sh && npx wrangler deploy
+```
 
 ---
 
@@ -557,8 +570,9 @@ model-agnostic. The same import appears in `blur.js`, `ecommerce.js`, `textbehin
   `robots.txt` / `sitemap.xml` are cached for 1h; the service worker is network-first for
   same-origin requests (a redeploy is picked up on the next online load) and cache-first
   for the model.
-- **Analytics**: Vercel Web Analytics (`/_vercel/insights/script.js`), privacy-friendly and
-  active once enabled in Vercel.
+- **Analytics**: Cloudflare Web Analytics, privacy-friendly and cookie-free. The beacon
+  only renders when `CLOUDFLARE_ANALYTICS_TOKEN` is set (see `config/middleware.py`);
+  unset, the page ships no analytics markup at all.
 - **Search Console**: set `GOOGLE_SITE_VERIFICATION` (and/or `BING_SITE_VERIFICATION`),
   then submit `/sitemap.xml`. New `USE_CASES` / `COMPRESS_PAGES` / `COMPARISONS` entries
   extend it automatically.
